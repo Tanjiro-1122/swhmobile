@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,18 @@ const confidenceColors = {
 
 export default function MatchCard({ match, onDelete, index }) {
   const [expanded, setExpanded] = useState(false);
+
+  const formatMatchDate = (dateString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return null; // Check for invalid date
+      return format(date, "MMM d, yyyy 'at' HH:mm");
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return null;
+    }
+  };
 
   return (
     <motion.div
@@ -52,10 +65,10 @@ export default function MatchCard({ match, onDelete, index }) {
               </Button>
             </div>
           </div>
-          {match.match_date && (
+          {match.match_date && formatMatchDate(match.match_date) && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />
-              {format(new Date(match.match_date), "MMM d, yyyy 'at' HH:mm")}
+              {formatMatchDate(match.match_date)}
             </div>
           )}
         </div>

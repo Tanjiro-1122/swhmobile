@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,18 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       }
     }
     return Activity;
+  };
+
+  const formatDate = (dateString, formatString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return null; // Check for invalid date
+      return format(date, formatString);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return null;
+    }
   };
 
   const renderSeasonAverages = () => {
@@ -184,45 +197,48 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 Recent Games
               </h3>
               <div className="space-y-2">
-                {player.recent_form.map((game, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="font-semibold">vs {game.opponent}</div>
-                        {game.date && (
-                          <div className="text-xs text-gray-500">
-                            {format(new Date(game.date), "MMM d, yyyy")}
-                          </div>
+                {player.recent_form.map((game, idx) => {
+                  const formattedDate = formatDate(game.date, "MMM d, yyyy");
+                  return (
+                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-semibold">vs {game.opponent}</div>
+                          {formattedDate && (
+                            <div className="text-xs text-gray-500">
+                              {formattedDate}
+                            </div>
+                          )}
+                        </div>
+                        {game.performance_rating && (
+                          <Badge variant="outline">{game.performance_rating}</Badge>
                         )}
                       </div>
-                      {game.performance_rating && (
-                        <Badge variant="outline">{game.performance_rating}</Badge>
-                      )}
+                      <div className="flex gap-4 text-sm">
+                        {game.points !== undefined && (
+                          <span className="text-gray-700">
+                            <strong>{game.points}</strong> pts
+                          </span>
+                        )}
+                        {game.assists !== undefined && (
+                          <span className="text-gray-700">
+                            <strong>{game.assists}</strong> ast
+                          </span>
+                        )}
+                        {game.rebounds !== undefined && (
+                          <span className="text-gray-700">
+                            <strong>{game.rebounds}</strong> reb
+                          </span>
+                        )}
+                        {game.goals !== undefined && (
+                          <span className="text-gray-700">
+                            <strong>{game.goals}</strong> goals
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-4 text-sm">
-                      {game.points !== undefined && (
-                        <span className="text-gray-700">
-                          <strong>{game.points}</strong> pts
-                        </span>
-                      )}
-                      {game.assists !== undefined && (
-                        <span className="text-gray-700">
-                          <strong>{game.assists}</strong> ast
-                        </span>
-                      )}
-                      {game.rebounds !== undefined && (
-                        <span className="text-gray-700">
-                          <strong>{game.rebounds}</strong> reb
-                        </span>
-                      )}
-                      {game.goals !== undefined && (
-                        <span className="text-gray-700">
-                          <strong>{game.goals}</strong> goals
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -241,9 +257,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                   <div className="text-xl font-bold text-blue-900">
                     vs {player.next_game.opponent}
                   </div>
-                  {player.next_game.date && (
+                  {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
                     <div className="text-sm text-gray-600">
-                      {format(new Date(player.next_game.date), "EEEE, MMM d 'at' HH:mm")}
+                      {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm")}
                     </div>
                   )}
                   {player.next_game.location && (
