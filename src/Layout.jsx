@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -95,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
           <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
-              <h1 className="text-xl font-semibold">Sports Betting Analyzer</h1>
+              <h1 className="text-xl font-semibold">Sports Wager Helper</h1>
             </div>
           </header>
 

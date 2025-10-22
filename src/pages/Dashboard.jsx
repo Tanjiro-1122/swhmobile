@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -157,7 +158,7 @@ export default function Dashboard() {
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
               <Trophy className="w-7 h-7" />
             </div>
-            <h1 className="text-4xl font-bold">Sports Betting Analyzer</h1>
+            <h1 className="text-4xl font-bold">Sports Wager Helper</h1>
           </div>
           <p className="text-blue-100 text-lg max-w-2xl">
             Get data-driven predictions for match outcomes, player performance, and multiple betting markets using real-time statistics
