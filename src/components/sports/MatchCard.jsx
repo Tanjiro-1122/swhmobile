@@ -1,11 +1,13 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Trash2, Shield } from "lucide-react";
+import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
+import PlayerStatsCard from "./PlayerStatsCard";
+import BettingMarketsCard from "./BettingMarketsCard";
 
 const confidenceColors = {
   low: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -14,6 +16,8 @@ const confidenceColors = {
 };
 
 export default function MatchCard({ match, onDelete, index }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -87,6 +91,49 @@ export default function MatchCard({ match, onDelete, index }) {
               </div>
             </div>
           )}
+
+          {/* Expand/Collapse Button */}
+          {(match.key_players?.length > 0 || match.betting_markets) && (
+            <Button
+              variant="outline"
+              onClick={() => setExpanded(!expanded)}
+              className="w-full mt-4 flex items-center justify-center gap-2"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Hide Detailed Stats
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Show Player Stats & More Markets
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* Expanded Content */}
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-4 space-y-4">
+                  {match.key_players?.length > 0 && (
+                    <PlayerStatsCard players={match.key_players} sport={match.sport} />
+                  )}
+                  {match.betting_markets && (
+                    <BettingMarketsCard markets={match.betting_markets} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardContent>
       </Card>
     </motion.div>

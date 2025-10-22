@@ -33,17 +33,34 @@ export default function Dashboard() {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Analyze this sports match request: "${query}"
         
-        Find the upcoming match details and calculate win probabilities based on:
-        - Recent team performance and form
-        - Head-to-head records
-        - Player injuries and suspensions
-        - Home/away advantage
-        - Current league standings
-        - Expert predictions and betting odds
+        Find the upcoming match details and provide COMPREHENSIVE betting analysis including:
         
-        Provide a comprehensive analysis with probability percentages that add up to 100%.
-        Be specific about the teams, date, and league. If it's a sport that can have draws (like football/soccer), include draw probability.
-        Include 3-5 key factors that influenced your prediction.`,
+        1. MATCH WIN PROBABILITIES based on:
+           - Recent team performance and form
+           - Head-to-head records
+           - Player injuries and suspensions
+           - Home/away advantage
+           - Current league standings
+           - Expert predictions and betting odds
+        
+        2. KEY PLAYERS PREDICTIONS:
+           - Identify 3-5 key players from both teams
+           - For each player provide:
+             * Predicted points/goals (based on sport)
+             * Predicted assists
+             * Predicted rebounds (if basketball)
+             * Probability to score (percentage)
+             * Recent form (e.g., "Excellent", "Good", "Average")
+             * Injury status (e.g., "Healthy", "Questionable", "Doubtful")
+        
+        3. ADDITIONAL BETTING MARKETS:
+           - Over/Under total points/goals with probabilities
+           - Both teams to score probabilities
+           - Predicted total score range
+           - First to score probabilities
+        
+        Be specific about teams, date, league, and provide realistic statistical predictions.
+        All probabilities should be based on current form, statistics, and expert analysis.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -64,6 +81,58 @@ export default function Dashboard() {
             confidence_level: {
               type: "string",
               enum: ["low", "medium", "high"]
+            },
+            key_players: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  team: { type: "string" },
+                  position: { type: "string" },
+                  predicted_points: { type: "number" },
+                  predicted_assists: { type: "number" },
+                  predicted_rebounds: { type: "number" },
+                  predicted_goals: { type: "number" },
+                  probability_to_score: { type: "number" },
+                  recent_form: { type: "string" },
+                  injury_status: { type: "string" }
+                }
+              }
+            },
+            betting_markets: {
+              type: "object",
+              properties: {
+                over_under: {
+                  type: "object",
+                  properties: {
+                    line: { type: "number" },
+                    over_probability: { type: "number" },
+                    under_probability: { type: "number" }
+                  }
+                },
+                both_teams_score: {
+                  type: "object",
+                  properties: {
+                    yes_probability: { type: "number" },
+                    no_probability: { type: "number" }
+                  }
+                },
+                total_goals_range: {
+                  type: "object",
+                  properties: {
+                    predicted_total: { type: "number" },
+                    range: { type: "string" }
+                  }
+                },
+                first_to_score: {
+                  type: "object",
+                  properties: {
+                    home_probability: { type: "number" },
+                    away_probability: { type: "number" }
+                  }
+                }
+              }
             }
           }
         }
@@ -91,7 +160,7 @@ export default function Dashboard() {
             <h1 className="text-4xl font-bold">Sports Betting Analyzer</h1>
           </div>
           <p className="text-blue-100 text-lg max-w-2xl">
-            Get data-driven win probability predictions for any sports match using real-time statistics and expert analysis
+            Get data-driven predictions for match outcomes, player performance, and multiple betting markets using real-time statistics
           </p>
         </div>
       </div>
@@ -120,9 +189,9 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Sparkles className="w-5 h-5 text-blue-600" />
-                <span className="font-medium">Analyzing match data from the web...</span>
+                <span className="font-medium">Analyzing match data and player statistics...</span>
               </div>
-              <p className="text-sm text-gray-500 mt-2">This may take a few seconds</p>
+              <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds</p>
             </div>
           </div>
         )}
@@ -159,7 +228,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <p className="text-sm text-amber-800">
-            <strong>Disclaimer:</strong> These probabilities are for informational purposes only and based on available data at the time of analysis. 
+            <strong>Disclaimer:</strong> These probabilities and player predictions are for informational purposes only and based on available data at the time of analysis. 
             Actual outcomes may vary. Always gamble responsibly.
           </p>
         </div>

@@ -54,6 +54,97 @@
         "high"
       ],
       "description": "Confidence level of the prediction"
+    },
+    "key_players": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "team": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "predicted_points": {
+            "type": "number"
+          },
+          "predicted_assists": {
+            "type": "number"
+          },
+          "predicted_rebounds": {
+            "type": "number"
+          },
+          "predicted_goals": {
+            "type": "number"
+          },
+          "probability_to_score": {
+            "type": "number"
+          },
+          "recent_form": {
+            "type": "string"
+          },
+          "injury_status": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Key players and their predicted contributions"
+    },
+    "betting_markets": {
+      "type": "object",
+      "properties": {
+        "over_under": {
+          "type": "object",
+          "properties": {
+            "line": {
+              "type": "number"
+            },
+            "over_probability": {
+              "type": "number"
+            },
+            "under_probability": {
+              "type": "number"
+            }
+          }
+        },
+        "both_teams_score": {
+          "type": "object",
+          "properties": {
+            "yes_probability": {
+              "type": "number"
+            },
+            "no_probability": {
+              "type": "number"
+            }
+          }
+        },
+        "total_goals_range": {
+          "type": "object",
+          "properties": {
+            "predicted_total": {
+              "type": "number"
+            },
+            "range": {
+              "type": "string"
+            }
+          }
+        },
+        "first_to_score": {
+          "type": "object",
+          "properties": {
+            "home_probability": {
+              "type": "number"
+            },
+            "away_probability": {
+              "type": "number"
+            }
+          }
+        }
+      }
     }
   },
   "required": [
