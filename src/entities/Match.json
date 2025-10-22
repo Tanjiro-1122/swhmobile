@@ -1,0 +1,66 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "sport": {
+      "type": "string",
+      "description": "Type of sport (e.g., Football, Basketball, Tennis)"
+    },
+    "league": {
+      "type": "string",
+      "description": "League or competition name"
+    },
+    "home_team": {
+      "type": "string",
+      "description": "Name of the home team"
+    },
+    "away_team": {
+      "type": "string",
+      "description": "Name of the away team"
+    },
+    "match_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of the match"
+    },
+    "home_win_probability": {
+      "type": "number",
+      "description": "Probability of home team winning (0-100)"
+    },
+    "away_win_probability": {
+      "type": "number",
+      "description": "Probability of away team winning (0-100)"
+    },
+    "draw_probability": {
+      "type": "number",
+      "description": "Probability of a draw (0-100)"
+    },
+    "key_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Key factors affecting the prediction"
+    },
+    "analysis_summary": {
+      "type": "string",
+      "description": "Brief summary of the analysis"
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Confidence level of the prediction"
+    }
+  },
+  "required": [
+    "sport",
+    "home_team",
+    "away_team",
+    "home_win_probability",
+    "away_win_probability"
+  ]
+}
