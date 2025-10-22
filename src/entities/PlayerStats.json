@@ -1,0 +1,162 @@
+{
+  "name": "PlayerStats",
+  "type": "object",
+  "properties": {
+    "player_name": {
+      "type": "string",
+      "description": "Full name of the player"
+    },
+    "sport": {
+      "type": "string",
+      "description": "Sport the player plays"
+    },
+    "team": {
+      "type": "string",
+      "description": "Current team"
+    },
+    "position": {
+      "type": "string",
+      "description": "Playing position"
+    },
+    "league": {
+      "type": "string",
+      "description": "League or competition"
+    },
+    "season_averages": {
+      "type": "object",
+      "properties": {
+        "points_per_game": {
+          "type": "number"
+        },
+        "assists_per_game": {
+          "type": "number"
+        },
+        "rebounds_per_game": {
+          "type": "number"
+        },
+        "steals_per_game": {
+          "type": "number"
+        },
+        "blocks_per_game": {
+          "type": "number"
+        },
+        "field_goal_percentage": {
+          "type": "number"
+        },
+        "three_point_percentage": {
+          "type": "number"
+        },
+        "free_throw_percentage": {
+          "type": "number"
+        },
+        "goals_per_game": {
+          "type": "number"
+        },
+        "shots_per_game": {
+          "type": "number"
+        },
+        "passes_per_game": {
+          "type": "number"
+        },
+        "tackles_per_game": {
+          "type": "number"
+        },
+        "minutes_per_game": {
+          "type": "number"
+        }
+      }
+    },
+    "recent_form": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "opponent": {
+            "type": "string"
+          },
+          "points": {
+            "type": "number"
+          },
+          "assists": {
+            "type": "number"
+          },
+          "rebounds": {
+            "type": "number"
+          },
+          "goals": {
+            "type": "number"
+          },
+          "performance_rating": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Last 5-10 games performance"
+    },
+    "injury_status": {
+      "type": "string",
+      "description": "Current injury status"
+    },
+    "next_game": {
+      "type": "object",
+      "properties": {
+        "opponent": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "predicted_performance": {
+          "type": "string"
+        }
+      }
+    },
+    "career_highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Notable achievements and awards"
+    },
+    "betting_insights": {
+      "type": "object",
+      "properties": {
+        "over_under_points": {
+          "type": "number"
+        },
+        "probability_to_score": {
+          "type": "number"
+        },
+        "hot_streak": {
+          "type": "boolean"
+        },
+        "consistency_rating": {
+          "type": "string"
+        }
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "weaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "player_name",
+    "sport",
+    "team"
+  ]
+}
