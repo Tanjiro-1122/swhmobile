@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ export default function TeamStats() {
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: teams, isLoading } = useQuery({
+  const { data: teams, isLoading, error: loadError } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.TeamStats.list('-created_date'),
     initialData: [],
@@ -222,11 +221,23 @@ export default function TeamStats() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     } catch (err) {
       setError("Failed to fetch team statistics. Please try again with a specific team name.");
-      console.error(err);
+      console.error("Team Stats Error:", err);
     }
 
     setIsSearching(false);
   };
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-6">
+        <Alert variant="destructive" className="max-w-2xl mx-auto">
+          <AlertDescription>
+            Failed to load team statistics. Please refresh the page or contact support.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50">

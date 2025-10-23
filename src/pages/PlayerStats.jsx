@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ export default function PlayerStats() {
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: players, isLoading } = useQuery({
+  const { data: players, isLoading, error: loadError } = useQuery({
     queryKey: ['players'],
     queryFn: () => base44.entities.PlayerStats.list('-created_date'),
     initialData: [],
@@ -210,11 +209,23 @@ export default function PlayerStats() {
       queryClient.invalidateQueries({ queryKey: ['players'] });
     } catch (err) {
       setError("Failed to fetch player statistics. Please try again with a specific player name.");
-      console.error(err);
+      console.error("Player Stats Error:", err);
     }
 
     setIsSearching(false);
   };
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
+        <Alert variant="destructive" className="max-w-2xl mx-auto">
+          <AlertDescription>
+            Failed to load player statistics. Please refresh the page or contact support.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,14 +6,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
-import TodaysBestBets from "../components/sports/TodaysBestBets"; // New import
+import TodaysBestBets from "../components/sports/TodaysBestBets";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: matches, isLoading } = useQuery({
+  const { data: matches, isLoading, error: loadError } = useQuery({
     queryKey: ['matches'],
     queryFn: () => base44.entities.Match.list('-created_date'),
     initialData: [],
@@ -187,11 +186,23 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     } catch (err) {
       setError("Failed to analyze the match. Please try again with more specific details.");
-      console.error(err);
+      console.error("Match Analysis Error:", err);
     }
 
     setIsSearching(false);
   };
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+        <Alert variant="destructive" className="max-w-2xl mx-auto">
+          <AlertDescription>
+            Failed to load matches. Please refresh the page or contact support.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
