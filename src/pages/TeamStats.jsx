@@ -8,6 +8,7 @@ import TeamSearchBar from "../components/team/TeamSearchBar";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import EmptyTeamState from "../components/team/EmptyTeamState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
 
 export default function TeamStats() {
   const [isSearching, setIsSearching] = useState(false);
@@ -259,6 +260,7 @@ FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
   return (
     <div className="min-h-screen">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+      <LimitedOfferBanner />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}

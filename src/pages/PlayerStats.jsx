@@ -8,6 +8,7 @@ import PlayerSearchBar from "../components/player/PlayerSearchBar";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import EmptyPlayerState from "../components/player/EmptyPlayerState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
 
 export default function PlayerStats() {
   const [isSearching, setIsSearching] = useState(false);
@@ -337,6 +338,7 @@ FORMAT: Return valid JSON with ALL sport-appropriate fields populated using REAL
   return (
     <div className="min-h-screen">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+      <LimitedOfferBanner />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}

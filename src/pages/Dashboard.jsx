@@ -9,6 +9,7 @@ import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -255,6 +256,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
   return (
     <div className="min-h-screen">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+      <LimitedOfferBanner />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
