@@ -63,6 +63,45 @@
         },
         "minutes_per_game": {
           "type": "number"
+        },
+        "passing_yards_per_game": {
+          "type": "number"
+        },
+        "passing_touchdowns_per_game": {
+          "type": "number"
+        },
+        "interceptions_per_game": {
+          "type": "number"
+        },
+        "completion_percentage": {
+          "type": "number"
+        },
+        "rushing_yards_per_game": {
+          "type": "number"
+        },
+        "rushing_touchdowns_per_game": {
+          "type": "number"
+        },
+        "carries_per_game": {
+          "type": "number"
+        },
+        "receiving_yards_per_game": {
+          "type": "number"
+        },
+        "receiving_touchdowns_per_game": {
+          "type": "number"
+        },
+        "receptions_per_game": {
+          "type": "number"
+        },
+        "targets_per_game": {
+          "type": "number"
+        },
+        "yards_per_carry": {
+          "type": "number"
+        },
+        "yards_per_reception": {
+          "type": "number"
         }
       }
     },
@@ -87,6 +126,30 @@
             "type": "number"
           },
           "goals": {
+            "type": "number"
+          },
+          "passing_yards": {
+            "type": "number"
+          },
+          "passing_touchdowns": {
+            "type": "number"
+          },
+          "interceptions": {
+            "type": "number"
+          },
+          "rushing_yards": {
+            "type": "number"
+          },
+          "rushing_touchdowns": {
+            "type": "number"
+          },
+          "receiving_yards": {
+            "type": "number"
+          },
+          "receiving_touchdowns": {
+            "type": "number"
+          },
+          "receptions": {
             "type": "number"
           },
           "performance_rating": {
@@ -128,6 +191,9 @@
       "type": "object",
       "properties": {
         "over_under_points": {
+          "type": "number"
+        },
+        "over_under_yards": {
           "type": "number"
         },
         "probability_to_score": {

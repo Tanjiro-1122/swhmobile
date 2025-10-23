@@ -15,11 +15,11 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
   };
 
   const popularPlayers = [
+    "Patrick Mahomes",
+    "Christian McCaffrey",
     "LeBron James",
     "Stephen Curry",
-    "Cristiano Ronaldo",
-    "Lionel Messi",
-    "Kevin Durant"
+    "Tyreek Hill"
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for any player (e.g., 'LeBron James', 'Cristiano Ronaldo')"
+            placeholder="Search any player: 'Patrick Mahomes', 'LeBron James', 'Cristiano Ronaldo'..."
             className="pl-12 pr-32 h-14 text-lg border-2 focus:border-purple-500 transition-all"
             disabled={isSearching}
           />

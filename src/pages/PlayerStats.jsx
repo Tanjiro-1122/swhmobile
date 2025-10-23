@@ -67,16 +67,16 @@ SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
 CRITICAL: You have internet access. You MUST search these sources:
 1. StatMuse.com - Primary source for all statistics
-2. Basketball-Reference.com (for NBA players)
-3. Pro-Football-Reference.com (for NFL players)
+2. Pro-Football-Reference.com (for NFL players)
+3. Basketball-Reference.com (for NBA players)
 4. ESPN.com player pages
 5. Official league websites (NBA.com, NFL.com, etc.)
 6. Team official websites for injury reports
 
 STEP-BY-STEP PROCESS:
-1. Identify the player's full name, current team, and sport
+1. Identify the player's sport FIRST (Basketball/Football/Soccer)
 2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
-3. Get season averages from StatMuse or Basketball-Reference
+3. Get season averages from StatMuse or official reference sites
 4. Get last 5-10 game logs with specific dates and stats
 5. Check official injury report for current status
 6. Find next scheduled game for player's team
@@ -84,21 +84,34 @@ STEP-BY-STEP PROCESS:
 REQUIRED DATA TO EXTRACT:
 
 1. PLAYER INFO (verify from official team roster):
-   - Full legal name (e.g., "Stephen Wardell Curry II" for Steph Curry)
+   - Full legal name
    - Current team (verify from team website)
    - Position
    - Sport and league
 
-2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
-   For Basketball: PPG, APG, RPG, FG%, 3P%, FT%, SPG, BPG, MPG
-   For Soccer: Goals/90min, Assists/90min, Shots, Passes, Tackles
-   For Football: Completions, Yards, TDs, INTs (QB) or Carries, Yards, TDs (RB)
+2. SEASON AVERAGES - SPORT-SPECIFIC (from StatMuse ${new Date().getFullYear()} season):
+   
+   For FOOTBALL/NFL:
+   - IF QUARTERBACK: Passing Yards/Game, Pass TDs/Game, INTs/Game, Completion %, QB Rating
+   - IF RUNNING BACK: Rushing Yards/Game, Rush TDs/Game, Carries/Game, Yards/Carry, Receptions/Game, Receiving Yards/Game
+   - IF WIDE RECEIVER/TIGHT END: Receptions/Game, Receiving Yards/Game, Rec TDs/Game, Targets/Game, Yards/Reception
+   
+   For BASKETBALL/NBA:
+   - Points/Game, Assists/Game, Rebounds/Game, FG%, 3P%, FT%, Steals/Game, Blocks/Game, Minutes/Game
+   
+   For SOCCER:
+   - Goals/90min, Assists/90min, Shots/Game, Passes/Game, Tackles/Game, Pass Accuracy%
 
 3. RECENT GAMES (last 5-10 games with ACTUAL data from game logs):
    For EACH game provide:
    - Exact date (MM/DD/YYYY)
    - Opponent team name
-   - Player's actual stats (points, rebounds, assists for basketball)
+   - Player's actual stats (sport-specific):
+     * Football QB: Passing yards, TDs, INTs
+     * Football RB: Rushing yards, TDs, Receptions, Rec yards
+     * Football WR/TE: Receptions, Rec yards, TDs
+     * Basketball: Points, Rebounds, Assists
+     * Soccer: Goals, Assists, Shots
    - Performance rating: "Excellent" (>season avg), "Good" (near avg), "Below" (<avg)
 
 4. INJURY STATUS (check TODAY'S injury report):
@@ -112,24 +125,34 @@ REQUIRED DATA TO EXTRACT:
    - Home or away
    - Predicted performance based on season average ± 20%
 
-6. BETTING INSIGHTS:
-   - Over/Under line: Season PPG ± 2-3 points
-   - Probability to score: Based on games played percentage
-   - Hot streak: true if last 3 games > season average
-   - Consistency: "High" if stdev <5, "Medium" 5-8, "Low" >8
+6. BETTING INSIGHTS (sport-specific):
+   For Football:
+   - Over/Under passing/rushing/receiving yards
+   - Probability to score TD
+   - Anytime TD scorer odds
+   
+   For Basketball:
+   - Over/Under points
+   - Probability to score (games with points %)
+   - PTS+REB+AST combined line
+   
+   For Soccer:
+   - Anytime goal scorer probability
+   - Shots on target over/under
 
 7. ANALYSIS:
-   - Strengths: 3-5 statistical strengths (e.g., "Elite 3-point shooter at 42%")
-   - Weaknesses: 2-3 areas (e.g., "Below average free throw percentage")
+   - Strengths: 3-5 statistical strengths (sport-specific)
+   - Weaknesses: 2-3 areas (sport-specific)
    - Career highlights: Major awards, records, achievements
 
 VALIDATION:
 - All stats must be from ${new Date().getFullYear()} season
 - Recent games must have actual dates and scores
+- Stats must match the player's position and sport
 - If player is injured/not playing, reflect in injury_status
 - If you can't find the player, say so in the response
 
-FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
+FORMAT: Return valid JSON with ALL fields populated. Use sport-appropriate stat fields.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -154,7 +177,20 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
                 shots_per_game: { type: "number" },
                 passes_per_game: { type: "number" },
                 tackles_per_game: { type: "number" },
-                minutes_per_game: { type: "number" }
+                minutes_per_game: { type: "number" },
+                passing_yards_per_game: { type: "number" },
+                passing_touchdowns_per_game: { type: "number" },
+                interceptions_per_game: { type: "number" },
+                completion_percentage: { type: "number" },
+                rushing_yards_per_game: { type: "number" },
+                rushing_touchdowns_per_game: { type: "number" },
+                carries_per_game: { type: "number" },
+                receiving_yards_per_game: { type: "number" },
+                receiving_touchdowns_per_game: { type: "number" },
+                receptions_per_game: { type: "number" },
+                targets_per_game: { type: "number" },
+                yards_per_carry: { type: "number" },
+                yards_per_reception: { type: "number" }
               }
             },
             recent_form: {
@@ -168,6 +204,14 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
                   assists: { type: "number" },
                   rebounds: { type: "number" },
                   goals: { type: "number" },
+                  passing_yards: { type: "number" },
+                  passing_touchdowns: { type: "number" },
+                  interceptions: { type: "number" },
+                  rushing_yards: { type: "number" },
+                  rushing_touchdowns: { type: "number" },
+                  receiving_yards: { type: "number" },
+                  receiving_touchdowns: { type: "number" },
+                  receptions: { type: "number" },
                   performance_rating: { type: "string" }
                 }
               }
@@ -190,6 +234,7 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
               type: "object",
               properties: {
                 over_under_points: { type: "number" },
+                over_under_yards: { type: "number" },
                 probability_to_score: { type: "number" },
                 hot_streak: { type: "boolean" },
                 consistency_rating: { type: "string" }
@@ -223,9 +268,9 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
       let errorMessage = "Failed to fetch player statistics. ";
       
       if (err.message?.includes("Invalid response")) {
-        errorMessage += "Couldn't find that player. Try:\n• Using the player's full name (e.g., 'LeBron James')\n• Including the sport (e.g., 'Steph Curry NBA')\n• Checking the spelling";
+        errorMessage += "Couldn't find that player. Try:\n• Using the player's full name (e.g., 'Patrick Mahomes')\n• Including the sport (e.g., 'Christian McCaffrey NFL')\n• Checking the spelling";
       } else {
-        errorMessage += "Please try:\n• Full name (e.g., 'Cristiano Ronaldo')\n• Adding sport/league (e.g., 'Tom Brady NFL')\n• Current active players only";
+        errorMessage += "Please try:\n• Full name (e.g., 'Josh Allen NFL')\n• Adding sport/league (e.g., 'Tyreek Hill NFL')\n• Current active players only";
       }
       
       setError(errorMessage);

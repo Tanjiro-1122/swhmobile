@@ -14,7 +14,11 @@ import {
   ThumbsUp,
   ThumbsDown,
   Trash2,
-  Flame
+  Flame,
+  Dribbble, // Assuming Dribbble could be used for basketball, passing, or general sport
+  Footprints, // Assuming Footprints for rushing or movement
+  Goal, // Assuming Goal for soccer goals or football touchdowns
+  Handshake // Assuming Handshake for assists
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -35,14 +39,27 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
   const getStatIcon = (label) => {
     const icons = {
       points: Target,
-      assists: Activity,
-      rebounds: TrendingUp,
-      goals: Target,
+      assists: Handshake, // Changed from Activity for more specificity
+      rebounds: Dribbble, // Changed from TrendingUp for more specificity
+      goals: Goal, // Changed from Target for more specificity
       shots: Target,
-      passes: Activity,
-      tackles: Activity,
-      // For combined stat "PTS+REB+AST", it will match "points" and use Target, which is acceptable.
-      // If a specific icon is desired for combined stats, it could be added here.
+      passes: Activity, // Kept as Activity, Dribbble could also work
+      tackles: Footprints, // Changed from Activity for more specificity
+      "pass yds": Target, // For passing yards
+      "pass tds": Goal, // For passing touchdowns
+      "rush yds": Footprints, // For rushing yards
+      "rush tds": Goal, // For rushing touchdowns
+      "rec yds": Activity, // For receiving yards
+      "rec tds": Goal, // For receiving touchdowns
+      carries: Footprints,
+      receptions: Activity,
+      interceptions: AlertCircle,
+      "comp %": Dribbble, // For completion percentage
+      "3p%": Dribbble, // For 3-point percentage
+      "fg%": Dribbble, // For field goal percentage
+      steals: Zap,
+      blocks: Dribbble,
+      minutes: Calendar,
       combined: TrendingUp // Using TrendingUp for combined stats
     };
     
@@ -51,7 +68,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         return icons[key];
       }
     }
-    return Activity;
+    return Activity; // Default icon if no specific match
   };
 
   const renderSeasonAverages = () => {
@@ -59,31 +76,80 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     
     const stats = [];
     const averages = player.season_averages;
+    const sport = player.sport?.toLowerCase() || '';
+    const position = player.position?.toLowerCase() || '';
     
-    // Calculate combined stat for basketball
-    let combinedStat = null;
-    if (player.sport?.toLowerCase().includes('basketball') || player.sport?.toLowerCase().includes('nba')) {
+    // FOOTBALL STATS (NFL)
+    if (sport.includes('football') || sport.includes('nfl')) {
+      // Quarterback Stats
+      if (position.includes('qb') || position.includes('quarterback')) {
+        if (averages.passing_yards_per_game != null) stats.push({ label: "Pass Yds/G", value: averages.passing_yards_per_game.toFixed(1), key: "pass_yds", highlight: true });
+        if (averages.passing_touchdowns_per_game != null) stats.push({ label: "Pass TDs/G", value: averages.passing_touchdowns_per_game.toFixed(1), key: "pass_tds" });
+        if (averages.interceptions_per_game != null) stats.push({ label: "INTs/G", value: averages.interceptions_per_game.toFixed(1), key: "ints" });
+        if (averages.completion_percentage != null) stats.push({ label: "Comp %", value: `${averages.completion_percentage.toFixed(1)}%`, key: "comp" });
+        if (averages.rushing_yards_per_game != null) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds" });
+      }
+      // Running Back Stats
+      else if (position.includes('rb') || position.includes('running')) {
+        if (averages.rushing_yards_per_game != null) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds", highlight: true });
+        if (averages.rushing_touchdowns_per_game != null) stats.push({ label: "Rush TDs/G", value: averages.rushing_touchdowns_per_game.toFixed(1), key: "rush_tds" });
+        if (averages.carries_per_game != null) stats.push({ label: "Carries/G", value: averages.carries_per_game.toFixed(1), key: "carries" });
+        if (averages.yards_per_carry != null) stats.push({ label: "Yds/Carry", value: averages.yards_per_carry.toFixed(1), key: "ypc" });
+        if (averages.receptions_per_game != null) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
+        if (averages.receiving_yards_per_game != null) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds" });
+      }
+      // Wide Receiver / Tight End Stats
+      else if (position.includes('wr') || position.includes('te') || position.includes('receiver') || position.includes('tight')) {
+        if (averages.receptions_per_game != null) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
+        if (averages.receiving_yards_per_game != null) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds", highlight: true });
+        if (averages.receiving_touchdowns_per_game != null) stats.push({ label: "Rec TDs/G", value: averages.receiving_touchdowns_per_game.toFixed(1), key: "rec_tds" });
+        if (averages.targets_per_game != null) stats.push({ label: "Targets/G", value: averages.targets_per_game.toFixed(1), key: "targets" });
+        if (averages.yards_per_reception != null) stats.push({ label: "Yds/Rec", value: averages.yards_per_reception.toFixed(1), key: "ypr" });
+      }
+      // General football stats (if no specific position match or for defensive/kicking if added later)
+      // This part can be expanded for other positions or general team stats if needed
+    }
+    // BASKETBALL STATS (NBA)
+    else if (sport.includes('basketball') || sport.includes('nba')) {
       const points = averages.points_per_game || 0;
       const rebounds = averages.rebounds_per_game || 0;
       const assists = averages.assists_per_game || 0;
+      let combinedStat = null;
       if (points || rebounds || assists) {
         combinedStat = points + rebounds + assists;
       }
+      
+      if (averages.points_per_game != null) stats.push({ label: "Points", value: averages.points_per_game.toFixed(1), key: "points" });
+      if (averages.assists_per_game != null) stats.push({ label: "Assists", value: averages.assists_per_game.toFixed(1), key: "assists" });
+      if (averages.rebounds_per_game != null) stats.push({ label: "Rebounds", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+      if (combinedStat != null) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
+      if (averages.steals_per_game != null) stats.push({ label: "Steals", value: averages.steals_per_game.toFixed(1), key: "steals" });
+      if (averages.blocks_per_game != null) stats.push({ label: "Blocks", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
+      if (averages.field_goal_percentage != null) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
+      if (averages.three_point_percentage != null) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
+      if (averages.minutes_per_game != null) stats.push({ label: "Minutes", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
     }
-    
-    if (averages.points_per_game) stats.push({ label: "Points", value: averages.points_per_game.toFixed(1), key: "points" });
-    if (averages.assists_per_game) stats.push({ label: "Assists", value: averages.assists_per_game.toFixed(1), key: "assists" });
-    if (averages.rebounds_per_game) stats.push({ label: "Rebounds", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
-    if (combinedStat) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
-    if (averages.goals_per_game) stats.push({ label: "Goals", value: averages.goals_per_game.toFixed(2), key: "goals" });
-    if (averages.steals_per_game) stats.push({ label: "Steals", value: averages.steals_per_game.toFixed(1), key: "steals" });
-    if (averages.blocks_per_game) stats.push({ label: "Blocks", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
-    if (averages.field_goal_percentage) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
-    if (averages.three_point_percentage) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
-    if (averages.shots_per_game) stats.push({ label: "Shots", value: averages.shots_per_game.toFixed(1), key: "shots" });
-    if (averages.passes_per_game) stats.push({ label: "Passes", value: averages.passes_per_game.toFixed(1), key: "passes" });
-    if (averages.tackles_per_game) stats.push({ label: "Tackles", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
-    if (averages.minutes_per_game) stats.push({ label: "Minutes", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+    // SOCCER STATS (Football/Soccer - non-American)
+    else if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
+      if (averages.goals_per_game != null) stats.push({ label: "Goals", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
+      if (averages.shots_per_game != null) stats.push({ label: "Shots", value: averages.shots_per_game.toFixed(1), key: "shots" });
+      if (averages.passes_per_game != null) stats.push({ label: "Passes", value: averages.passes_per_game.toFixed(1), key: "passes" });
+      if (averages.tackles_per_game != null) stats.push({ label: "Tackles", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
+      // Goalkeeper stats could be added here if applicable (e.g., saves_per_game)
+    }
+    // Default/Generic stats - if no sport-specific match, or for sports not yet explicitly handled
+    if (stats.length === 0) {
+      if (averages.points_per_game != null) stats.push({ label: "Points", value: averages.points_per_game.toFixed(1), key: "points" });
+      if (averages.assists_per_game != null) stats.push({ label: "Assists", value: averages.assists_per_game.toFixed(1), key: "assists" });
+      if (averages.rebounds_per_game != null) stats.push({ label: "Rebounds", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+      if (averages.goals_per_game != null) stats.push({ label: "Goals", value: averages.goals_per_game.toFixed(2), key: "goals" });
+      if (averages.steals_per_game != null) stats.push({ label: "Steals", value: averages.steals_per_game.toFixed(1), key: "steals" });
+      if (averages.blocks_per_game != null) stats.push({ label: "Blocks", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
+      if (averages.shots_per_game != null) stats.push({ label: "Shots", value: averages.shots_per_game.toFixed(1), key: "shots" });
+      if (averages.passes_per_game != null) stats.push({ label: "Passes", value: averages.passes_per_game.toFixed(1), key: "passes" });
+      if (averages.tackles_per_game != null) stats.push({ label: "Tackles", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
+      if (averages.minutes_per_game != null) stats.push({ label: "Minutes", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+    }
     
     return stats;
   };
@@ -185,15 +251,23 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
               <CardContent className="space-y-3">
                 {player.betting_insights.over_under_points && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Over/Under Line:</span>
+                    <span className="text-gray-700">Over/Under Points Line:</span>
                     <span className="text-xl font-bold text-green-600">
                       {player.betting_insights.over_under_points}
                     </span>
                   </div>
                 )}
+                {player.betting_insights.over_under_yards && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Over/Under Yards Line:</span>
+                    <span className="text-xl font-bold text-green-600">
+                      {player.betting_insights.over_under_yards}
+                    </span>
+                  </div>
+                )}
                 {player.betting_insights.probability_to_score && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Probability to Score:</span>
+                    <span className="text-gray-700">Probability to Score TD:</span>
                     <span className="text-xl font-bold text-green-600">
                       {player.betting_insights.probability_to_score}%
                     </span>
