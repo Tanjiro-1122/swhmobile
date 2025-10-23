@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,48 +59,77 @@ export default function TeamStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this team: "${query}"
+        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
 
+TEAM SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-SEASON: ${new Date().getFullYear()}
+SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-Provide comprehensive team statistics:
+CRITICAL: You have internet access. You MUST search these sources:
+1. StatMuse.com - Primary source for team statistics
+2. ESPN.com team pages
+3. Official league websites (NBA.com, NFL.com, PremierLeague.com)
+4. Basketball-Reference.com or Pro-Football-Reference.com
+5. Team official websites for roster and injury reports
 
-1. TEAM INFO:
-- Full official name (from StatMuse/official league)
-- Sport, league
-- Current season record (W-L-D with exact numbers)
-- Win percentage
-- Recent form (last 5 games: W-W-L-W-D format)
+STEP-BY-STEP PROCESS:
+1. Identify the team's full official name and league
+2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
+3. Get current season record (wins, losses, draws)
+4. Get season averages (PPG, defensive stats, etc.)
+5. Get last 5 game results with dates, opponents, scores
+6. Check official injury report from team website
+7. Find next scheduled game
 
-2. SEASON AVERAGES (${new Date().getFullYear()} season):
-For Basketball: PPG, Opp PPG, FG%, 3P%, APG, RPG, Turnovers
-For Soccer: Goals/game, Goals allowed/game, Possession%, Shots/game, Passing accuracy
-Source from StatMuse and official league stats
+REQUIRED DATA TO EXTRACT:
 
-3. LAST 5 GAMES:
-Get ACTUAL game results from StatMuse:
-- Date, opponent, result (W/L/D), score, home/away
-- Key stats for each game
+1. TEAM INFO (verify from official league):
+   - Full official name (e.g., "Los Angeles Lakers" not just "Lakers")
+   - Sport and league
+   - Current season record (W-L-D with exact numbers from standings)
+   - Win percentage
+   - Recent form: last 5 games in W/L format (e.g., "W-W-L-W-L")
 
-4. KEY PLAYERS (5-7 current roster):
-- Verify all players are active on the team
-- Include names and positions
+2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
+   For Basketball: PPG, Opp PPG, FG%, 3P%, APG, RPG, TO/game
+   For Soccer: Goals/game, Goals allowed, Possession%, Shots, Passing accuracy
+   For Football: Points/game, Points allowed, Total yards, Turnovers
 
-5. INJURIES:
-Check official team injury reports from TODAY
-- Player name, injury, status (Out/Day-to-Day/Probable)
+3. LAST 5 GAMES (from official game logs):
+   For EACH game provide:
+   - Exact date (MM/DD/YYYY)
+   - Opponent (full team name)
+   - Result: "W" or "L" or "D"
+   - Score (e.g., "115-108")
+   - Home or away
+   - Key stats from that specific game
 
-6. NEXT GAME:
-- Opponent, date, location
-- Win/Loss prediction with reasoning
+4. KEY PLAYERS (5-7 from current roster):
+   - Search team's official roster
+   - List player names and positions
+   - Verify they're currently active
+
+5. INJURIES (check TODAY'S injury report):
+   - Search "[team name] injury report [today's date]"
+   - For each injured player: name, injury, status (Out/Day-to-Day/Questionable)
+
+6. NEXT GAME (from team schedule):
+   - Opponent
+   - Date and time
+   - Home or away
+   - Win/loss prediction with brief reasoning
 
 7. ANALYSIS:
-- Top 3-5 team strengths
-- 2-3 weaknesses
-- Based on statistical rankings
+   - Strengths: 3-5 statistical strengths (e.g., "#1 ranked defense allowing 98 PPG")
+   - Weaknesses: 2-3 statistical weaknesses (e.g., "28th in 3-point shooting at 32%")
 
-Use StatMuse, ESPN, and official sources. All stats must be current ${new Date().getFullYear()} season.`,
+VALIDATION:
+- All stats must be from ${new Date().getFullYear()} season
+- Last 5 games must have actual dates and scores from game logs
+- Win-loss record must match current standings
+- If team not found, indicate in the response
+
+FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -188,7 +218,7 @@ Use StatMuse, ESPN, and official sources. All stats must be current ${new Date()
         }
       });
 
-      console.log("Team Stats Result:", result);
+      console.log("✅ Team Stats Result:", result);
 
       if (!result || !result.team_name || !result.sport) {
         throw new Error("Invalid response - missing required team data");
@@ -199,13 +229,13 @@ Use StatMuse, ESPN, and official sources. All stats must be current ${new Date()
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       
     } catch (err) {
-      console.error("Team Stats Error:", err);
+      console.error("❌ Team Stats Error:", err);
       let errorMessage = "Failed to fetch team statistics. ";
       
       if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't find that team. Try using the full team name (e.g., 'Los Angeles Lakers', 'Manchester United').";
+        errorMessage += "Couldn't find that team. Try:\n• Using the full official name (e.g., 'Los Angeles Lakers')\n• Adding the league (e.g., 'Manchester United Premier League')\n• Checking the spelling";
       } else {
-        errorMessage += "Please try with a specific team name (e.g., 'Golden State Warriors', 'Real Madrid').";
+        errorMessage += "Please try:\n• Full team name (e.g., 'Golden State Warriors')\n• Including league (e.g., 'Real Madrid La Liga')\n• Current professional teams only";
       }
       
       setError(errorMessage);

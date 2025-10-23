@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -59,45 +60,76 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this sports match query: "${query}"
+        prompt: `You are a sports analytics AI with INTERNET ACCESS. You MUST use real-time data from the web.
 
-TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+SEARCH QUERY: "${query}"
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
-Provide a comprehensive match analysis with:
+CRITICAL: You have internet access via the add_context_from_internet parameter. You MUST:
+1. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
+2. Check ESPN.com for match schedules and team records
+3. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
+4. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
 
-1. MATCH DETAILS:
-- Identify the sport, league, home team, away team
-- Match date/time (must be future or today)
-- Use official team names from StatMuse or ESPN
+TASK: Find the specific match the user is asking about and provide:
 
-2. WIN PROBABILITIES:
-- Calculate realistic win probabilities based on:
-  * Current season records from StatMuse
-  * Recent form (last 5 games)
-  * Head-to-head history
-  * Home/away advantage
-  * Current injuries from official reports
-- Probabilities must total 100% (home + away + draw if applicable)
+1. MATCH IDENTIFICATION:
+   - Sport (Basketball/Soccer/Football/etc)
+   - League (NBA/Premier League/NFL/etc)
+   - Home team (use OFFICIAL full name from league website)
+   - Away team (use OFFICIAL full name from league website)
+   - Match date/time (search for scheduled date - could be today, tomorrow, or this week)
 
-3. KEY FACTORS (3-5 bullet points):
-- Statistical evidence supporting the prediction
-- Recent performance trends
-- Injury impacts
-- Matchup advantages
+2. WIN PROBABILITIES (must total 100%):
+   Home Win: Calculate based on:
+   - Current season records (W-L from official stats)
+   - Last 5 games results for both teams
+   - Head-to-head history (last 3-5 meetings)
+   - Home court/field advantage (home team win % at home)
+   - Current injuries (search "[team name] injury report")
+   
+   Away Win: Calculate similarly
+   Draw: If applicable (soccer/hockey), otherwise 0
 
-4. KEY PLAYERS (3-4 per team):
-For each player include:
-- Name, team, position
-- Season averages (PPG, APG, RPG for basketball; Goals, Assists for soccer)
-- Predicted performance for this game
-- Current injury status
+3. KEY FACTORS (4-5 specific points with stats):
+   Example format:
+   - "Home team won 8 of last 10 games (80% win rate)"
+   - "Away team averaging 115 PPG vs opponent allowing 108 PPG"
+   - "Home team's star player out with injury"
+   - "Away team 2-6 on the road this season"
 
-5. BETTING MARKETS:
-- Over/Under line (realistic based on team averages)
-- Both teams to score probability (if soccer/hockey)
-- Score prediction
+4. ANALYSIS SUMMARY (2-3 sentences):
+   Explain your prediction based on the statistics you found
 
-Use StatMuse, ESPN, and official league sources. All statistics must be current ${new Date().getFullYear()} season.`,
+5. CONFIDENCE LEVEL:
+   - "high" if data strongly supports one outcome (>70% probability)
+   - "medium" if competitive match (50-70%)
+   - "low" if insufficient data or unpredictable
+
+6. KEY PLAYERS (3-4 per team):
+   For EACH player provide:
+   - Name (verify they're on current roster via team website)
+   - Team and position
+   - Season averages (PPG/APG/RPG from StatMuse or Basketball-Reference)
+   - Predicted stats for THIS game (within ±30% of season average)
+   - Recent form: "Hot" if averaging above normal last 3 games, "Cold" if below
+   - Injury status: Check today's injury report
+
+7. BETTING MARKETS:
+   Over/Under:
+   - Line: Average both teams' season PPG
+   - Probabilities: 50/50 split or adjust based on pace
+   
+   Both Teams Score (if soccer): Based on scoring rates
+   First to Score: Slight favor to home team (55/45)
+
+VALIDATION RULES:
+- Team names must match official league rosters
+- All statistics must be from ${new Date().getFullYear()} season
+- Win probabilities must be realistic (no team should have >95% or <5%)
+- If you can't find the match, say "Unable to find scheduled match" in analysis_summary
+
+FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -172,14 +204,18 @@ Use StatMuse, ESPN, and official league sources. All statistics must be current 
               }
             }
           },
-          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability"]
+          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "analysis_summary"]
         }
       });
 
-      console.log("Match Analysis Result:", result);
+      console.log("✅ Match Analysis Result:", result);
 
-      if (!result || !result.sport || !result.home_team) {
-        throw new Error("Invalid response from AI - missing required fields");
+      if (!result || !result.sport || !result.home_team || !result.away_team) {
+        throw new Error("Invalid response - missing required match data");
+      }
+
+      if (result.analysis_summary?.includes("Unable to find")) {
+        throw new Error("Match not found - try a different date or check team names");
       }
 
       await base44.entities.Match.create(result);
@@ -187,15 +223,15 @@ Use StatMuse, ESPN, and official league sources. All statistics must be current 
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       
     } catch (err) {
-      console.error("Match Analysis Error:", err);
+      console.error("❌ Match Analysis Error:", err);
       let errorMessage = "Failed to analyze the match. ";
       
-      if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't understand your query. Try being more specific (e.g., 'Lakers vs Celtics tonight').";
-      } else if (err.message?.includes("network") || err.message?.includes("fetch")) {
-        errorMessage += "Network error. Please check your connection and try again.";
+      if (err.message?.includes("Match not found")) {
+        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers vs Celtics today')\n• Using full team names\n• Checking if the game is scheduled";
+      } else if (err.message?.includes("Invalid response")) {
+        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'Premier League matches this weekend'\n• A specific team matchup";
       } else {
-        errorMessage += "Please try with a more specific match query (e.g., 'Manchester United vs Liverpool', 'Lakers vs Warriors today').";
+        errorMessage += "Please try:\n• Using official team names (e.g., 'Los Angeles Lakers')\n• Adding 'today' or 'tonight'\n• Being more specific about the league";
       }
       
       setError(errorMessage);

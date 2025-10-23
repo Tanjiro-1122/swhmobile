@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,48 +59,77 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this player: "${query}"
+        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
 
+PLAYER SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-SEASON: ${new Date().getFullYear()}
+SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-Provide comprehensive player statistics:
+CRITICAL: You have internet access. You MUST search these sources:
+1. StatMuse.com - Primary source for all statistics
+2. Basketball-Reference.com (for NBA players)
+3. Pro-Football-Reference.com (for NFL players)
+4. ESPN.com player pages
+5. Official league websites (NBA.com, NFL.com, etc.)
+6. Team official websites for injury reports
 
-1. PLAYER INFO:
-- Full name (official spelling from StatMuse)
-- Current team, position, league
-- Verify player is active this season
+STEP-BY-STEP PROCESS:
+1. Identify the player's full name, current team, and sport
+2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
+3. Get season averages from StatMuse or Basketball-Reference
+4. Get last 5-10 game logs with specific dates and stats
+5. Check official injury report for current status
+6. Find next scheduled game for player's team
 
-2. SEASON AVERAGES (${new Date().getFullYear()} season):
-For Basketball: PPG, APG, RPG, FG%, 3P%, FT%, Steals, Blocks, Minutes
-For Soccer: Goals/game, Assists/game, Shots, Passes, Tackles, Minutes
-Source from StatMuse and official league stats
+REQUIRED DATA TO EXTRACT:
 
-3. RECENT GAMES (last 5-10 games):
-Get ACTUAL game-by-game stats from StatMuse:
-- Date, opponent, points/goals, assists, rebounds (if basketball)
-- Performance rating
-FOR BASKETBALL: Must include points, rebounds, AND assists for each game
+1. PLAYER INFO (verify from official team roster):
+   - Full legal name (e.g., "Stephen Wardell Curry II" for Steph Curry)
+   - Current team (verify from team website)
+   - Position
+   - Sport and league
 
-4. INJURY STATUS:
-Check official team injury reports from TODAY
+2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
+   For Basketball: PPG, APG, RPG, FG%, 3P%, FT%, SPG, BPG, MPG
+   For Soccer: Goals/90min, Assists/90min, Shots, Passes, Tackles
+   For Football: Completions, Yards, TDs, INTs (QB) or Carries, Yards, TDs (RB)
 
-5. NEXT GAME:
-- Opponent, date, location
-- Predicted performance based on season averages and recent form
+3. RECENT GAMES (last 5-10 games with ACTUAL data from game logs):
+   For EACH game provide:
+   - Exact date (MM/DD/YYYY)
+   - Opponent team name
+   - Player's actual stats (points, rebounds, assists for basketball)
+   - Performance rating: "Excellent" (>season avg), "Good" (near avg), "Below" (<avg)
+
+4. INJURY STATUS (check TODAY'S injury report):
+   - Search "[player name] injury report [today's date]"
+   - Status: "Healthy", "Day-to-Day", "Out", "Questionable", "Probable"
+   - If injured, specify injury and timeline
+
+5. NEXT GAME (search team schedule):
+   - Opponent
+   - Date and time
+   - Home or away
+   - Predicted performance based on season average ± 20%
 
 6. BETTING INSIGHTS:
-- Over/Under line
-- Probability to score
-- Hot streak status
-- Consistency rating
+   - Over/Under line: Season PPG ± 2-3 points
+   - Probability to score: Based on games played percentage
+   - Hot streak: true if last 3 games > season average
+   - Consistency: "High" if stdev <5, "Medium" 5-8, "Low" >8
 
 7. ANALYSIS:
-- Top 3-5 strengths
-- 2-3 weaknesses
-- Career highlights
+   - Strengths: 3-5 statistical strengths (e.g., "Elite 3-point shooter at 42%")
+   - Weaknesses: 2-3 areas (e.g., "Below average free throw percentage")
+   - Career highlights: Major awards, records, achievements
 
-Use StatMuse, ESPN, and official sources. All stats must be current ${new Date().getFullYear()} season.`,
+VALIDATION:
+- All stats must be from ${new Date().getFullYear()} season
+- Recent games must have actual dates and scores
+- If player is injured/not playing, reflect in injury_status
+- If you can't find the player, say so in the response
+
+FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -178,9 +208,9 @@ Use StatMuse, ESPN, and official sources. All stats must be current ${new Date()
         }
       });
 
-      console.log("Player Stats Result:", result);
+      console.log("✅ Player Stats Result:", result);
 
-      if (!result || !result.player_name || !result.sport) {
+      if (!result || !result.player_name || !result.sport || !result.team) {
         throw new Error("Invalid response - missing required player data");
       }
 
@@ -189,13 +219,13 @@ Use StatMuse, ESPN, and official sources. All stats must be current ${new Date()
       queryClient.invalidateQueries({ queryKey: ['players'] });
       
     } catch (err) {
-      console.error("Player Stats Error:", err);
+      console.error("❌ Player Stats Error:", err);
       let errorMessage = "Failed to fetch player statistics. ";
       
       if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't find that player. Try using the player's full name (e.g., 'LeBron James', 'Cristiano Ronaldo').";
+        errorMessage += "Couldn't find that player. Try:\n• Using the player's full name (e.g., 'LeBron James')\n• Including the sport (e.g., 'Steph Curry NBA')\n• Checking the spelling";
       } else {
-        errorMessage += "Please try with a specific player name (e.g., 'Stephen Curry', 'Lionel Messi').";
+        errorMessage += "Please try:\n• Full name (e.g., 'Cristiano Ronaldo')\n• Adding sport/league (e.g., 'Tom Brady NFL')\n• Current active players only";
       }
       
       setError(errorMessage);
@@ -245,7 +275,7 @@ Use StatMuse, ESPN, and official sources. All stats must be current ${new Date()
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-6 whitespace-pre-line">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
