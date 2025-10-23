@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,17 +52,21 @@ export default function PlayerStats() {
            - Minutes per game
            - All other relevant stats for the sport
         
-        3. RECENT FORM:
-           - Last 5-10 games with specific stats for each game
-           - Include date, opponent, points/goals, assists, rebounds
-           - Performance rating for each game
+        3. LAST 5-10 GAMES (CRITICAL - Must include full details):
+           - Date of each game
+           - Opponent name
+           - Points/goals scored
+           - Assists
+           - Rebounds (if applicable)
+           - Performance rating (Excellent/Good/Average/Poor)
+           - Be specific with actual stats from each game
         
         4. INJURY STATUS:
            - Current injury status (Healthy, Questionable, Out, etc.)
         
         5. NEXT GAME:
            - Opponent, date, location
-           - Predicted performance for next game
+           - Predicted performance for next game with specific stat predictions
         
         6. BETTING INSIGHTS:
            - Over/under points line
@@ -76,7 +81,7 @@ export default function PlayerStats() {
         8. CAREER HIGHLIGHTS:
            - Notable achievements, awards, records
         
-        Use current real-time data and statistics. Be specific and accurate.`,
+        Use current real-time data and statistics. Be specific and accurate. MUST include last 5-10 games with complete details.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

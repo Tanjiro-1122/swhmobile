@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import PlayerRecentGames from "./PlayerRecentGames";
 
 export default function PlayerStatsDisplay({ player, onDelete, index }) {
   const formatDate = (dateString, formatString) => {
@@ -187,55 +189,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </Card>
           )}
 
+          {/* Recent Form - Enhanced */}
           {player.recent_form && player.recent_form.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-blue-600" />
-                Recent Games
-              </h3>
-              <div className="space-y-2">
-                {player.recent_form.map((game, idx) => {
-                  const formattedDate = formatDate(game.date, "MMM d, yyyy");
-                  return (
-                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-semibold">vs {game.opponent}</div>
-                          {formattedDate && (
-                            <div className="text-xs text-gray-500">{formattedDate}</div>
-                          )}
-                        </div>
-                        {game.performance_rating && (
-                          <Badge variant="outline">{game.performance_rating}</Badge>
-                        )}
-                      </div>
-                      <div className="flex gap-4 text-sm">
-                        {game.points !== undefined && (
-                          <span className="text-gray-700">
-                            <strong>{game.points}</strong> pts
-                          </span>
-                        )}
-                        {game.assists !== undefined && (
-                          <span className="text-gray-700">
-                            <strong>{game.assists}</strong> ast
-                          </span>
-                        )}
-                        {game.rebounds !== undefined && (
-                          <span className="text-gray-700">
-                            <strong>{game.rebounds}</strong> reb
-                          </span>
-                        )}
-                        {game.goals !== undefined && (
-                          <span className="text-gray-700">
-                            <strong>{game.goals}</strong> goals
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <PlayerRecentGames recentForm={player.recent_form} />
           )}
 
           {player.next_game && (

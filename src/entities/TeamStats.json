@@ -1,0 +1,172 @@
+{
+  "name": "TeamStats",
+  "type": "object",
+  "properties": {
+    "team_name": {
+      "type": "string",
+      "description": "Name of the team"
+    },
+    "sport": {
+      "type": "string",
+      "description": "Sport the team plays"
+    },
+    "league": {
+      "type": "string",
+      "description": "League or competition"
+    },
+    "current_record": {
+      "type": "object",
+      "properties": {
+        "wins": {
+          "type": "number"
+        },
+        "losses": {
+          "type": "number"
+        },
+        "draws": {
+          "type": "number"
+        },
+        "win_percentage": {
+          "type": "number"
+        }
+      }
+    },
+    "season_averages": {
+      "type": "object",
+      "properties": {
+        "points_per_game": {
+          "type": "number"
+        },
+        "points_allowed_per_game": {
+          "type": "number"
+        },
+        "goals_per_game": {
+          "type": "number"
+        },
+        "goals_allowed_per_game": {
+          "type": "number"
+        },
+        "possession_percentage": {
+          "type": "number"
+        },
+        "shots_per_game": {
+          "type": "number"
+        },
+        "shots_allowed_per_game": {
+          "type": "number"
+        },
+        "passing_accuracy": {
+          "type": "number"
+        },
+        "field_goal_percentage": {
+          "type": "number"
+        },
+        "three_point_percentage": {
+          "type": "number"
+        },
+        "assists_per_game": {
+          "type": "number"
+        },
+        "rebounds_per_game": {
+          "type": "number"
+        },
+        "turnovers_per_game": {
+          "type": "number"
+        }
+      }
+    },
+    "last_five_games": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "opponent": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          },
+          "score": {
+            "type": "string"
+          },
+          "home_away": {
+            "type": "string"
+          },
+          "team_points": {
+            "type": "number"
+          },
+          "opponent_points": {
+            "type": "number"
+          },
+          "key_stats": {
+            "type": "object"
+          }
+        }
+      },
+      "description": "Last 5 games with detailed stats"
+    },
+    "form": {
+      "type": "string",
+      "description": "Recent form (e.g., W-W-L-W-D)"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "weaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "key_players": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "injuries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player_name": {
+            "type": "string"
+          },
+          "injury": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "next_game": {
+      "type": "object",
+      "properties": {
+        "opponent": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "prediction": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "team_name",
+    "sport"
+  ]
+}

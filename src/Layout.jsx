@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, LayoutDashboard } from "lucide-react";
+import { Trophy, User, LayoutDashboard, Shield } from "lucide-react"; // Added Shield icon
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +30,12 @@ const navigationItems = [
     url: createPageUrl("PlayerStats"),
     icon: User,
     description: "Individual player statistics"
+  },
+  {
+    title: "Team Stats",
+    url: createPageUrl("TeamStats"),
+    icon: Shield, // New icon for Team Stats
+    description: "Team performance & analysis"
   },
 ];
 
