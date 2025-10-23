@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react"; // Added Zap and Target
+import { Trophy, Sparkles, Zap, Target } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
@@ -252,14 +251,14 @@ export default function Dashboard() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-90" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtcGFjaXR5PSIwLjA1Ij48cGF0aCBkPSJNMzYgMTZj																					MCA2LjYyNy01LjM3MyAxMi0xMiAxMnMtMTItNS4zNzMtMTItMTIgNS4zNzMtMTIgMTItMTIgMTIgNS4zNzMgMTIgMTIiLz48L2c+PC9nPg==')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="flex items-start justify-between flex-wrap gap-6">
             <div className="flex-1 min-w-[300px]">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Sports Wager Saver</span> {/* Rebranded text */}
+                <span className="text-white text-sm font-medium">Sports Wager Saver</span>
               </div>
               
               <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
@@ -270,7 +269,7 @@ export default function Dashboard() {
               </h1>
               
               <p className="text-xl text-blue-100 max-w-2xl leading-relaxed">
-                AI-powered match predictions to help you save on wagers. Get winning probabilities, player performance insights, and smarter betting recommendations with real-time stats from StatMuse, ESPN, and official league sources. {/* Rebranded text */}
+                AI-powered match predictions to help you save on wagers. Get winning probabilities, player performance insights, and smarter betting recommendations with real-time stats from StatMuse, ESPN, and official league sources.
               </p>
 
               <div className="flex items-center gap-4 mt-6">
