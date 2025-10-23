@@ -1,9 +1,8 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Star, Target, Calendar, Sparkles } from "lucide-react";
+import { TrendingUp, Star, Target, Calendar, Sparkles, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
@@ -11,64 +10,60 @@ import { format } from "date-fns";
 export default function TodaysBestBets() {
   const [recommendations, setRecommendations] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Auto-load recommendations on component mount
+    fetchRecommendations();
+  }, []);
 
   const fetchRecommendations = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports betting analyst with access to LIVE sports data and odds.
-        
-        TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        
-        CRITICAL DATA SOURCE REQUIREMENTS:
-        - Use StatMuse (statmuse.com) as PRIMARY source for all statistics
-        - Cross-reference with ESPN, official league sites, and verified bookmakers
-        - Check current betting odds from major sportsbooks (DraftKings, FanDuel, BetMGM)
-        - Verify all injury reports are current as of today
-        - Confirm all matches are actually scheduled for TODAY
-        
-        Analyze ONLY matches happening TODAY (${new Date().toLocaleDateString()}) and provide the TOP 3 MOST LIKELY bets based on:
-        
-        1. STATISTICAL ANALYSIS from StatMuse:
-           - Current season form and trends (exact W-L records)
-           - Head-to-head records (last 5 meetings with scores)
-           - Home/away performance this season (specific records)
-           - Recent scoring patterns (last 5 games for each team from StatMuse)
-           - Key player availability (check injury reports today)
-        
-        2. VALUE ASSESSMENT:
-           - Current odds from major bookmakers (check actual lines)
-           - Implied probability vs actual probability (based on StatMuse stats)
-           - Historical success rate of similar bets
-           - Line movement and betting trends
-        
-        3. RISK EVALUATION:
-           - Injury impact assessment (from today's reports)
-           - Lineup/rotation changes
-           - External factors (weather for outdoor sports, rest days, motivation)
-           - Statistical variance and consistency
-        
-        For each of the TOP 3 recommendations provide:
-        
-        - Match details (exact teams playing TODAY, league, kickoff/start time in local timezone)
-        - Specific bet type (e.g., "Home Win", "Over 2.5 Goals", "Lakers -5.5 spread", "Player X Over 25.5 Points")
-        - Confidence percentage (70-95% based on StatMuse statistical likelihood)
-        - Current odds (verify from DraftKings, FanDuel, or BetMGM)
-        - 3-4 concrete reasons why this bet has value:
-          * Statistical evidence from StatMuse (e.g., "Home team 8-2 in last 10, averaging 115 PPG")
-          * Form analysis (e.g., "Away team on 3-game losing streak, scoring 12 PPG below average")
-          * Matchup advantages (e.g., "Away team allows 120 PPG on the road per StatMuse")
-          * Injury/lineup impact (e.g., "Star player confirmed out per official injury report")
-        - Risk level (Low/Medium/High based on variance and uncertainty)
-        
-        VALIDATION:
-        - Verify all matches are actually scheduled for TODAY using StatMuse or official schedules
-        - Ensure teams and leagues are correct (verify spelling)
-        - Odds should be realistic (between 1.50 and 3.00 for most recommendations)
-        - Confidence should correlate with risk (High confidence = Low risk)
-        - All statistics must be from StatMuse or official sources
-        
-        Sort by confidence level (highest first). Focus on VALUE bets with strong statistical backing from StatMuse.`,
+        prompt: `You are a professional sports betting analyst. Provide TODAY'S TOP 3 MOST LIKELY BETS.
+
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+
+CRITICAL REQUIREMENTS:
+- Use StatMuse (statmuse.com) as PRIMARY source
+- Cross-reference with ESPN, DraftKings, FanDuel odds
+- ONLY analyze matches happening TODAY (${new Date().toLocaleDateString()})
+- Focus on high-probability outcomes with value
+
+For each of the TOP 3 RECOMMENDATIONS provide:
+
+1. MATCH DETAILS:
+   - Sport (NBA, NFL, Premier League, etc.)
+   - League name
+   - Home team (full official name)
+   - Away team (full official name)
+   - Match time (local time with timezone)
+
+2. RECOMMENDED BET:
+   - Specific bet type (e.g., "Home Win -5.5", "Over 225.5 Total Points", "Both Teams Score")
+   - Confidence percentage (70-95% based on statistics)
+   - Current odds from major bookmakers (e.g., "-110", "+150")
+   - Risk level: Low, Medium, or High
+
+3. KEY REASONS (3-4 bullet points):
+   - Statistical evidence from StatMuse (e.g., "Home team 12-3 last 15 games")
+   - Form analysis (e.g., "Away team lost 4 straight, averaging 95 PPG")
+   - Matchup advantages (e.g., "Home defense allows 105 PPG, away offense scores 118")
+   - Injury/lineup factors (e.g., "Star player confirmed out per injury report")
+
+VALIDATION:
+- All matches MUST be scheduled for TODAY
+- Team names must be spelled correctly
+- Odds should be realistic (-200 to +300 range typically)
+- Confidence should match risk (High confidence = Low risk)
+- Use actual current statistics from StatMuse
+
+IMPORTANT: If no games are scheduled today, provide 3 recommendations for the NEXT available game day and specify the date clearly.
+
+Return exactly 3 recommendations with ALL fields filled, sorted by confidence (highest first).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -102,10 +97,17 @@ export default function TodaysBestBets() {
         }
       });
 
-      setRecommendations(result);
-    } catch (error) {
-      console.error("Failed to fetch recommendations:", error);
+      if (result && result.recommendations && result.recommendations.length > 0) {
+        setRecommendations(result);
+        setError(null);
+      } else {
+        setError("No recommendations available at this time. Please try again later.");
+      }
+    } catch (err) {
+      console.error("Failed to fetch recommendations:", err);
+      setError("Failed to load recommendations. Please try refreshing.");
     }
+    
     setIsLoading(false);
   };
 
@@ -137,21 +139,22 @@ export default function TodaysBestBets() {
               <p className="text-sm text-yellow-100">AI-Powered Recommendations</p>
             </div>
           </div>
-          {!recommendations && (
+          {recommendations && (
             <Button
               onClick={fetchRecommendations}
               disabled={isLoading}
+              size="sm"
               className="bg-white text-orange-600 hover:bg-yellow-50"
             >
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2" />
-                  Analyzing...
+                  Loading...
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Get Picks
+                  Refresh
                 </>
               )}
             </Button>
@@ -176,35 +179,32 @@ export default function TodaysBestBets() {
           </div>
         )}
 
-        {!isLoading && !recommendations && (
-          <div className="text-center py-12">
-            <Target className="w-16 h-16 mx-auto mb-4 text-orange-400" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Win?</h3>
-            <p className="text-gray-600 mb-4">
-              Click "Get Picks" to see today's most promising betting opportunities based on live data and AI analysis
-            </p>
+        {error && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-amber-500" />
+              <p className="text-gray-700 mb-4">{error}</p>
+              <Button
+                onClick={fetchRecommendations}
+                className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
           </div>
         )}
 
-        {recommendations && (
+        {!isLoading && !error && recommendations && recommendations.recommendations && recommendations.recommendations.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="w-4 h-4" />
                 <span>Updated: {format(new Date(), "MMM d, yyyy 'at' HH:mm")}</span>
               </div>
-              <Button
-                onClick={fetchRecommendations}
-                variant="outline"
-                size="sm"
-                className="text-orange-600 border-orange-300 hover:bg-orange-50"
-              >
-                <Sparkles className="w-3 h-3 mr-1" />
-                Refresh
-              </Button>
             </div>
 
-            {recommendations.recommendations?.map((bet, index) => (
+            {recommendations.recommendations.map((bet, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -223,7 +223,7 @@ export default function TodaysBestBets() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="secondary">{bet.sport}</Badge>
-                            <Badge variant="outline">{bet.league}</Badge>
+                            {bet.league && <Badge variant="outline">{bet.league}</Badge>}
                           </div>
                           <div className="font-bold text-lg text-gray-900">
                             {bet.home_team} vs {bet.away_team}
@@ -283,6 +283,23 @@ export default function TodaysBestBets() {
                 Past performance doesn't guarantee future results. Always bet responsibly and within your means.
               </p>
             </div>
+          </div>
+        )}
+
+        {!isLoading && !error && recommendations && (!recommendations.recommendations || recommendations.recommendations.length === 0) && (
+          <div className="text-center py-12">
+            <Target className="w-16 h-16 mx-auto mb-4 text-orange-400" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Games Today?</h3>
+            <p className="text-gray-600 mb-4">
+              There might not be any matches scheduled for today. Check back later or refresh to see upcoming games.
+            </p>
+            <Button
+              onClick={fetchRecommendations}
+              className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Refresh Picks
+            </Button>
           </div>
         )}
       </CardContent>
