@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -351,7 +350,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
 
         {error && (
           <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -410,7 +409,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
           <p className="text-sm text-amber-400">
             <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
-            Always gamble responsibly and never bet more than you can afford to lose.
+            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>
         </div>
       </div>
