@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,51 +32,101 @@ export default function TeamStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this team request: "${query}"
+        prompt: `You are a professional sports team analyst with access to LIVE, OFFICIAL team statistics.
         
-        Provide COMPREHENSIVE current season statistics and analysis for this team including:
+        Team Query: "${query}"
         
-        1. BASIC INFO:
-           - Full team name
+        TODAY'S DATE: ${new Date().toLocaleDateString()}
+        CURRENT SEASON: ${new Date().getFullYear()} season
+        
+        CRITICAL DATA SOURCE REQUIREMENTS:
+        - Use ONLY official league statistics and standings
+        - Source from ESPN, official league websites, verified sports databases
+        - All stats must be from the CURRENT active season
+        - Verify team names are official and current
+        - Check rosters and injury reports from official sources
+        
+        Provide COMPREHENSIVE current season team statistics:
+        
+        1. TEAM IDENTIFICATION:
+           - Full official team name
            - Sport and league
-           - Current season record (wins, losses, draws if applicable, win percentage)
-           - Recent form (e.g., "W-W-L-W-D")
+           - Current season record (W-L-D with exact numbers from standings)
+           - Win percentage
+           - Recent form string (e.g., "W-W-L-W-D" from last 5 games)
         
-        2. SEASON AVERAGES (per game):
-           - Points/Goals per game (depending on sport)
-           - Points/Goals allowed per game
-           - Field goal percentage, 3-point percentage (if basketball)
-           - Possession percentage (if soccer)
-           - Shots per game and shots allowed
-           - Assists, rebounds, turnovers (if basketball)
-           - Passing accuracy (if soccer)
-           - All other relevant stats for the sport
+        2. CURRENT SEASON AVERAGES (Per Game):
+           Must include ALL relevant stats for the sport:
+           
+           BASKETBALL:
+           - Points per game (team offense)
+           - Points allowed per game (team defense)
+           - Field goal %
+           - 3-Point %
+           - Assists per game
+           - Rebounds per game
+           - Turnovers per game
+           
+           FOOTBALL/SOCCER:
+           - Goals per game
+           - Goals allowed per game
+           - Possession %
+           - Shots per game
+           - Shots allowed per game
+           - Passing accuracy %
+           
+           Use official season statistics from verified sources only.
         
-        3. LAST 5 GAMES (CRITICAL - Must be complete):
-           - Date of each game
-           - Opponent name
+        3. LAST 5 GAMES - COMPLETE GAME LOG:
+           CRITICAL: Provide ACTUAL game-by-game results from official records
+           
+           For EACH of the last 5 games include:
+           - Exact date (MM/DD/YYYY)
+           - Opponent team name
            - Result (Win/Loss/Draw)
-           - Final score
-           - Whether home or away
+           - Final score (Team score - Opponent score)
+           - Home or Away
            - Team points/goals scored
            - Opponent points/goals
-           - Key stats for each game (shooting %, possession, turnovers, etc.)
+           - Key stats for that specific game (shooting %, possession, turnovers, etc.)
+           
+           Sources: Official league game logs, ESPN team schedules, verified game recaps
         
-        4. KEY PLAYERS:
-           - List of 5-7 most important players on the roster
+        4. KEY PLAYERS ROSTER:
+           - List 5-7 most important players currently on the roster
+           - Verify they are active (not traded/injured long-term)
         
-        5. INJURY REPORT:
-           - Current injured players with injury details and status
+        5. CURRENT INJURY REPORT:
+           - Check official team injury reports from TODAY
+           - For each injured player:
+             * Player name
+             * Specific injury
+             * Status (Out / Day-to-Day / Probable / Questionable)
         
-        6. NEXT GAME:
-           - Opponent, date, location
-           - Win/loss prediction with reasoning
+        6. NEXT SCHEDULED GAME:
+           - Verify from official team schedule
+           - Opponent name
+           - Exact date and time
+           - Home or Away
+           - Win/Loss prediction with reasoning based on:
+             * Current form
+             * Head-to-head record
+             * Home/away performance
+             * Injury impact
         
-        7. STRENGTHS & WEAKNESSES:
-           - List 3-5 key team strengths
-           - List 2-3 team weaknesses
+        7. TEAM ANALYSIS:
+           - Top 3-5 team strengths (based on statistical rankings)
+           - 2-3 weaknesses or areas of concern
+           - Supported by actual statistics
         
-        Use current real-time data from this season. Be specific and accurate. Make sure to include ALL last 5 games with complete details.`,
+        DATA VALIDATION:
+        - All statistics must be from current ${new Date().getFullYear()} season
+        - Last 5 games must be actual completed games (verify dates)
+        - Next game must be in the future
+        - Record and percentages must be accurate
+        - All stats should match official league standings
+        
+        If team name is unclear or data unavailable, indicate clearly.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

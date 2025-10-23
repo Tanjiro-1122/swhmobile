@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,23 +16,56 @@ export default function TodaysBestBets() {
     setIsLoading(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze today's sports betting landscape and provide the TOP 3 MOST LIKELY bets for today.
+        prompt: `You are a professional sports betting analyst with access to LIVE sports data and odds.
         
-        For each recommended bet, provide:
-        1. Match details (teams, sport, league, time)
-        2. Recommended bet type (e.g., "Home Win", "Over 2.5 Goals", "Player Points Over 25.5")
-        3. Confidence percentage (70-95%)
-        4. Current odds (if available)
-        5. Key reasoning (2-3 bullet points explaining why this is a good bet)
-        6. Risk level (Low/Medium/High)
+        TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         
-        Focus on:
-        - Matches happening TODAY
-        - High probability outcomes based on current form, statistics, and expert analysis
-        - Value bets with good odds
-        - Consider injuries, head-to-head records, home advantage, recent performance
+        CRITICAL INSTRUCTIONS:
+        - Analyze ONLY matches happening TODAY (${new Date().toLocaleDateString()})
+        - Use real-time data from ESPN, official league sites, and verified bookmakers
+        - Check current betting odds from major sportsbooks
+        - Verify all injury reports are current as of today
+        - Consider latest team news and lineup confirmations
         
-        Return exactly 3 recommendations sorted by confidence level (highest first).`,
+        Provide the TOP 3 MOST LIKELY bets for today based on:
+        
+        1. STATISTICAL ANALYSIS:
+           - Current season form and trends
+           - Head-to-head records (last 5 meetings)
+           - Home/away performance this season
+           - Recent scoring patterns (last 5 games for each team)
+           - Key player availability (confirmed lineups if available)
+        
+        2. VALUE ASSESSMENT:
+           - Current odds from major bookmakers
+           - Implied probability vs actual probability
+           - Historical success rate of similar bets
+        
+        3. RISK EVALUATION:
+           - Injury impact assessment
+           - Lineup/rotation changes
+           - External factors (weather, rest days, motivation)
+        
+        For each of the TOP 3 recommendations provide:
+        
+        - Match details (exact teams playing today, league, kickoff/start time in local timezone)
+        - Specific bet type (e.g., "Home Win", "Over 2.5 Goals", "Lakers -5.5 spread", "Player X Over 25.5 Points")
+        - Confidence percentage (70-95% based on statistical likelihood)
+        - Current odds (check major bookmakers like DraftKings, FanDuel, BetMGM)
+        - 3-4 concrete reasons why this bet has value:
+          * Statistical evidence (e.g., "Home team 8-2 in last 10, averaging 115 PPG")
+          * Form analysis (e.g., "Away team on 3-game losing streak")
+          * Matchup advantages (e.g., "Away team allows 120 PPG on the road")
+          * Injury/lineup impact (e.g., "Star player confirmed out")
+        - Risk level (Low/Medium/High)
+        
+        VALIDATION:
+        - Verify all matches are actually scheduled for TODAY
+        - Ensure teams and leagues are correct
+        - Odds should be realistic (between 1.50 and 3.00 for most recommendations)
+        - Confidence should correlate with risk (High confidence = Low risk)
+        
+        Sort by confidence level (highest first). Focus on VALUE bets with strong statistical backing.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

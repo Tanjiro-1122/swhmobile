@@ -32,62 +32,103 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this player request: "${query}"
+        prompt: `You are a professional sports statistics analyst with access to LIVE, OFFICIAL sports data.
         
-        Provide COMPREHENSIVE statistics and analysis for this player including:
+        Player Query: "${query}"
         
-        1. BASIC INFO:
-           - Full player name
-           - Current team
+        TODAY'S DATE: ${new Date().toLocaleDateString()}
+        CURRENT SEASON: ${new Date().getFullYear()} season
+        
+        CRITICAL DATA SOURCE REQUIREMENTS:
+        - Use ONLY official league statistics (NBA.com, NFL.com, PremierLeague.com, etc.)
+        - Cross-reference with ESPN, Basketball-Reference, or verified sports data APIs
+        - All stats must be from the CURRENT active season
+        - Injury data from official team injury reports
+        - Next game info must be verified and upcoming
+        
+        Provide COMPREHENSIVE current season statistics:
+        
+        1. PLAYER IDENTIFICATION:
+           - Full official name
+           - Current team (verify they're still on this team)
            - Position
-           - Sport and league
+           - League
         
-        2. SEASON AVERAGES (per game):
-           - Points/Goals (depending on sport)
-           - Assists
-           - Rebounds (if basketball)
-           - Field goal percentage, 3-point percentage, free throw percentage (if basketball)
-           - Shots per game, passes per game, tackles per game (if soccer)
-           - Steals and blocks (if basketball)
+        2. CURRENT SEASON AVERAGES (Per Game):
+           Must include ALL relevant stats for the sport:
+           
+           BASKETBALL (NBA/NCAA):
+           - Points per game
+           - Assists per game  
+           - Rebounds per game (CRITICAL for PTS+REB+AST)
+           - Steals per game
+           - Blocks per game
+           - Field Goal %
+           - 3-Point %
+           - Free Throw %
            - Minutes per game
-           - All other relevant stats for the sport
            
-           FOR BASKETBALL: Make sure to include points, rebounds, and assists as these will be combined for PTS+REB+AST stat
+           FOOTBALL/SOCCER:
+           - Goals per game
+           - Assists per game
+           - Shots per game
+           - Passes per game
+           - Tackles per game
+           - Pass completion %
+           - Minutes per game
+           
+           Use official season statistics from verified sources only.
         
-        3. LAST 5-10 GAMES (CRITICAL - Must include full details):
-           - Date of each game
+        3. LAST 5-10 GAMES - COMPLETE GAME LOG:
+           CRITICAL: Provide ACTUAL game-by-game stats from official box scores
+           
+           For EACH of the last 5-10 games include:
+           - Exact date (MM/DD/YYYY)
+           - Opponent team name
+           - Points/Goals scored (exact number from box score)
+           - Assists (exact number)
+           - Rebounds if basketball (exact number)
+           - Performance rating based on actual stats
+           
+           FOR BASKETBALL: MUST include points, rebounds, AND assists for every game
+           
+           Sources: NBA.com game logs, ESPN player game logs, official league stats
+        
+        4. CURRENT INJURY STATUS:
+           - Check official team injury reports from TODAY
+           - Status: Healthy / Probable / Questionable / Doubtful / Out
+           - If injured, specify the injury
+        
+        5. NEXT SCHEDULED GAME:
+           - Verify from official team schedule
            - Opponent name
-           - Points/goals scored
-           - Assists
-           - Rebounds (if applicable)
-           - Performance rating (Excellent/Good/Average/Poor)
-           - Be specific with actual stats from each game
-           
-           FOR BASKETBALL: Include points, rebounds, and assists for EVERY game
-        
-        4. INJURY STATUS:
-           - Current injury status (Healthy, Questionable, Out, etc.)
-        
-        5. NEXT GAME:
-           - Opponent, date, location
-           - Predicted performance for next game with specific stat predictions
-           - For basketball, predict points, rebounds, and assists
+           - Exact date and time
+           - Home/Away location
+           - Predicted performance based on:
+             * Season averages
+             * Recent form (last 5 games trend)
+             * Matchup history vs this opponent
+             * For basketball: predict points, rebounds, assists individually
         
         6. BETTING INSIGHTS:
-           - Over/under points line
-           - Probability to score (percentage)
-           - Whether player is on a hot streak (boolean)
-           - Consistency rating (High/Medium/Low)
+           - Over/Under line (typical betting line for this player)
+           - Probability to score/reach milestones (based on season %)
+           - Hot streak status (scoring above average in 3+ consecutive games)
+           - Consistency rating based on standard deviation of performance
         
-        7. STRENGTHS & WEAKNESSES:
-           - List 3-5 key strengths
-           - List 2-3 weaknesses
+        7. ANALYSIS:
+           - Top 3-5 strengths (based on statistical rankings)
+           - 2-3 areas for improvement
+           - Career highlights and awards
         
-        8. CAREER HIGHLIGHTS:
-           - Notable achievements, awards, records
+        DATA VALIDATION:
+        - All statistics must be from current ${new Date().getFullYear()} season
+        - Recent games must be actual completed games (check dates)
+        - Next game must be in the future
+        - All percentages should be realistic (0-100)
+        - Season averages should match verified sources
         
-        Use current real-time data and statistics. Be specific and accurate. MUST include last 5-10 games with complete details.
-        FOR BASKETBALL PLAYERS: Always include points, rebounds, and assists in season averages and recent games.`,
+        If player is not currently active or data is unavailable, indicate clearly.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

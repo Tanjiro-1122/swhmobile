@@ -33,36 +33,70 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this sports match request: "${query}"
+        prompt: `You are a sports betting analyst with access to LIVE, CURRENT sports data from the internet.
         
-        Find the upcoming match details and provide COMPREHENSIVE betting analysis including:
+        User Query: "${query}"
+        
+        CRITICAL INSTRUCTIONS:
+        - Use ONLY the most recent, up-to-date data from TODAY (${new Date().toLocaleDateString()})
+        - Source data from official league websites, ESPN, official team stats, and verified sports data providers
+        - All statistics must be from the CURRENT ${new Date().getFullYear()} season
+        - Verify match is actually scheduled and upcoming
+        
+        Provide COMPREHENSIVE betting analysis including:
         
         1. MATCH WIN PROBABILITIES based on:
-           - Recent team performance and form
-           - Head-to-head records
-           - Player injuries and suspensions
-           - Home/away advantage
-           - Current league standings
-           - Expert predictions and betting odds
+           - Current season form and standings
+           - Recent head-to-head records (last 5 meetings)
+           - Live injury reports from official sources
+           - Home/away performance this season
+           - Current betting odds from major bookmakers
+           - Expert predictions from verified analysts
+           - Weather conditions (if outdoor sport)
         
-        2. KEY PLAYERS PREDICTIONS:
-           - Identify 3-5 key players from both teams
-           - For each player provide:
-             * Predicted points/goals (based on sport)
-             * Predicted assists
-             * Predicted rebounds (if basketball)
-             * Probability to score (percentage)
-             * Recent form (e.g., "Excellent", "Good", "Average")
-             * Injury status (e.g., "Healthy", "Questionable", "Doubtful")
+        2. KEY PLAYERS PREDICTIONS (3-5 players per team):
+           For each player provide:
+           - Current season averages (from official league stats)
+           - Last 5 games performance with ACTUAL stats
+           - Predicted points/goals (realistic based on season average ±20%)
+           - Predicted assists (realistic based on season average ±20%)
+           - Predicted rebounds if basketball (realistic based on season average ±20%)
+           - Probability to score (based on scoring rate this season)
+           - Recent form description (based on last 3-5 games)
+           - Current injury status from official injury reports
+           
+           FOR BASKETBALL: Always include points, rebounds, and assists for PTS+REB+AST combined stat
         
-        3. ADDITIONAL BETTING MARKETS:
-           - Over/Under total points/goals with probabilities
-           - Both teams to score probabilities
-           - Predicted total score range
-           - First to score probabilities
+        3. ADDITIONAL BETTING MARKETS (with realistic probabilities):
+           - Over/Under total points/goals:
+             * Use average of both teams' season scoring
+             * Line should be realistic (e.g., NBA: 215-235, Soccer: 2.5-3.5)
+             * Calculate probabilities based on actual scoring patterns
+           
+           - Both Teams to Score (soccer/hockey):
+             * Based on teams' scoring consistency this season
+             * Consider defensive records
+           
+           - Total Score Range:
+             * Predict realistic final score based on season averages
+             * Provide confidence range
+           
+           - First to Score:
+             * Based on average time to first goal/score this season
+             * Consider home advantage statistics
         
-        Be specific about teams, date, league, and provide realistic statistical predictions.
-        All probabilities should be based on current form, statistics, and expert analysis.`,
+        4. CONFIDENCE LEVEL:
+           - HIGH: Clear statistical advantage, no major injuries, consistent form
+           - MEDIUM: Close match-up, some uncertainty factors
+           - LOW: High variance, key injuries, or inconsistent recent form
+        
+        VALIDATION:
+        - Ensure all percentages add to 100% (home + away + draw if applicable)
+        - All predicted stats should be realistic (within 2 standard deviations of season average)
+        - Match date must be in the future
+        - Use actual team names, not abbreviations
+        
+        Return comprehensive analysis with ALL required fields filled with CURRENT, VERIFIED data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
