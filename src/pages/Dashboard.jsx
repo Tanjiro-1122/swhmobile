@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
@@ -238,7 +238,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Free Lookup Banner */}
+      {/* Free Lookup Banner - ALWAYS VISIBLE AT TOP */}
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
 
       {/* Free Lookup Limit Modal */}
@@ -250,7 +250,7 @@ export default function Dashboard() {
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 opacity-90" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-6 py-16">
@@ -268,9 +268,23 @@ export default function Dashboard() {
                 </span>
               </h1>
               
-              <p className="text-xl text-blue-100 max-w-2xl leading-relaxed">
+              <p className="text-xl text-emerald-100 max-w-2xl leading-relaxed mb-6">
                 AI-powered match predictions to help you save on wagers. Get winning probabilities, player performance insights, and smarter betting recommendations with real-time stats from StatMuse, ESPN, and official league sources.
               </p>
+
+              {!isAuthenticated && (
+                <div className="inline-flex items-center gap-3 bg-yellow-400/20 backdrop-blur-sm border-2 border-yellow-400 rounded-xl px-6 py-4 mb-6">
+                  <Lock className="w-6 h-6 text-yellow-400" />
+                  <div>
+                    <div className="text-white font-bold text-lg">
+                      {lookupsRemaining} Free Searches Available!
+                    </div>
+                    <div className="text-yellow-100 text-sm">
+                      No credit card required • Sign up for unlimited access
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center gap-4 mt-6">
                 <div className="flex items-center gap-2">
@@ -279,7 +293,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-white">{matches?.length || 0}</div>
-                    <div className="text-xs text-blue-100">Matches Analyzed</div>
+                    <div className="text-xs text-emerald-100">Matches Analyzed</div>
                   </div>
                 </div>
                 
@@ -291,7 +305,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-white">Live</div>
-                    <div className="text-xs text-blue-100">Real-time Data</div>
+                    <div className="text-xs text-emerald-100">Real-time Data</div>
                   </div>
                 </div>
               </div>
@@ -320,7 +334,7 @@ export default function Dashboard() {
         <div className="mb-12">
           <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -344,18 +358,18 @@ export default function Dashboard() {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="relative w-24 h-24 mx-auto mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-20 animate-ping" />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
                 <div className="absolute inset-2 bg-slate-900 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 text-blue-400" />
+                  <Sparkles className="w-10 h-10 text-emerald-400" />
                 </div>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
               <p className="text-slate-400">Crunching numbers from StatMuse, ESPN & official sources...</p>
               <div className="mt-4 flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -368,7 +382,7 @@ export default function Dashboard() {
               <>
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full" />
+                    <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
                     Your Match Predictions
                     <span className="text-slate-500">({matches.length})</span>
                   </h2>
