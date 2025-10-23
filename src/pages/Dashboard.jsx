@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target } from "lucide-react"; // Added Zap and Target
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
@@ -227,8 +227,8 @@ export default function Dashboard() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-        <Alert variant="destructive" className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+        <Alert variant="destructive" className="max-w-2xl mx-auto bg-red-500/10 border-red-500/50 text-red-400">
           <AlertDescription>
             Failed to load matches. Please refresh the page or contact support.
           </AlertDescription>
@@ -238,7 +238,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Free Lookup Banner */}
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
 
@@ -250,52 +250,115 @@ export default function Dashboard() {
       />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Trophy className="w-7 h-7" />
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-90" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtcGFjaXR5PSIwLjA1Ij48cGF0aCBkPSJNMzYgMTZjMCA2LjYyNy01LjM3MyAxMi0xMiAxMnMtMTItNS4zNzMtMTItMTIgNS4zNzMtMTIgMTItMTIgMTIgNS4zNzMgMTIgMTIiLz48L2c+PC9nPg==')] opacity-30" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-start justify-between flex-wrap gap-6">
+            <div className="flex-1 min-w-[300px]">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-white text-sm font-medium">Live Sports Analytics</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
+                Win More.<br />
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                  Bet Smarter.
+                </span>
+              </h1>
+              
+              <p className="text-xl text-blue-100 max-w-2xl leading-relaxed">
+                AI-powered match predictions with real-time stats from StatMuse, ESPN, and official league sources. 
+                Get winning probabilities, player performance insights, and smart betting recommendations.
+              </p>
+
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Trophy className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">{matches?.length || 0}</div>
+                    <div className="text-xs text-blue-100">Matches Analyzed</div>
+                  </div>
+                </div>
+                
+                <div className="w-px h-12 bg-white/20" />
+                
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">Live</div>
+                    <div className="text-xs text-blue-100">Real-time Data</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold">Sports Wager Helper</h1>
+
+            <div className="flex-shrink-0">
+              <div className="w-64 h-64 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl opacity-20 blur-3xl" />
+                <div className="relative w-full h-full bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 flex items-center justify-center">
+                  <Trophy className="w-32 h-32 text-white opacity-50" />
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-blue-100 text-lg max-w-2xl">
-            Get data-driven predictions for match outcomes, player performance, and multiple betting markets using real-time statistics
-          </p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Today's Best Bets Section */}
-        <div className="mb-8">
+        <div className="mb-12">
           <TodaysBestBets />
         </div>
 
         {/* Search Section */}
-        <div className="mb-8">
-          <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+        <div className="mb-12">
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
+                <p className="text-slate-400">Get instant win probabilities and betting insights</p>
+              </div>
+            </div>
+            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+          </div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Loading State */}
         {isSearching && (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-blue-200" />
-                <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+              <div className="relative w-24 h-24 mx-auto mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-20 animate-ping" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
+                <div className="absolute inset-2 bg-slate-900 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-blue-400" />
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Sparkles className="w-5 h-5 text-blue-600" />
-                <span className="font-medium">Analyzing match data and player statistics...</span>
+              <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
+              <p className="text-slate-400">Crunching numbers from StatMuse, ESPN & official sources...</p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
-              <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds</p>
             </div>
           </div>
         )}
@@ -305,12 +368,14 @@ export default function Dashboard() {
           <>
             {matches.length > 0 ? (
               <>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Analyzed Matches ({matches.length})
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full" />
+                    Your Match Predictions
+                    <span className="text-slate-500">({matches.length})</span>
                   </h2>
                 </div>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid lg:grid-cols-2 gap-8">
                   {matches.map((match, index) => (
                     <MatchCard
                       key={match.id}
@@ -328,12 +393,12 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Footer Info */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm text-amber-800">
-            <strong>Disclaimer:</strong> These probabilities and player predictions are for informational purposes only and based on available data at the time of analysis. 
-            Actual outcomes may vary. Always gamble responsibly.
+      {/* Footer Disclaimer */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
+          <p className="text-sm text-amber-400">
+            <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
+            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>
         </div>
       </div>

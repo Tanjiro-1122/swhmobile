@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, LayoutDashboard, Shield } from "lucide-react"; // Added Shield icon
+import { Trophy, User, Shield, Bookmark, Zap, Target } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,19 +22,29 @@ const navigationItems = [
     title: "Match Analysis",
     url: createPageUrl("Dashboard"),
     icon: Trophy,
-    description: "Analyze upcoming matches"
+    description: "Live match predictions",
+    color: "from-blue-500 to-cyan-500"
   },
   {
     title: "Player Stats",
     url: createPageUrl("PlayerStats"),
     icon: User,
-    description: "Individual player statistics"
+    description: "Individual performance",
+    color: "from-purple-500 to-pink-500"
   },
   {
     title: "Team Stats",
     url: createPageUrl("TeamStats"),
-    icon: Shield, // New icon for Team Stats
-    description: "Team performance & analysis"
+    icon: Shield,
+    description: "Team analytics",
+    color: "from-green-500 to-emerald-500"
+  },
+  {
+    title: "Saved Results",
+    url: createPageUrl("SavedResults"),
+    icon: Bookmark,
+    description: "Your predictions",
+    color: "from-orange-500 to-red-500"
   },
 ];
 
@@ -44,65 +53,94 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        <Sidebar className="border-r border-gray-200">
-          <SidebarHeader className="border-b border-gray-200 p-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-white" />
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
+          <SidebarHeader className="border-b border-slate-700 p-6">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/50">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse" />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900">Sports Betting</h2>
-                <p className="text-xs text-gray-500">AI-Powered Analysis</p>
+                <h2 className="font-bold text-lg text-white">PredictaBet</h2>
+                <p className="text-xs text-slate-400 flex items-center gap-1">
+                  <Target className="w-3 h-3" />
+                  AI Sports Analytics
+                </p>
               </div>
             </div>
           </SidebarHeader>
           
-          <SidebarContent className="p-2">
+          <SidebarContent className="p-3">
             <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2 py-2">
+              <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 py-2 mb-2">
                 Navigation
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {navigationItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton 
-                        asChild 
-                        className={`hover:bg-purple-50 hover:text-purple-700 transition-colors duration-200 rounded-lg mb-1 ${
-                          location.pathname === item.url ? 'bg-purple-50 text-purple-700' : ''
-                        }`}
-                      >
-                        <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
-                          <item.icon className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">{item.title}</div>
-                            <div className="text-xs text-gray-500">{item.description}</div>
-                          </div>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenu className="space-y-2">
+                  {navigationItems.map((item) => {
+                    const isActive = location.pathname === item.url;
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton 
+                          asChild 
+                          className={`relative overflow-hidden rounded-xl transition-all duration-300 ${
+                            isActive 
+                              ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg scale-105' 
+                              : 'hover:bg-slate-800 text-slate-300 hover:text-white hover:scale-102'
+                          }`}
+                        >
+                          <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              isActive ? 'bg-white/20' : 'bg-slate-800'
+                            }`}>
+                              <item.icon className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold">{item.title}</div>
+                              <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
+                                {item.description}
+                              </div>
+                            </div>
+                            {isActive && (
+                              <div className="absolute right-0 top-0 bottom-0 w-1 bg-white rounded-l-full" />
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-gray-200 p-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-800">
-                <strong>Disclaimer:</strong> For informational purposes only. Gamble responsibly.
+          <SidebarFooter className="border-t border-slate-700 p-4">
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                <p className="text-xs font-semibold text-amber-400">Live Data</p>
+              </div>
+              <p className="text-xs text-slate-400">
+                Powered by StatMuse, ESPN & official league sources
               </p>
             </div>
           </SidebarFooter>
         </Sidebar>
 
-        <main className="flex-1 flex flex-col">
-          {/* Header with mobile trigger */}
-          <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden">
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile Header */}
+          <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 px-6 py-4 md:hidden">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
-              <h1 className="text-xl font-semibold">Sports Wager Helper</h1>
+              <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-white" />
+                </div>
+                <h1 className="text-lg font-bold text-white">PredictaBet</h1>
+              </div>
             </div>
           </header>
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, TrendingUp } from "lucide-react";
+import { Search, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SearchBar({ onSearch, isSearching }) {
@@ -15,44 +15,46 @@ export default function SearchBar({ onSearch, isSearching }) {
   };
 
   const popularSearches = [
-    "Premier League today",
+    "Lakers vs Celtics",
+    "Man United vs Liverpool",
     "NBA tonight",
-    "Champions League",
-    "NFL this weekend"
+    "Champions League today"
   ];
 
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-blue-400 transition-colors z-10" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for any sports match (e.g., 'Man United vs Liverpool')"
-            className="pl-12 pr-32 h-14 text-lg border-2 focus:border-blue-500 transition-all"
+            placeholder="Search any match: 'Lakers vs Celtics', 'Man United vs Liverpool'..."
+            className="pl-16 pr-36 h-16 text-lg bg-slate-800/50 border-2 border-slate-700 focus:border-blue-500 text-white placeholder:text-slate-500 rounded-xl transition-all"
             disabled={isSearching}
           />
           <Button
             type="submit"
             disabled={isSearching || !query.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-blue-500/50 transition-all hover:scale-105"
           >
             {isSearching ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
                 Analyzing...
               </>
             ) : (
-              "Analyze"
+              <>
+                <Zap className="w-5 h-5 mr-2" />
+                Analyze
+              </>
             )}
           </Button>
         </div>
       </form>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <TrendingUp className="w-4 h-4 text-gray-500" />
-        <span className="text-sm text-gray-500">Popular:</span>
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-slate-400 font-medium">Popular:</span>
         {popularSearches.map((search, index) => (
           <motion.button
             key={index}
@@ -62,7 +64,7 @@ export default function SearchBar({ onSearch, isSearching }) {
               setQuery(search);
               onSearch(search);
             }}
-            className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 transition-colors"
+            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500/50 transition-all"
           >
             {search}
           </motion.button>

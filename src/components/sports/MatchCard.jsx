@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,9 +11,9 @@ import PlayerStatsCard from "./PlayerStatsCard";
 import BettingMarketsCard from "./BettingMarketsCard";
 
 const confidenceColors = {
-  low: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  medium: "bg-blue-100 text-blue-800 border-blue-300",
-  high: "bg-green-100 text-green-800 border-green-300"
+  low: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  high: "bg-green-500/20 text-green-400 border-green-500/30"
 };
 
 export default function MatchCard({ match, onDelete, index }) {
@@ -37,43 +38,49 @@ export default function MatchCard({ match, onDelete, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-200">
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 border-b">
-          <div className="flex justify-between items-start mb-2">
-            <div className="space-y-1">
-              <Badge variant="secondary" className="bg-white/80">
-                {match.sport}
-              </Badge>
-              {match.league && (
-                <div className="text-sm text-gray-600">{match.league}</div>
+      <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
+        <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          
+          <div className="relative flex justify-between items-start mb-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                  {match.sport}
+                </Badge>
+                {match.league && (
+                  <Badge className="bg-white/10 text-white border-white/20 backdrop-blur-sm">
+                    {match.league}
+                  </Badge>
+                )}
+              </div>
+              {formattedDate && (
+                <div className="flex items-center gap-2 text-sm text-white/80">
+                  <Calendar className="w-4 h-4" />
+                  {formattedDate}
+                </div>
               )}
             </div>
             <div className="flex gap-2">
               {match.confidence_level && (
-                <Badge className={`${confidenceColors[match.confidence_level]} border flex items-center gap-1`}>
+                <Badge className={`${confidenceColors[match.confidence_level]} border backdrop-blur-sm flex items-center gap-1 font-bold`}>
                   <Shield className="w-3 h-3" />
-                  {match.confidence_level} confidence
+                  {match.confidence_level.toUpperCase()}
                 </Badge>
               )}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onDelete(match.id)}
-                className="hover:bg-red-100 hover:text-red-600"
+                className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
           </div>
-          {formattedDate && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
-              {formattedDate}
-            </div>
-          )}
         </div>
 
-        <CardContent className="p-6">
+        <CardContent className="p-6 space-y-6">
           <ProbabilityMeter
             homeTeam={match.home_team}
             awayTeam={match.away_team}
@@ -83,21 +90,21 @@ export default function MatchCard({ match, onDelete, index }) {
           />
 
           {match.analysis_summary && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold text-sm">Analysis</span>
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <span className="font-bold text-white">AI Analysis</span>
               </div>
-              <p className="text-sm text-gray-700">{match.analysis_summary}</p>
+              <p className="text-sm text-slate-300 leading-relaxed">{match.analysis_summary}</p>
             </div>
           )}
 
           {match.key_factors && match.key_factors.length > 0 && (
-            <div className="mt-4">
-              <div className="text-sm font-semibold mb-2 text-gray-700">Key Factors:</div>
+            <div>
+              <div className="text-sm font-bold mb-3 text-slate-300">Key Factors:</div>
               <div className="flex flex-wrap gap-2">
                 {match.key_factors.map((factor, idx) => (
-                  <Badge key={idx} variant="outline" className="bg-white">
+                  <Badge key={idx} className="bg-slate-800 text-slate-300 border-slate-700 hover:border-blue-500/50 transition-colors">
                     {factor}
                   </Badge>
                 ))}
