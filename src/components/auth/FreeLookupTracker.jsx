@@ -2,20 +2,32 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap } from "lucide-react";
+import { Lock, UserPlus, Sparkles, Zap, CreditCard, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
       
-      if (!authenticated) {
+      if (authenticated) {
+        // Check if user has premium subscription
+        const user = await base44.auth.me();
+        const hasPremium = user.subscription_status === 'premium';
+        setIsPremium(hasPremium);
+        
+        if (!hasPremium) {
+          // Still track lookups for authenticated free users
+          const used = parseInt(localStorage.getItem('freeLookups') || '0');
+          setLookupsRemaining(Math.max(0, 5 - used));
+        }
+      } else {
         const used = parseInt(localStorage.getItem('freeLookups') || '0');
         setLookupsRemaining(Math.max(0, 5 - used));
       }
@@ -25,7 +37,8 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    if (isAuthenticated) return true;
+    // Premium users have unlimited lookups
+    if (isPremium) return true;
     
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     if (used >= 5) return false;
@@ -36,16 +49,23 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    if (isAuthenticated) return true;
+    // Premium users can always lookup
+    if (isPremium) return true;
+    
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     return used < 5;
   };
 
-  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup };
+  return { lookupsRemaining, isAuthenticated, isPremium, recordLookup, canLookup };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
   if (!show) return null;
+
+  const handleUpgrade = () => {
+    // Open external payment link in new tab
+    window.open('https://buy.stripe.com/YOUR_PAYMENT_LINK', '_blank');
+  };
 
   const handleSignup = () => {
     base44.auth.redirectToLogin(window.location.pathname);
@@ -66,15 +86,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <Card className="max-w-lg w-full border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
+          <Card className="max-w-lg w-full border-2 border-yellow-500 shadow-2xl shadow-yellow-500/20">
+            <CardHeader className="bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 text-white p-8">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                   <Lock className="w-8 h-8" />
                 </div>
                 <div>
                   <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Sign up for unlimited access</p>
+                  <p className="text-lg text-yellow-100">Upgrade to continue analyzing</p>
                 </div>
               </div>
             </CardHeader>
@@ -83,46 +103,85 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 <div className="relative inline-block mb-4">
                   <div className="text-8xl font-black text-gray-200">0/5</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap className="w-16 h-16 text-emerald-500 animate-pulse" />
+                    <Zap className="w-16 h-16 text-yellow-500 animate-pulse" />
                   </div>
                 </div>
                 <p className="text-xl text-gray-700 font-semibold">
                   You've used all your free lookups!
                 </p>
-                <p className="text-gray-600 mt-2">
-                  Create a free account to get <span className="font-bold text-emerald-600">unlimited access</span> to all features
+              </div>
+
+              {/* Pricing Options */}
+              <div className="space-y-4 mb-8">
+                {/* Free Account */}
+                <div className="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-lg font-bold">Free Account</span>
+                    <Badge className="bg-gray-600">Current</Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">5 searches, then locked</p>
+                </div>
+
+                {/* Premium Option */}
+                <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-6 h-6 text-yellow-600" />
+                      <span className="text-2xl font-black text-gray-900">Premium</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-black text-yellow-600">$9.99</div>
+                      <div className="text-sm text-gray-600">/month</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm font-semibold">Unlimited Match Analysis</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm font-semibold">Unlimited Player Stats</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm font-semibold">Unlimited Team Analysis</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm font-semibold">Save Unlimited Results</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-yellow-600" />
+                      <span className="text-sm font-semibold">Priority Support</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleUpgrade}
+                    className="w-full bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 hover:from-yellow-700 hover:via-orange-700 hover:to-yellow-700 text-white text-lg py-6 font-bold shadow-lg shadow-yellow-500/30"
+                  >
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Upgrade to Premium
+                  </Button>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-3">
+                  Don't have an account yet?
                 </p>
+                <Button
+                  onClick={handleSignup}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Create Free Account First
+                </Button>
               </div>
 
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Player Stats</span>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Save All Your Results</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleSignup}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
-              >
-                <UserPlus className="w-6 h-6 mr-3" />
-                Sign Up Free - No Credit Card Required
-              </Button>
-
-              <p className="text-center text-sm text-gray-500 mt-6">
-                Already have an account? Click above to sign in
+              <p className="text-center text-xs text-gray-500 mt-6">
+                💳 Secure payment via Stripe • Cancel anytime
               </p>
             </CardContent>
           </Card>
@@ -132,7 +191,21 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
   );
 }
 
-export function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) {
+export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, isPremium }) {
+  if (isPremium) {
+    return (
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Star className="w-5 h-5 text-white" />
+            <span className="text-white font-bold">⭐ Premium Member - Unlimited Access</span>
+            <Star className="w-5 h-5 text-white" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isAuthenticated || lookupsRemaining === 5) return null;
 
   const handleSignup = () => {
@@ -184,21 +257,32 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) {
             <div className={colors.text}>
               <p className="text-lg font-bold">
                 {lookupsRemaining === 0 
-                  ? "You've used all free lookups!" 
+                  ? "Upgrade to continue!" 
                   : `${lookupsRemaining} free ${lookupsRemaining === 1 ? 'search' : 'searches'} remaining`}
               </p>
               <p className="text-sm opacity-90">
-                Sign up now for unlimited match, player & team analysis!
+                {lookupsRemaining === 0 
+                  ? "Get unlimited access for $9.99/month"
+                  : "Sign up for free or upgrade for unlimited!"}
               </p>
             </div>
           </div>
           <Button
             onClick={handleSignup}
             size="lg"
-            className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
+            className="bg-white hover:bg-gray-100 text-gray-900 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
-            <UserPlus className="w-5 h-5 mr-2" />
-            Sign Up FREE Now
+            {lookupsRemaining === 0 ? (
+              <>
+                <CreditCard className="w-5 h-5 mr-2" />
+                Upgrade Now
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-5 h-5 mr-2" />
+                Sign Up FREE
+              </>
+            )}
           </Button>
         </div>
       </div>

@@ -1,0 +1,26 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium",
+        "cancelled"
+      ],
+      "default": "free",
+      "description": "User's subscription status"
+    },
+    "subscription_start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When subscription started"
+    },
+    "subscription_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When subscription ends (for cancelled users)"
+    }
+  }
+}
