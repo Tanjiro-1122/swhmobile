@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,16 +13,32 @@ export default function PlayerStats() {
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch only current user's players
   const { data: players, isLoading, error: loadError } = useQuery({
-    queryKey: ['players'],
-    queryFn: () => base44.entities.PlayerStats.list('-created_date'),
+    queryKey: ['players', currentUser?.email], // Add currentUser.email to query key for user-specific caching
+    queryFn: async () => {
+      if (!currentUser?.email) return []; // If no user, return empty array immediately
+      // Filter PlayerStats by the email of the current user
+      return await base44.entities.PlayerStats.filter(
+        { created_by: currentUser.email }, // Filter condition
+        '-created_date' // Ordering
+      );
+    },
+    enabled: !!currentUser?.email, // Only enable this query if currentUser.email is available
     initialData: [],
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.PlayerStats.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] });
+      // Invalidate queries for the specific user's players
+      queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] });
     },
   });
 
@@ -205,8 +222,10 @@ export default function PlayerStats() {
         }
       });
 
+      // The 'created_by' field should be automatically set by the backend based on the authenticated user.
+      // If not, you might need to add: result.created_by = currentUser.email; before create call.
       await base44.entities.PlayerStats.create(result);
-      queryClient.invalidateQueries({ queryKey: ['players'] });
+      queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] }); // Invalidate for the current user
     } catch (err) {
       setError("Failed to fetch player statistics. Please try again with a specific player name.");
       console.error("Player Stats Error:", err);
@@ -215,6 +234,7 @@ export default function PlayerStats() {
     setIsSearching(false);
   };
 
+  // Display error if loading user-specific players fails
   if (loadError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
@@ -259,7 +279,7 @@ export default function PlayerStats() {
         )}
 
         {/* Loading State */}
-        {isSearching && (
+        {isSearching || (isLoading && currentUser?.email) ? ( // Add isLoading and check for user to show loading for fetching user's players
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 relative">
@@ -273,10 +293,8 @@ export default function PlayerStats() {
               <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds</p>
             </div>
           </div>
-        )}
-
-        {/* Players List */}
-        {!isSearching && (
+        ) : (
+          // Players List - Only show if not searching and not loading initial players for the user
           <>
             {players.length > 0 ? (
               <>

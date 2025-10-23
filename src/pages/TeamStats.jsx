@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,16 +13,30 @@ export default function TeamStats() {
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch only current user's teams
   const { data: teams, isLoading, error: loadError } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.TeamStats.list('-created_date'),
+    queryKey: ['teams', currentUser?.email], // Add currentUser email to query key for user-specific data
+    queryFn: async () => {
+      if (!currentUser?.email) return []; // Don't fetch if no user email is available
+      return await base44.entities.TeamStats.filter(
+        { created_by: currentUser.email }, // Filter by the current user's email
+        '-created_date'
+      );
+    },
+    enabled: !!currentUser?.email, // Only enable this query if currentUser.email exists
     initialData: [],
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.TeamStats.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['teams', currentUser?.email] }); // Invalidate with user-specific key
     },
   });
 
@@ -218,7 +233,7 @@ export default function TeamStats() {
       });
 
       await base44.entities.TeamStats.create(result);
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['teams', currentUser?.email] }); // Invalidate with user-specific key
     } catch (err) {
       setError("Failed to fetch team statistics. Please try again with a specific team name.");
       console.error("Team Stats Error:", err);
@@ -235,6 +250,22 @@ export default function TeamStats() {
             Failed to load team statistics. Please refresh the page or contact support.
           </AlertDescription>
         </Alert>
+      </div>
+    );
+  }
+
+  // Show a message if no user is logged in
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-6">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <Alert className="max-w-2xl mx-auto mb-6">
+            <Shield className="h-4 w-4" />
+            <AlertDescription>
+              Please log in to view and save your team statistics.
+            </AlertDescription>
+          </Alert>
+        </div>
       </div>
     );
   }
@@ -270,7 +301,7 @@ export default function TeamStats() {
           </Alert>
         )}
 
-        {/* Loading State */}
+        {/* Loading State for Search */}
         {isSearching && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -287,14 +318,14 @@ export default function TeamStats() {
           </div>
         )}
 
-        {/* Teams List */}
-        {!isSearching && (
+        {/* Teams List (only shown when not searching and currentUser is available) */}
+        {!isSearching && currentUser && (
           <>
             {teams.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Analyzed Teams ({teams.length})
+                    Your Analyzed Teams ({teams.length})
                   </h2>
                 </div>
                 <div className="space-y-6">

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,9 +14,23 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const queryClient = useQueryClient();
 
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch only current user's matches
   const { data: matches, isLoading, error: loadError } = useQuery({
-    queryKey: ['matches'],
-    queryFn: () => base44.entities.Match.list('-created_date'),
+    queryKey: ['matches', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser?.email) return [];
+      return await base44.entities.Match.filter(
+        { created_by: currentUser.email },
+        '-created_date'
+      );
+    },
+    enabled: !!currentUser?.email,
     initialData: [],
   });
 
