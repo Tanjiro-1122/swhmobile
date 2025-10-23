@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -58,13 +59,13 @@ export default function Layout({ children, currentPageName }) {
           <SidebarHeader className="border-b border-slate-700 p-6">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/50">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/50">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-white">PredictaBet</h2>
+                <h2 className="font-bold text-lg text-white">Sports Wager Saver</h2>
                 <p className="text-xs text-slate-400 flex items-center gap-1">
                   <Target className="w-3 h-3" />
                   AI Sports Analytics
@@ -136,10 +137,10 @@ export default function Layout({ children, currentPageName }) {
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <h1 className="text-lg font-bold text-white">PredictaBet</h1>
+                <h1 className="text-lg font-bold text-white">Sports Wager Saver</h1>
               </div>
             </div>
           </header>

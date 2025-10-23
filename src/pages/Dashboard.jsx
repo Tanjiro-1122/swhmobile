@@ -259,7 +259,7 @@ export default function Dashboard() {
             <div className="flex-1 min-w-[300px]">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Live Sports Analytics</span>
+                <span className="text-white text-sm font-medium">Sports Wager Saver</span> {/* Rebranded text */}
               </div>
               
               <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
@@ -270,8 +270,7 @@ export default function Dashboard() {
               </h1>
               
               <p className="text-xl text-blue-100 max-w-2xl leading-relaxed">
-                AI-powered match predictions with real-time stats from StatMuse, ESPN, and official league sources. 
-                Get winning probabilities, player performance insights, and smart betting recommendations.
+                AI-powered match predictions to help you save on wagers. Get winning probabilities, player performance insights, and smarter betting recommendations with real-time stats from StatMuse, ESPN, and official league sources. {/* Rebranded text */}
               </p>
 
               <div className="flex items-center gap-4 mt-6">
