@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,37 +16,38 @@ export default function PlayerStats() {
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
 
-  // Get current user
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
   });
 
-  // Fetch only current user's players
   const { data: players, isLoading, error: loadError } = useQuery({
-    queryKey: ['players', currentUser?.email], // Add currentUser.email to query key for user-specific caching
+    queryKey: ['players', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser?.email) return []; // If no user, return empty array immediately
-      // Filter PlayerStats by the email of the current user
+      if (!currentUser?.email) return [];
       return await base44.entities.PlayerStats.filter(
-        { created_by: currentUser.email }, // Filter condition
-        '-created_date' // Ordering
+        { created_by: currentUser.email },
+        '-created_date'
       );
     },
-    enabled: !!currentUser?.email, // Only enable this query if currentUser.email is available
+    enabled: !!currentUser?.email,
     initialData: [],
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.PlayerStats.delete(id),
     onSuccess: () => {
-      // Invalidate queries for the specific user's players
-      queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] });
+      queryClient.invalidateQueries({ queryKey: ['players'] });
     },
   });
 
   const handleSearch = async (query) => {
-    // Check if user can perform lookup
     if (!canLookup()) {
       setShowLimitModal(true);
       return;
@@ -58,103 +58,48 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports statistics analyst with access to LIVE, OFFICIAL sports data.
-        
-        Player Query: "${query}"
-        
-        TODAY'S DATE: ${new Date().toLocaleDateString()}
-        CURRENT SEASON: ${new Date().getFullYear()} season
-        
-        CRITICAL DATA SOURCE REQUIREMENTS:
-        - Use StatMuse (statmuse.com) as PRIMARY source for all player statistics
-        - Cross-reference with official league statistics (NBA.com, NFL.com, PremierLeague.com, etc.)
-        - Verify with ESPN, Basketball-Reference, Pro-Football-Reference
-        - All stats must be from the CURRENT active season
-        - Injury data from official team injury reports (check today's reports)
-        - Next game info must be verified from official team schedules
-        
-        Provide COMPREHENSIVE current season statistics:
-        
-        1. PLAYER IDENTIFICATION:
-           - Full official name (verify spelling from StatMuse)
-           - Current team (verify they're still on this team)
-           - Position
-           - League
-        
-        2. CURRENT SEASON AVERAGES (Per Game):
-           Use StatMuse and official league stats - Must include ALL relevant stats:
-           
-           BASKETBALL (NBA/NCAA):
-           - Points per game (exact from StatMuse)
-           - Assists per game (exact from StatMuse)
-           - Rebounds per game (exact from StatMuse) - CRITICAL for PTS+REB+AST
-           - Steals per game
-           - Blocks per game
-           - Field Goal % (actual shooting percentage)
-           - 3-Point % (actual three-point shooting)
-           - Free Throw %
-           - Minutes per game
-           
-           FOOTBALL/SOCCER:
-           - Goals per game
-           - Assists per game
-           - Shots per game
-           - Passes per game
-           - Tackles per game
-           - Pass completion %
-           - Minutes per game
-           
-           Source from StatMuse first, then verify with official league statistics.
-        
-        3. LAST 5-10 GAMES - COMPLETE GAME LOG:
-           CRITICAL: Get ACTUAL game-by-game stats from StatMuse game logs
-           
-           For EACH of the last 5-10 games include:
-           - Exact date (MM/DD/YYYY)
-           - Opponent team name
-           - Points/Goals scored (exact number from StatMuse game log)
-           - Assists (exact number from game log)
-           - Rebounds if basketball (exact number from game log)
-           - Performance rating based on actual stats
-           
-           FOR BASKETBALL: MUST include points, rebounds, AND assists for every game
-           Sources: StatMuse game logs, NBA.com game logs, ESPN player game logs
-        
-        4. CURRENT INJURY STATUS:
-           - Check StatMuse injury updates AND official team injury reports from TODAY
-           - Status: Healthy / Probable / Questionable / Doubtful / Out
-           - If injured, specify the exact injury
-        
-        5. NEXT SCHEDULED GAME:
-           - Verify from StatMuse schedule or official team schedule
-           - Opponent name
-           - Exact date and time
-           - Home/Away location
-           - Predicted performance based on:
-             * Season averages from StatMuse
-             * Recent form (last 5 games trend)
-             * Matchup history vs this opponent
-             * For basketball: predict points, rebounds, assists individually AND combined
-        
-        6. BETTING INSIGHTS:
-           - Over/Under line (typical betting line for this player from sportsbooks)
-           - Probability to score/reach milestones (based on season % from StatMuse)
-           - Hot streak status (scoring above average in 3+ consecutive games)
-           - Consistency rating (based on standard deviation of performance)
-        
-        7. ANALYSIS:
-           - Top 3-5 strengths (based on statistical rankings from StatMuse)
-           - 2-3 areas for improvement
-           - Career highlights and awards (verify from official sources)
-        
-        DATA VALIDATION:
-        - All statistics must be from current ${new Date().getFullYear()} season
-        - Recent games must be actual completed games (verify dates on StatMuse)
-        - Next game must be in the future
-        - All percentages should be realistic (0-100)
-        - Season averages should match StatMuse verified sources
-        
-        If player is not currently active or data is unavailable, indicate clearly.`,
+        prompt: `Analyze this player: "${query}"
+
+TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+SEASON: ${new Date().getFullYear()}
+
+Provide comprehensive player statistics:
+
+1. PLAYER INFO:
+- Full name (official spelling from StatMuse)
+- Current team, position, league
+- Verify player is active this season
+
+2. SEASON AVERAGES (${new Date().getFullYear()} season):
+For Basketball: PPG, APG, RPG, FG%, 3P%, FT%, Steals, Blocks, Minutes
+For Soccer: Goals/game, Assists/game, Shots, Passes, Tackles, Minutes
+Source from StatMuse and official league stats
+
+3. RECENT GAMES (last 5-10 games):
+Get ACTUAL game-by-game stats from StatMuse:
+- Date, opponent, points/goals, assists, rebounds (if basketball)
+- Performance rating
+FOR BASKETBALL: Must include points, rebounds, AND assists for each game
+
+4. INJURY STATUS:
+Check official team injury reports from TODAY
+
+5. NEXT GAME:
+- Opponent, date, location
+- Predicted performance based on season averages and recent form
+
+6. BETTING INSIGHTS:
+- Over/Under line
+- Probability to score
+- Hot streak status
+- Consistency rating
+
+7. ANALYSIS:
+- Top 3-5 strengths
+- 2-3 weaknesses
+- Career highlights
+
+Use StatMuse, ESPN, and official sources. All stats must be current ${new Date().getFullYear()} season.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -228,33 +173,43 @@ export default function PlayerStats() {
               type: "array",
               items: { type: "string" }
             }
-          }
+          },
+          required: ["player_name", "sport", "team"]
         }
       });
 
-      // The 'created_by' field should be automatically set by the backend based on the authenticated user.
-      // If not, you might need to add: result.created_by = currentUser.email; before create call.
+      console.log("Player Stats Result:", result);
+
+      if (!result || !result.player_name || !result.sport) {
+        throw new Error("Invalid response - missing required player data");
+      }
+
       await base44.entities.PlayerStats.create(result);
-      
-      // Record a lookup after successful analysis
       recordLookup();
+      queryClient.invalidateQueries({ queryKey: ['players'] });
       
-      queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] }); // Invalidate for the current user
     } catch (err) {
-      setError("Failed to fetch player statistics. Please try again with a specific player name.");
       console.error("Player Stats Error:", err);
+      let errorMessage = "Failed to fetch player statistics. ";
+      
+      if (err.message?.includes("Invalid response")) {
+        errorMessage += "The AI couldn't find that player. Try using the player's full name (e.g., 'LeBron James', 'Cristiano Ronaldo').";
+      } else {
+        errorMessage += "Please try with a specific player name (e.g., 'Stephen Curry', 'Lionel Messi').";
+      }
+      
+      setError(errorMessage);
     }
 
     setIsSearching(false);
   };
 
-  // Display error if loading user-specific players fails
   if (loadError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
         <Alert variant="destructive" className="max-w-2xl mx-auto">
           <AlertDescription>
-            Failed to load player statistics. Please refresh the page or contact support.
+            Failed to load player statistics. Please refresh the page.
           </AlertDescription>
         </Alert>
       </div>
@@ -263,17 +218,13 @@ export default function PlayerStats() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
-      {/* Free Lookup Banner */}
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
-
-      {/* Free Lookup Limit Modal */}
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
         lookupsRemaining={lookupsRemaining}
       />
 
-      {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="flex items-center gap-3 mb-4">
@@ -288,29 +239,25 @@ export default function PlayerStats() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Search Section */}
         <div className="mb-8">
           <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Loading State */}
-        {isSearching || (isLoading && currentUser?.email) ? ( // Add isLoading and check for user to show loading for fetching user's players
+        {isSearching ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 relative">
                 <div className="absolute inset-0 rounded-full border-4 border-purple-200" />
                 <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 justify-center">
                 <Sparkles className="w-5 h-5 text-purple-600" />
                 <span className="font-medium">Fetching player statistics...</span>
               </div>
@@ -318,7 +265,6 @@ export default function PlayerStats() {
             </div>
           </div>
         ) : (
-          // Players List - Only show if not searching and not loading initial players for the user
           <>
             {players.length > 0 ? (
               <>

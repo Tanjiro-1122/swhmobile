@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target, Lock } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
@@ -50,7 +49,6 @@ export default function Dashboard() {
   });
 
   const handleSearch = async (query) => {
-    // Check if user can perform lookup
     if (!canLookup()) {
       setShowLimitModal(true);
       return;
@@ -61,79 +59,45 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports betting analyst with access to LIVE, CURRENT sports data from the internet.
-        
-        User Query: "${query}"
-        
-        TODAY'S DATE: ${new Date().toLocaleDateString()}
-        CURRENT SEASON: ${new Date().getFullYear()} season
-        
-        CRITICAL DATA SOURCE REQUIREMENTS:
-        - Use StatMuse (statmuse.com) as PRIMARY source for all statistics
-        - Cross-reference with ESPN, official league websites (NBA.com, NFL.com, PremierLeague.com, etc.)
-        - Verify data from Basketball-Reference, Pro-Football-Reference, or equivalent sports databases
-        - All statistics must be from the CURRENT active season
-        - Check current betting odds from major sportsbooks (DraftKings, FanDuel, BetMGM)
-        
-        Provide COMPREHENSIVE betting analysis including:
-        
-        1. MATCH WIN PROBABILITIES based on:
-           - Current season form and standings (from StatMuse and official league sites)
-           - Recent head-to-head records (last 5 meetings with exact scores)
-           - Live injury reports from official team sources
-           - Home/away performance this season (specific win-loss records)
-           - Current betting odds from major bookmakers
-           - Expert predictions from verified analysts
-           - Weather conditions (if outdoor sport)
-           - Rest days and schedule factors
-        
-        2. KEY PLAYERS PREDICTIONS (3-5 players per team):
-           For each player provide VERIFIED statistics from StatMuse:
-           - Current season averages (exact PPG, APG, RPG from StatMuse/official stats)
-           - Last 5 games performance with ACTUAL game-by-game stats
-           - Predicted points/goals (realistic based on season average ±20%)
-           - Predicted assists (realistic based on season average ±20%)
-           - Predicted rebounds if basketball (realistic based on season average ±20%)
-           - Probability to score (based on actual scoring rate this season)
-           - Recent form description (based on last 3-5 games trends)
-           - Current injury status from official injury reports (check today's reports)
-           
-           FOR BASKETBALL: 
-           - MUST include points, rebounds, AND assists for PTS+REB+AST combined stat
-           - Use StatMuse to get exact season averages for all three categories
-           - Calculate combined stat for both season average and game predictions
-        
-        3. ADDITIONAL BETTING MARKETS (with realistic probabilities):
-           - Over/Under total points/goals:
-             * Use StatMuse data for both teams' season scoring averages
-             * Line should be realistic (NBA: 215-235, NFL: 45-52, Soccer: 2.5-3.5)
-             * Calculate probabilities based on actual scoring patterns
-           
-           - Both Teams to Score (soccer/hockey):
-             * Based on teams' scoring consistency this season from StatMuse
-             * Consider defensive records and clean sheet statistics
-           
-           - Total Score Range:
-             * Predict realistic final score based on season averages
-             * Provide confidence range based on variance
-           
-           - First to Score:
-             * Based on average time to first goal/score this season
-             * Consider home advantage statistics from historical data
-        
-        4. CONFIDENCE LEVEL:
-           - HIGH: Clear statistical advantage (>10% difference), no major injuries, consistent form
-           - MEDIUM: Close match-up (5-10% difference), some uncertainty factors
-           - LOW: High variance (<5% difference), key injuries, or very inconsistent recent form
-        
-        DATA VALIDATION:
-        - Ensure all percentages add to 100% (home + away + draw if applicable)
-        - All predicted stats should be realistic (within 2 standard deviations of season average)
-        - Match date must be in the future
-        - Use actual team names as they appear on StatMuse/official sites
-        - Verify all player names are spelled correctly
-        
-        Return comprehensive analysis with ALL required fields filled with CURRENT, VERIFIED data from StatMuse and official sources.`,
+        prompt: `Analyze this sports match query: "${query}"
+
+TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+
+Provide a comprehensive match analysis with:
+
+1. MATCH DETAILS:
+- Identify the sport, league, home team, away team
+- Match date/time (must be future or today)
+- Use official team names from StatMuse or ESPN
+
+2. WIN PROBABILITIES:
+- Calculate realistic win probabilities based on:
+  * Current season records from StatMuse
+  * Recent form (last 5 games)
+  * Head-to-head history
+  * Home/away advantage
+  * Current injuries from official reports
+- Probabilities must total 100% (home + away + draw if applicable)
+
+3. KEY FACTORS (3-5 bullet points):
+- Statistical evidence supporting the prediction
+- Recent performance trends
+- Injury impacts
+- Matchup advantages
+
+4. KEY PLAYERS (3-4 per team):
+For each player include:
+- Name, team, position
+- Season averages (PPG, APG, RPG for basketball; Goals, Assists for soccer)
+- Predicted performance for this game
+- Current injury status
+
+5. BETTING MARKETS:
+- Over/Under line (realistic based on team averages)
+- Both teams to score probability (if soccer/hockey)
+- Score prediction
+
+Use StatMuse, ESPN, and official league sources. All statistics must be current ${new Date().getFullYear()} season.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -207,19 +171,34 @@ export default function Dashboard() {
                 }
               }
             }
-          }
+          },
+          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability"]
         }
       });
 
+      console.log("Match Analysis Result:", result);
+
+      if (!result || !result.sport || !result.home_team) {
+        throw new Error("Invalid response from AI - missing required fields");
+      }
+
       await base44.entities.Match.create(result);
-      
-      // Record a lookup after successful analysis
       recordLookup();
-      
       queryClient.invalidateQueries({ queryKey: ['matches'] });
+      
     } catch (err) {
-      setError("Failed to analyze the match. Please try again with more specific details.");
       console.error("Match Analysis Error:", err);
+      let errorMessage = "Failed to analyze the match. ";
+      
+      if (err.message?.includes("Invalid response")) {
+        errorMessage += "The AI couldn't understand your query. Try being more specific (e.g., 'Lakers vs Celtics tonight').";
+      } else if (err.message?.includes("network") || err.message?.includes("fetch")) {
+        errorMessage += "Network error. Please check your connection and try again.";
+      } else {
+        errorMessage += "Please try with a more specific match query (e.g., 'Manchester United vs Liverpool', 'Lakers vs Warriors today').";
+      }
+      
+      setError(errorMessage);
     }
 
     setIsSearching(false);
@@ -239,10 +218,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Free Lookup Banner - ALWAYS VISIBLE AT TOP */}
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
-
-      {/* Free Lookup Limit Modal */}
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
@@ -252,14 +228,14 @@ export default function Dashboard() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 opacity-90" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMuorgLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="flex items-start justify-between flex-wrap gap-6">
             <div className="flex-1 min-w-[300px]">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Sports Wager Saver</span>
+                <span className="text-white text-sm font-medium">Live AI Analysis</span>
               </div>
               
               <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
@@ -270,22 +246,8 @@ export default function Dashboard() {
               </h1>
               
               <p className="text-xl text-emerald-100 max-w-2xl leading-relaxed mb-6">
-                AI-powered match predictions to help you save on wagers. Get winning probabilities, player performance insights, and smarter betting recommendations with real-time stats from StatMuse, ESPN, and official league sources.
+                AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources. Get match predictions, player insights, and team analysis.
               </p>
-
-              {!isAuthenticated && (
-                <div className="inline-flex items-center gap-3 bg-yellow-400/20 backdrop-blur-sm border-2 border-yellow-400 rounded-xl px-6 py-4 mb-6">
-                  <Lock className="w-6 h-6 text-yellow-400" />
-                  <div>
-                    <div className="text-white font-bold text-lg">
-                      {lookupsRemaining} Free Searches Available!
-                    </div>
-                    <div className="text-yellow-100 text-sm">
-                      No credit card required • Sign up for unlimited access
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="flex items-center gap-4 mt-6">
                 <div className="flex items-center gap-2">
@@ -351,14 +313,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Loading State */}
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -370,7 +330,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
-              <p className="text-slate-400">Crunching numbers from StatMuse, ESPN & official sources...</p>
+              <p className="text-slate-400">Fetching live stats from StatMuse & ESPN...</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -380,7 +340,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Matches Grid */}
         {!isSearching && (
           <>
             {matches.length > 0 ? (
@@ -415,7 +374,7 @@ export default function Dashboard() {
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
           <p className="text-sm text-amber-400">
             <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
-            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
+            Always gamble responsibly and never bet more than you can afford to lose.
           </p>
         </div>
       </div>
