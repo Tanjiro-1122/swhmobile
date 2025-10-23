@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -334,7 +335,7 @@ FORMAT: Return valid JSON with ALL sport-appropriate fields populated using REAL
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
+    <div className="min-h-screen">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -342,43 +343,47 @@ FORMAT: Return valid JSON with ALL sport-appropriate fields populated using REAL
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <User className="w-7 h-7" />
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-purple-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-xl">
+              <User className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl font-bold">Player Statistics</h1>
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-black">Player Statistics</h1>
+              <p className="text-purple-100 text-lg mt-2">
+                Season averages, recent form & next game predictions
+              </p>
+            </div>
           </div>
-          <p className="text-purple-100 text-lg max-w-2xl">
-            Get comprehensive player stats including averages, recent form, betting insights, and next game predictions
-          </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-2xl">
           <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6 whitespace-pre-line">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
           </Alert>
         )}
 
         {isSearching ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-purple-200" />
+              <div className="w-20 h-20 mx-auto mb-6 relative">
+                <div className="absolute inset-0 rounded-full border-4 border-purple-200 opacity-20" />
                 <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
               </div>
-              <div className="flex items-center gap-2 text-gray-600 justify-center">
-                <Sparkles className="w-5 h-5 text-purple-600" />
-                <span className="font-medium">Fetching live player statistics...</span>
+              <div className="flex items-center gap-2 text-white justify-center mb-2">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+                <span className="font-bold text-lg">Fetching live player statistics...</span>
               </div>
-              <p className="text-sm text-gray-500 mt-2">Searching StatMuse, ESPN & official sources</p>
+              <p className="text-slate-400">Searching StatMuse, ESPN & official sources</p>
             </div>
           </div>
         ) : (
@@ -386,8 +391,10 @@ FORMAT: Return valid JSON with ALL sport-appropriate fields populated using REAL
             {players.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Analyzed Players ({players.length})
+                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full" />
+                    Analyzed Players
+                    <span className="text-slate-500">({players.length})</span>
                   </h2>
                 </div>
                 <div className="space-y-6">

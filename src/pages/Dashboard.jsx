@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -252,7 +253,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -261,60 +262,47 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
       />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 opacity-90" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Z24=')] opacity-30" />
         
-        <div className="relative max-w-7xl mx-auto px-6 py-16">
-          <div className="flex items-start justify-between flex-wrap gap-6">
-            <div className="flex-1 min-w-[300px]">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Live AI Analysis</span>
-              </div>
-              
-              <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
-                Win More.<br />
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  Bet Smarter.
-                </span>
-              </h1>
-              
-              <p className="text-xl text-emerald-100 max-w-2xl leading-relaxed mb-6">
-                AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources. Get match predictions, player insights, and team analysis.
-              </p>
-
-              <div className="flex items-center gap-4 mt-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Trophy className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-white">{matches?.length || 0}</div>
-                    <div className="text-xs text-emerald-100">Matches Analyzed</div>
-                  </div>
-                </div>
-                
-                <div className="w-px h-12 bg-white/20" />
-                
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Zap className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-white">Live</div>
-                    <div className="text-xs text-emerald-100">Real-time Data</div>
-                  </div>
-                </div>
-              </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-400 text-sm font-semibold">Live AI Analysis</span>
             </div>
+            
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
+              Win More.<br />
+              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                Bet Smarter.
+              </span>
+            </h1>
+            
+            {/* Subheadline */}
+            <p className="text-xl sm:text-2xl text-slate-300 mb-8 leading-relaxed">
+              AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources.
+            </p>
 
-            <div className="flex-shrink-0">
-              <div className="w-64 h-64 relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl opacity-20 blur-3xl" />
-                <div className="relative w-full h-full bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 flex items-center justify-center">
-                  <Trophy className="w-32 h-32 text-white opacity-50" />
-                </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
+                <div className="text-3xl font-bold text-emerald-400">{matches?.length || 0}</div>
+                <div className="text-xs text-slate-400 mt-1">Matches</div>
+              </div>
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
+                <div className="text-3xl font-bold text-cyan-400">Live</div>
+                <div className="text-xs text-slate-400 mt-1">Real-Time</div>
+              </div>
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
+                <div className="text-3xl font-bold text-purple-400">AI</div>
+                <div className="text-xs text-slate-400 mt-1">Powered</div>
+              </div>
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
+                <div className="text-3xl font-bold text-pink-400">Free</div>
+                <div className="text-xs text-slate-400 mt-1">To Try</div>
               </div>
             </div>
           </div>
@@ -322,38 +310,36 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Today's Best Bets Section */}
-        <div className="mb-12">
-          <TodaysBestBets 
-            onLookupUsed={recordLookup}
-            canLookup={canLookup}
-            onLimitReached={() => setShowLimitModal(true)}
-          />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+        {/* Today's Best Bets */}
+        <TodaysBestBets 
+          onLookupUsed={recordLookup}
+          canLookup={canLookup}
+          onLimitReached={() => setShowLimitModal(true)}
+        />
 
         {/* Search Section */}
-        <div className="mb-12">
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
-                <p className="text-slate-400">Get instant win probabilities and betting insights</p>
-              </div>
+        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <Target className="w-6 h-6 text-white" />
             </div>
-            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+            <div>
+              <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
+              <p className="text-slate-400">Get instant win probabilities and betting insights</p>
+            </div>
           </div>
+          <SearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
 
+        {/* Error Display */}
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+          <Alert variant="destructive" className="bg-red-500/10 border-red-500/50 text-red-400">
             <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
           </Alert>
         )}
 
+        {/* Loading State */}
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -375,18 +361,19 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
           </div>
         )}
 
+        {/* Results */}
         {!isSearching && (
           <>
             {matches.length > 0 ? (
               <>
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
-                    Your Match Predictions
+                    Your Predictions
                     <span className="text-slate-500">({matches.length})</span>
                   </h2>
                 </div>
-                <div className="grid lg:grid-cols-2 gap-8">
+                <div className="grid lg:grid-cols-2 gap-6">
                   {matches.map((match, index) => (
                     <MatchCard
                       key={match.id}
@@ -404,12 +391,12 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         )}
       </div>
 
-      {/* Footer Disclaimer */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
+      {/* Disclaimer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
           <p className="text-sm text-amber-400">
             <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
-            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
+            Always gamble responsibly and never bet more than you can afford to lose.
           </p>
         </div>
       </div>

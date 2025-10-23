@@ -1,54 +1,42 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, Zap, Target, UserPlus, LogOut } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, Zap, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useFreeLookupTracker } from "./components/auth/FreeLookupTracker";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navigationItems = [
   {
     title: "Match Analysis",
     url: createPageUrl("Dashboard"),
     icon: Trophy,
-    description: "Live match predictions",
     color: "from-blue-500 to-cyan-500"
   },
   {
     title: "Player Stats",
     url: createPageUrl("PlayerStats"),
     icon: User,
-    description: "Individual performance",
     color: "from-purple-500 to-pink-500"
   },
   {
     title: "Team Stats",
     url: createPageUrl("TeamStats"),
     icon: Shield,
-    description: "Team analytics",
     color: "from-green-500 to-emerald-500"
   },
   {
     title: "Saved Results",
     url: createPageUrl("SavedResults"),
     icon: Bookmark,
-    description: "Your predictions",
     color: "from-orange-500 to-red-500"
   },
 ];
@@ -77,188 +65,131 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
-          <SidebarHeader className="border-b border-slate-700 p-6">
-            <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Top Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/50">
-                  <Zap className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/50 group-hover:shadow-emerald-500/70 transition-all group-hover:scale-110">
+                  <Zap className="w-5 h-5 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse" />
               </div>
-              <div>
-                <h2 className="font-bold text-lg text-white">Sports Wager Saver</h2>
-                <p className="text-xs text-slate-400 flex items-center gap-1">
-                  <Target className="w-3 h-3" />
-                  AI Sports Analytics
-                </p>
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold text-white">Sports Wager Saver</h1>
+                <p className="text-xs text-emerald-400">AI Sports Analytics</p>
               </div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-2">
+              {navigationItems.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.url}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span className="hidden lg:inline">{item.title}</span>
+                  </Link>
+                );
+              })}
             </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="p-3">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 py-2 mb-2">
-                Navigation
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-2">
-                  {navigationItems.map((item) => {
-                    const isActive = location.pathname === item.url;
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                          asChild 
-                          className={`relative overflow-hidden rounded-xl transition-all duration-300 ${
-                            isActive 
-                              ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg scale-105' 
-                              : 'hover:bg-slate-800 text-slate-300 hover:text-white hover:scale-102'
-                          }`}
-                        >
-                          <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              isActive ? 'bg-white/20' : 'bg-slate-800'
-                            }`}>
-                              <item.icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold">{item.title}</div>
-                              <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
-                                {item.description}
-                              </div>
-                            </div>
-                            {isActive && (
-                              <div className="absolute right-0 top-0 bottom-0 w-1 bg-white rounded-l-full" />
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
 
-            {/* Auth Section in Sidebar */}
-            {!isAuthenticated && (
-              <div className="mx-3 mt-4">
-                <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-4">
-                  <div className="text-center mb-3">
-                    <div className="text-2xl font-bold text-emerald-400 mb-1">
-                      {lookupsRemaining}/5
-                    </div>
-                    <div className="text-xs text-slate-300">Free Lookups Left</div>
-                  </div>
-                  <Button
-                    onClick={handleSignup}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
-                    size="sm"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Sign Up Free
-                  </Button>
-                </div>
-              </div>
-            )}
+            {/* Auth Section */}
+            <div className="flex items-center gap-3">
+              {/* Free Lookups Badge */}
+              {!isAuthenticated && (
+                <Badge className="hidden sm:flex bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-3 py-1 text-sm font-bold">
+                  {lookupsRemaining}/5 Free
+                </Badge>
+              )}
 
-            {isAuthenticated && currentUser && (
-              <div className="mx-3 mt-4">
-                <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {currentUser.full_name?.[0] || currentUser.email?.[0] || 'U'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-white truncate">
-                        {currentUser.full_name || 'User'}
+              {/* User Menu or Sign Up */}
+              {isAuthenticated && currentUser ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 hover:bg-slate-800">
+                      <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {currentUser.full_name?.[0] || currentUser.email?.[0] || 'U'}
                       </div>
-                      <div className="text-xs text-slate-400 truncate">
-                        {currentUser.email}
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleLogout}
-                    variant="outline"
-                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
-                    size="sm"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </div>
-              </div>
-            )}
-          </SidebarContent>
+                      <span className="hidden sm:inline text-white font-medium">{currentUser.full_name || 'User'}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  onClick={handleSignup}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Sign Up Free</span>
+                  <span className="sm:hidden">Sign Up</span>
+                </Button>
+              )}
 
-          <SidebarFooter className="border-t border-slate-700 p-4">
-            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                <p className="text-xs font-semibold text-amber-400">Live Data</p>
+              {/* Mobile Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-slate-800">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {navigationItems.map((item) => (
+                    <DropdownMenuItem key={item.title} asChild>
+                      <Link to={item.url} className="flex items-center gap-2 cursor-pointer">
+                        <item.icon className="w-4 h-4" />
+                        {item.title}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="min-h-[calc(100vh-4rem)]">
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-900/50 border-t border-slate-800 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
               </div>
-              <p className="text-xs text-slate-400">
-                Powered by StatMuse, ESPN & official league sources
+              <span className="text-slate-400 text-sm">© 2024 Sports Wager Saver</span>
+            </div>
+            <div className="text-slate-500 text-sm text-center">
+              <p className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                Powered by live data from StatMuse, ESPN & official sources
               </p>
             </div>
-          </SidebarFooter>
-        </Sidebar>
-
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Mobile Header */}
-          <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 px-4 py-3 md:hidden">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-bold text-white leading-tight">Sports Wager Saver</h1>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Auth Buttons */}
-              <div className="flex items-center gap-2">
-                {!isAuthenticated ? (
-                  <>
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs px-2 py-1">
-                      {lookupsRemaining}/5 Free
-                    </Badge>
-                    <Button
-                      onClick={handleSignup}
-                      size="sm"
-                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white h-8 px-3 text-xs"
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      Sign Up
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={handleLogout}
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700 h-8 px-3 text-xs"
-                  >
-                    <LogOut className="w-3 h-3 mr-1" />
-                    Logout
-                  </Button>
-                )}
-              </div>
-            </div>
-          </header>
-
-          {/* Main content area */}
-          <div className="flex-1 overflow-auto">
-            {children}
           </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </footer>
+    </div>
   );
 }
