@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -74,13 +75,13 @@ export default function Layout({ children, currentPageName }) {
             <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3 group">
               <div className="relative">
                 <img 
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/bd7554354_image.png"
-                  alt="SWS Sports Wager Helper"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f7ec915ef_image.png"
+                  alt="SWH Sports Wager Helper"
                   className="h-10 w-10 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-white">Sports Wager Saver</h1>
+                <h1 className="text-lg font-bold text-white">Sports Wager Helper</h1>
                 <p className="text-xs text-emerald-400">AI Sports Analytics</p>
               </div>
             </Link>
@@ -184,11 +185,11 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/bd7554354_image.png"
-                alt="SWS Logo"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f7ec915ef_image.png"
+                alt="SWH Logo"
                 className="w-8 h-8 object-contain"
               />
-              <span className="text-slate-400 text-sm">© 2024 Sports Wager Saver</span>
+              <span className="text-slate-400 text-sm">© 2024 Sports Wager Helper</span>
             </div>
             <div className="text-slate-500 text-sm text-center">
               <p className="flex items-center gap-1">
