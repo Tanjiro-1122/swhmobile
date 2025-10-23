@@ -7,11 +7,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import EmptyPlayerState from "../components/player/EmptyPlayerState";
+import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
 export default function PlayerStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
+
+  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -43,6 +47,12 @@ export default function PlayerStats() {
   });
 
   const handleSearch = async (query) => {
+    // Check if user can perform lookup
+    if (!canLookup()) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setIsSearching(true);
     setError(null);
 
@@ -225,6 +235,10 @@ export default function PlayerStats() {
       // The 'created_by' field should be automatically set by the backend based on the authenticated user.
       // If not, you might need to add: result.created_by = currentUser.email; before create call.
       await base44.entities.PlayerStats.create(result);
+      
+      // Use a lookup after successful analysis
+      useLookup();
+      
       queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] }); // Invalidate for the current user
     } catch (err) {
       setError("Failed to fetch player statistics. Please try again with a specific player name.");
@@ -249,6 +263,16 @@ export default function PlayerStats() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
+      {/* Free Lookup Banner */}
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+
+      {/* Free Lookup Limit Modal */}
+      <FreeLookupModal 
+        show={showLimitModal} 
+        onClose={() => setShowLimitModal(false)}
+        lookupsRemaining={lookupsRemaining}
+      />
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-12">

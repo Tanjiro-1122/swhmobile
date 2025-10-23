@@ -7,11 +7,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import TeamSearchBar from "../components/team/TeamSearchBar";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import EmptyTeamState from "../components/team/EmptyTeamState";
+import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
 export default function TeamStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
+  
+  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -41,6 +45,12 @@ export default function TeamStats() {
   });
 
   const handleSearch = async (query) => {
+    // Check if user can perform lookup
+    if (!canLookup()) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setIsSearching(true);
     setError(null);
 
@@ -233,6 +243,10 @@ export default function TeamStats() {
       });
 
       await base44.entities.TeamStats.create(result);
+      
+      // Use a lookup after successful analysis
+      useLookup();
+      
       queryClient.invalidateQueries({ queryKey: ['teams', currentUser?.email] }); // Invalidate with user-specific key
     } catch (err) {
       setError("Failed to fetch team statistics. Please try again with a specific team name.");
@@ -255,7 +269,7 @@ export default function TeamStats() {
   }
 
   // Show a message if no user is logged in
-  if (!currentUser) {
+  if (!currentUser && !isAuthenticated) { // Added isAuthenticated check for clarity, though currentUser check should suffice if currentUser is linked to auth status
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-6">
         <div className="max-w-6xl mx-auto px-6 py-8">
@@ -272,6 +286,16 @@ export default function TeamStats() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50">
+      {/* Free Lookup Banner */}
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+
+      {/* Free Lookup Limit Modal */}
+      <FreeLookupModal 
+        show={showLimitModal} 
+        onClose={() => setShowLimitModal(false)}
+        lookupsRemaining={lookupsRemaining}
+      />
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-12">

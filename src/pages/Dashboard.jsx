@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,19 +7,27 @@ import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
+import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
+  
+  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
 
-  // Get current user
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
   });
 
-  // Fetch only current user's matches
   const { data: matches, isLoading, error: loadError } = useQuery({
     queryKey: ['matches', currentUser?.email],
     queryFn: async () => {
@@ -42,6 +49,12 @@ export default function Dashboard() {
   });
 
   const handleSearch = async (query) => {
+    // Check if user can perform lookup
+    if (!canLookup()) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setIsSearching(true);
     setError(null);
 
@@ -198,6 +211,10 @@ export default function Dashboard() {
       });
 
       await base44.entities.Match.create(result);
+      
+      // Use a lookup after successful analysis
+      useLookup();
+      
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     } catch (err) {
       setError("Failed to analyze the match. Please try again with more specific details.");
@@ -221,6 +238,16 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Free Lookup Banner */}
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+
+      {/* Free Lookup Limit Modal */}
+      <FreeLookupModal 
+        show={showLimitModal} 
+        onClose={() => setShowLimitModal(false)}
+        lookupsRemaining={lookupsRemaining}
+      />
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-12">
