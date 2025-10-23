@@ -40,48 +40,49 @@ export default function TeamStats() {
         CURRENT SEASON: ${new Date().getFullYear()} season
         
         CRITICAL DATA SOURCE REQUIREMENTS:
-        - Use ONLY official league statistics and standings
-        - Source from ESPN, official league websites, verified sports databases
+        - Use StatMuse (statmuse.com) as PRIMARY source for all team statistics
+        - Cross-reference with official league statistics and standings
+        - Verify with ESPN, official league websites, Basketball-Reference, Pro-Football-Reference
         - All stats must be from the CURRENT active season
-        - Verify team names are official and current
-        - Check rosters and injury reports from official sources
+        - Check injury reports from official team sources (today's reports)
+        - Verify team names and rosters are current
         
         Provide COMPREHENSIVE current season team statistics:
         
         1. TEAM IDENTIFICATION:
-           - Full official team name
+           - Full official team name (verify from StatMuse)
            - Sport and league
-           - Current season record (W-L-D with exact numbers from standings)
-           - Win percentage
-           - Recent form string (e.g., "W-W-L-W-D" from last 5 games)
+           - Current season record (W-L-D with exact numbers from StatMuse/official standings)
+           - Win percentage (calculate from actual record)
+           - Recent form string (e.g., "W-W-L-W-D" from last 5 games on StatMuse)
         
         2. CURRENT SEASON AVERAGES (Per Game):
-           Must include ALL relevant stats for the sport:
+           Use StatMuse and official league stats - Must include ALL relevant stats:
            
            BASKETBALL:
-           - Points per game (team offense)
-           - Points allowed per game (team defense)
-           - Field goal %
-           - 3-Point %
+           - Points per game (team offense from StatMuse)
+           - Points allowed per game (team defense from StatMuse)
+           - Field goal % (team shooting from StatMuse)
+           - 3-Point % (team three-point shooting)
            - Assists per game
            - Rebounds per game
            - Turnovers per game
            
            FOOTBALL/SOCCER:
-           - Goals per game
-           - Goals allowed per game
-           - Possession %
+           - Goals per game (from StatMuse)
+           - Goals allowed per game (defensive record)
+           - Possession % (average from matches)
            - Shots per game
            - Shots allowed per game
            - Passing accuracy %
            
-           Use official season statistics from verified sources only.
+           Source all statistics from StatMuse first, then verify with official league data.
         
         3. LAST 5 GAMES - COMPLETE GAME LOG:
-           CRITICAL: Provide ACTUAL game-by-game results from official records
+           CRITICAL: Get ACTUAL game-by-game results from StatMuse game logs
            
            For EACH of the last 5 games include:
-           - Exact date (MM/DD/YYYY)
+           - Exact date (MM/DD/YYYY from StatMuse)
            - Opponent team name
            - Result (Win/Loss/Draw)
            - Final score (Team score - Opponent score)
@@ -90,41 +91,44 @@ export default function TeamStats() {
            - Opponent points/goals
            - Key stats for that specific game (shooting %, possession, turnovers, etc.)
            
-           Sources: Official league game logs, ESPN team schedules, verified game recaps
+           Sources: StatMuse game logs, official league schedules, ESPN team recaps
         
         4. KEY PLAYERS ROSTER:
-           - List 5-7 most important players currently on the roster
-           - Verify they are active (not traded/injured long-term)
+           - List 5-7 most important players currently on the roster (verify from StatMuse)
+           - Ensure all players are active (not traded/injured long-term)
+           - Verify names and positions
         
         5. CURRENT INJURY REPORT:
-           - Check official team injury reports from TODAY
+           - Check StatMuse injury updates AND official team injury reports from TODAY
            - For each injured player:
              * Player name
              * Specific injury
              * Status (Out / Day-to-Day / Probable / Questionable)
+             * Expected return date if available
         
         6. NEXT SCHEDULED GAME:
-           - Verify from official team schedule
+           - Verify from StatMuse schedule or official team schedule
            - Opponent name
            - Exact date and time
            - Home or Away
            - Win/Loss prediction with reasoning based on:
-             * Current form
-             * Head-to-head record
-             * Home/away performance
-             * Injury impact
+             * Current form from last 5 games
+             * Head-to-head record (get from StatMuse)
+             * Home/away performance this season
+             * Impact of current injuries
+             * Statistical matchup advantages/disadvantages
         
         7. TEAM ANALYSIS:
-           - Top 3-5 team strengths (based on statistical rankings)
+           - Top 3-5 team strengths (based on statistical rankings from StatMuse)
            - 2-3 weaknesses or areas of concern
-           - Supported by actual statistics
+           - All analysis must be supported by actual statistics
         
         DATA VALIDATION:
         - All statistics must be from current ${new Date().getFullYear()} season
-        - Last 5 games must be actual completed games (verify dates)
+        - Last 5 games must be actual completed games (verify dates on StatMuse)
         - Next game must be in the future
-        - Record and percentages must be accurate
-        - All stats should match official league standings
+        - Record and percentages must be mathematically accurate
+        - All stats should match StatMuse and official league standings
         
         If team name is unclear or data unavailable, indicate clearly.`,
         add_context_from_internet: true,

@@ -40,31 +40,32 @@ export default function PlayerStats() {
         CURRENT SEASON: ${new Date().getFullYear()} season
         
         CRITICAL DATA SOURCE REQUIREMENTS:
-        - Use ONLY official league statistics (NBA.com, NFL.com, PremierLeague.com, etc.)
-        - Cross-reference with ESPN, Basketball-Reference, or verified sports data APIs
+        - Use StatMuse (statmuse.com) as PRIMARY source for all player statistics
+        - Cross-reference with official league statistics (NBA.com, NFL.com, PremierLeague.com, etc.)
+        - Verify with ESPN, Basketball-Reference, Pro-Football-Reference
         - All stats must be from the CURRENT active season
-        - Injury data from official team injury reports
-        - Next game info must be verified and upcoming
+        - Injury data from official team injury reports (check today's reports)
+        - Next game info must be verified from official team schedules
         
         Provide COMPREHENSIVE current season statistics:
         
         1. PLAYER IDENTIFICATION:
-           - Full official name
+           - Full official name (verify spelling from StatMuse)
            - Current team (verify they're still on this team)
            - Position
            - League
         
         2. CURRENT SEASON AVERAGES (Per Game):
-           Must include ALL relevant stats for the sport:
+           Use StatMuse and official league stats - Must include ALL relevant stats:
            
            BASKETBALL (NBA/NCAA):
-           - Points per game
-           - Assists per game  
-           - Rebounds per game (CRITICAL for PTS+REB+AST)
+           - Points per game (exact from StatMuse)
+           - Assists per game (exact from StatMuse)
+           - Rebounds per game (exact from StatMuse) - CRITICAL for PTS+REB+AST
            - Steals per game
            - Blocks per game
-           - Field Goal %
-           - 3-Point %
+           - Field Goal % (actual shooting percentage)
+           - 3-Point % (actual three-point shooting)
            - Free Throw %
            - Minutes per game
            
@@ -77,56 +78,55 @@ export default function PlayerStats() {
            - Pass completion %
            - Minutes per game
            
-           Use official season statistics from verified sources only.
+           Source from StatMuse first, then verify with official league statistics.
         
         3. LAST 5-10 GAMES - COMPLETE GAME LOG:
-           CRITICAL: Provide ACTUAL game-by-game stats from official box scores
+           CRITICAL: Get ACTUAL game-by-game stats from StatMuse game logs
            
            For EACH of the last 5-10 games include:
            - Exact date (MM/DD/YYYY)
            - Opponent team name
-           - Points/Goals scored (exact number from box score)
-           - Assists (exact number)
-           - Rebounds if basketball (exact number)
+           - Points/Goals scored (exact number from StatMuse game log)
+           - Assists (exact number from game log)
+           - Rebounds if basketball (exact number from game log)
            - Performance rating based on actual stats
            
            FOR BASKETBALL: MUST include points, rebounds, AND assists for every game
-           
-           Sources: NBA.com game logs, ESPN player game logs, official league stats
+           Sources: StatMuse game logs, NBA.com game logs, ESPN player game logs
         
         4. CURRENT INJURY STATUS:
-           - Check official team injury reports from TODAY
+           - Check StatMuse injury updates AND official team injury reports from TODAY
            - Status: Healthy / Probable / Questionable / Doubtful / Out
-           - If injured, specify the injury
+           - If injured, specify the exact injury
         
         5. NEXT SCHEDULED GAME:
-           - Verify from official team schedule
+           - Verify from StatMuse schedule or official team schedule
            - Opponent name
            - Exact date and time
            - Home/Away location
            - Predicted performance based on:
-             * Season averages
+             * Season averages from StatMuse
              * Recent form (last 5 games trend)
              * Matchup history vs this opponent
-             * For basketball: predict points, rebounds, assists individually
+             * For basketball: predict points, rebounds, assists individually AND combined
         
         6. BETTING INSIGHTS:
-           - Over/Under line (typical betting line for this player)
-           - Probability to score/reach milestones (based on season %)
+           - Over/Under line (typical betting line for this player from sportsbooks)
+           - Probability to score/reach milestones (based on season % from StatMuse)
            - Hot streak status (scoring above average in 3+ consecutive games)
-           - Consistency rating based on standard deviation of performance
+           - Consistency rating (based on standard deviation of performance)
         
         7. ANALYSIS:
-           - Top 3-5 strengths (based on statistical rankings)
+           - Top 3-5 strengths (based on statistical rankings from StatMuse)
            - 2-3 areas for improvement
-           - Career highlights and awards
+           - Career highlights and awards (verify from official sources)
         
         DATA VALIDATION:
         - All statistics must be from current ${new Date().getFullYear()} season
-        - Recent games must be actual completed games (check dates)
+        - Recent games must be actual completed games (verify dates on StatMuse)
         - Next game must be in the future
         - All percentages should be realistic (0-100)
-        - Season averages should match verified sources
+        - Season averages should match StatMuse verified sources
         
         If player is not currently active or data is unavailable, indicate clearly.`,
         add_context_from_internet: true,

@@ -20,52 +20,55 @@ export default function TodaysBestBets() {
         
         TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         
-        CRITICAL INSTRUCTIONS:
-        - Analyze ONLY matches happening TODAY (${new Date().toLocaleDateString()})
-        - Use real-time data from ESPN, official league sites, and verified bookmakers
-        - Check current betting odds from major sportsbooks
+        CRITICAL DATA SOURCE REQUIREMENTS:
+        - Use StatMuse (statmuse.com) as PRIMARY source for all statistics
+        - Cross-reference with ESPN, official league sites, and verified bookmakers
+        - Check current betting odds from major sportsbooks (DraftKings, FanDuel, BetMGM)
         - Verify all injury reports are current as of today
-        - Consider latest team news and lineup confirmations
+        - Confirm all matches are actually scheduled for TODAY
         
-        Provide the TOP 3 MOST LIKELY bets for today based on:
+        Analyze ONLY matches happening TODAY (${new Date().toLocaleDateString()}) and provide the TOP 3 MOST LIKELY bets based on:
         
-        1. STATISTICAL ANALYSIS:
-           - Current season form and trends
-           - Head-to-head records (last 5 meetings)
-           - Home/away performance this season
-           - Recent scoring patterns (last 5 games for each team)
-           - Key player availability (confirmed lineups if available)
+        1. STATISTICAL ANALYSIS from StatMuse:
+           - Current season form and trends (exact W-L records)
+           - Head-to-head records (last 5 meetings with scores)
+           - Home/away performance this season (specific records)
+           - Recent scoring patterns (last 5 games for each team from StatMuse)
+           - Key player availability (check injury reports today)
         
         2. VALUE ASSESSMENT:
-           - Current odds from major bookmakers
-           - Implied probability vs actual probability
+           - Current odds from major bookmakers (check actual lines)
+           - Implied probability vs actual probability (based on StatMuse stats)
            - Historical success rate of similar bets
+           - Line movement and betting trends
         
         3. RISK EVALUATION:
-           - Injury impact assessment
+           - Injury impact assessment (from today's reports)
            - Lineup/rotation changes
-           - External factors (weather, rest days, motivation)
+           - External factors (weather for outdoor sports, rest days, motivation)
+           - Statistical variance and consistency
         
         For each of the TOP 3 recommendations provide:
         
-        - Match details (exact teams playing today, league, kickoff/start time in local timezone)
+        - Match details (exact teams playing TODAY, league, kickoff/start time in local timezone)
         - Specific bet type (e.g., "Home Win", "Over 2.5 Goals", "Lakers -5.5 spread", "Player X Over 25.5 Points")
-        - Confidence percentage (70-95% based on statistical likelihood)
-        - Current odds (check major bookmakers like DraftKings, FanDuel, BetMGM)
+        - Confidence percentage (70-95% based on StatMuse statistical likelihood)
+        - Current odds (verify from DraftKings, FanDuel, or BetMGM)
         - 3-4 concrete reasons why this bet has value:
-          * Statistical evidence (e.g., "Home team 8-2 in last 10, averaging 115 PPG")
-          * Form analysis (e.g., "Away team on 3-game losing streak")
-          * Matchup advantages (e.g., "Away team allows 120 PPG on the road")
-          * Injury/lineup impact (e.g., "Star player confirmed out")
-        - Risk level (Low/Medium/High)
+          * Statistical evidence from StatMuse (e.g., "Home team 8-2 in last 10, averaging 115 PPG")
+          * Form analysis (e.g., "Away team on 3-game losing streak, scoring 12 PPG below average")
+          * Matchup advantages (e.g., "Away team allows 120 PPG on the road per StatMuse")
+          * Injury/lineup impact (e.g., "Star player confirmed out per official injury report")
+        - Risk level (Low/Medium/High based on variance and uncertainty)
         
         VALIDATION:
-        - Verify all matches are actually scheduled for TODAY
-        - Ensure teams and leagues are correct
+        - Verify all matches are actually scheduled for TODAY using StatMuse or official schedules
+        - Ensure teams and leagues are correct (verify spelling)
         - Odds should be realistic (between 1.50 and 3.00 for most recommendations)
         - Confidence should correlate with risk (High confidence = Low risk)
+        - All statistics must be from StatMuse or official sources
         
-        Sort by confidence level (highest first). Focus on VALUE bets with strong statistical backing.`,
+        Sort by confidence level (highest first). Focus on VALUE bets with strong statistical backing from StatMuse.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

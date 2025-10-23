@@ -37,66 +37,75 @@ export default function Dashboard() {
         
         User Query: "${query}"
         
-        CRITICAL INSTRUCTIONS:
-        - Use ONLY the most recent, up-to-date data from TODAY (${new Date().toLocaleDateString()})
-        - Source data from official league websites, ESPN, official team stats, and verified sports data providers
-        - All statistics must be from the CURRENT ${new Date().getFullYear()} season
-        - Verify match is actually scheduled and upcoming
+        TODAY'S DATE: ${new Date().toLocaleDateString()}
+        CURRENT SEASON: ${new Date().getFullYear()} season
+        
+        CRITICAL DATA SOURCE REQUIREMENTS:
+        - Use StatMuse (statmuse.com) as PRIMARY source for all statistics
+        - Cross-reference with ESPN, official league websites (NBA.com, NFL.com, PremierLeague.com, etc.)
+        - Verify data from Basketball-Reference, Pro-Football-Reference, or equivalent sports databases
+        - All statistics must be from the CURRENT active season
+        - Check current betting odds from major sportsbooks (DraftKings, FanDuel, BetMGM)
         
         Provide COMPREHENSIVE betting analysis including:
         
         1. MATCH WIN PROBABILITIES based on:
-           - Current season form and standings
-           - Recent head-to-head records (last 5 meetings)
-           - Live injury reports from official sources
-           - Home/away performance this season
+           - Current season form and standings (from StatMuse and official league sites)
+           - Recent head-to-head records (last 5 meetings with exact scores)
+           - Live injury reports from official team sources
+           - Home/away performance this season (specific win-loss records)
            - Current betting odds from major bookmakers
            - Expert predictions from verified analysts
            - Weather conditions (if outdoor sport)
+           - Rest days and schedule factors
         
         2. KEY PLAYERS PREDICTIONS (3-5 players per team):
-           For each player provide:
-           - Current season averages (from official league stats)
-           - Last 5 games performance with ACTUAL stats
+           For each player provide VERIFIED statistics from StatMuse:
+           - Current season averages (exact PPG, APG, RPG from StatMuse/official stats)
+           - Last 5 games performance with ACTUAL game-by-game stats
            - Predicted points/goals (realistic based on season average ±20%)
            - Predicted assists (realistic based on season average ±20%)
            - Predicted rebounds if basketball (realistic based on season average ±20%)
-           - Probability to score (based on scoring rate this season)
-           - Recent form description (based on last 3-5 games)
-           - Current injury status from official injury reports
+           - Probability to score (based on actual scoring rate this season)
+           - Recent form description (based on last 3-5 games trends)
+           - Current injury status from official injury reports (check today's reports)
            
-           FOR BASKETBALL: Always include points, rebounds, and assists for PTS+REB+AST combined stat
+           FOR BASKETBALL: 
+           - MUST include points, rebounds, AND assists for PTS+REB+AST combined stat
+           - Use StatMuse to get exact season averages for all three categories
+           - Calculate combined stat for both season average and game predictions
         
         3. ADDITIONAL BETTING MARKETS (with realistic probabilities):
            - Over/Under total points/goals:
-             * Use average of both teams' season scoring
-             * Line should be realistic (e.g., NBA: 215-235, Soccer: 2.5-3.5)
+             * Use StatMuse data for both teams' season scoring averages
+             * Line should be realistic (NBA: 215-235, NFL: 45-52, Soccer: 2.5-3.5)
              * Calculate probabilities based on actual scoring patterns
            
            - Both Teams to Score (soccer/hockey):
-             * Based on teams' scoring consistency this season
-             * Consider defensive records
+             * Based on teams' scoring consistency this season from StatMuse
+             * Consider defensive records and clean sheet statistics
            
            - Total Score Range:
              * Predict realistic final score based on season averages
-             * Provide confidence range
+             * Provide confidence range based on variance
            
            - First to Score:
              * Based on average time to first goal/score this season
-             * Consider home advantage statistics
+             * Consider home advantage statistics from historical data
         
         4. CONFIDENCE LEVEL:
-           - HIGH: Clear statistical advantage, no major injuries, consistent form
-           - MEDIUM: Close match-up, some uncertainty factors
-           - LOW: High variance, key injuries, or inconsistent recent form
+           - HIGH: Clear statistical advantage (>10% difference), no major injuries, consistent form
+           - MEDIUM: Close match-up (5-10% difference), some uncertainty factors
+           - LOW: High variance (<5% difference), key injuries, or very inconsistent recent form
         
-        VALIDATION:
+        DATA VALIDATION:
         - Ensure all percentages add to 100% (home + away + draw if applicable)
         - All predicted stats should be realistic (within 2 standard deviations of season average)
         - Match date must be in the future
-        - Use actual team names, not abbreviations
+        - Use actual team names as they appear on StatMuse/official sites
+        - Verify all player names are spelled correctly
         
-        Return comprehensive analysis with ALL required fields filled with CURRENT, VERIFIED data.`,
+        Return comprehensive analysis with ALL required fields filled with CURRENT, VERIFIED data from StatMuse and official sources.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
