@@ -51,6 +51,8 @@ export default function PlayerStats() {
            - Steals and blocks (if basketball)
            - Minutes per game
            - All other relevant stats for the sport
+           
+           FOR BASKETBALL: Make sure to include points, rebounds, and assists as these will be combined for PTS+REB+AST stat
         
         3. LAST 5-10 GAMES (CRITICAL - Must include full details):
            - Date of each game
@@ -60,6 +62,8 @@ export default function PlayerStats() {
            - Rebounds (if applicable)
            - Performance rating (Excellent/Good/Average/Poor)
            - Be specific with actual stats from each game
+           
+           FOR BASKETBALL: Include points, rebounds, and assists for EVERY game
         
         4. INJURY STATUS:
            - Current injury status (Healthy, Questionable, Out, etc.)
@@ -67,6 +71,7 @@ export default function PlayerStats() {
         5. NEXT GAME:
            - Opponent, date, location
            - Predicted performance for next game with specific stat predictions
+           - For basketball, predict points, rebounds, and assists
         
         6. BETTING INSIGHTS:
            - Over/under points line
@@ -81,7 +86,8 @@ export default function PlayerStats() {
         8. CAREER HIGHLIGHTS:
            - Notable achievements, awards, records
         
-        Use current real-time data and statistics. Be specific and accurate. MUST include last 5-10 games with complete details.`,
+        Use current real-time data and statistics. Be specific and accurate. MUST include last 5-10 games with complete details.
+        FOR BASKETBALL PLAYERS: Always include points, rebounds, and assists in season averages and recent games.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

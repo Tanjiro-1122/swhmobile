@@ -40,7 +40,10 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       goals: Target,
       shots: Target,
       passes: Activity,
-      tackles: Activity
+      tackles: Activity,
+      // For combined stat "PTS+REB+AST", it will match "points" and use Target, which is acceptable.
+      // If a specific icon is desired for combined stats, it could be added here.
+      combined: TrendingUp // Using TrendingUp for combined stats
     };
     
     for (const key in icons) {
@@ -57,9 +60,21 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     const stats = [];
     const averages = player.season_averages;
     
+    // Calculate combined stat for basketball
+    let combinedStat = null;
+    if (player.sport?.toLowerCase().includes('basketball') || player.sport?.toLowerCase().includes('nba')) {
+      const points = averages.points_per_game || 0;
+      const rebounds = averages.rebounds_per_game || 0;
+      const assists = averages.assists_per_game || 0;
+      if (points || rebounds || assists) {
+        combinedStat = points + rebounds + assists;
+      }
+    }
+    
     if (averages.points_per_game) stats.push({ label: "Points", value: averages.points_per_game.toFixed(1), key: "points" });
     if (averages.assists_per_game) stats.push({ label: "Assists", value: averages.assists_per_game.toFixed(1), key: "assists" });
     if (averages.rebounds_per_game) stats.push({ label: "Rebounds", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+    if (combinedStat) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
     if (averages.goals_per_game) stats.push({ label: "Goals", value: averages.goals_per_game.toFixed(2), key: "goals" });
     if (averages.steals_per_game) stats.push({ label: "Steals", value: averages.steals_per_game.toFixed(1), key: "steals" });
     if (averages.blocks_per_game) stats.push({ label: "Blocks", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
@@ -135,12 +150,23 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {seasonStats.map((stat, idx) => {
                   const Icon = getStatIcon(stat.label);
                   return (
-                    <div key={idx} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                    <div 
+                      key={idx} 
+                      className={`${
+                        stat.highlight 
+                          ? 'bg-gradient-to-br from-yellow-100 via-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2 md:col-span-1' 
+                          : 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100'
+                      } rounded-lg p-4`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
-                        <Icon className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm text-gray-600">{stat.label}</span>
+                        <Icon className={`w-4 h-4 ${stat.highlight ? 'text-orange-600' : 'text-purple-600'}`} />
+                        <span className={`text-sm ${stat.highlight ? 'font-bold text-orange-900' : 'text-gray-600'}`}>
+                          {stat.label}
+                        </span>
                       </div>
-                      <div className="text-2xl font-bold text-purple-900">{stat.value}</div>
+                      <div className={`text-2xl font-bold ${stat.highlight ? 'text-orange-600' : 'text-purple-900'}`}>
+                        {stat.value}
+                      </div>
                     </div>
                   );
                 })}

@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity } from "lucide-react";
+import { Activity, Star } from "lucide-react";
 import { format } from "date-fns";
 
 export default function PlayerRecentGames({ recentForm }) {
@@ -30,6 +30,16 @@ export default function PlayerRecentGames({ recentForm }) {
         <div className="space-y-3">
           {recentForm.map((game, idx) => {
             const formattedDate = formatDate(game.date);
+            
+            // Calculate combined stat if basketball
+            let combinedStat = null;
+            const points = game.points || 0;
+            const rebounds = game.rebounds || 0;
+            const assists = game.assists || 0;
+            if (points || rebounds || assists) {
+              combinedStat = points + rebounds + assists;
+            }
+            
             return (
               <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4 hover:border-blue-400 transition-colors">
                 <div className="flex justify-between items-start mb-3">
@@ -43,6 +53,20 @@ export default function PlayerRecentGames({ recentForm }) {
                     <Badge className="bg-blue-600 text-white">{game.performance_rating}</Badge>
                   )}
                 </div>
+                
+                {/* Combined stat highlight for basketball */}
+                {combinedStat !== null && combinedStat > 0 && (
+                  <div className="bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 rounded-lg p-3 mb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-orange-600" />
+                        <span className="text-sm font-bold text-orange-900">PTS+REB+AST</span>
+                      </div>
+                      <div className="text-3xl font-bold text-orange-600">{combinedStat.toFixed(1)}</div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {game.points !== undefined && (
                     <div className="bg-white rounded p-2 text-center border border-blue-200">
