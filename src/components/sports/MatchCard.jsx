@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,13 +22,14 @@ export default function MatchCard({ match, onDelete, index }) {
     if (!dateString) return null;
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return null; // Check for invalid date
+      if (isNaN(date.getTime())) return null;
       return format(date, "MMM d, yyyy 'at' HH:mm");
     } catch (error) {
-      console.error("Error formatting date:", error);
       return null;
     }
   };
+
+  const formattedDate = formatMatchDate(match.match_date);
 
   return (
     <motion.div
@@ -65,10 +65,10 @@ export default function MatchCard({ match, onDelete, index }) {
               </Button>
             </div>
           </div>
-          {match.match_date && formatMatchDate(match.match_date) && (
+          {formattedDate && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />
-              {formatMatchDate(match.match_date)}
+              {formattedDate}
             </div>
           )}
         </div>
@@ -77,8 +77,8 @@ export default function MatchCard({ match, onDelete, index }) {
           <ProbabilityMeter
             homeTeam={match.home_team}
             awayTeam={match.away_team}
-            homeProb={match.home_win_probability}
-            awayProb={match.away_win_probability}
+            homeProb={match.home_win_probability || 0}
+            awayProb={match.away_win_probability || 0}
             drawProb={match.draw_probability || 0}
           />
 
@@ -105,7 +105,6 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
           )}
 
-          {/* Expand/Collapse Button */}
           {(match.key_players?.length > 0 || match.betting_markets) && (
             <Button
               variant="outline"
@@ -126,7 +125,6 @@ export default function MatchCard({ match, onDelete, index }) {
             </Button>
           )}
 
-          {/* Expanded Content */}
           <AnimatePresence>
             {expanded && (
               <motion.div

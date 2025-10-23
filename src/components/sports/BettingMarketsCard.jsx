@@ -16,8 +16,7 @@ export default function BettingMarketsCard({ markets }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Over/Under */}
-        {markets.over_under && (
+        {markets.over_under && markets.over_under.line && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,7 +46,6 @@ export default function BettingMarketsCard({ markets }) {
           </motion.div>
         )}
 
-        {/* Both Teams to Score */}
         {markets.both_teams_score && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -76,8 +74,7 @@ export default function BettingMarketsCard({ markets }) {
           </motion.div>
         )}
 
-        {/* Total Goals Range */}
-        {markets.total_goals_range && (
+        {markets.total_goals_range && markets.total_goals_range.predicted_total && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -89,7 +86,7 @@ export default function BettingMarketsCard({ markets }) {
               <h4 className="font-bold text-gray-900">Predicted Total Score</h4>
             </div>
             <div className="flex items-center justify-between bg-gradient-to-r from-orange-50 to-orange-100 rounded p-3">
-              <span className="text-gray-700">{markets.total_goals_range.range}</span>
+              <span className="text-gray-700">{markets.total_goals_range.range || "Total"}</span>
               <span className="text-2xl font-bold text-orange-600">
                 {markets.total_goals_range.predicted_total}
               </span>
@@ -97,7 +94,6 @@ export default function BettingMarketsCard({ markets }) {
           </motion.div>
         )}
 
-        {/* First to Score */}
         {markets.first_to_score && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}

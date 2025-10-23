@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +19,17 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 export default function PlayerStatsDisplay({ player, onDelete, index }) {
+  const formatDate = (dateString, formatString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return null;
+      return format(date, formatString);
+    } catch (error) {
+      return null;
+    }
+  };
+
   const getStatIcon = (label) => {
     const icons = {
       points: Target,
@@ -37,18 +47,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       }
     }
     return Activity;
-  };
-
-  const formatDate = (dateString, formatString) => {
-    if (!dateString) return null;
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return null; // Check for invalid date
-      return format(date, formatString);
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return null;
-    }
   };
 
   const renderSeasonAverages = () => {
@@ -73,6 +71,8 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     return stats;
   };
 
+  const seasonStats = renderSeasonAverages();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -80,7 +80,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       transition={{ delay: index * 0.1 }}
     >
       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-purple-100">
-        {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
@@ -89,9 +88,11 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 <Badge className="bg-white/20 text-white border-white/30">
                   {player.team}
                 </Badge>
-                <Badge className="bg-white/20 text-white border-white/30">
-                  {player.position}
-                </Badge>
+                {player.position && (
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {player.position}
+                  </Badge>
+                )}
                 <Badge className="bg-white/20 text-white border-white/30">
                   {player.sport}
                 </Badge>
@@ -112,7 +113,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         </div>
 
         <CardContent className="p-6 space-y-6">
-          {/* Injury Status */}
           {player.injury_status && player.injury_status !== "Healthy" && (
             <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
@@ -123,15 +123,14 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </div>
           )}
 
-          {/* Season Averages */}
-          {player.season_averages && (
+          {seasonStats && seasonStats.length > 0 && (
             <div>
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-purple-600" />
                 Season Averages
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {renderSeasonAverages()?.map((stat, idx) => {
+                {seasonStats.map((stat, idx) => {
                   const Icon = getStatIcon(stat.label);
                   return (
                     <div key={idx} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
@@ -147,7 +146,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </div>
           )}
 
-          {/* Betting Insights */}
           {player.betting_insights && (
             <Card className="border-2 border-green-100 bg-gradient-to-br from-green-50 to-emerald-50">
               <CardHeader>
@@ -189,7 +187,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </Card>
           )}
 
-          {/* Recent Form */}
           {player.recent_form && player.recent_form.length > 0 && (
             <div>
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -205,9 +202,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                         <div>
                           <div className="font-semibold">vs {game.opponent}</div>
                           {formattedDate && (
-                            <div className="text-xs text-gray-500">
-                              {formattedDate}
-                            </div>
+                            <div className="text-xs text-gray-500">{formattedDate}</div>
                           )}
                         </div>
                         {game.performance_rating && (
@@ -243,7 +238,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </div>
           )}
 
-          {/* Next Game */}
           {player.next_game && (
             <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
               <CardHeader>
@@ -257,7 +251,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                   <div className="text-xl font-bold text-blue-900">
                     vs {player.next_game.opponent}
                   </div>
-                  {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
+                  {player.next_game.date && formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
                     <div className="text-sm text-gray-600">
                       {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm")}
                     </div>
@@ -279,7 +273,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </Card>
           )}
 
-          {/* Strengths & Weaknesses */}
           <div className="grid md:grid-cols-2 gap-4">
             {player.strengths && player.strengths.length > 0 && (
               <div>
@@ -315,7 +308,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             )}
           </div>
 
-          {/* Career Highlights */}
           {player.career_highlights && player.career_highlights.length > 0 && (
             <div>
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
