@@ -15,7 +15,7 @@ export default function PlayerStats() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
 
-  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -236,8 +236,8 @@ export default function PlayerStats() {
       // If not, you might need to add: result.created_by = currentUser.email; before create call.
       await base44.entities.PlayerStats.create(result);
       
-      // Use a lookup after successful analysis
-      useLookup();
+      // Record a lookup after successful analysis
+      recordLookup();
       
       queryClient.invalidateQueries({ queryKey: ['players', currentUser?.email] }); // Invalidate for the current user
     } catch (err) {

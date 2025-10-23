@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ export default function Dashboard() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -212,8 +213,8 @@ export default function Dashboard() {
 
       await base44.entities.Match.create(result);
       
-      // Use a lookup after successful analysis
-      useLookup();
+      // Record a lookup after successful analysis
+      recordLookup();
       
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     } catch (err) {

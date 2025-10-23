@@ -24,7 +24,7 @@ export function useFreeLookupTracker() {
     checkAuth();
   }, []);
 
-  const useLookup = () => {
+  const recordLookup = () => {
     if (isAuthenticated) return true;
     
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
@@ -41,7 +41,7 @@ export function useFreeLookupTracker() {
     return used < 5;
   };
 
-  return { lookupsRemaining, isAuthenticated, useLookup, canLookup };
+  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {

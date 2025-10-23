@@ -15,7 +15,7 @@ export default function TeamStats() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, useLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -244,8 +244,8 @@ export default function TeamStats() {
 
       await base44.entities.TeamStats.create(result);
       
-      // Use a lookup after successful analysis
-      useLookup();
+      // Record a lookup after successful analysis
+      recordLookup();
       
       queryClient.invalidateQueries({ queryKey: ['teams', currentUser?.email] }); // Invalidate with user-specific key
     } catch (err) {
