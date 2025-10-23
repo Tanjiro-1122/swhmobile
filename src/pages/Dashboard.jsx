@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
+import TodaysBestBets from "../components/sports/TodaysBestBets"; // New import
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -168,6 +169,11 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Today's Best Bets Section */}
+        <div className="mb-8">
+          <TodaysBestBets />
+        </div>
+
         {/* Search Section */}
         <div className="mb-8">
           <SearchBar onSearch={handleSearch} isSearching={isSearching} />
