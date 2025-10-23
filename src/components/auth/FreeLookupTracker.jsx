@@ -60,11 +60,31 @@ export function useFreeLookupTracker() {
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
+  const [totalUsers, setTotalUsers] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const users = await base44.entities.User.list();
+        setTotalUsers(users.length);
+      } catch (error) {
+        console.log("Could not fetch user count");
+      }
+    };
+    
+    if (show) {
+      fetchUserCount();
+    }
+  }, [show]);
+
   if (!show) return null;
 
+  const spotsRemaining = Math.max(0, 100 - totalUsers);
+  const isLifetimeAvailable = spotsRemaining > 0;
+
   const handleUpgrade = () => {
-    // Open external payment link in new tab
-    window.open('https://buy.stripe.com/YOUR_PAYMENT_LINK', '_blank');
+    // Open Stripe payment link in new tab
+    window.open('https://buy.stripe.com/3cIcN74ZLa2c8k68G28N200', '_blank');
   };
 
   const handleSignup = () => {
@@ -122,67 +142,126 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                   <p className="text-sm text-gray-600">5 searches, then locked</p>
                 </div>
 
-                {/* Premium Option */}
-                <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 shadow-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Star className="w-6 h-6 text-yellow-600" />
-                      <span className="text-2xl font-black text-gray-900">Premium</span>
+                {/* Lifetime Offer or Monthly Subscription */}
+                {isLifetimeAvailable ? (
+                  <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-400 shadow-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-6 h-6 text-green-600" />
+                        <span className="text-2xl font-black text-gray-900">LIFETIME ACCESS</span>
+                      </div>
+                      <Badge className="bg-green-600 text-white text-lg px-3 py-1">
+                        {spotsRemaining} LEFT
+                      </Badge>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-black text-yellow-600">$9.99</div>
-                      <div className="text-sm text-gray-600">/month</div>
+                    <div className="text-center mb-4">
+                      <div className="text-4xl font-black text-green-600 mb-1">FREE</div>
+                      <div className="text-sm text-gray-600">First 100 users only!</div>
                     </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold">Unlimited Match Analysis</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold">Unlimited Player Stats</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold">Unlimited Team Analysis</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold">Save Unlimited Results</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-semibold">Priority Support</span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSignup}
+                      className="w-full bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 hover:from-green-700 hover:via-emerald-700 hover:to-green-700 text-white text-lg py-6 font-bold shadow-lg shadow-green-500/30"
+                    >
+                      <UserPlus className="w-5 h-5 mr-2" />
+                      CLAIM LIFETIME ACCESS NOW
+                    </Button>
+                    <p className="text-center text-xs text-gray-500 mt-3">
+                      ⏰ Hurry! Only {spotsRemaining} spots left!
+                    </p>
                   </div>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm font-semibold">Unlimited Match Analysis</span>
+                ) : (
+                  <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 shadow-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-6 h-6 text-yellow-600" />
+                        <span className="text-2xl font-black text-gray-900">Premium</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-black text-yellow-600">$9.99</div>
+                        <div className="text-sm text-gray-600">/month</div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm font-semibold">Unlimited Player Stats</span>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-semibold">Unlimited Match Analysis</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-semibold">Unlimited Player Stats</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-semibold">Unlimited Team Analysis</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-semibold">Save Unlimited Results</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-semibold">Priority Support</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm font-semibold">Unlimited Team Analysis</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm font-semibold">Save Unlimited Results</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm font-semibold">Priority Support</span>
-                    </div>
+                    <Button
+                      onClick={handleUpgrade}
+                      className="w-full bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 hover:from-yellow-700 hover:via-orange-700 hover:to-yellow-700 text-white text-lg py-6 font-bold shadow-lg shadow-yellow-500/30"
+                    >
+                      <CreditCard className="w-5 h-5 mr-2" />
+                      Subscribe for $9.99/month
+                    </Button>
+                    <p className="text-center text-xs text-gray-500 mt-3">
+                      💳 Secure payment via Stripe • Cancel anytime
+                    </p>
                   </div>
+                )}
+              </div>
+
+              {!isLifetimeAvailable && (
+                <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
+                  <p className="text-sm text-red-800 font-semibold">
+                    😢 Sorry! All 100 lifetime spots have been claimed.
+                  </p>
+                </div>
+              )}
+
+              {isLifetimeAvailable && (
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 mb-3">
+                    Don't have an account yet?
+                  </p>
                   <Button
-                    onClick={handleUpgrade}
-                    className="w-full bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 hover:from-yellow-700 hover:via-orange-700 hover:to-yellow-700 text-white text-lg py-6 font-bold shadow-lg shadow-yellow-500/30"
+                    onClick={handleSignup}
+                    variant="outline"
+                    className="w-full"
                   >
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Upgrade to Premium
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Create Free Account First
                   </Button>
                 </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-3">
-                  Don't have an account yet?
-                </p>
-                <Button
-                  onClick={handleSignup}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Create Free Account First
-                </Button>
-              </div>
-
-              <p className="text-center text-xs text-gray-500 mt-6">
-                💳 Secure payment via Stripe • Cancel anytime
-              </p>
+              )}
             </CardContent>
           </Card>
         </motion.div>
