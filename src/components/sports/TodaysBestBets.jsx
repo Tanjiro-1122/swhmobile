@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,17 +7,18 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 
-export default function TodaysBestBets() {
+export default function TodaysBestBets({ onLookupUsed, canLookup, onLimitReached }) {
   const [recommendations, setRecommendations] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Auto-load recommendations on component mount
-    fetchRecommendations();
-  }, []);
-
   const fetchRecommendations = async () => {
+    // Check if user can perform lookup
+    if (!canLookup()) {
+      onLimitReached();
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -100,6 +101,8 @@ Return exactly 3 recommendations with ALL fields filled, sorted by confidence (h
       if (result && result.recommendations && result.recommendations.length > 0) {
         setRecommendations(result);
         setError(null);
+        // Record the lookup after successful fetch
+        onLookupUsed();
       } else {
         setError("No recommendations available at this time. Please try again later.");
       }
@@ -163,6 +166,31 @@ Return exactly 3 recommendations with ALL fields filled, sorted by confidence (h
       </CardHeader>
 
       <CardContent className="p-6">
+        {!recommendations && !isLoading && !error && (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center">
+              <Star className="w-10 h-10 text-orange-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              Get Today's Top Betting Picks
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Click below to get AI-powered recommendations for today's best bets with confidence ratings and expert analysis
+            </p>
+            <Button
+              onClick={fetchRecommendations}
+              size="lg"
+              className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-lg px-8 py-6 shadow-lg"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              Load Today's Best Bets
+            </Button>
+            <p className="text-sm text-gray-500 mt-4">
+              💡 This counts as 1 free lookup
+            </p>
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -283,23 +311,6 @@ Return exactly 3 recommendations with ALL fields filled, sorted by confidence (h
                 Past performance doesn't guarantee future results. Always bet responsibly and within your means.
               </p>
             </div>
-          </div>
-        )}
-
-        {!isLoading && !error && recommendations && (!recommendations.recommendations || recommendations.recommendations.length === 0) && (
-          <div className="text-center py-12">
-            <Target className="w-16 h-16 mx-auto mb-4 text-orange-400" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Games Today?</h3>
-            <p className="text-gray-600 mb-4">
-              There might not be any matches scheduled for today. Check back later or refresh to see upcoming games.
-            </p>
-            <Button
-              onClick={fetchRecommendations}
-              className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Refresh Picks
-            </Button>
           </div>
         )}
       </CardContent>
