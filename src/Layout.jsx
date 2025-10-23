@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, Zap, LogOut, Menu } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -73,10 +73,11 @@ export default function Layout({ children, currentPageName }) {
             {/* Logo */}
             <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/50 group-hover:shadow-emerald-500/70 transition-all group-hover:scale-110">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse" />
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/bd7554354_image.png"
+                  alt="SWS Sports Wager Helper"
+                  className="h-10 w-10 object-contain group-hover:scale-110 transition-transform duration-300"
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg font-bold text-white">Sports Wager Saver</h1>
@@ -135,9 +136,8 @@ export default function Layout({ children, currentPageName }) {
               ) : (
                 <Button
                   onClick={handleSignup}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all"
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 transition-all"
                 >
-                  <Zap className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Sign Up Free</span>
                   <span className="sm:hidden">Sign Up</span>
                 </Button>
@@ -151,6 +151,13 @@ export default function Layout({ children, currentPageName }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  {!isAuthenticated && (
+                    <div className="px-2 py-3 border-b border-slate-200">
+                      <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30 px-3 py-1 text-sm font-bold">
+                        {lookupsRemaining}/5 Free Lookups
+                      </Badge>
+                    </div>
+                  )}
                   {navigationItems.map((item) => (
                     <DropdownMenuItem key={item.title} asChild>
                       <Link to={item.url} className="flex items-center gap-2 cursor-pointer">
@@ -176,9 +183,11 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/bd7554354_image.png"
+                alt="SWS Logo"
+                className="w-8 h-8 object-contain"
+              />
               <span className="text-slate-400 text-sm">© 2024 Sports Wager Saver</span>
             </div>
             <div className="text-slate-500 text-sm text-center">
