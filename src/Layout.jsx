@@ -1,8 +1,12 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, Zap, Target } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, Zap, Target, UserPlus, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
+import { useFreeLookupTracker } from "./components/auth/FreeLookupTracker";
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +55,26 @@ const navigationItems = [
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const { lookupsRemaining, isAuthenticated } = useFreeLookupTracker();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+  });
+
+  const handleSignup = () => {
+    base44.auth.redirectToLogin(window.location.pathname);
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
 
   return (
     <SidebarProvider>
@@ -116,6 +140,57 @@ export default function Layout({ children, currentPageName }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            {/* Auth Section in Sidebar */}
+            {!isAuthenticated && (
+              <div className="mx-3 mt-4">
+                <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-4">
+                  <div className="text-center mb-3">
+                    <div className="text-2xl font-bold text-emerald-400 mb-1">
+                      {lookupsRemaining}/5
+                    </div>
+                    <div className="text-xs text-slate-300">Free Lookups Left</div>
+                  </div>
+                  <Button
+                    onClick={handleSignup}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                    size="sm"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up Free
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {isAuthenticated && currentUser && (
+              <div className="mx-3 mt-4">
+                <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {currentUser.full_name?.[0] || currentUser.email?.[0] || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-white truncate">
+                        {currentUser.full_name || 'User'}
+                      </div>
+                      <div className="text-xs text-slate-400 truncate">
+                        {currentUser.email}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                    size="sm"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            )}
           </SidebarContent>
 
           <SidebarFooter className="border-t border-slate-700 p-4">
@@ -133,14 +208,47 @@ export default function Layout({ children, currentPageName }) {
 
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Mobile Header */}
-          <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 px-6 py-4 md:hidden">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
+          <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 px-4 py-3 md:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-sm font-bold text-white leading-tight">Sports Wager Saver</h1>
+                  </div>
                 </div>
-                <h1 className="text-lg font-bold text-white">Sports Wager Saver</h1>
+              </div>
+
+              {/* Mobile Auth Buttons */}
+              <div className="flex items-center gap-2">
+                {!isAuthenticated ? (
+                  <>
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs px-2 py-1">
+                      {lookupsRemaining}/5 Free
+                    </Badge>
+                    <Button
+                      onClick={handleSignup}
+                      size="sm"
+                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white h-8 px-3 text-xs"
+                    >
+                      <UserPlus className="w-3 h-3 mr-1" />
+                      Sign Up
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={handleLogout}
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700 h-8 px-3 text-xs"
+                  >
+                    <LogOut className="w-3 h-3 mr-1" />
+                    Logout
+                  </Button>
+                )}
               </div>
             </div>
           </header>
