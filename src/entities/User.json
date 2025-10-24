@@ -26,21 +26,21 @@
     "subscription_start_date": {
       "type": "string",
       "format": "date-time",
-      "description": "When monthly subscription started (not used for lifetime VIP)"
+      "description": "When monthly subscription started (ONLY for monthly subscribers, NOT for VIP)"
     },
     "subscription_end_date": {
       "type": "string",
       "format": "date-time",
-      "description": "When subscription ends (only for cancelled monthly users)"
+      "description": "When monthly subscription ends (ONLY for cancelled monthly users, NOT for VIP)"
     },
     "vip_member": {
       "type": "boolean",
       "default": false,
-      "description": "True if user is in first 100 with lifetime access"
+      "description": "True if user is in first 100 with lifetime access (no dates needed)"
     },
     "vip_spot_number": {
       "type": "number",
-      "description": "Their spot number out of 100 (1-100)"
+      "description": "Their spot number out of 100 (1-100) for lifetime VIP members"
     }
   }
 }
