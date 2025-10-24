@@ -13,7 +13,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   Trash2,
-  Flame
+  Flame,
+  DollarSign
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -40,6 +41,12 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       shots: Target,
       passes: Activity,
       tackles: Activity,
+      hits: Target,
+      runs: Activity,
+      rbis: TrendingUp,
+      "home runs": Target,
+      "stolen bases": Activity,
+      "batting average": Target,
       "pass yds": Target,
       "pass tds": Target,
       "rush yds": Activity,
@@ -74,6 +81,19 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     const sport = player.sport?.toLowerCase() || '';
     const position = player.position?.toLowerCase() || '';
     
+    // BASEBALL STATS
+    if (sport.includes('baseball') || sport.includes('mlb')) {
+      if (averages.batting_average) stats.push({ label: "Batting Avg", value: averages.batting_average.toFixed(3), key: "batting_average", highlight: true });
+      if (averages.hits_per_game) stats.push({ label: "Hits/G", value: averages.hits_per_game.toFixed(2), key: "hits", highlight: true });
+      if (averages.runs_per_game) stats.push({ label: "Runs/G", value: averages.runs_per_game.toFixed(2), key: "runs" });
+      if (averages.rbis_per_game) stats.push({ label: "RBIs/G", value: averages.rbis_per_game.toFixed(2), key: "rbis", highlight: true });
+      if (averages.home_runs_per_game) stats.push({ label: "HRs/G", value: averages.home_runs_per_game.toFixed(2), key: "home_runs" });
+      if (averages.stolen_bases_per_game) stats.push({ label: "SBs/G", value: averages.stolen_bases_per_game.toFixed(2), key: "stolen_bases" });
+      if (averages.on_base_percentage) stats.push({ label: "OBP", value: averages.on_base_percentage.toFixed(3), key: "obp" });
+      if (averages.slugging_percentage) stats.push({ label: "SLG", value: averages.slugging_percentage.toFixed(3), key: "slg" });
+      return stats;
+    }
+    
     // FOOTBALL STATS
     if (sport.includes('football') || sport.includes('nfl')) {
       // Quarterback Stats
@@ -101,36 +121,42 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         if (averages.targets_per_game) stats.push({ label: "Targets/G", value: averages.targets_per_game.toFixed(1), key: "targets" });
         if (averages.yards_per_reception) stats.push({ label: "Yds/Rec", value: averages.yards_per_reception.toFixed(1), key: "ypr" });
       }
+      return stats;
     }
+    
     // BASKETBALL STATS
-    else if (sport.includes('basketball') || sport.includes('nba')) {
+    if (sport.includes('basketball') || sport.includes('nba')) {
       const points = averages.points_per_game || 0;
       const rebounds = averages.rebounds_per_game || 0;
       const assists = averages.assists_per_game || 0;
       const combinedStat = points + rebounds + assists;
       
-      if (averages.points_per_game) stats.push({ label: "Points", value: averages.points_per_game.toFixed(1), key: "points" });
-      if (averages.assists_per_game) stats.push({ label: "Assists", value: averages.assists_per_game.toFixed(1), key: "assists" });
-      if (averages.rebounds_per_game) stats.push({ label: "Rebounds", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+      if (averages.points_per_game) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
+      if (averages.assists_per_game) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
+      if (averages.rebounds_per_game) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
       if (combinedStat) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
-      if (averages.steals_per_game) stats.push({ label: "Steals", value: averages.steals_per_game.toFixed(1), key: "steals" });
-      if (averages.blocks_per_game) stats.push({ label: "Blocks", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
+      if (averages.steals_per_game) stats.push({ label: "Steals/G", value: averages.steals_per_game.toFixed(1), key: "steals" });
+      if (averages.blocks_per_game) stats.push({ label: "Blocks/G", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
       if (averages.field_goal_percentage) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
       if (averages.three_point_percentage) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
-      if (averages.minutes_per_game) stats.push({ label: "Minutes", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+      if (averages.minutes_per_game) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+      return stats;
     }
+    
     // SOCCER STATS
-    else if (sport.includes('soccer') || sport.includes('football') && !sport.includes('american')) {
-      if (averages.goals_per_game) stats.push({ label: "Goals", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
-      if (averages.shots_per_game) stats.push({ label: "Shots", value: averages.shots_per_game.toFixed(1), key: "shots" });
-      if (averages.passes_per_game) stats.push({ label: "Passes", value: averages.passes_per_game.toFixed(1), key: "passes" });
-      if (averages.tackles_per_game) stats.push({ label: "Tackles", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
+    if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
+      if (averages.goals_per_game) stats.push({ label: "Goals/G", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
+      if (averages.shots_per_game) stats.push({ label: "Shots/G", value: averages.shots_per_game.toFixed(1), key: "shots" });
+      if (averages.passes_per_game) stats.push({ label: "Passes/G", value: averages.passes_per_game.toFixed(1), key: "passes" });
+      if (averages.tackles_per_game) stats.push({ label: "Tackles/G", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
+      return stats;
     }
     
     return stats;
   };
 
   const seasonStats = renderSeasonAverages();
+  const sport = player.sport?.toLowerCase() || '';
 
   return (
     <motion.div
@@ -186,7 +212,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             <div>
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-purple-600" />
-                Season Averages
+                Season Averages (2024-2025)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {seasonStats.map((stat, idx) => {
@@ -220,35 +246,107 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             <Card className="border-2 border-green-100 bg-gradient-to-br from-green-50 to-emerald-50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Target className="w-5 h-5 text-green-600" />
-                  Betting Insights
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  Betting Insights & Props
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {player.betting_insights.over_under_points && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Over/Under Points:</span>
-                    <span className="text-xl font-bold text-green-600">
-                      {player.betting_insights.over_under_points}
-                    </span>
-                  </div>
-                )}
-                {player.betting_insights.over_under_yards && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Over/Under Yards:</span>
-                    <span className="text-xl font-bold text-green-600">
-                      {player.betting_insights.over_under_yards}
-                    </span>
-                  </div>
-                )}
-                {player.betting_insights.probability_to_score && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Probability to Score TD:</span>
-                    <span className="text-xl font-bold text-green-600">
-                      {player.betting_insights.probability_to_score}%
-                    </span>
-                  </div>
-                )}
+                {/* Baseball Betting Lines */}
+                {sport.includes('baseball') || sport.includes('mlb') ? (
+                  <>
+                    {player.betting_insights.over_under_hits !== undefined && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-700 font-semibold">Hits Over/Under:</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            {player.betting_insights.over_under_hits}
+                          </span>
+                        </div>
+                        {player.betting_insights.over_probability && (
+                          <div className="flex justify-between text-sm mt-2">
+                            <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability}%</strong></span>
+                            <span className="text-gray-600">Under: <strong>{100 - player.betting_insights.over_probability}%</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {player.betting_insights.over_under_rbis !== undefined && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 font-semibold">RBIs Over/Under:</span>
+                          <span className="text-xl font-bold text-green-600">
+                            {player.betting_insights.over_under_rbis}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {player.betting_insights.over_under_home_runs !== undefined && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 font-semibold">Home Runs Over/Under:</span>
+                          <span className="text-xl font-bold text-green-600">
+                            {player.betting_insights.over_under_home_runs}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : null}
+
+                {/* Basketball Betting Lines */}
+                {sport.includes('basketball') || sport.includes('nba') ? (
+                  <>
+                    {player.betting_insights.over_under_points && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-700 font-semibold">Points Over/Under:</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            {player.betting_insights.over_under_points}
+                          </span>
+                        </div>
+                        {player.betting_insights.over_probability && (
+                          <div className="flex justify-between text-sm mt-2">
+                            <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability}%</strong></span>
+                            <span className="text-gray-600">Under: <strong>{100 - player.betting_insights.over_probability}%</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : null}
+
+                {/* Football Betting Lines */}
+                {sport.includes('football') || sport.includes('nfl') ? (
+                  <>
+                    {player.betting_insights.over_under_yards && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-700 font-semibold">Yards Over/Under:</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            {player.betting_insights.over_under_yards}
+                          </span>
+                        </div>
+                        {player.betting_insights.over_probability && (
+                          <div className="flex justify-between text-sm mt-2">
+                            <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability}%</strong></span>
+                            <span className="text-gray-600">Under: <strong>{100 - player.betting_insights.over_probability}%</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {player.betting_insights.probability_to_score !== undefined && (
+                      <div className="bg-white rounded-lg p-4 border border-green-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 font-semibold">Probability to Score TD:</span>
+                          <span className="text-2xl font-bold text-green-600">
+                            {player.betting_insights.probability_to_score}%
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : null}
+
                 {player.betting_insights.hot_streak && (
                   <Badge className="bg-orange-100 text-orange-800 border-orange-300">
                     <Flame className="w-3 h-3 mr-1" />
@@ -266,7 +364,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
           )}
 
           {player.recent_form && player.recent_form.length > 0 && (
-            <PlayerRecentGames recentForm={player.recent_form} />
+            <PlayerRecentGames recentForm={player.recent_form} sport={player.sport} />
           )}
 
           {player.next_game && (
@@ -274,7 +372,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Calendar className="w-5 h-5 text-blue-600" />
-                  Next Game
+                  Next Game Prediction
                 </CardTitle>
               </CardHeader>
               <CardContent>

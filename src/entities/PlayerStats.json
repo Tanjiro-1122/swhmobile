@@ -235,6 +235,18 @@
         "over_under_hits": {
           "type": "number"
         },
+        "over_under_rbis": {
+          "type": "number"
+        },
+        "over_under_home_runs": {
+          "type": "number"
+        },
+        "over_probability": {
+          "type": "number"
+        },
+        "under_probability": {
+          "type": "number"
+        },
         "probability_to_score": {
           "type": "number"
         },
