@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
 export default function LimitedOfferBanner() {
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [vipCount, setVipCount] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -14,20 +14,22 @@ export default function LimitedOfferBanner() {
       const auth = await base44.auth.isAuthenticated();
       setIsAuthenticated(auth);
       
-      // Get total user count
+      // Get VIP user count
       try {
         const users = await base44.entities.User.list();
-        setTotalUsers(users.length);
+        // Count only VIP members
+        const vipUsers = users.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
+        setVipCount(vipUsers.length);
       } catch (error) {
-        console.log("Could not fetch user count");
+        console.log("Could not fetch VIP count");
       }
     };
     
     checkAuth();
   }, []);
 
-  const spotsRemaining = Math.max(0, 20 - totalUsers);
-  const percentageFilled = Math.min(100, (totalUsers / 20) * 100);
+  const spotsRemaining = Math.max(0, 20 - vipCount);
+  const percentageFilled = Math.min(100, (vipCount / 20) * 100);
 
   if (isAuthenticated || spotsRemaining === 0) return null;
 
@@ -89,7 +91,7 @@ export default function LimitedOfferBanner() {
               </div>
               
               <p className="text-white/80 text-xs mt-2 text-center">
-                ⚡ {totalUsers} users already claimed their spot!
+                ⚡ {vipCount} users already claimed their spot!
               </p>
             </div>
           </div>

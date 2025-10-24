@@ -67,26 +67,28 @@ export function useFreeLookupTracker() {
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
-  const [totalUsers, setTotalUsers] = React.useState(0);
+  const [vipCount, setVipCount] = React.useState(0);
 
   React.useEffect(() => {
-    const fetchUserCount = async () => {
+    const fetchVIPCount = async () => {
       try {
         const users = await base44.entities.User.list();
-        setTotalUsers(users.length);
+        // Count only VIP members
+        const vipUsers = users.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
+        setVipCount(vipUsers.length);
       } catch (error) {
-        console.log("Could not fetch user count");
+        console.log("Could not fetch VIP count");
       }
     };
     
     if (show) {
-      fetchUserCount();
+      fetchVIPCount();
     }
   }, [show]);
 
   if (!show) return null;
 
-  const spotsRemaining = Math.max(0, 20 - totalUsers);
+  const spotsRemaining = Math.max(0, 20 - vipCount);
   const isLifetimeAvailable = spotsRemaining > 0;
 
   const handleUpgrade = () => {
@@ -203,7 +205,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                         className="w-full bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 hover:from-green-700 hover:via-emerald-700 hover:to-green-700 text-white text-lg py-6 font-bold shadow-lg shadow-green-500/30"
                       >
                         <Crown className="w-5 h-5 mr-2" />
-                        CLAIM VIP SPOT #{totalUsers + 1}
+                        CLAIM VIP SPOT #{vipCount + 1}
                       </Button>
                       <p className="text-center text-xs text-gray-500 mt-3">
                         ⏰ Hurry! Only {spotsRemaining} VIP spots left! No credit card, no expiration!
