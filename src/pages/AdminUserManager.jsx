@@ -27,6 +27,32 @@ export default function AdminUserManager() {
     },
   });
 
+  const updateVIPCounter = async () => {
+    try {
+      const allUsers = await base44.entities.User.list();
+      const vipUsers = allUsers.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
+      const vipCount = vipUsers.length;
+      
+      // Update or create the VIPCounter
+      const counters = await base44.entities.VIPCounter.list();
+      if (counters.length > 0) {
+        await base44.entities.VIPCounter.update(counters[0].id, {
+          current_vip_count: vipCount,
+          last_updated: new Date().toISOString()
+        });
+      } else {
+        await base44.entities.VIPCounter.create({
+          current_vip_count: vipCount,
+          last_updated: new Date().toISOString()
+        });
+      }
+      
+      console.log("✅ VIP Counter updated to:", vipCount);
+    } catch (error) {
+      console.error("Failed to update VIP counter:", error);
+    }
+  };
+
   const makeUserVIP = async (user, spotNumber) => {
     await updateUserMutation.mutateAsync({
       userId: user.id,
@@ -40,6 +66,9 @@ export default function AdminUserManager() {
         subscription_end_date: null
       }
     });
+    
+    // Update the public VIP counter
+    await updateVIPCounter();
   };
 
   const makeUserPremium = async (user) => {
@@ -52,6 +81,9 @@ export default function AdminUserManager() {
         vip_member: false
       }
     });
+    
+    // Update the public VIP counter
+    await updateVIPCounter();
   };
 
   const makeUserFree = async (user) => {
@@ -66,6 +98,9 @@ export default function AdminUserManager() {
         vip_spot_number: null
       }
     });
+    
+    // Update the public VIP counter
+    await updateVIPCounter();
   };
 
   const filteredUsers = users?.filter(user => 
