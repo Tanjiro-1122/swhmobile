@@ -15,10 +15,10 @@ export default function SearchBar({ onSearch, isSearching }) {
   };
 
   const popularSearches = [
-    "Lakers vs Celtics",
-    "Man United vs Liverpool",
+    "Lakers @ Celtics",
+    "Chiefs @ Bills",
     "NBA tonight",
-    "Chiefs vs Bills"
+    "Man United vs Liverpool"
   ];
 
   return (
@@ -29,7 +29,7 @@ export default function SearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search any match: 'Lakers vs Celtics', 'Man United vs Liverpool'..."
+            placeholder="Search any match: 'Lakers @ Celtics', 'Chiefs @ Bills', 'Man United vs Liverpool'..."
             className="pl-14 pr-36 h-14 text-base bg-slate-900/50 border-2 border-slate-700 focus:border-emerald-500 text-white placeholder:text-slate-500 rounded-xl transition-all shadow-lg"
             disabled={isSearching}
           />
@@ -69,6 +69,10 @@ export default function SearchBar({ onSearch, isSearching }) {
             {search}
           </motion.button>
         ))}
+      </div>
+      
+      <div className="text-xs text-slate-500 text-center">
+        💡 Tip: Use "@" for away team (e.g., "Lakers @ Celtics" = Lakers visiting Boston)
       </div>
     </div>
   );
