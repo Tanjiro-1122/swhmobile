@@ -20,8 +20,9 @@ export default function LimitedOfferBanner() {
         // Count only VIP members
         const vipUsers = users.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
         setVipCount(vipUsers.length);
+        console.log("VIP Count:", vipUsers.length, "Total Users:", users.length);
       } catch (error) {
-        console.log("Could not fetch VIP count");
+        console.log("Could not fetch VIP count:", error);
       }
     };
     
@@ -91,7 +92,7 @@ export default function LimitedOfferBanner() {
               </div>
               
               <p className="text-white/80 text-xs mt-2 text-center">
-                ⚡ {vipCount} users already claimed their spot!
+                ⚡ {vipCount} {vipCount === 1 ? 'user has' : 'users have'} already claimed their spot!
               </p>
             </div>
           </div>
