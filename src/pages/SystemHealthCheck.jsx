@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +17,8 @@ import {
   Shield,
   Globe,
   Activity,
-  Wrench
+  Wrench,
+  Target // Added Target icon for Prediction Accuracy
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -62,6 +64,9 @@ export default function SystemHealthCheck() {
 
       // 10. Check Navigation Pages
       results.push(await checkNavigationPages());
+
+      // 11. Check Prediction Accuracy Tracking
+      results.push(await checkPredictionTracking());
 
       setChecks(results);
       setLastRun(new Date());
@@ -121,6 +126,10 @@ export default function SystemHealthCheck() {
         case "Navigation Pages":
           fixed = await fixNavigationPages();
           message = fixed ? "✅ Navigation pages verified" : "❌ Could not fix navigation pages";
+          break;
+        case "Prediction Accuracy Tracking":
+          fixed = await fixPredictionTracking();
+          message = fixed ? "✅ Prediction tracking verified and working" : "❌ Could not fix prediction tracking";
           break;
         default:
           message = "❌ Unknown issue type";
@@ -305,6 +314,30 @@ export default function SystemHealthCheck() {
       console.log("Navigation pages are code-based, verify all page files exist");
       return true;
     } catch (error) {
+      return false;
+    }
+  };
+
+  const fixPredictionTracking = async () => {
+    try {
+      // Test if we can create a prediction
+      const testPred = await base44.entities.PredictionAccuracy.create({
+        prediction_type: "match",
+        sport: "Test",
+        predicted_outcome: "System test",
+        actual_outcome: "System test passed",
+        was_correct: true,
+        confidence_level: "high",
+        prediction_date: new Date().toISOString()
+      });
+      
+      // Delete the test prediction
+      await base44.entities.PredictionAccuracy.delete(testPred.id);
+      
+      console.log("Prediction tracking verified and working");
+      return true;
+    } catch (error) {
+      console.error("Cannot fix prediction tracking:", error);
       return false;
     }
   };
@@ -575,6 +608,33 @@ export default function SystemHealthCheck() {
     }
   };
 
+  const checkPredictionTracking = async () => {
+    try {
+      const predictions = await base44.entities.PredictionAccuracy.list();
+      // Optionally, check schema if base44 client exposes it or if there's a way to verify entity structure
+      // const schema = await base44.entities.PredictionAccuracy.schema();
+      
+      return {
+        name: "Prediction Accuracy Tracking",
+        status: "success",
+        message: `${predictions.length} predictions tracked`,
+        details: predictions.length === 0 
+          ? "System ready - no predictions tracked yet" 
+          : `Tracking ${predictions.filter(p => p.was_correct).length} correct out of ${predictions.length} total`,
+        icon: Target,
+        canFix: false
+      };
+    } catch (error) {
+      return {
+        name: "Prediction Accuracy Tracking",
+        status: "error",
+        message: `Failed: ${error.message}`,
+        icon: Target,
+        canFix: true
+      };
+    }
+  };
+
   useEffect(() => {
     // Run health check on mount
     runHealthCheck();
@@ -779,6 +839,7 @@ export default function SystemHealthCheck() {
                   <li>✅ AI integrations (LLM, email)</li>
                   <li>✅ Free lookup limiting system</li>
                   <li>✅ Navigation and page routing</li>
+                  <li>✅ Prediction accuracy tracking</li> {/* Added this item */}
                   <li>🔧 <strong>Auto-fix capability</strong> for detected errors</li>
                 </ul>
               </div>

@@ -1,17 +1,51 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, Award, Calendar, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AccuracyTracker() {
+  const [testingTracking, setTestingTracking] = useState(false);
+  const queryClient = useQueryClient();
+
   const { data: predictions, isLoading } = useQuery({
     queryKey: ['predictions'],
     queryFn: () => base44.entities.PredictionAccuracy.list('-prediction_date', 100),
     initialData: []
   });
+
+  const createTestPrediction = useMutation({
+    mutationFn: async () => {
+      // Create a test prediction
+      return await base44.entities.PredictionAccuracy.create({
+        prediction_type: "match",
+        sport: "Basketball",
+        predicted_outcome: "Lakers win by 5+ points",
+        actual_outcome: "Lakers won by 8 points",
+        was_correct: true,
+        confidence_level: "high",
+        prediction_date: new Date().toISOString()
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+    }
+  });
+
+  const handleTestTracking = async () => {
+    setTestingTracking(true);
+    try {
+      await createTestPrediction.mutateAsync();
+      alert("✅ Test prediction created successfully! Check the stats below.");
+    } catch (error) {
+      alert("❌ Error creating test prediction: " + error.message);
+    }
+    setTestingTracking(false);
+  };
 
   // Calculate statistics
   const totalPredictions = predictions?.length || 0;
@@ -70,6 +104,26 @@ export default function AccuracyTracker() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* System Status Alert */}
+        {totalPredictions === 0 && (
+          <Alert className="bg-yellow-500/10 border-2 border-yellow-500/50 mb-8">
+            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+            <AlertDescription className="text-yellow-200">
+              <strong>⚠️ Prediction Tracking Status:</strong> No predictions have been tracked yet. 
+              The system is ready and will automatically track accuracy once predictions are verified.
+              <div className="mt-4">
+                <Button 
+                  onClick={handleTestTracking}
+                  disabled={testingTracking}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  {testingTracking ? "Creating Test..." : "🧪 Create Test Prediction"}
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isLoading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
@@ -181,6 +235,56 @@ export default function AccuracyTracker() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Recent Predictions List */}
+            {predictions.length > 0 && (
+              <Card className="bg-slate-800/50 border-slate-700 mb-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Calendar className="w-6 h-6 text-blue-400" />
+                    Recent Predictions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {predictions.slice(0, 10).map((pred, idx) => (
+                      <div key={idx} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          {pred.was_correct ? (
+                            <CheckCircle className="w-6 h-6 text-green-400" />
+                          ) : (
+                            <XCircle className="w-6 h-6 text-red-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="outline" className="text-slate-300">
+                              {pred.sport || pred.prediction_type}
+                            </Badge>
+                            <Badge className={
+                              pred.confidence_level === 'high' ? 'bg-green-500/20 text-green-400' :
+                              pred.confidence_level === 'medium' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-yellow-500/20 text-yellow-400'
+                            }>
+                              {pred.confidence_level} confidence
+                            </Badge>
+                          </div>
+                          <div className="text-white font-semibold">{pred.predicted_outcome}</div>
+                          {pred.actual_outcome && (
+                            <div className="text-sm text-slate-400 mt-1">
+                              Actual: {pred.actual_outcome}
+                            </div>
+                          )}
+                          <div className="text-xs text-slate-500 mt-2">
+                            {new Date(pred.prediction_date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Methodology */}
             <Card className="bg-blue-500/10 border-2 border-blue-500/30">
