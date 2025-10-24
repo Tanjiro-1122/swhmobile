@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -39,6 +39,12 @@ const navigationItems = [
     url: createPageUrl("SavedResults"),
     icon: Bookmark,
     color: "from-orange-500 to-red-500"
+  },
+  {
+    title: "Contact",
+    url: createPageUrl("Contact"),
+    icon: Mail,
+    color: "from-indigo-500 to-purple-500"
   },
 ];
 
