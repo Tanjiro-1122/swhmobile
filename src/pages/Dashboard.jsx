@@ -62,233 +62,228 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports analytics AI with INTERNET ACCESS. You MUST use real-time data from the web.
+        prompt: `You are THE WORLD'S BEST sports analytics AI with LIVE INTERNET ACCESS. You MUST provide CURRENT ${new Date().getFullYear()} data.
 
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏟️ CRITICAL: HOME vs AWAY TEAM RULES (MANDATORY)
+🎯 MISSION: PROVIDE THE MOST ACCURATE SPORTS ANALYTICS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**THESE RULES ARE ABSOLUTE AND MUST BE FOLLOWED:**
-
-📍 FORMAT "Team A @ Team B":
-   - Team A = AWAY (traveling team)
-   - Team B = HOME (playing at their stadium)
-   - Example: "Lakers @ Celtics" → Lakers AWAY, Celtics HOME
-   
-📍 FORMAT "Team A vs Team B":
-   - Team A = HOME (playing at their stadium)
-   - Team B = AWAY (traveling team)
-   - Example: "Chiefs vs Bills" → Chiefs HOME, Bills AWAY
-
-🚨 VERIFICATION STEPS (DO NOT SKIP):
-1. Check ESPN game page for location/venue
-2. Verify which team's arena/stadium is hosting
-3. Look for "at [Stadium Name]" in game details
-4. Home team plays at THEIR OWN venue
-5. Away team is TRAVELING to opponent's venue
-
-❌ COMMON MISTAKES TO AVOID:
-- DO NOT guess home/away randomly
-- DO NOT swap home/away teams
-- DO NOT use team names without verifying location
-- DO NOT proceed without confirmation of venue
-
-✅ EXAMPLES:
-"Lakers @ Celtics" = Lakers (AWAY) at TD Garden, Celtics (HOME)
-"Chiefs vs Bills" = Chiefs (HOME) at Arrowhead Stadium, Bills (AWAY)  
-"Heat @ Warriors" = Heat (AWAY) at Chase Center, Warriors (HOME)
+This app must be the BEST source for sports analytics. Every stat, every prediction, every insight must be:
+✅ From ${new Date().getFullYear()} season ONLY
+✅ Verified from multiple sources
+✅ Includes latest injury reports (TODAY)
+✅ Has detailed last 5 games with REAL dates
+✅ Provides accurate betting odds and percentages
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 MANDATORY DATA SOURCES (USE IN THIS ORDER):
+🏟️ CRITICAL: HOME vs AWAY TEAM RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FORMAT RULES:
+📍 "Team A @ Team B" → Team A is AWAY, Team B is HOME
+📍 "Team A vs Team B" → Team A is HOME, Team B is AWAY
+
+VERIFICATION REQUIRED:
+1. Check ESPN for venue location
+2. Confirm which team owns the stadium
+3. Verify home/away designation
+4. Include venue name and location
+
+EXAMPLES:
+✅ "Lakers @ Celtics" → Lakers (AWAY) at TD Garden, Celtics (HOME)
+✅ "Chiefs @ Bills" → Chiefs (AWAY) at Highmark Stadium, Bills (HOME)
+✅ "Warriors vs Nuggets" → Warriors (HOME) at Chase Center, Nuggets (AWAY)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 MANDATORY DATA SOURCES (USE ALL):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. ⭐ StatMuse.com - PRIMARY SOURCE
-   - Search: "${query} stats ${new Date().getFullYear()}"
-   - Get: Current season records, PPG, recent form
-   - VERIFY: Home/away designation from schedule
-   
-2. 🏀 Basketball-Reference.com (NBA/Basketball)
-   - Team standings, player stats, game logs
-   - URL: basketball-reference.com/teams/
-   - CHECK: Game location and venue
-   
-3. 🏈 Pro-Football-Reference.com (NFL/Football)
-   - Team records, player stats, game results
-   - URL: pro-football-reference.com/teams/
-   - VERIFY: Home/away from box scores
+   Search: "${query} stats ${new Date().getFullYear()}"
+   Get: Current season averages, game logs, team records
 
-4. 📺 ESPN.com - CRITICAL FOR VENUE
-   - Live schedules, injury reports, team pages
-   - **VERIFY HOME/AWAY from game location**
-   - URL: espn.com/nba/ or espn.com/nfl/
-   - Look for venue name and "at [location]"
+2. 🏀 Basketball-Reference.com (NBA)
+   URL: basketball-reference.com/teams/
+   Get: Team stats, player stats, game results with DATES
 
-5. 🏟️ Official League Websites
-   - NBA.com, NFL.com, PremierLeague.com
-   - Verify team names and rosters
-   - Confirm game location
+3. 🏈 Pro-Football-Reference.com (NFL)
+   URL: pro-football-reference.com/players/
+   Get: Detailed stats, game logs, injury reports
+
+4. ⚾ Baseball-Reference.com (MLB)
+   URL: baseball-reference.com/players/
+   Get: Batting stats, pitching stats, game logs
+
+5. 📺 ESPN.com
+   URL: espn.com/[league]/
+   Get: Latest injury reports, schedules, odds, venue info
+
+6. 📰 Rotoworld / RotoBaller
+   Get: Latest injury news, lineup changes, player updates
+
+7. 💰 DraftKings / FanDuel / BetMGM
+   Get: Current betting lines, over/unders, prop bets
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 STEP-BY-STEP VERIFICATION PROCESS:
+📋 STEP-BY-STEP DATA COLLECTION:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-STEP 1: PARSE THE QUERY FORMAT
-- If contains "@" → Team before @ is AWAY, team after @ is HOME
-- If contains "vs" → Team before vs is HOME, team after vs is AWAY
-- If unclear → Search ESPN for game location
+STEP 1: IDENTIFY TEAMS & VENUE
+- Parse query for home/away designation
+- Get official team names from league site
+- Verify venue/stadium name and location
+- Confirm game date and time
 
-STEP 2: VERIFY ON ESPN
-- Go to ESPN game page
-- Find venue/location (e.g., "at Staples Center")
-- Confirm which team owns that venue
-- That team is HOME, other team is AWAY
-
-STEP 3: DOUBLE CHECK RECORDS
-Home Team (verified from venue):
-  ✓ W-L record from Basketball-Reference or Pro-Football-Reference
+STEP 2: CURRENT SEASON RECORDS (${new Date().getFullYear()} ONLY)
+Home Team:
+  ✓ Overall W-L record
+  ✓ Home record specifically (e.g., 15-5 at home)
   ✓ Points per game (season average)
-  ✓ Last 5 games results (with dates)
-  ✓ **Home record specifically** (e.g., 8-2 at home)
+  ✓ Points allowed per game
+  ✓ Last 5 games with EXACT dates and scores
 
-Away Team (verified as traveling):
-  ✓ W-L record from same source
+Away Team:
+  ✓ Overall W-L record
+  ✓ Away record specifically (e.g., 12-8 on road)
   ✓ Points per game (season average)
-  ✓ Last 5 games results (with dates)
-  ✓ **Away record specifically** (e.g., 5-5 on the road)
+  ✓ Points allowed per game
+  ✓ Last 5 games with EXACT dates and scores
 
-STEP 4: GET HEAD-TO-HEAD DATA
-- Search: "[Home Team] vs [Away Team] ${new Date().getFullYear()}"
-- Last 3-5 meetings
-- Note which team was home in each game
-- Who won and by how much
+STEP 3: HEAD-TO-HEAD HISTORY
+- Last 3-5 meetings between these teams
+- Include dates, scores, who was home
+- Note trends (e.g., "Home team won last 4 meetings")
 
-STEP 5: CHECK INJURIES (TODAY'S REPORT)
+STEP 4: KEY PLAYERS (5-7 PER TEAM)
+For EACH player, fetch:
+  ✓ Current season averages (${new Date().getFullYear()})
+  ✓ Last 5 games performance (with DATES)
+  ✓ Predicted stats for THIS upcoming game
+  ✓ Over/Under lines (from DraftKings/FanDuel)
+  ✓ Probability percentages (55%, 78%, etc.)
+  ✓ Recent form (Hot/Cold/Average)
+  ✓ TODAY's injury status from team website
+
+SPORT-SPECIFIC PLAYER STATS:
+Baseball: Hits, Runs, RBIs, Home Runs, Stolen Bases
+Basketball: Points, Assists, Rebounds, Combined (PTS+REB+AST)
+Football: Pass/Rush/Rec Yards, Touchdowns, Receptions
+Soccer: Goals, Assists, Shots, Saves
+
+STEP 5: INJURY REPORTS (CRITICAL)
 - Search: "[Team Name] injury report ${new Date().toLocaleDateString()}"
-- Find official team injury list
-- Impact on predictions
+- Get official team injury list
+- For each injured player:
+  * Full name
+  * Injury type (e.g., "Knee - MCL Sprain")
+  * Status: Out / Doubtful / Questionable / Day-to-Day
+  * Expected return date if known
+  * Impact on team (e.g., "Starting QB, major impact")
 
-STEP 6: CALCULATE WIN PROBABILITIES
+STEP 6: BETTING MARKETS & ODDS
+Get from DraftKings, FanDuel, BetMGM:
+  ✓ Moneyline odds (e.g., Lakers -150, Celtics +130)
+  ✓ Spread (e.g., Lakers -3.5)
+  ✓ Over/Under total points (e.g., O/U 225.5)
+  ✓ Player props (e.g., LeBron O/U 27.5 points)
+  ✓ First to score probabilities
+
+STEP 7: WIN PROBABILITY CALCULATION
 Based on:
-  • Season records (35% weight)
+  • Season records (30% weight)
   • Last 5 games form (20% weight)
   • Head-to-head history (15% weight)
-  • **HOME COURT/FIELD ADVANTAGE (20% weight)** ← HOME TEAM GETS SIGNIFICANT BOOST
-  • Key injuries (10% weight)
+  • HOME ADVANTAGE (20% weight) ← Critical!
+  • Key injuries impact (15% weight)
 
-🏠 HOME ADVANTAGE:
-- NBA: ~55-60% home win rate historically
-- NFL: ~57-58% home win rate historically
-- ADD 5-10 percentage points to home team's base probability
-- Reduce away team's probability by same amount
+HOME ADVANTAGE RULES:
+- NBA: Add 5-7% to home team probability
+- NFL: Add 6-8% to home team probability
+- MLB: Add 3-5% to home team probability
+- Soccer: Add 5-7% to home team probability
 
-MUST TOTAL 100%: Home + Away + Draw = 100
+PROBABILITIES MUST TOTAL 100%
+
+STEP 8: KEY FACTORS (5-7 SPECIFIC POINTS)
+Include stats and percentages:
+  ✓ "[Home Team] is 15-5 at home, averaging 118 PPG"
+  ✓ "[Away Team] is 8-12 on the road, allowing 112 PPG"
+  ✓ "Home team has won last 4 meetings by average of 8 points"
+  ✓ "Home advantage worth approximately 5.5 points"
+  ✓ "[Player] averaging 28 PPG in last 5 games (hot streak)"
+  ✓ "[Team] missing starting PG (out), backup averaging 12 PPG"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ DATA VALIDATION RULES:
+✅ DATA VALIDATION CHECKLIST:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before returning data, verify:
+☐ All stats are from ${new Date().getFullYear()} season
+☐ Team names match official league rosters
+☐ Venue/location is correct
+☐ Last 5 games have REAL dates (MM/DD/YYYY format)
+☐ Win probabilities add up to 100%
+☐ Home team correctly identified (owns the venue)
+☐ Away team correctly identified (traveling)
+☐ Injury reports are from TODAY
+☐ Player predictions are realistic (within 30% of season avg)
+☐ Betting odds are current (checked today)
 
 ❌ REJECT if:
-- Team names don't match official rosters
-- Stats are from previous seasons
-- No scheduled match found
-- Win probabilities don't total 100%
-- Using placeholder/fake data
-- **HOME/AWAY DESIGNATION IS INCORRECT OR UNVERIFIED**
-
-✅ ACCEPT only if:
-- All stats from ${new Date().getFullYear()} season
-- Team names verified on league website
-- Match scheduled and confirmed
-- Probabilities are realistic (5-95% range)
-- **HOME TEAM CORRECTLY IDENTIFIED** (owns the venue)
-- **AWAY TEAM CORRECTLY IDENTIFIED** (traveling)
-- Venue/location explicitly stated
+- Using previous season data
+- Team names misspelled
+- No venue specified
+- Fake game dates
+- Home/away designation unclear
+- No injury information
+- Missing player stats
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 REQUIRED OUTPUT FORMAT:
+📊 REQUIRED OUTPUT:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. MATCH IDENTIFICATION:
-   - Sport (Basketball/Football/Soccer)
-   - League (NBA/NFL/Premier League)
-   - **home_team**: [FULL OFFICIAL NAME] - **MUST BE TEAM PLAYING AT THEIR VENUE**
-   - **away_team**: [FULL OFFICIAL NAME] - **MUST BE TRAVELING TEAM**
-   - Match date & time with timezone
-   - **Location/venue** (e.g., "Staples Center, Los Angeles" or "Arrowhead Stadium, Kansas City")
-   - Venue ownership confirmation (e.g., "Home venue for [Home Team]")
+Return comprehensive JSON with:
+1. Match identification (sport, league, teams, venue, date/time)
+2. Win probabilities (home/away/draw, must total 100%)
+3. Key factors (5-7 specific stats-based points)
+4. Analysis summary (2-3 sentences mentioning home advantage)
+5. Confidence level (high/medium/low)
+6. Key players (5-7 per team) with:
+   - Season ${new Date().getFullYear()} averages
+   - Last 5 games with dates
+   - Predicted stats for upcoming game
+   - Over/Under prop lines
+   - Injury status (TODAY)
+   - Recent form rating
+7. Betting markets (moneyline, spread, O/U, props)
+8. Current injury reports with impact assessment
 
-2. WIN PROBABILITIES (MUST TOTAL 100%):
-   **Home Win: ___%** (include +5-10% home advantage boost)
-   **Away Win: ___%** (reduced due to travel/away factor)
-   Draw: ___% (0 if not applicable)
+CRITICAL: Every number, date, and stat must be REAL and from ${new Date().getFullYear()} season. No placeholders, no estimates, no fake data.
 
-3. KEY FACTORS (5 specific points with STATS):
-   ✓ "[Home Team] is 8-2 at home this season, averaging 118 PPG at home"
-   ✓ "[Away Team] is 3-7 on the road, averaging 105 PPG away"
-   ✓ "[Home Team] has won last 4 home games vs [Away Team]"
-   ✓ "Home court advantage worth approximately 6 points in NBA"
-   ✓ "[Home Team] star player healthy, [Away Team] missing key defender"
-
-4. ANALYSIS SUMMARY (2-3 sentences with stats)
-   **MUST MENTION**: Home court/field advantage explicitly
-   Example: "The Lakers have significant home court advantage at Staples Center where they're 12-3 this season..."
-
-5. CONFIDENCE LEVEL:
-   - HIGH: >70% probability, strong home advantage + data
-   - MEDIUM: 50-70%, competitive match
-   - LOW: Insufficient data or unpredictable
-
-6. KEY PLAYERS (3-4 per team):
-   For EACH player:
-   - Name (verified on current roster)
-   - **Team designation: "[Player] (HOME - [Team])" or "[Player] (AWAY - [Team])"**
-   - Position
-   - ${new Date().getFullYear()} season averages (PPG/APG/RPG)
-   - Predicted stats for THIS game
-   - Recent form (Hot/Cold/Average)
-   - Injury status from TODAY
-
-7. BETTING MARKETS:
-   Over/Under: Based on team averages
-   Both Teams Score (if soccer)
-   **First to Score**: Favor HOME team (60/40 split typically)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 FINAL CRITICAL REMINDERS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Use StatMuse FIRST, always
-• Verify EVERYTHING on official league sites
-• Only ${new Date().getFullYear()} season data
-• Real dates, real scores, real stats
-• **VERIFY VENUE/LOCATION FROM ESPN OR TEAM SCHEDULE**
-• **HOME TEAM = TEAM WHOSE VENUE IS HOSTING THE GAME**
-• **AWAY TEAM = TEAM TRAVELING TO OPPONENT'S VENUE**
-• **ADD HOME COURT/FIELD ADVANTAGE TO PROBABILITIES**
-• If match not found: Say "Unable to locate scheduled match" in analysis_summary
-
-RETURN: Valid JSON matching schema exactly. NO placeholder data. HOME/AWAY MUST BE CORRECT.`,
+If match not found or data incomplete: Set analysis_summary to "Unable to locate scheduled match with complete data. Please verify team names and date."`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
             sport: { type: "string" },
             league: { type: "string" },
-            home_team: { type: "string", description: "Team playing at their home stadium/arena - MUST BE VERIFIED" },
-            away_team: { type: "string", description: "Team traveling/visiting - MUST BE VERIFIED" },
-            venue: { type: "string", description: "Stadium/arena name and location" },
+            home_team: { type: "string", description: "Team playing at their stadium - VERIFIED" },
+            away_team: { type: "string", description: "Team traveling/visiting - VERIFIED" },
+            venue: { type: "string", description: "Stadium/arena name and city" },
             match_date: { type: "string" },
             home_win_probability: { type: "number", description: "Includes home advantage boost" },
             away_win_probability: { type: "number" },
             draw_probability: { type: "number" },
             key_factors: {
               type: "array",
-              items: { type: "string" }
+              items: { type: "string" },
+              description: "5-7 stat-based factors with numbers"
             },
-            analysis_summary: { type: "string", description: "Must mention home advantage" },
+            analysis_summary: { type: "string", description: "Must mention home advantage and current form" },
             confidence_level: {
               type: "string",
               enum: ["low", "medium", "high"]
@@ -299,21 +294,63 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data. HOME/AWAY MUST 
                 type: "object",
                 properties: {
                   name: { type: "string" },
-                  team: { type: "string", description: "Include (HOME) or (AWAY) designation" },
+                  team: { type: "string", description: "Include (HOME) or (AWAY)" },
                   position: { type: "string" },
+                  sport: { type: "string" },
+                  season_average: { type: "string", description: "e.g., '28.5 PPG, 7.2 RPG, 5.1 APG'" },
+                  last_five_games: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        date: { type: "string", description: "MM/DD/YYYY" },
+                        opponent: { type: "string" },
+                        stats: { type: "string", description: "e.g., '32 PTS, 8 REB, 6 AST'" }
+                      }
+                    },
+                    description: "Must have 5 games with real dates"
+                  },
                   predicted_points: { type: "number" },
                   predicted_assists: { type: "number" },
                   predicted_rebounds: { type: "number" },
                   predicted_goals: { type: "number" },
-                  probability_to_score: { type: "number" },
-                  recent_form: { type: "string" },
-                  injury_status: { type: "string" }
+                  predicted_hits: { type: "number" },
+                  predicted_runs: { type: "number" },
+                  predicted_rbis: { type: "number" },
+                  predicted_home_runs: { type: "number" },
+                  predicted_passing_yards: { type: "number" },
+                  predicted_passing_touchdowns: { type: "number" },
+                  predicted_rushing_yards: { type: "number" },
+                  predicted_receiving_yards: { type: "number" },
+                  predicted_receptions: { type: "number" },
+                  over_under_line: { type: "number", description: "Prop bet line from sportsbooks" },
+                  over_probability: { type: "number", description: "Percentage chance to go over" },
+                  under_probability: { type: "number", description: "Percentage chance to go under" },
+                  probability_to_score: { type: "number", description: "% chance to score TD/goal/hit" },
+                  recent_form: { type: "string", enum: ["Hot", "Average", "Cold"] },
+                  injury_status: { type: "string", description: "TODAY's status from team report" },
+                  injury_details: { type: "string", description: "Type and severity if injured" }
                 }
               }
             },
             betting_markets: {
               type: "object",
               properties: {
+                moneyline: {
+                  type: "object",
+                  properties: {
+                    home_odds: { type: "string", description: "e.g., '-150'" },
+                    away_odds: { type: "string", description: "e.g., '+130'" }
+                  }
+                },
+                spread: {
+                  type: "object",
+                  properties: {
+                    line: { type: "number", description: "e.g., -3.5" },
+                    home_cover_probability: { type: "number" },
+                    away_cover_probability: { type: "number" }
+                  }
+                },
                 over_under: {
                   type: "object",
                   properties: {
@@ -322,42 +359,42 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data. HOME/AWAY MUST 
                     under_probability: { type: "number" }
                   }
                 },
-                both_teams_score: {
-                  type: "object",
-                  properties: {
-                    yes_probability: { type: "number" },
-                    no_probability: { type: "number" }
-                  }
-                },
-                total_goals_range: {
-                  type: "object",
-                  properties: {
-                    predicted_total: { type: "number" },
-                    range: { type: "string" }
-                  }
-                },
                 first_to_score: {
                   type: "object",
                   properties: {
-                    home_probability: { type: "number", description: "Should be 55-65% typically" },
-                    away_probability: { type: "number", description: "Should be 35-45% typically" }
+                    home_probability: { type: "number" },
+                    away_probability: { type: "number" }
                   }
                 }
               }
+            },
+            current_injuries: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  player_name: { type: "string" },
+                  team: { type: "string" },
+                  injury_type: { type: "string", description: "e.g., 'Knee - MCL Sprain'" },
+                  status: { type: "string", enum: ["Out", "Doubtful", "Questionable", "Day-to-Day"] },
+                  impact: { type: "string", description: "e.g., 'Starting QB, major offensive impact'" }
+                }
+              },
+              description: "TODAY's injury report from official sources"
             }
           },
-          required: ["sport", "home_team", "away_team", "venue", "home_win_probability", "away_win_probability", "analysis_summary"]
+          required: ["sport", "home_team", "away_team", "venue", "home_win_probability", "away_win_probability", "key_players"]
         }
       });
 
       console.log("✅ Match Analysis Result:", result);
 
       if (!result || !result.sport || !result.home_team || !result.away_team || !result.venue) {
-        throw new Error("Invalid response - missing required match data (home/away/venue)");
+        throw new Error("Invalid response - missing required match data");
       }
 
       if (result.analysis_summary?.includes("Unable to")) {
-        throw new Error("Match not found - try a different date or check team names");
+        throw new Error("Match not found - try a different date or verify team names");
       }
 
       await base44.entities.Match.create(result);
@@ -369,11 +406,11 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data. HOME/AWAY MUST 
       let errorMessage = "Failed to analyze the match. ";
       
       if (err.message?.includes("Match not found")) {
-        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers @ Celtics today')\n• Using full team names\n• Checking if the game is scheduled\n• Using @ for away team (Lakers @ Celtics = Lakers away)";
+        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers @ Celtics today')\n• Using full team names\n• Checking if the game is scheduled\n• Using @ for away team format";
       } else if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'Premier League matches this weekend'\n• A specific team matchup with @ or vs\n• Example: 'Chiefs vs Bills' (Chiefs home) or 'Lakers @ Celtics' (Lakers away)";
+        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'NFL games this week'\n• A specific matchup with @ or vs\n• Example: 'Lakers @ Celtics' (Lakers away)";
       } else {
-        errorMessage += "Please try:\n• Using official team names (e.g., 'Los Angeles Lakers')\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team (Team A @ Team B = Team A is away)\n• Being more specific about the league";
+        errorMessage += "Please try:\n• Using official team names\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team\n• Being more specific about the league";
       }
       
       setError(errorMessage);

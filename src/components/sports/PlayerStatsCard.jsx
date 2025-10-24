@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, Target, Activity } from "lucide-react";
+import { Users, TrendingUp, Target, Activity, Calendar, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PlayerStatsCard({ players, sport }) {
@@ -26,20 +26,17 @@ export default function PlayerStatsCard({ players, sport }) {
     
     // BASEBALL STATS
     if (playerSport.includes('baseball') || playerSport.includes('mlb')) {
-      if (player.predicted_hits) {
-        stats.push({ label: "Hits", value: player.predicted_hits, icon: "hits", highlight: true });
+      if (player.predicted_hits !== undefined) {
+        stats.push({ label: "Hits", value: player.predicted_hits.toFixed(1), icon: "hits", highlight: true });
       }
-      if (player.predicted_runs) {
-        stats.push({ label: "Runs", value: player.predicted_runs, icon: "runs" });
+      if (player.predicted_runs !== undefined) {
+        stats.push({ label: "Runs", value: player.predicted_runs.toFixed(1), icon: "runs" });
       }
-      if (player.predicted_rbis) {
-        stats.push({ label: "RBIs", value: player.predicted_rbis, icon: "rbis" });
+      if (player.predicted_rbis !== undefined) {
+        stats.push({ label: "RBIs", value: player.predicted_rbis.toFixed(1), icon: "rbis" });
       }
-      if (player.predicted_home_runs) {
-        stats.push({ label: "Home Runs", value: player.predicted_home_runs, icon: "points" });
-      }
-      if (player.predicted_stolen_bases) {
-        stats.push({ label: "Stolen Bases", value: player.predicted_stolen_bases, icon: "runs" });
+      if (player.predicted_home_runs !== undefined) {
+        stats.push({ label: "Home Runs", value: player.predicted_home_runs.toFixed(1), icon: "points" });
       }
       return stats;
     }
@@ -51,14 +48,14 @@ export default function PlayerStatsCard({ players, sport }) {
       const assists = player.predicted_assists || 0;
       const combinedStat = points + rebounds + assists;
       
-      if (player.predicted_points) {
-        stats.push({ label: "Points", value: player.predicted_points, icon: "points" });
+      if (player.predicted_points !== undefined) {
+        stats.push({ label: "Points", value: player.predicted_points.toFixed(1), icon: "points" });
       }
-      if (player.predicted_assists) {
-        stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
+      if (player.predicted_assists !== undefined) {
+        stats.push({ label: "Assists", value: player.predicted_assists.toFixed(1), icon: "assists" });
       }
-      if (player.predicted_rebounds) {
-        stats.push({ label: "Rebounds", value: player.predicted_rebounds, icon: "rebounds" });
+      if (player.predicted_rebounds !== undefined) {
+        stats.push({ label: "Rebounds", value: player.predicted_rebounds.toFixed(1), icon: "rebounds" });
       }
       if (combinedStat > 0) {
         stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), icon: "points", highlight: true });
@@ -68,67 +65,39 @@ export default function PlayerStatsCard({ players, sport }) {
     
     // FOOTBALL STATS (NFL)
     if (playerSport.includes('football') || playerSport.includes('nfl')) {
-      // Quarterback
-      if (player.predicted_passing_yards) {
-        stats.push({ label: "Pass Yds", value: player.predicted_passing_yards, icon: "points", highlight: true });
+      if (player.predicted_passing_yards !== undefined) {
+        stats.push({ label: "Pass Yds", value: player.predicted_passing_yards.toFixed(0), icon: "points", highlight: true });
       }
-      if (player.predicted_passing_touchdowns) {
-        stats.push({ label: "Pass TDs", value: player.predicted_passing_touchdowns, icon: "points" });
+      if (player.predicted_passing_touchdowns !== undefined) {
+        stats.push({ label: "Pass TDs", value: player.predicted_passing_touchdowns.toFixed(1), icon: "points" });
       }
-      if (player.predicted_interceptions) {
-        stats.push({ label: "INTs", value: player.predicted_interceptions, icon: "assists" });
+      if (player.predicted_rushing_yards !== undefined) {
+        stats.push({ label: "Rush Yds", value: player.predicted_rushing_yards.toFixed(0), icon: "runs", highlight: true });
       }
-      
-      // Running Back / Receiver
-      if (player.predicted_rushing_yards) {
-        stats.push({ label: "Rush Yds", value: player.predicted_rushing_yards, icon: "runs", highlight: true });
+      if (player.predicted_receiving_yards !== undefined) {
+        stats.push({ label: "Rec Yds", value: player.predicted_receiving_yards.toFixed(0), icon: "runs", highlight: true });
       }
-      if (player.predicted_rushing_touchdowns) {
-        stats.push({ label: "Rush TDs", value: player.predicted_rushing_touchdowns, icon: "points" });
+      if (player.predicted_receptions !== undefined) {
+        stats.push({ label: "Receptions", value: player.predicted_receptions.toFixed(1), icon: "assists" });
       }
-      if (player.predicted_receiving_yards) {
-        stats.push({ label: "Rec Yds", value: player.predicted_receiving_yards, icon: "runs", highlight: true });
-      }
-      if (player.predicted_receiving_touchdowns) {
-        stats.push({ label: "Rec TDs", value: player.predicted_receiving_touchdowns, icon: "points" });
-      }
-      if (player.predicted_receptions) {
-        stats.push({ label: "Receptions", value: player.predicted_receptions, icon: "assists" });
-      }
-      
       return stats;
     }
     
     // SOCCER STATS
     if (playerSport.includes('soccer') || playerSport.includes('football')) {
-      if (player.predicted_goals) {
-        stats.push({ label: "Goals", value: player.predicted_goals, icon: "goals", highlight: true });
+      if (player.predicted_goals !== undefined) {
+        stats.push({ label: "Goals", value: player.predicted_goals.toFixed(2), icon: "goals", highlight: true });
       }
-      if (player.predicted_assists) {
-        stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
-      }
-      if (player.probability_to_score) {
-        stats.push({ label: "Score Chance", value: `${player.probability_to_score}%`, icon: "points" });
+      if (player.predicted_assists !== undefined) {
+        stats.push({ label: "Assists", value: player.predicted_assists.toFixed(2), icon: "assists" });
       }
       return stats;
     }
     
-    // FALLBACK - Generic stats
-    if (player.predicted_points) {
-      stats.push({ label: "Points", value: player.predicted_points, icon: "points" });
-    }
-    if (player.predicted_goals) {
-      stats.push({ label: "Goals", value: player.predicted_goals, icon: "goals" });
-    }
-    if (player.predicted_assists) {
-      stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
-    }
-    if (player.predicted_rebounds) {
-      stats.push({ label: "Rebounds", value: player.predicted_rebounds, icon: "rebounds" });
-    }
-    if (player.probability_to_score) {
-      stats.push({ label: "Score Chance", value: `${player.probability_to_score}%`, icon: "points" });
-    }
+    // FALLBACK
+    if (player.predicted_points !== undefined) stats.push({ label: "Points", value: player.predicted_points.toFixed(1), icon: "points" });
+    if (player.predicted_goals !== undefined) stats.push({ label: "Goals", value: player.predicted_goals.toFixed(2), icon: "goals" });
+    if (player.predicted_assists !== undefined) stats.push({ label: "Assists", value: player.predicted_assists.toFixed(1), icon: "assists" });
     
     return stats;
   };
@@ -156,7 +125,7 @@ export default function PlayerStatsCard({ players, sport }) {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h4 className="font-bold text-gray-900">{player.name}</h4>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge variant="secondary" className="text-xs">
                       {player.team}
                     </Badge>
@@ -166,57 +135,126 @@ export default function PlayerStatsCard({ players, sport }) {
                       </Badge>
                     )}
                   </div>
+                  {player.season_average && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      Season: {player.season_average}
+                    </p>
+                  )}
                 </div>
                 {player.recent_form && (
                   <Badge 
                     className={`
-                      ${player.recent_form.toLowerCase().includes('excellent') || player.recent_form.toLowerCase().includes('hot') 
-                        ? 'bg-green-100 text-green-800' 
-                        : player.recent_form.toLowerCase().includes('good') 
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'}
+                      ${player.recent_form === 'Hot' 
+                        ? 'bg-red-100 text-red-800 border-red-300' 
+                        : player.recent_form === 'Cold'
+                        ? 'bg-blue-100 text-blue-800 border-blue-300'
+                        : 'bg-gray-100 text-gray-800 border-gray-300'}
                     `}
                   >
+                    {player.recent_form === 'Hot' && '🔥 '}
+                    {player.recent_form === 'Cold' && '❄️ '}
                     {player.recent_form}
                   </Badge>
                 )}
               </div>
 
+              {/* Injury Status */}
               {player.injury_status && player.injury_status !== "Healthy" && (
-                <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-                  ⚠️ {player.injury_status}
+                <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
+                    <div>
+                      <div className="text-xs font-bold text-red-900">{player.injury_status}</div>
+                      {player.injury_details && (
+                        <div className="text-xs text-red-800 mt-0.5">{player.injury_details}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {stats.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {stats.map((stat, idx) => {
-                    const Icon = getStatIcon(stat.icon);
-                    return (
-                      <div 
-                        key={idx} 
-                        className={`flex items-center gap-2 rounded p-2 ${
-                          stat.highlight 
-                            ? 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2' 
-                            : 'bg-gray-50'
-                        }`}
-                      >
-                        <Icon className={`w-4 h-4 ${stat.highlight ? 'text-orange-600' : 'text-purple-600'}`} />
-                        <div>
-                          <div className={`text-xs ${stat.highlight ? 'font-bold text-orange-900' : 'text-gray-600'}`}>
-                            {stat.label}
-                          </div>
-                          <div className={`font-bold ${stat.highlight ? 'text-xl text-orange-600' : 'text-gray-900'}`}>
-                            {stat.value}
+              {/* Last 5 Games */}
+              {player.last_five_games && player.last_five_games.length > 0 && (
+                <div className="mb-3 bg-gray-50 rounded p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-4 h-4 text-purple-600" />
+                    <span className="text-xs font-bold text-gray-700">Last 5 Games</span>
+                  </div>
+                  <div className="space-y-1">
+                    {player.last_five_games.slice(0, 5).map((game, idx) => (
+                      <div key={idx} className="text-xs flex justify-between items-center">
+                        <span className="text-gray-600">
+                          {game.date} vs {game.opponent}
+                        </span>
+                        <span className="font-semibold text-gray-900">{game.stats}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Predicted Stats */}
+              {stats.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-xs font-bold text-purple-900 mb-2">📊 Predicted Performance</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {stats.map((stat, idx) => {
+                      const Icon = getStatIcon(stat.icon);
+                      return (
+                        <div 
+                          key={idx} 
+                          className={`flex items-center gap-2 rounded p-2 ${
+                            stat.highlight 
+                              ? 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300' 
+                              : 'bg-purple-50'
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${stat.highlight ? 'text-orange-600' : 'text-purple-600'}`} />
+                          <div>
+                            <div className={`text-xs ${stat.highlight ? 'font-bold text-orange-900' : 'text-gray-600'}`}>
+                              {stat.label}
+                            </div>
+                            <div className={`font-bold ${stat.highlight ? 'text-xl text-orange-600' : 'text-lg text-purple-900'}`}>
+                              {stat.value}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center text-sm text-gray-500 py-2">
-                  No predictions available
+              )}
+
+              {/* Over/Under & Probabilities */}
+              {(player.over_under_line || player.probability_to_score) && (
+                <div className="bg-green-50 rounded p-3 border border-green-200">
+                  <div className="text-xs font-bold text-green-900 mb-2">💰 Betting Lines</div>
+                  <div className="space-y-1.5">
+                    {player.over_under_line && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">Over/Under:</span>
+                        <span className="font-bold text-green-900">{player.over_under_line}</span>
+                      </div>
+                    )}
+                    {player.over_probability && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">Over Probability:</span>
+                        <span className="font-bold text-green-900">{player.over_probability}%</span>
+                      </div>
+                    )}
+                    {player.under_probability && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">Under Probability:</span>
+                        <span className="font-bold text-green-900">{player.under_probability}%</span>
+                      </div>
+                    )}
+                    {player.probability_to_score && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">Score Probability:</span>
+                        <span className="font-bold text-green-900">{player.probability_to_score}%</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </motion.div>

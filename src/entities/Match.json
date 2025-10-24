@@ -3,52 +3,41 @@
   "type": "object",
   "properties": {
     "sport": {
-      "type": "string",
-      "description": "Type of sport (e.g., Basketball, Football, Baseball, Soccer)"
+      "type": "string"
     },
     "league": {
-      "type": "string",
-      "description": "League or competition name"
+      "type": "string"
     },
     "home_team": {
-      "type": "string",
-      "description": "Name of the home team - TEAM PLAYING AT THEIR OWN VENUE"
+      "type": "string"
     },
     "away_team": {
-      "type": "string",
-      "description": "Name of the away team - TEAM TRAVELING/VISITING"
+      "type": "string"
     },
     "venue": {
-      "type": "string",
-      "description": "Stadium/arena name and location where game is played"
+      "type": "string"
     },
     "match_date": {
       "type": "string",
-      "format": "date-time",
-      "description": "Date and time of the match"
+      "format": "date-time"
     },
     "home_win_probability": {
-      "type": "number",
-      "description": "Probability of home team winning (0-100) - includes home advantage"
+      "type": "number"
     },
     "away_win_probability": {
-      "type": "number",
-      "description": "Probability of away team winning (0-100)"
+      "type": "number"
     },
     "draw_probability": {
-      "type": "number",
-      "description": "Probability of a draw (0-100)"
+      "type": "number"
     },
     "key_factors": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Key factors affecting the prediction"
+      }
     },
     "analysis_summary": {
-      "type": "string",
-      "description": "Brief summary of the analysis - must mention home advantage"
+      "type": "string"
     },
     "confidence_level": {
       "type": "string",
@@ -56,8 +45,7 @@
         "low",
         "medium",
         "high"
-      ],
-      "description": "Confidence level of the prediction"
+      ]
     },
     "key_players": {
       "type": "array",
@@ -68,101 +56,130 @@
             "type": "string"
           },
           "team": {
-            "type": "string",
-            "description": "Include (HOME) or (AWAY) designation"
+            "type": "string"
           },
           "position": {
             "type": "string"
           },
           "sport": {
-            "type": "string",
-            "description": "Sport the player plays"
+            "type": "string"
+          },
+          "season_average": {
+            "type": "string"
+          },
+          "last_five_games": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "opponent": {
+                  "type": "string"
+                },
+                "stats": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "predicted_points": {
-            "type": "number",
-            "description": "Basketball/Soccer"
+            "type": "number"
           },
           "predicted_assists": {
-            "type": "number",
-            "description": "Basketball/Soccer"
+            "type": "number"
           },
           "predicted_rebounds": {
-            "type": "number",
-            "description": "Basketball"
+            "type": "number"
           },
           "predicted_goals": {
-            "type": "number",
-            "description": "Soccer"
+            "type": "number"
           },
           "predicted_hits": {
-            "type": "number",
-            "description": "Baseball"
+            "type": "number"
           },
           "predicted_runs": {
-            "type": "number",
-            "description": "Baseball"
+            "type": "number"
           },
           "predicted_rbis": {
-            "type": "number",
-            "description": "Baseball - Runs Batted In"
+            "type": "number"
           },
           "predicted_home_runs": {
-            "type": "number",
-            "description": "Baseball"
-          },
-          "predicted_stolen_bases": {
-            "type": "number",
-            "description": "Baseball"
+            "type": "number"
           },
           "predicted_passing_yards": {
-            "type": "number",
-            "description": "Football/NFL"
+            "type": "number"
           },
           "predicted_passing_touchdowns": {
-            "type": "number",
-            "description": "Football/NFL"
-          },
-          "predicted_interceptions": {
-            "type": "number",
-            "description": "Football/NFL"
+            "type": "number"
           },
           "predicted_rushing_yards": {
-            "type": "number",
-            "description": "Football/NFL"
-          },
-          "predicted_rushing_touchdowns": {
-            "type": "number",
-            "description": "Football/NFL"
+            "type": "number"
           },
           "predicted_receiving_yards": {
-            "type": "number",
-            "description": "Football/NFL"
-          },
-          "predicted_receiving_touchdowns": {
-            "type": "number",
-            "description": "Football/NFL"
+            "type": "number"
           },
           "predicted_receptions": {
-            "type": "number",
-            "description": "Football/NFL"
+            "type": "number"
+          },
+          "over_under_line": {
+            "type": "number"
+          },
+          "over_probability": {
+            "type": "number"
+          },
+          "under_probability": {
+            "type": "number"
           },
           "probability_to_score": {
-            "type": "number",
-            "description": "Percentage chance to score (touchdown/goal/hit)"
+            "type": "number"
           },
           "recent_form": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Hot",
+              "Average",
+              "Cold"
+            ]
           },
           "injury_status": {
             "type": "string"
+          },
+          "injury_details": {
+            "type": "string"
           }
         }
-      },
-      "description": "Key players and their predicted contributions"
+      }
     },
     "betting_markets": {
       "type": "object",
       "properties": {
+        "moneyline": {
+          "type": "object",
+          "properties": {
+            "home_odds": {
+              "type": "string"
+            },
+            "away_odds": {
+              "type": "string"
+            }
+          }
+        },
+        "spread": {
+          "type": "object",
+          "properties": {
+            "line": {
+              "type": "number"
+            },
+            "home_cover_probability": {
+              "type": "number"
+            },
+            "away_cover_probability": {
+              "type": "number"
+            }
+          }
+        },
         "over_under": {
           "type": "object",
           "properties": {
@@ -177,39 +194,44 @@
             }
           }
         },
-        "both_teams_score": {
-          "type": "object",
-          "properties": {
-            "yes_probability": {
-              "type": "number"
-            },
-            "no_probability": {
-              "type": "number"
-            }
-          }
-        },
-        "total_goals_range": {
-          "type": "object",
-          "properties": {
-            "predicted_total": {
-              "type": "number"
-            },
-            "range": {
-              "type": "string"
-            }
-          }
-        },
         "first_to_score": {
           "type": "object",
           "properties": {
             "home_probability": {
-              "type": "number",
-              "description": "Home team typically 55-65%"
+              "type": "number"
             },
             "away_probability": {
-              "type": "number",
-              "description": "Away team typically 35-45%"
+              "type": "number"
             }
+          }
+        }
+      }
+    },
+    "current_injuries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player_name": {
+            "type": "string"
+          },
+          "team": {
+            "type": "string"
+          },
+          "injury_type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Out",
+              "Doubtful",
+              "Questionable",
+              "Day-to-Day"
+            ]
+          },
+          "impact": {
+            "type": "string"
           }
         }
       }
@@ -219,8 +241,6 @@
     "sport",
     "home_team",
     "away_team",
-    "venue",
-    "home_win_probability",
-    "away_win_probability"
+    "venue"
   ]
 }
