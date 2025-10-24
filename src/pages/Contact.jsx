@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ export default function Contact() {
       // Send email to your support email
       await base44.integrations.Core.SendEmail({
         from_name: data.name,
-        to: "support@sportswagerhelper.com", // Replace with your actual email
+        to: "sportswagerhelper@outlook.com", // Updated email address
         subject: `Contact Form: ${data.subject}`,
         body: `
 New message from Sports Wager Helper Contact Form
@@ -128,10 +129,10 @@ User Email: ${data.email}
                       We typically respond within 24 hours
                     </p>
                     <a 
-                      href="mailto:support@sportswagerhelper.com" 
+                      href="mailto:sportswagerhelper@outlook.com" // Updated email address
                       className="text-blue-400 hover:text-blue-300 font-medium"
                     >
-                      support@sportswagerhelper.com
+                      sportswagerhelper@outlook.com {/* Updated email address */}
                     </a>
                   </div>
                 </div>
