@@ -7,20 +7,40 @@
       "enum": [
         "free",
         "premium",
+        "lifetime_vip",
         "cancelled"
       ],
       "default": "free",
       "description": "User's subscription status"
     },
+    "subscription_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "monthly",
+        "lifetime"
+      ],
+      "default": "none",
+      "description": "Type of subscription"
+    },
     "subscription_start_date": {
       "type": "string",
       "format": "date-time",
-      "description": "When subscription started"
+      "description": "When monthly subscription started (not used for lifetime VIP)"
     },
     "subscription_end_date": {
       "type": "string",
       "format": "date-time",
-      "description": "When subscription ends (for cancelled users)"
+      "description": "When subscription ends (only for cancelled monthly users)"
+    },
+    "vip_member": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user is in first 100 with lifetime access"
+    },
+    "vip_spot_number": {
+      "type": "number",
+      "description": "Their spot number out of 100 (1-100)"
     }
   }
 }

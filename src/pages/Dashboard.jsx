@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -255,7 +255,12 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
 
   return (
     <div className="min-h-screen">
-      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+      <FreeLookupBanner 
+        lookupsRemaining={lookupsRemaining} 
+        isAuthenticated={isAuthenticated}
+        isPremium={isPremium}
+        isVIP={isVIP}
+      />
       <LimitedOfferBanner />
       <FreeLookupModal 
         show={showLimitModal} 

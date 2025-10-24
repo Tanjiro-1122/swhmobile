@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, CreditCard, Star } from "lucide-react";
+import { Lock, UserPlus, Sparkles, Zap, CreditCard, Star, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -10,6 +10,7 @@ export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [isVIP, setIsVIP] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -17,9 +18,14 @@ export function useFreeLookupTracker() {
       setIsAuthenticated(authenticated);
       
       if (authenticated) {
-        // Check if user has premium subscription
+        // Check if user has premium/VIP subscription
         const user = await base44.auth.me();
-        const hasPremium = user.subscription_status === 'premium';
+        
+        // VIP members (lifetime, first 100) or premium monthly subscribers
+        const hasVIP = user.vip_member === true || user.subscription_status === 'lifetime_vip';
+        const hasPremium = user.subscription_status === 'premium' || hasVIP;
+        
+        setIsVIP(hasVIP);
         setIsPremium(hasPremium);
         
         if (!hasPremium) {
@@ -37,7 +43,7 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    // Premium users have unlimited lookups
+    // Premium users (VIP or monthly) have unlimited lookups
     if (isPremium) return true;
     
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
@@ -49,14 +55,14 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    // Premium users can always lookup
+    // Premium users (VIP or monthly) can always lookup
     if (isPremium) return true;
     
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     return used < 5;
   };
 
-  return { lookupsRemaining, isAuthenticated, isPremium, recordLookup, canLookup };
+  return { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
@@ -105,8 +111,9 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
+          className="max-w-2xl w-full"
         >
-          <Card className="max-w-lg w-full border-2 border-yellow-500 shadow-2xl shadow-yellow-500/20">
+          <Card className="border-2 border-yellow-500 shadow-2xl shadow-yellow-500/20">
             <CardHeader className="bg-gradient-to-r from-yellow-600 via-orange-600 to-yellow-600 text-white p-8">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
@@ -142,61 +149,72 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                   <p className="text-sm text-gray-600">5 searches, then locked</p>
                 </div>
 
-                {/* Lifetime Offer or Monthly Subscription */}
+                {/* Lifetime VIP or Monthly Subscription */}
                 {isLifetimeAvailable ? (
-                  <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-400 shadow-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-6 h-6 text-green-600" />
-                        <span className="text-2xl font-black text-gray-900">LIFETIME ACCESS</span>
+                  <div className="p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 rounded-xl border-2 border-green-400 shadow-lg relative overflow-hidden">
+                    {/* Animated sparkles background */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-200 to-green-200 rounded-full blur-3xl opacity-30 animate-pulse" />
+                    
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Crown className="w-6 h-6 text-green-600" />
+                          <span className="text-2xl font-black text-gray-900">LIFETIME VIP ACCESS</span>
+                        </div>
+                        <Badge className="bg-green-600 text-white text-lg px-3 py-1 animate-bounce">
+                          {spotsRemaining} LEFT
+                        </Badge>
                       </div>
-                      <Badge className="bg-green-600 text-white text-lg px-3 py-1">
-                        {spotsRemaining} LEFT
-                      </Badge>
+                      <div className="text-center mb-4">
+                        <div className="text-5xl font-black text-green-600 mb-1">FREE</div>
+                        <div className="text-sm text-gray-600 font-semibold">First 100 users only! No subscription dates, no expiration!</div>
+                      </div>
+                      <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 mb-4">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">Unlimited Match Analysis</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">Unlimited Player Stats</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">Unlimited Team Analysis</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">Save Unlimited Results</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">VIP Badge</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Star className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold">Priority Support</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={handleSignup}
+                        className="w-full bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 hover:from-green-700 hover:via-emerald-700 hover:to-green-700 text-white text-lg py-6 font-bold shadow-lg shadow-green-500/30"
+                      >
+                        <Crown className="w-5 h-5 mr-2" />
+                        CLAIM VIP SPOT #{totalUsers + 1}
+                      </Button>
+                      <p className="text-center text-xs text-gray-500 mt-3">
+                        ⏰ Hurry! Only {spotsRemaining} VIP spots left! No credit card, no expiration!
+                      </p>
                     </div>
-                    <div className="text-center mb-4">
-                      <div className="text-4xl font-black text-green-600 mb-1">FREE</div>
-                      <div className="text-sm text-gray-600">First 100 users only!</div>
-                    </div>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-semibold">Unlimited Match Analysis</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-semibold">Unlimited Player Stats</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-semibold">Unlimited Team Analysis</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-semibold">Save Unlimited Results</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-semibold">Priority Support</span>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleSignup}
-                      className="w-full bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 hover:from-green-700 hover:via-emerald-700 hover:to-green-700 text-white text-lg py-6 font-bold shadow-lg shadow-green-500/30"
-                    >
-                      <UserPlus className="w-5 h-5 mr-2" />
-                      CLAIM LIFETIME ACCESS NOW
-                    </Button>
-                    <p className="text-center text-xs text-gray-500 mt-3">
-                      ⏰ Hurry! Only {spotsRemaining} spots left!
-                    </p>
                   </div>
                 ) : (
                   <div className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 shadow-lg">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Star className="w-6 h-6 text-yellow-600" />
-                        <span className="text-2xl font-black text-gray-900">Premium</span>
+                        <span className="text-2xl font-black text-gray-900">Premium Monthly</span>
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-black text-yellow-600">$9.99</div>
@@ -242,7 +260,10 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
               {!isLifetimeAvailable && (
                 <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
                   <p className="text-sm text-red-800 font-semibold">
-                    😢 Sorry! All 100 lifetime spots have been claimed.
+                    😢 Sorry! All 100 lifetime VIP spots have been claimed.
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">
+                    Monthly subscription is now the only option available.
                   </p>
                 </div>
               )}
@@ -270,15 +291,25 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
   );
 }
 
-export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, isPremium }) {
+export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, isPremium, isVIP }) {
   if (isPremium) {
     return (
       <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-center gap-3">
-            <Star className="w-5 h-5 text-white" />
-            <span className="text-white font-bold">⭐ Premium Member - Unlimited Access</span>
-            <Star className="w-5 h-5 text-white" />
+            {isVIP ? (
+              <>
+                <Crown className="w-5 h-5 text-white" />
+                <span className="text-white font-bold">👑 VIP LIFETIME MEMBER - Unlimited Access Forever</span>
+                <Crown className="w-5 h-5 text-white" />
+              </>
+            ) : (
+              <>
+                <Star className="w-5 h-5 text-white" />
+                <span className="text-white font-bold">⭐ Premium Member - Unlimited Access</span>
+                <Star className="w-5 h-5 text-white" />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -341,7 +372,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, isPremium 
               </p>
               <p className="text-sm opacity-90">
                 {lookupsRemaining === 0 
-                  ? "Get unlimited access for $9.99/month"
+                  ? "Get unlimited access starting at $9.99/month"
                   : "Sign up for free or upgrade for unlimited!"}
               </p>
             </div>
