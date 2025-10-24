@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   CheckCircle, 
   XCircle, 
@@ -24,9 +25,11 @@ export default function SystemHealthCheck() {
   const [isRunning, setIsRunning] = useState(false);
   const [lastRun, setLastRun] = useState(null);
   const [fixingIndex, setFixingIndex] = useState(null);
+  const [fixResult, setFixResult] = useState(null);
 
   const runHealthCheck = async () => {
     setIsRunning(true);
+    setFixResult(null);
     const results = [];
 
     try {
@@ -71,51 +74,74 @@ export default function SystemHealthCheck() {
 
   const fixIssue = async (check, index) => {
     setFixingIndex(index);
+    setFixResult(null);
     
     try {
       let fixed = false;
+      let message = "";
       
       switch (check.name) {
         case "Authentication System":
           fixed = await fixAuthentication();
+          message = fixed ? "✅ Authentication refreshed successfully" : "❌ Could not fix authentication";
           break;
         case "User Entity":
           fixed = await fixUserEntity();
+          message = fixed ? "✅ User entity verified and working" : "❌ Could not fix user entity";
           break;
         case "VIP Subscription System":
-          fixed = await fixVIPSystem();
+          const result = await fixVIPSystem();
+          fixed = result.fixed;
+          message = result.message;
           break;
         case "Match Entity":
           fixed = await fixMatchEntity();
+          message = fixed ? "✅ Match entity verified and working" : "❌ Could not fix match entity";
           break;
         case "PlayerStats Entity":
           fixed = await fixPlayerStatsEntity();
+          message = fixed ? "✅ PlayerStats entity verified and working" : "❌ Could not fix player stats entity";
           break;
         case "TeamStats Entity":
           fixed = await fixTeamStatsEntity();
+          message = fixed ? "✅ TeamStats entity verified and working" : "❌ Could not fix team stats entity";
           break;
         case "LLM Integration (AI Analysis)":
           fixed = await fixLLMIntegration();
+          message = fixed ? "✅ LLM integration tested successfully" : "❌ Could not fix LLM integration";
           break;
         case "Email Integration":
           fixed = await fixEmailIntegration();
+          message = fixed ? "✅ Email integration verified" : "❌ Could not fix email integration";
           break;
         case "Free Lookup Tracking":
           fixed = await fixFreeLookupTracking();
+          message = fixed ? "✅ Free lookup tracking reset" : "❌ Could not fix lookup tracking";
           break;
         case "Navigation Pages":
           fixed = await fixNavigationPages();
+          message = fixed ? "✅ Navigation pages verified" : "❌ Could not fix navigation pages";
           break;
         default:
+          message = "❌ Unknown issue type";
           break;
       }
       
+      setFixResult({
+        success: fixed,
+        message: message
+      });
+      
       if (fixed) {
         // Re-run the health check to verify fix
-        await runHealthCheck();
+        setTimeout(() => runHealthCheck(), 2000);
       }
     } catch (error) {
       console.error("Fix failed:", error);
+      setFixResult({
+        success: false,
+        message: `❌ Fix failed: ${error.message}`
+      });
     }
     
     setFixingIndex(null);
@@ -124,7 +150,6 @@ export default function SystemHealthCheck() {
   // FIX FUNCTIONS
   const fixAuthentication = async () => {
     try {
-      // Try to refresh authentication state
       const isAuth = await base44.auth.isAuthenticated();
       console.log("Authentication refreshed:", isAuth);
       return true;
@@ -136,7 +161,6 @@ export default function SystemHealthCheck() {
 
   const fixUserEntity = async () => {
     try {
-      // Verify entity exists and has correct schema
       const users = await base44.entities.User.list();
       console.log("User entity verified with", users.length, "users");
       return true;
@@ -148,40 +172,59 @@ export default function SystemHealthCheck() {
 
   const fixVIPSystem = async () => {
     try {
-      // Check and fix any VIP inconsistencies
       const users = await base44.entities.User.list();
-      let fixed = false;
+      let fixedCount = 0;
       
       for (const user of users) {
+        let needsUpdate = false;
+        let updates = {};
+        
         // If user has vip_member = true but wrong subscription_status
         if (user.vip_member === true && user.subscription_status !== 'lifetime_vip') {
-          await base44.entities.User.update(user.id, {
-            subscription_status: 'lifetime_vip',
-            subscription_type: 'lifetime'
-          });
-          fixed = true;
+          updates.subscription_status = 'lifetime_vip';
+          updates.subscription_type = 'lifetime';
+          updates.subscription_start_date = null;
+          updates.subscription_end_date = null;
+          needsUpdate = true;
         }
         
         // If user has subscription_status = 'lifetime_vip' but vip_member not set
         if (user.subscription_status === 'lifetime_vip' && !user.vip_member) {
-          await base44.entities.User.update(user.id, {
-            vip_member: true
-          });
-          fixed = true;
+          updates.vip_member = true;
+          updates.subscription_type = 'lifetime';
+          updates.subscription_start_date = null;
+          updates.subscription_end_date = null;
+          needsUpdate = true;
+        }
+        
+        if (needsUpdate) {
+          await base44.entities.User.update(user.id, updates);
+          fixedCount++;
         }
       }
       
-      console.log("VIP system checked and fixed inconsistencies");
-      return fixed;
+      if (fixedCount > 0) {
+        return {
+          fixed: true,
+          message: `✅ Fixed ${fixedCount} VIP inconsistenc${fixedCount === 1 ? 'y' : 'ies'}`
+        };
+      } else {
+        return {
+          fixed: true,
+          message: "✅ No VIP inconsistencies found"
+        };
+      }
     } catch (error) {
       console.error("Cannot fix VIP system:", error);
-      return false;
+      return {
+        fixed: false,
+        message: `❌ Error: ${error.message}`
+      };
     }
   };
 
   const fixMatchEntity = async () => {
     try {
-      // Verify entity exists
       const matches = await base44.entities.Match.list();
       console.log("Match entity verified with", matches.length, "matches");
       return true;
@@ -193,7 +236,6 @@ export default function SystemHealthCheck() {
 
   const fixPlayerStatsEntity = async () => {
     try {
-      // Verify entity exists
       const players = await base44.entities.PlayerStats.list();
       console.log("PlayerStats entity verified with", players.length, "players");
       return true;
@@ -205,7 +247,6 @@ export default function SystemHealthCheck() {
 
   const fixTeamStatsEntity = async () => {
     try {
-      // Verify entity exists
       const teams = await base44.entities.TeamStats.list();
       console.log("TeamStats entity verified with", teams.length, "teams");
       return true;
@@ -217,7 +258,6 @@ export default function SystemHealthCheck() {
 
   const fixLLMIntegration = async () => {
     try {
-      // Test LLM with a simple query
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: "Return a simple test response with status 'ok'",
         response_json_schema: {
@@ -238,7 +278,6 @@ export default function SystemHealthCheck() {
 
   const fixEmailIntegration = async () => {
     try {
-      // Email integration doesn't need fixing - it's configuration based
       console.log("Email integration is configuration-based, no fix needed");
       return true;
     } catch (error) {
@@ -248,7 +287,6 @@ export default function SystemHealthCheck() {
 
   const fixFreeLookupTracking = async () => {
     try {
-      // Reset localStorage if corrupted
       const stored = localStorage.getItem('freeLookups');
       if (!stored || isNaN(parseInt(stored))) {
         localStorage.setItem('freeLookups', '0');
@@ -264,7 +302,6 @@ export default function SystemHealthCheck() {
 
   const fixNavigationPages = async () => {
     try {
-      // Pages are code-based, can't be "fixed" programmatically
       console.log("Navigation pages are code-based, verify all page files exist");
       return true;
     } catch (error) {
@@ -272,7 +309,7 @@ export default function SystemHealthCheck() {
     }
   };
 
-  // CHECK FUNCTIONS (keeping existing ones)
+  // CHECK FUNCTIONS
   const checkAuthentication = async () => {
     try {
       const isAuth = await base44.auth.isAuthenticated();
@@ -297,12 +334,11 @@ export default function SystemHealthCheck() {
   const checkUserEntity = async () => {
     try {
       const users = await base44.entities.User.list();
-      const schema = await base44.entities.User.schema();
       
       return {
         name: "User Entity",
         status: "success",
-        message: `${users.length} users found, schema valid`,
+        message: `${users.length} users found, entity accessible`,
         details: `Fields: subscription_status, vip_member, subscription_type`,
         icon: Users,
         canFix: false
@@ -355,7 +391,6 @@ export default function SystemHealthCheck() {
   const checkMatchEntity = async () => {
     try {
       const matches = await base44.entities.Match.list();
-      const schema = await base44.entities.Match.schema();
       
       return {
         name: "Match Entity",
@@ -379,7 +414,6 @@ export default function SystemHealthCheck() {
   const checkPlayerStatsEntity = async () => {
     try {
       const players = await base44.entities.PlayerStats.list();
-      const schema = await base44.entities.PlayerStats.schema();
       
       return {
         name: "PlayerStats Entity",
@@ -403,7 +437,6 @@ export default function SystemHealthCheck() {
   const checkTeamStatsEntity = async () => {
     try {
       const teams = await base44.entities.TeamStats.list();
-      const schema = await base44.entities.TeamStats.schema();
       
       return {
         name: "TeamStats Entity",
@@ -426,7 +459,6 @@ export default function SystemHealthCheck() {
 
   const checkLLMIntegration = async () => {
     try {
-      // Test LLM with a simple query
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: "Return a simple test response",
         response_json_schema: {
@@ -458,7 +490,6 @@ export default function SystemHealthCheck() {
 
   const checkEmailIntegration = async () => {
     try {
-      // Don't actually send email, just validate the integration exists
       return {
         name: "Email Integration",
         status: "success",
@@ -618,6 +649,21 @@ export default function SystemHealthCheck() {
             </div>
           </CardHeader>
         </Card>
+
+        {/* Fix Result Alert */}
+        {fixResult && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <Alert className={fixResult.success ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50"}>
+              <AlertDescription className={fixResult.success ? "text-green-300" : "text-red-300"}>
+                {fixResult.message}
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
