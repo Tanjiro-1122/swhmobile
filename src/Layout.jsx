@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, LogOut, Menu } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -65,6 +64,8 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Top Navigation Bar */}
@@ -105,6 +106,21 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 );
               })}
+              
+              {/* Admin Link - Only visible to admins */}
+              {isAdmin && (
+                <Link
+                  to={createPageUrl("AdminUserManager")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    location.pathname === createPageUrl("AdminUserManager")
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-lg'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Crown className="w-4 h-4" />
+                  <span className="hidden lg:inline">Admin</span>
+                </Link>
+              )}
             </div>
 
             {/* Auth Section */}
@@ -128,6 +144,14 @@ export default function Layout({ children, currentPageName }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("AdminUserManager")} className="cursor-pointer">
+                          <Crown className="w-4 h-4 mr-2 text-yellow-500" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
@@ -167,6 +191,14 @@ export default function Layout({ children, currentPageName }) {
                       </Link>
                     </DropdownMenuItem>
                   ))}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("AdminUserManager")} className="flex items-center gap-2 cursor-pointer">
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                        Admin Panel
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
