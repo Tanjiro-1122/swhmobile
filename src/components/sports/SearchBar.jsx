@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SearchBar({ onSearch, isSearching }) {
@@ -17,7 +17,7 @@ export default function SearchBar({ onSearch, isSearching }) {
   const popularSearches = [
     "Lakers @ Celtics",
     "Chiefs @ Bills",
-    "NBA tonight",
+    "Warriors vs Nuggets",
     "Man United vs Liverpool"
   ];
 
@@ -29,7 +29,7 @@ export default function SearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search any match: 'Lakers @ Celtics', 'Chiefs @ Bills', 'Man United vs Liverpool'..."
+            placeholder="Search: 'Lakers @ Celtics' or 'Warriors vs Nuggets'..."
             className="pl-14 pr-36 h-14 text-base bg-slate-900/50 border-2 border-slate-700 focus:border-emerald-500 text-white placeholder:text-slate-500 rounded-xl transition-all shadow-lg"
             disabled={isSearching}
           />
@@ -53,6 +53,21 @@ export default function SearchBar({ onSearch, isSearching }) {
         </div>
       </form>
 
+      {/* Format Guide */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-sm font-bold text-blue-300 mb-2">📝 How to Search:</div>
+            <div className="text-sm text-blue-200 space-y-1">
+              <div>✅ <strong>"Lakers @ Celtics"</strong> = Lakers away, Celtics home</div>
+              <div>✅ <strong>"Chiefs @ Bills"</strong> = Chiefs away, Bills home</div>
+              <div>✅ <strong>"Warriors vs Nuggets"</strong> = Warriors home, Nuggets away</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm text-slate-400 font-medium">Popular:</span>
         {popularSearches.map((search, index) => (
@@ -67,12 +82,8 @@ export default function SearchBar({ onSearch, isSearching }) {
             className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-emerald-500/50 transition-all"
           >
             {search}
-          </motion.button>
+          </Button>
         ))}
-      </div>
-      
-      <div className="text-xs text-slate-500 text-center">
-        💡 Tip: Use "@" for away team (e.g., "Lakers @ Celtics" = Lakers visiting Boston)
       </div>
     </div>
   );

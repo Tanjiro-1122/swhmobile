@@ -9,7 +9,7 @@ import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
-import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
+import LimitedOfferBanner from "../components/auth/LimitedOfferOfferBanner";
 import LiveDataBadge from "../components/shared/LiveDataBadge"; // Added import
 
 export default function Dashboard() {
@@ -68,21 +68,23 @@ SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏟️ CRITICAL: HOME vs AWAY TEAM RULES
+🏟️ CRITICAL: HOME vs AWAY TEAM FORMAT RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FOR NFL AND NBA:
-- Format "Team A @ Team B" means: Team A is AWAY, Team B is HOME
-- Format "Team A vs Team B" means: Team A is HOME, Team B is AWAY
-- The team playing at their own stadium/arena is HOME
-- The team traveling is AWAY
+UNDERSTAND THE SEARCH FORMAT:
+- "@" format: "Team A @ Team B" means Team A is AWAY, Team B is HOME
+- "vs" format: "Team A vs Team B" means Team A is HOME, Team B is AWAY
 
 EXAMPLES:
-- "Lakers @ Celtics" → Lakers (AWAY), Celtics (HOME)
-- "Chiefs vs Bills" → Chiefs (HOME), Bills (AWAY)
-- "Heat @ Warriors" → Heat (AWAY), Warriors (HOME)
+✅ "Lakers @ Celtics" → Lakers (AWAY/visiting), Celtics (HOME)
+✅ "Chiefs @ Bills" → Chiefs (AWAY/visiting), Bills (HOME)  
+✅ "Warriors vs Nuggets" → Warriors (HOME), Nuggets (AWAY/visiting)
+✅ "Heat @ Warriors" → Heat (AWAY/visiting), Warriors (HOME)
 
-ALWAYS verify home/away by checking the game location on ESPN.com or team schedule.
+THE "@" SYMBOL ALWAYS MEANS "AT" - the first team is traveling TO the second team's venue.
+The "vs" format means the first team is hosting at their own venue.
+
+VERIFICATION: Always check ESPN.com or team schedules to confirm who is home/away!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔍 MANDATORY DATA SOURCES (USE IN THIS ORDER):
@@ -113,14 +115,19 @@ ALWAYS verify home/away by checking the game location on ESPN.com or team schedu
 📋 STEP-BY-STEP VERIFICATION PROCESS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-STEP 1: IDENTIFY THE MATCH & HOME/AWAY
+STEP 1: PARSE THE SEARCH QUERY
+- If query contains "@": Team before @ is AWAY, team after @ is HOME
+- If query contains "vs": Team before vs is HOME, team after vs is AWAY
+- Verify game location on ESPN to confirm
+
+STEP 2: IDENTIFY THE MATCH
 - Search StatMuse: "${query}"
 - Find EXACT team names from league website
 - Get scheduled date/time from ESPN
-- DETERMINE which team is HOME (playing at their stadium)
-- DETERMINE which team is AWAY (traveling team)
+- CONFIRM which team is HOME (playing at their stadium)
+- CONFIRM which team is AWAY (traveling team)
 
-STEP 2: VERIFY TEAM RECORDS (${new Date().getFullYear()} SEASON ONLY)
+STEP 3: VERIFY TEAM RECORDS (${new Date().getFullYear()} SEASON ONLY)
 Home Team (team playing at their stadium):
   ✓ W-L record from Basketball-Reference or Pro-Football-Reference
   ✓ Points per game (season average)
@@ -133,17 +140,17 @@ Away Team (team traveling):
   ✓ Last 5 games results (with dates)
   ✓ Away record specifically (e.g., 5-5 on the road)
 
-STEP 3: GET HEAD-TO-HEAD DATA
+STEP 4: GET HEAD-TO-HEAD DATA
 - Search: "[Home Team] vs [Away Team] ${new Date().getFullYear()}"
 - Last 3-5 meetings
 - Who won and by how much
 
-STEP 4: CHECK INJURIES (TODAY'S REPORT)
+STEP 5: CHECK INJURIES (TODAY'S REPORT)
 - Search: "[Team Name] injury report ${new Date().toLocaleDateString()}"
 - Find official team injury list
 - Impact on predictions
 
-STEP 5: CALCULATE WIN PROBABILITIES
+STEP 6: CALCULATE WIN PROBABILITIES
 Based on:
   • Season records (40% weight)
   • Last 5 games form (25% weight)
@@ -163,7 +170,7 @@ MUST TOTAL 100%: Home + Away + Draw = 100
 - No scheduled match found
 - Win probabilities don't total 100%
 - Using placeholder/fake data
-- Home/Away designation is incorrect
+- Home/Away designation is WRONG
 
 ✅ ACCEPT only if:
 - All stats from ${new Date().getFullYear()} season
@@ -172,6 +179,7 @@ MUST TOTAL 100%: Home + Away + Draw = 100
 - Probabilities are realistic (5-95% range)
 - Home team is correctly identified (team playing at their venue)
 - Away team is correctly identified (traveling team)
+- Home/Away matches the query format (@ or vs)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 REQUIRED OUTPUT FORMAT:
@@ -224,12 +232,13 @@ MUST TOTAL 100%: Home + Away + Draw = 100
 🚨 CRITICAL REMINDERS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+• Parse the query format correctly (@ vs vs)
 • Use StatMuse FIRST, always
 • Verify EVERYTHING on official league sites
 • Only ${new Date().getFullYear()} season data
 • Real dates, real scores, real stats
-• CORRECTLY identify HOME team (playing at their venue)
-• CORRECTLY identify AWAY team (traveling)
+• CORRECTLY identify HOME team (playing at their venue OR first team in "vs" format)
+• CORRECTLY identify AWAY team (traveling OR first team in "@" format)
 • If match not found: Say "Unable to locate scheduled match" in analysis_summary
 
 RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
@@ -334,7 +343,7 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
       } else if (err.message?.includes("Invalid response")) {
         errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'Premier League matches this weekend'\n• A specific team matchup";
       } else {
-        errorMessage += "Please try:\n• Using official team names (e.g., 'Los Angeles Lakers')\n• Adding 'today' or 'tonight'\n• Being more specific about the league";
+        errorMessage += "Please try:\n• Using @ for away team (e.g., 'Lakers @ Celtics')\n• Using vs for home team (e.g., 'Warriors vs Nuggets')\n• Being specific about the league";
       }
       
       setError(errorMessage);
@@ -428,7 +437,7 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-        {/* Today's Best Bets */}
+        {/* Todays Best Bets */}
         <TodaysBestBets 
           onLookupUsed={recordLookup}
           canLookup={canLookup}
