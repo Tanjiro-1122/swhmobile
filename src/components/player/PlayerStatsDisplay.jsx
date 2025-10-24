@@ -1,12 +1,13 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  Target, 
-  Activity, 
-  Award, 
+import {
+  TrendingUp,
+  Target,
+  Activity,
+  Award,
   AlertCircle,
   Calendar,
   Zap,
@@ -64,7 +65,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       minutes: Calendar,
       combined: TrendingUp
     };
-    
+
     for (const key in icons) {
       if (label.toLowerCase().includes(key)) {
         return icons[key];
@@ -73,14 +74,99 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     return Activity;
   };
 
+  const getSimplifiedPrediction = () => {
+    const sport = player.sport?.toLowerCase() || '';
+    const position = player.position?.toLowerCase() || '';
+    const averages = player.season_averages;
+
+    if (!averages) return null;
+
+    // BASEBALL PREDICTIONS
+    if (sport.includes('baseball') || sport.includes('mlb')) {
+      const predictions = [];
+      if (averages.hits_per_game) predictions.push(`${averages.hits_per_game.toFixed(1)} hits`);
+      if (averages.runs_per_game) predictions.push(`${averages.runs_per_game.toFixed(1)} runs`);
+      if (averages.rbis_per_game) predictions.push(`${averages.rbis_per_game.toFixed(1)} RBIs`);
+      if (averages.home_runs_per_game && averages.home_runs_per_game > 0.1) {
+        predictions.push(`${averages.home_runs_per_game.toFixed(1)} home runs`);
+      }
+
+      if (predictions.length > 0) {
+        return `This player per historical data will score ${predictions.join(', ')} per game`;
+      }
+    }
+
+    // BASKETBALL PREDICTIONS
+    if (sport.includes('basketball') || sport.includes('nba')) {
+      const predictions = [];
+      if (averages.points_per_game) predictions.push(`${averages.points_per_game.toFixed(1)} points`);
+      if (averages.rebounds_per_game) predictions.push(`${averages.rebounds_per_game.toFixed(1)} rebounds`);
+      if (averages.assists_per_game) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
+
+      if (predictions.length > 0) {
+        return `This player per historical data will score ${predictions.join(', ')} per game`;
+      }
+    }
+
+    // FOOTBALL PREDICTIONS - QUARTERBACK
+    if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('qb') || position.includes('quarterback'))) {
+      const predictions = [];
+      if (averages.passing_yards_per_game) predictions.push(`${averages.passing_yards_per_game.toFixed(0)} passing yards`);
+      if (averages.passing_touchdowns_per_game) predictions.push(`${averages.passing_touchdowns_per_game.toFixed(1)} passing touchdowns`);
+      if (averages.interceptions_per_game) predictions.push(`${averages.interceptions_per_game.toFixed(1)} interceptions`);
+
+      if (predictions.length > 0) {
+        return `This quarterback per historical data will throw for ${predictions.join(', ')} per game`;
+      }
+    }
+
+    // FOOTBALL PREDICTIONS - RUNNING BACK
+    if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('rb') || position.includes('running'))) {
+      const predictions = [];
+      if (averages.rushing_yards_per_game) predictions.push(`${averages.rushing_yards_per_game.toFixed(0)} rushing yards`);
+      if (averages.rushing_touchdowns_per_game) predictions.push(`${averages.rushing_touchdowns_per_game.toFixed(1)} rushing touchdowns`);
+      if (averages.receptions_per_game) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
+
+      if (predictions.length > 0) {
+        return `This running back per historical data will rush for ${predictions.join(', ')} per game`;
+      }
+    }
+
+    // FOOTBALL PREDICTIONS - WIDE RECEIVER / TIGHT END
+    if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('wr') || position.includes('te') || position.includes('receiver') || position.includes('tight'))) {
+      const predictions = [];
+      if (averages.receptions_per_game) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
+      if (averages.receiving_yards_per_game) predictions.push(`${averages.receiving_yards_per_game.toFixed(0)} receiving yards`);
+      if (averages.receiving_touchdowns_per_game) predictions.push(`${averages.receiving_touchdowns_per_game.toFixed(1)} touchdowns`);
+
+      if (predictions.length > 0) {
+        return `This receiver per historical data will catch ${predictions.join(', ')} per game`;
+      }
+    }
+
+    // SOCCER PREDICTIONS
+    if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
+      const predictions = [];
+      if (averages.goals_per_game) predictions.push(`${averages.goals_per_game.toFixed(1)} goals`);
+      if (averages.assists_per_game) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
+      if (averages.shots_per_game) predictions.push(`${averages.shots_per_game.toFixed(1)} shots`);
+
+      if (predictions.length > 0) {
+        return `This player per historical data will score ${predictions.join(', ')} per game`;
+      }
+    }
+
+    return null;
+  };
+
   const renderSeasonAverages = () => {
     if (!player.season_averages) return null;
-    
+
     const stats = [];
     const averages = player.season_averages;
     const sport = player.sport?.toLowerCase() || '';
     const position = player.position?.toLowerCase() || '';
-    
+
     // BASEBALL STATS
     if (sport.includes('baseball') || sport.includes('mlb')) {
       if (averages.batting_average) stats.push({ label: "Batting Avg", value: averages.batting_average.toFixed(3), key: "batting_average", highlight: true });
@@ -93,7 +179,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       if (averages.slugging_percentage) stats.push({ label: "SLG", value: averages.slugging_percentage.toFixed(3), key: "slg" });
       return stats;
     }
-    
+
     // FOOTBALL STATS
     if (sport.includes('football') || sport.includes('nfl')) {
       // Quarterback Stats
@@ -123,14 +209,14 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       }
       return stats;
     }
-    
+
     // BASKETBALL STATS
     if (sport.includes('basketball') || sport.includes('nba')) {
       const points = averages.points_per_game || 0;
       const rebounds = averages.rebounds_per_game || 0;
       const assists = averages.assists_per_game || 0;
       const combinedStat = points + rebounds + assists;
-      
+
       if (averages.points_per_game) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
       if (averages.assists_per_game) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
       if (averages.rebounds_per_game) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
@@ -142,7 +228,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       if (averages.minutes_per_game) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
       return stats;
     }
-    
+
     // SOCCER STATS
     if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
       if (averages.goals_per_game) stats.push({ label: "Goals/G", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
@@ -151,12 +237,13 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       if (averages.tackles_per_game) stats.push({ label: "Tackles/G", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
       return stats;
     }
-    
+
     return stats;
   };
 
   const seasonStats = renderSeasonAverages();
   const sport = player.sport?.toLowerCase() || '';
+  const simplifiedPrediction = getSimplifiedPrediction();
 
   return (
     <motion.div
@@ -198,6 +285,30 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         </div>
 
         <CardContent className="p-6 space-y-6">
+          {/* Simplified Prediction Summary */}
+          {simplifiedPrediction && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-blue-100 mb-2">📊 SIMPLE PREDICTION</div>
+                  <div className="text-xl font-bold leading-relaxed">
+                    {simplifiedPrediction}
+                  </div>
+                  <div className="text-sm text-blue-100 mt-2">
+                    ⚡ Based on {new Date().getFullYear()} season averages
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {player.injury_status && player.injury_status !== "Healthy" && (
             <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
@@ -218,11 +329,11 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {seasonStats.map((stat, idx) => {
                   const Icon = getStatIcon(stat.label);
                   return (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`${
-                        stat.highlight 
-                          ? 'bg-gradient-to-br from-yellow-100 via-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2 md:col-span-1' 
+                        stat.highlight
+                          ? 'bg-gradient-to-br from-yellow-100 via-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2 md:col-span-1'
                           : 'bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100'
                       } rounded-lg p-4`}
                     >
