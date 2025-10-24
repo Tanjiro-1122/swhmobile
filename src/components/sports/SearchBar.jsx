@@ -82,7 +82,7 @@ export default function SearchBar({ onSearch, isSearching }) {
             className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-emerald-500/50 transition-all"
           >
             {search}
-          </Button>
+          </motion.button>
         ))}
       </div>
     </div>
