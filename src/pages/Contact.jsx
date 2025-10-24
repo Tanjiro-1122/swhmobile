@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -33,17 +32,17 @@ export default function Contact() {
 
   const sendEmailMutation = useMutation({
     mutationFn: async (data) => {
-      // Send email to your support email
-      await base44.integrations.Core.SendEmail({
-        from_name: data.name,
-        to: "sportswagerhelper@outlook.com", // Updated email address
-        subject: `Contact Form: ${data.subject}`,
-        body: `
+      try {
+        // Send email using Core.SendEmail integration
+        const result = await base44.integrations.Core.SendEmail({
+          to: "sportswagerhelper@outlook.com",
+          subject: `Contact Form: ${data.subject || 'No Subject'}`,
+          body: `
 New message from Sports Wager Helper Contact Form
 
 Name: ${data.name}
 Email: ${data.email}
-Subject: ${data.subject}
+Subject: ${data.subject || 'No Subject'}
 
 Message:
 ${data.message}
@@ -51,8 +50,15 @@ ${data.message}
 ---
 Sent from: Sports Wager Helper Contact Form
 User Email: ${data.email}
-        `
-      });
+          `,
+          from_name: data.name || 'Sports Wager Helper User'
+        });
+        
+        return result;
+      } catch (err) {
+        console.error("Email send error details:", err);
+        throw err;
+      }
     },
     onSuccess: () => {
       setSuccess(true);
@@ -61,8 +67,8 @@ User Email: ${data.email}
       setTimeout(() => setSuccess(false), 5000);
     },
     onError: (err) => {
-      setError("Failed to send message. Please try again or email us directly.");
-      console.error("Email send error:", err);
+      console.error("Email mutation error:", err);
+      setError("Failed to send message. Please email us directly at sportswagerhelper@outlook.com");
     }
   });
 
@@ -84,6 +90,14 @@ User Email: ${data.email}
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setError(null);
     sendEmailMutation.mutate(formData);
   };
 
@@ -129,10 +143,10 @@ User Email: ${data.email}
                       We typically respond within 24 hours
                     </p>
                     <a 
-                      href="mailto:sportswagerhelper@outlook.com" // Updated email address
+                      href="mailto:sportswagerhelper@outlook.com" 
                       className="text-blue-400 hover:text-blue-300 font-medium"
                     >
-                      sportswagerhelper@outlook.com {/* Updated email address */}
+                      sportswagerhelper@outlook.com
                     </a>
                   </div>
                 </div>
