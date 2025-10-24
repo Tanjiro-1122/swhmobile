@@ -23,18 +23,20 @@ export default function LimitedOfferBanner() {
           setCurrentUser(user);
         }
         
-        // Get VIP user count
+        // Get VIP user count - MUST list all users first
         const users = await base44.entities.User.list();
         
-        // Count only TRUE VIP members
+        // Count VIP members - check BOTH conditions
         const vipUsers = users.filter(u => {
-          return u.vip_member === true || u.subscription_status === 'lifetime_vip';
+          const hasVIPFlag = u.vip_member === true;
+          const hasVIPStatus = u.subscription_status === 'lifetime_vip';
+          return hasVIPFlag || hasVIPStatus;
         });
         
-        console.log("=== VIP COUNT DEBUG ===");
-        console.log("Total users:", users.length);
+        console.log("=== VIP COUNT DEBUG (Banner) ===");
+        console.log("Total users fetched:", users.length);
         console.log("VIP users found:", vipUsers.length);
-        console.log("VIP users:", vipUsers.map(u => ({ 
+        console.log("VIP user details:", vipUsers.map(u => ({ 
           email: u.email, 
           vip_member: u.vip_member, 
           subscription_status: u.subscription_status,
@@ -51,20 +53,30 @@ export default function LimitedOfferBanner() {
     
     checkAuth();
     
-    // Refresh every 30 seconds to keep count updated
-    const interval = setInterval(checkAuth, 30000);
+    // Refresh every 15 seconds to keep count updated
+    const interval = setInterval(checkAuth, 15000);
     return () => clearInterval(interval);
   }, []);
 
   const spotsRemaining = Math.max(0, 20 - vipCount);
   const percentageFilled = Math.min(100, (vipCount / 20) * 100);
-  const allSpotsTaken = spotsRemaining === 0;
+  const allSpotsTaken = vipCount >= 20;
 
   // Check if current user is already VIP
   const isUserVIP = currentUser?.vip_member === true || currentUser?.subscription_status === 'lifetime_vip';
 
   // Don't show anything while loading
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 border-b-4 border-yellow-300 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center">
+            <div className="animate-pulse text-white text-lg font-bold">Loading VIP status...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If all spots taken, show "All Spots Taken" message
   if (allSpotsTaken) {
@@ -158,11 +170,11 @@ export default function LimitedOfferBanner() {
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Show VIP status for current user if they're VIP */}
-        {isUserVIP && (
+        {isUserVIP && currentUser?.vip_spot_number && (
           <div className="mb-4 text-center">
             <Badge className="bg-green-600 text-white text-lg px-4 py-2">
               <Crown className="w-5 h-5 mr-2 inline" />
-              🎉 You're a VIP Lifetime Member #{currentUser.vip_spot_number}!
+              🎉 You're VIP Lifetime Member #{currentUser.vip_spot_number}!
             </Badge>
           </div>
         )}
