@@ -12,11 +12,15 @@
     },
     "home_team": {
       "type": "string",
-      "description": "Name of the home team"
+      "description": "Name of the home team - TEAM PLAYING AT THEIR OWN VENUE"
     },
     "away_team": {
       "type": "string",
-      "description": "Name of the away team"
+      "description": "Name of the away team - TEAM TRAVELING/VISITING"
+    },
+    "venue": {
+      "type": "string",
+      "description": "Stadium/arena name and location where game is played"
     },
     "match_date": {
       "type": "string",
@@ -25,7 +29,7 @@
     },
     "home_win_probability": {
       "type": "number",
-      "description": "Probability of home team winning (0-100)"
+      "description": "Probability of home team winning (0-100) - includes home advantage"
     },
     "away_win_probability": {
       "type": "number",
@@ -44,7 +48,7 @@
     },
     "analysis_summary": {
       "type": "string",
-      "description": "Brief summary of the analysis"
+      "description": "Brief summary of the analysis - must mention home advantage"
     },
     "confidence_level": {
       "type": "string",
@@ -64,7 +68,8 @@
             "type": "string"
           },
           "team": {
-            "type": "string"
+            "type": "string",
+            "description": "Include (HOME) or (AWAY) designation"
           },
           "position": {
             "type": "string"
@@ -137,10 +142,12 @@
           "type": "object",
           "properties": {
             "home_probability": {
-              "type": "number"
+              "type": "number",
+              "description": "Home team typically 55-65%"
             },
             "away_probability": {
-              "type": "number"
+              "type": "number",
+              "description": "Away team typically 35-45%"
             }
           }
         }
@@ -151,6 +158,7 @@
     "sport",
     "home_team",
     "away_team",
+    "venue",
     "home_win_probability",
     "away_win_probability"
   ]
