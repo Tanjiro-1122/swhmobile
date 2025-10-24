@@ -8,21 +8,36 @@ import { base44 } from "@/api/base44Client";
 export default function LimitedOfferBanner() {
   const [vipCount, setVipCount] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const auth = await base44.auth.isAuthenticated();
-      setIsAuthenticated(auth);
-      
-      // Get VIP user count
       try {
+        const auth = await base44.auth.isAuthenticated();
+        setIsAuthenticated(auth);
+        
+        // Get VIP user count
         const users = await base44.entities.User.list();
-        // Count only VIP members
-        const vipUsers = users.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
+        
+        // Count only TRUE VIP members (with vip_member = true OR subscription_status = 'lifetime_vip')
+        const vipUsers = users.filter(u => {
+          return u.vip_member === true || u.subscription_status === 'lifetime_vip';
+        });
+        
+        console.log("=== VIP COUNT DEBUG ===");
+        console.log("Total users:", users.length);
+        console.log("VIP users found:", vipUsers.length);
+        console.log("VIP users:", vipUsers.map(u => ({ 
+          email: u.email, 
+          vip_member: u.vip_member, 
+          subscription_status: u.subscription_status 
+        })));
+        
         setVipCount(vipUsers.length);
-        console.log("VIP Count:", vipUsers.length, "Total Users:", users.length);
+        setIsLoading(false);
       } catch (error) {
-        console.log("Could not fetch VIP count:", error);
+        console.error("Could not fetch VIP count:", error);
+        setIsLoading(false);
       }
     };
     
@@ -32,7 +47,8 @@ export default function LimitedOfferBanner() {
   const spotsRemaining = Math.max(0, 20 - vipCount);
   const percentageFilled = Math.min(100, (vipCount / 20) * 100);
 
-  if (isAuthenticated || spotsRemaining === 0) return null;
+  // Hide banner if user is authenticated OR all spots are taken OR still loading
+  if (isAuthenticated || spotsRemaining === 0 || isLoading) return null;
 
   const handleSignup = () => {
     base44.auth.redirectToLogin(window.location.pathname);
@@ -92,7 +108,7 @@ export default function LimitedOfferBanner() {
               </div>
               
               <p className="text-white/80 text-xs mt-2 text-center">
-                ⚡ {vipCount} {vipCount === 1 ? 'user has' : 'users have'} already claimed their spot!
+                ⚡ {vipCount} {vipCount === 1 ? 'user has' : 'users have'} already claimed {vipCount === 1 ? 'their' : 'a'} spot!
               </p>
             </div>
           </div>
