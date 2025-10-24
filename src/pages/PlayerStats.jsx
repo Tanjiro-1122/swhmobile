@@ -16,7 +16,7 @@ export default function PlayerStats() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const queryClient = useQueryClient();
 
-  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -60,7 +60,7 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports statistics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED player data.
+        prompt: `You are a professional sports statistics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED player data from ${new Date().getFullYear()}.
 
 PLAYER SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -82,11 +82,15 @@ CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
    URL: pro-football-reference.com/players/
    Get: Passing/rushing/receiving stats, per-game
 
-4. 📺 ESPN.com Player Pages
+4. ⚾ Baseball-Reference.com (MLB players)
+   URL: baseball-reference.com/players/
+   Get: Batting/pitching stats, game logs
+
+5. 📺 ESPN.com Player Pages
    URL: espn.com/[league]/player/_/id/[player]
    Get: Current team, position, injury status
 
-5. 🏟️ Official Team Websites
+6. 🏟️ Official Team Websites
    Check: Current roster, injury reports, depth charts
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -95,15 +99,26 @@ CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
 STEP 1: IDENTIFY PLAYER & SPORT
 - Search StatMuse for "${query}"
-- Determine sport (NBA/NFL/Soccer)
+- If multiple players with same name, select the CURRENT active player
+- Determine sport (NBA/NFL/MLB/Soccer)
 - Verify player is ACTIVE in ${new Date().getFullYear()} season
 
 STEP 2: GET CURRENT TEAM & POSITION
 - Check official team roster
 - Verify player is on CURRENT roster
-- Get exact position (e.g., "Point Guard", "Quarterback")
+- Get exact position (e.g., "Point Guard", "Quarterback", "Catcher")
 
 STEP 3: SEASON AVERAGES (${new Date().getFullYear()} ONLY)
+
+FOR MLB/BASEBALL:
+✓ Batting Average (from Baseball-Reference)
+✓ Hits per game
+✓ Runs per game  
+✓ RBIs per game
+✓ Home Runs per game
+✓ Stolen Bases per game
+✓ On-Base Percentage (OBP)
+✓ Slugging Percentage (SLG)
 
 FOR NBA/BASKETBALL:
 ✓ Points per game (from Basketball-Reference)
@@ -147,10 +162,13 @@ FOR SOCCER:
 STEP 4: GET LAST 5-10 GAME LOGS
 - Search: "[Player Name] game log ${new Date().getFullYear()}"
 - For EACH game get:
-  * Exact date (MM/DD/YYYY)
+  * Exact date (MM/DD/YYYY format)
   * Opponent (full team name)
   * Actual stats from THAT specific game
   * Performance rating vs season average
+
+EXAMPLE FOR BASEBALL:
+Date: 01/15/2025, vs Yankees, 3 H, 2 R, 1 RBI, 1 HR
 
 STEP 5: CHECK INJURY STATUS (TODAY)
 - Search: "[Player Name] injury report ${new Date().toLocaleDateString()}"
@@ -161,6 +179,13 @@ STEP 6: NEXT GAME PREDICTION
 - Get team's next opponent from schedule
 - Predict stats within ±30% of season average
 - Consider matchup and recent form
+- Provide REALISTIC predictions
+
+STEP 7: BETTING LINES & PROBABILITIES
+- Search DraftKings/FanDuel for player props
+- Get Over/Under lines for main stat
+- Calculate probability percentages
+- Example: "O/U 1.5 Hits, 60% chance to go Over"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ DATA VALIDATION RULES:
@@ -183,15 +208,32 @@ STEP 6: NEXT GAME PREDICTION
 🚨 SPORT-SPECIFIC REQUIREMENTS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+MLB/Baseball: Focus on Hits, Runs, RBIs, Home Runs per game
 NBA: Focus on PPG, APG, RPG, FG%, 3P%
 NFL QB: Focus on passing yards, TDs, completion %
 NFL RB: Focus on rushing yards, YPC, TDs
 NFL WR/TE: Focus on receptions, receiving yards, TDs
 Soccer: Focus on goals, assists, shots
 
-CRITICAL: Return ONLY stats relevant to player's position
+CRITICAL: Return ONLY stats relevant to player's position and sport
 
-RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new Date().getFullYear()} data.`,
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 SPECIAL INSTRUCTIONS FOR COMMON NAMES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If player has a common name (e.g., "Will Smith", "Chris Davis"):
+1. Search for the CURRENTLY ACTIVE player in major leagues
+2. Prioritize the player with the most recent game
+3. Verify their current team
+4. Include league and team in response to clarify
+
+Example: "Will Smith" in baseball → Will Smith (C, Los Angeles Dodgers)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new Date().getFullYear()} data.
+
+If player not found, return with player_name set to "NOT_FOUND"`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -229,7 +271,15 @@ RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new 
                 receptions_per_game: { type: "number" },
                 targets_per_game: { type: "number" },
                 yards_per_carry: { type: "number" },
-                yards_per_reception: { type: "number" }
+                yards_per_reception: { type: "number" },
+                hits_per_game: { type: "number" },
+                runs_per_game: { type: "number" },
+                rbis_per_game: { type: "number" },
+                home_runs_per_game: { type: "number" },
+                stolen_bases_per_game: { type: "number" },
+                batting_average: { type: "number" },
+                on_base_percentage: { type: "number" },
+                slugging_percentage: { type: "number" }
               }
             },
             recent_form: {
@@ -251,6 +301,10 @@ RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new 
                   receiving_yards: { type: "number" },
                   receiving_touchdowns: { type: "number" },
                   receptions: { type: "number" },
+                  hits: { type: "number" },
+                  runs: { type: "number" },
+                  rbis: { type: "number" },
+                  home_runs: { type: "number" },
                   performance_rating: { type: "string" }
                 }
               }
@@ -274,6 +328,7 @@ RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new 
               properties: {
                 over_under_points: { type: "number" },
                 over_under_yards: { type: "number" },
+                over_under_hits: { type: "number" },
                 probability_to_score: { type: "number" },
                 hot_streak: { type: "boolean" },
                 consistency_rating: { type: "string" }
@@ -294,8 +349,8 @@ RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new 
 
       console.log("✅ Player Stats Result:", result);
 
-      if (!result || !result.player_name || !result.sport || !result.team) {
-        throw new Error("Invalid response - missing required player data");
+      if (!result || result.player_name === "NOT_FOUND" || !result.sport || !result.team) {
+        throw new Error("Player not found - please verify the player name and try again");
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -306,10 +361,18 @@ RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new 
       console.error("❌ Player Stats Error:", err);
       let errorMessage = "Failed to fetch player statistics. ";
       
-      if (err.message?.includes("Invalid response")) {
-        errorMessage += "Couldn't find that player. Try:\n• Using the player's full name (e.g., 'Patrick Mahomes')\n• Including the sport (e.g., 'Christian McCaffrey NFL')\n• Checking the spelling";
+      if (err.message?.includes("Player not found")) {
+        errorMessage += `Couldn't find "${query}". Try:\n\n`;
+        errorMessage += "• Using the player's full name (e.g., 'Patrick Mahomes')\n";
+        errorMessage += "• Including the sport/league (e.g., 'Will Smith MLB' or 'Will Smith Dodgers')\n";
+        errorMessage += "• Checking the spelling\n";
+        errorMessage += "• Making sure the player is currently active\n\n";
+        errorMessage += "💡 Tip: For common names, add the team or league (e.g., 'Chris Davis Orioles')";
       } else {
-        errorMessage += "Please try:\n• Full name (e.g., 'Josh Allen NFL')\n• Adding sport/league (e.g., 'Tyreek Hill NFL')\n• Current active players only";
+        errorMessage += "Please try:\n";
+        errorMessage += "• Full name (e.g., 'Josh Allen NFL')\n";
+        errorMessage += "• Adding sport/league (e.g., 'Tyreek Hill NFL')\n";
+        errorMessage += "• Current active players only";
       }
       
       setError(errorMessage);

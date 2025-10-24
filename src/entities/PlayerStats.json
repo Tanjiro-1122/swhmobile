@@ -102,6 +102,30 @@
         },
         "yards_per_reception": {
           "type": "number"
+        },
+        "hits_per_game": {
+          "type": "number"
+        },
+        "runs_per_game": {
+          "type": "number"
+        },
+        "rbis_per_game": {
+          "type": "number"
+        },
+        "home_runs_per_game": {
+          "type": "number"
+        },
+        "stolen_bases_per_game": {
+          "type": "number"
+        },
+        "batting_average": {
+          "type": "number"
+        },
+        "on_base_percentage": {
+          "type": "number"
+        },
+        "slugging_percentage": {
+          "type": "number"
         }
       }
     },
@@ -152,6 +176,18 @@
           "receptions": {
             "type": "number"
           },
+          "hits": {
+            "type": "number"
+          },
+          "runs": {
+            "type": "number"
+          },
+          "rbis": {
+            "type": "number"
+          },
+          "home_runs": {
+            "type": "number"
+          },
           "performance_rating": {
             "type": "string"
           }
@@ -194,6 +230,9 @@
           "type": "number"
         },
         "over_under_yards": {
+          "type": "number"
+        },
+        "over_under_hits": {
           "type": "number"
         },
         "probability_to_score": {

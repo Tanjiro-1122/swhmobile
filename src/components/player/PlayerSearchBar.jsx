@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, User, TrendingUp } from "lucide-react";
+import { Search, User, TrendingUp, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PlayerSearchBar({ onSearch, isSearching }) {
@@ -15,11 +15,11 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
   };
 
   const popularPlayers = [
+    "Shohei Ohtani",
     "Patrick Mahomes",
-    "Christian McCaffrey",
     "LeBron James",
-    "Stephen Curry",
-    "Tyreek Hill"
+    "Aaron Judge",
+    "Christian McCaffrey"
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search any player: 'Patrick Mahomes', 'LeBron James', 'Cristiano Ronaldo'..."
+            placeholder="Search any player: 'Shohei Ohtani', 'Patrick Mahomes', 'LeBron James'..."
             className="pl-14 pr-36 h-14 text-base bg-slate-900/50 border-2 border-slate-700 focus:border-purple-500 text-white placeholder:text-slate-500 rounded-xl transition-all shadow-lg"
             disabled={isSearching}
           />
@@ -54,22 +54,37 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
         </div>
       </form>
 
+      {/* Search Tips */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-sm font-bold text-blue-300 mb-2">💡 Search Tips:</div>
+            <div className="text-sm text-blue-200 space-y-1">
+              <div>✅ <strong>Full names work best:</strong> "Shohei Ohtani", "Patrick Mahomes"</div>
+              <div>✅ <strong>For common names, add team or league:</strong> "Will Smith Dodgers" or "Will Smith MLB"</div>
+              <div>✅ <strong>Works for all sports:</strong> MLB, NBA, NFL, NHL, Soccer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center gap-3 flex-wrap">
         <TrendingUp className="w-4 h-4 text-slate-400" />
         <span className="text-sm text-slate-400 font-medium">Popular players:</span>
         {popularPlayers.map((player, index) => (
-          <motion.button
+          <Button
             key={index}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            variant="outline"
+            size="sm"
             onClick={() => {
               setQuery(player);
               onSearch(player);
             }}
-            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-purple-500/50 transition-all"
+            className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-purple-500/50"
           >
             {player}
-          </motion.button>
+          </Button>
         ))}
       </div>
     </div>
