@@ -60,143 +60,138 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
+        prompt: `You are a professional sports statistics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED player data.
 
 PLAYER SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-CRITICAL: You have internet access. You MUST search these sources IN THIS ORDER:
-1. StatMuse.com - Search "${query} stats ${new Date().getFullYear()}" - PRIMARY SOURCE
-2. Pro-Football-Reference.com (for NFL players)
-3. Basketball-Reference.com (for NBA players)
-4. ESPN.com player pages
-5. Official league websites (NBA.com, NFL.com, etc.)
-6. Team official websites for injury reports
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 MANDATORY DATA SOURCES (CHECK ALL):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-STEP-BY-STEP PROCESS:
-1. Identify the player's sport FIRST (Basketball/Football/Soccer)
-2. Verify player exists: Search StatMuse for "${query} ${new Date().getFullYear()}"
-3. Get current team from official roster
-4. Get season averages from StatMuse (MUST be ${new Date().getFullYear()} season data)
-5. Get last 5-10 game logs with ACTUAL dates and stats
-6. Check TODAY'S injury report: Search "[player name] injury report ${new Date().toLocaleDateString()}"
-7. Find next scheduled game from team schedule
+1. ⭐ StatMuse.com - PRIMARY SOURCE
+   Search: "${query} stats ${new Date().getFullYear()}"
+   Get: Season averages, game logs, team
 
-REQUIRED DATA TO EXTRACT:
+2. 🏀 Basketball-Reference.com (NBA players)
+   URL: basketball-reference.com/players/
+   Get: Detailed stats, per-game averages, shooting %
 
-1. PLAYER INFO (verify from official team roster):
-   - Full legal name (from official source)
-   - Current team (verify from team website - e.g. "Golden State Warriors" not "Warriors")
-   - Position (official position from roster)
-   - Sport and league
+3. 🏈 Pro-Football-Reference.com (NFL players)
+   URL: pro-football-reference.com/players/
+   Get: Passing/rushing/receiving stats, per-game
 
-2. SEASON AVERAGES - MUST BE SPORT-SPECIFIC FROM ${new Date().getFullYear()} SEASON:
-   
-   FOR NFL/FOOTBALL QUARTERBACKS:
-   - passing_yards_per_game: (from StatMuse or Pro-Football-Reference)
-   - passing_touchdowns_per_game: (actual number, e.g., 1.5)
-   - interceptions_per_game: (actual number)
-   - completion_percentage: (as percentage, e.g., 67.5)
-   - rushing_yards_per_game: (QB rushing yards if applicable)
-   
-   FOR NFL/FOOTBALL RUNNING BACKS:
-   - rushing_yards_per_game: (PRIMARY STAT)
-   - rushing_touchdowns_per_game: 
-   - carries_per_game: 
-   - yards_per_carry: (calculated: total rush yards / total carries)
-   - receptions_per_game: (receiving stats)
-   - receiving_yards_per_game:
-   - receiving_touchdowns_per_game:
-   
-   FOR NFL/FOOTBALL WR/TE:
-   - receptions_per_game: (PRIMARY STAT)
-   - receiving_yards_per_game:
-   - receiving_touchdowns_per_game:
-   - targets_per_game:
-   - yards_per_reception: (calculated: total rec yards / total receptions)
-   
-   FOR NBA/BASKETBALL:
-   - points_per_game: (from StatMuse or Basketball-Reference)
-   - assists_per_game:
-   - rebounds_per_game:
-   - steals_per_game:
-   - blocks_per_game:
-   - field_goal_percentage: (as percentage)
-   - three_point_percentage: (as percentage)
-   - free_throw_percentage: (as percentage)
-   - minutes_per_game:
-   
-   FOR SOCCER:
-   - goals_per_game:
-   - assists_per_game:
-   - shots_per_game:
-   - passes_per_game:
-   - tackles_per_game:
-   - minutes_per_game:
+4. 📺 ESPN.com Player Pages
+   URL: espn.com/[league]/player/_/id/[player]
+   Get: Current team, position, injury status
 
-3. RECENT GAMES (last 5-10 games from game logs - MUST BE REAL DATA):
-   For EACH game provide ACTUAL stats from that specific game:
-   
-   Football (search game logs on Pro-Football-Reference):
-   - date: "MM/DD/YYYY" format
-   - opponent: Full team name
-   - passing_yards: (for QBs) ACTUAL yards from that game
-   - passing_touchdowns: ACTUAL TDs from that game
-   - interceptions: ACTUAL INTs from that game
-   - rushing_yards: (for RBs/QBs) ACTUAL yards
-   - rushing_touchdowns: ACTUAL TDs
-   - receiving_yards: (for WRs/TEs/RBs) ACTUAL yards
-   - receiving_touchdowns: ACTUAL TDs
-   - receptions: ACTUAL catches
-   - performance_rating: "Excellent" if above season avg, "Good" if near avg, "Below" if under avg
-   
-   Basketball (search game logs on Basketball-Reference):
-   - date: "MM/DD/YYYY"
-   - opponent: Full team name
-   - points: ACTUAL points scored
-   - rebounds: ACTUAL rebounds
-   - assists: ACTUAL assists
-   - performance_rating: Based on comparison to season averages
+5. 🏟️ Official Team Websites
+   Check: Current roster, injury reports, depth charts
 
-4. INJURY STATUS (check TODAY'S injury report ${new Date().toLocaleDateString()}):
-   - Search "[player name] [team name] injury report"
-   - Status: "Healthy", "Day-to-Day", "Out", "Questionable", "Probable", "IR"
-   - If injured, specify injury type and expected return
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 VERIFICATION PROCESS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-5. NEXT GAME (from team schedule):
-   - Opponent: Full official team name
-   - Date and time (with timezone)
-   - Home or away
-   - Predicted performance: Based on season average ±20%, considering matchup and injury status
+STEP 1: IDENTIFY PLAYER & SPORT
+- Search StatMuse for "${query}"
+- Determine sport (NBA/NFL/Soccer)
+- Verify player is ACTIVE in ${new Date().getFullYear()} season
 
-6. BETTING INSIGHTS (SPORT-SPECIFIC):
-   Football:
-   - over_under_yards: (passing for QB, rushing for RB, receiving for WR/TE)
-   - probability_to_score: (probability of scoring a TD, as percentage 0-100)
-   
-   Basketball:
-   - over_under_points: (points line)
-   - probability_to_score: (games with at least 1 point as percentage)
-   
-   hot_streak: true if last 3 games above season average
-   consistency_rating: "High", "Medium", or "Low" based on game-to-game variance
+STEP 2: GET CURRENT TEAM & POSITION
+- Check official team roster
+- Verify player is on CURRENT roster
+- Get exact position (e.g., "Point Guard", "Quarterback")
 
-7. ANALYSIS:
-   - Strengths: 3-5 statistical strengths with NUMBERS (e.g., "Averaging 285 passing yards/game, 3rd in NFL")
-   - Weaknesses: 2-3 areas with NUMBERS (e.g., "Only 2 rushing TDs this season")
-   - Career highlights: Awards, records, Pro Bowls, All-Star selections
+STEP 3: SEASON AVERAGES (${new Date().getFullYear()} ONLY)
 
-VALIDATION - REJECT RESPONSE IF:
-- Stats are not from ${new Date().getFullYear()} season
-- Recent games don't have actual dates
-- Season averages are 0 or null for key stats
-- Player name misspelled or wrong team
-- Using placeholder/generic data
+FOR NBA/BASKETBALL:
+✓ Points per game (from Basketball-Reference)
+✓ Rebounds per game
+✓ Assists per game
+✓ Steals & Blocks per game
+✓ FG%, 3P%, FT% (shooting percentages)
+✓ Minutes per game
 
-CRITICAL: All statistics MUST be from current ${new Date().getFullYear()} season. Search StatMuse FIRST.
+FOR NFL QUARTERBACKS:
+✓ Passing yards per game (from Pro-Football-Reference)
+✓ Passing TDs per game
+✓ Interceptions per game
+✓ Completion percentage
+✓ Passer rating
+✓ Rushing yards (if applicable)
 
-FORMAT: Return valid JSON with ALL sport-appropriate fields populated using REAL data from the web.`,
+FOR NFL RUNNING BACKS:
+✓ Rushing yards per game (PRIMARY)
+✓ Rushing TDs per game
+✓ Carries per game
+✓ Yards per carry
+✓ Receptions & receiving yards
+✓ Receiving TDs
+
+FOR NFL WR/TE:
+✓ Receptions per game (PRIMARY)
+✓ Receiving yards per game
+✓ Receiving TDs per game
+✓ Targets per game
+✓ Yards per reception
+✓ Catch percentage
+
+FOR SOCCER:
+✓ Goals per game
+✓ Assists per game
+✓ Shots per game
+✓ Pass completion %
+✓ Minutes per game
+
+STEP 4: GET LAST 5-10 GAME LOGS
+- Search: "[Player Name] game log ${new Date().getFullYear()}"
+- For EACH game get:
+  * Exact date (MM/DD/YYYY)
+  * Opponent (full team name)
+  * Actual stats from THAT specific game
+  * Performance rating vs season average
+
+STEP 5: CHECK INJURY STATUS (TODAY)
+- Search: "[Player Name] injury report ${new Date().toLocaleDateString()}"
+- Status: Healthy/Day-to-Day/Out/Questionable
+- If injured: type of injury, expected return
+
+STEP 6: NEXT GAME PREDICTION
+- Get team's next opponent from schedule
+- Predict stats within ±30% of season average
+- Consider matchup and recent form
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ DATA VALIDATION RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ REJECT if:
+- Player name misspelled or wrong
+- Not on current ${new Date().getFullYear()} roster
+- Stats from previous seasons
+- Game logs without actual dates
+- Fake/placeholder data
+
+✅ ACCEPT only if:
+- All stats from ${new Date().getFullYear()} season
+- Player verified on team website
+- Game logs have real dates & opponents
+- Season averages match StatMuse
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 SPORT-SPECIFIC REQUIREMENTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NBA: Focus on PPG, APG, RPG, FG%, 3P%
+NFL QB: Focus on passing yards, TDs, completion %
+NFL RB: Focus on rushing yards, YPC, TDs
+NFL WR/TE: Focus on receptions, receiving yards, TDs
+Soccer: Focus on goals, assists, shots
+
+CRITICAL: Return ONLY stats relevant to player's position
+
+RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new Date().getFullYear()} data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

@@ -61,76 +61,150 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports analytics AI with INTERNET ACCESS. You MUST use real-time data from the web.
+        prompt: `You are a professional sports analytics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED data from official sources.
 
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-CRITICAL: You have internet access via the add_context_from_internet parameter. You MUST:
-1. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
-2. Check ESPN.com for match schedules and team records
-3. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
-4. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 MANDATORY DATA SOURCES (USE IN THIS ORDER):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-TASK: Find the specific match the user is asking about and provide:
+1. ⭐ StatMuse.com - PRIMARY SOURCE
+   - Search: "${query} stats ${new Date().getFullYear()}"
+   - Get: Current season records, PPG, recent form
+   
+2. 🏀 Basketball-Reference.com (NBA/Basketball)
+   - Team standings, player stats, game logs
+   - URL: basketball-reference.com/teams/
+   
+3. 🏈 Pro-Football-Reference.com (NFL/Football)
+   - Team records, player stats, game results
+   - URL: pro-football-reference.com/teams/
+
+4. 📺 ESPN.com
+   - Live schedules, injury reports, team pages
+   - URL: espn.com/nba/ or espn.com/nfl/
+
+5. 🏟️ Official League Websites
+   - NBA.com, NFL.com, PremierLeague.com
+   - Verify team names and rosters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 STEP-BY-STEP VERIFICATION PROCESS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: IDENTIFY THE MATCH
+- Search StatMuse: "${query}"
+- Find EXACT team names from league website
+- Get scheduled date/time from ESPN
+
+STEP 2: VERIFY TEAM RECORDS (${new Date().getFullYear()} SEASON ONLY)
+Home Team:
+  ✓ W-L record from Basketball-Reference or Pro-Football-Reference
+  ✓ Points per game (season average)
+  ✓ Last 5 games results (with dates)
+  ✓ Home record specifically
+
+Away Team:
+  ✓ W-L record from same source
+  ✓ Points per game (season average)
+  ✓ Last 5 games results (with dates)
+  ✓ Away record specifically
+
+STEP 3: GET HEAD-TO-HEAD DATA
+- Search: "[Home Team] vs [Away Team] ${new Date().getFullYear()}"
+- Last 3-5 meetings
+- Who won and by how much
+
+STEP 4: CHECK INJURIES (TODAY'S REPORT)
+- Search: "[Team Name] injury report ${new Date().toLocaleDateString()}"
+- Find official team injury list
+- Impact on predictions
+
+STEP 5: CALCULATE WIN PROBABILITIES
+Based on:
+  • Season records (40% weight)
+  • Last 5 games form (25% weight)
+  • Head-to-head history (20% weight)
+  • Home/Away advantage (10% weight)
+  • Key injuries (5% weight)
+
+MUST TOTAL 100%: Home + Away + Draw = 100
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ DATA VALIDATION RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ REJECT if:
+- Team names don't match official rosters
+- Stats are from previous seasons
+- No scheduled match found
+- Win probabilities don't total 100%
+- Using placeholder/fake data
+
+✅ ACCEPT only if:
+- All stats from ${new Date().getFullYear()} season
+- Team names verified on league website
+- Match scheduled and confirmed
+- Probabilities are realistic (5-95% range)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 REQUIRED OUTPUT FORMAT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. MATCH IDENTIFICATION:
-   - Sport (Basketball/Soccer/Football/etc)
-   - League (NBA/Premier League/NFL/etc)
-   - Home team (use OFFICIAL full name from league website)
-   - Away team (use OFFICIAL full name from league website)
-   - Match date/time (search for scheduled date - could be today, tomorrow, or this week)
+   - Sport (Basketball/Football/Soccer)
+   - League (NBA/NFL/Premier League)
+   - Home team (OFFICIAL FULL NAME)
+   - Away team (OFFICIAL FULL NAME)
+   - Match date & time with timezone
 
-2. WIN PROBABILITIES (must total 100%):
-   Home Win: Calculate based on:
-   - Current season records (W-L from official stats)
-   - Last 5 games results for both teams
-   - Head-to-head history (last 3-5 meetings)
-   - Home court/field advantage (home team win % at home)
-   - Current injuries (search "[team name] injury report")
-   
-   Away Win: Calculate similarly
-   Draw: If applicable (soccer/hockey), otherwise 0
+2. WIN PROBABILITIES (MUST TOTAL 100%):
+   Home Win: ___%
+   Away Win: ___%
+   Draw: ___% (0 if not applicable)
 
-3. KEY FACTORS (4-5 specific points with stats):
-   Example format:
-   - "Home team won 8 of last 10 games (80% win rate)"
-   - "Away team averaging 115 PPG vs opponent allowing 108 PPG"
-   - "Home team's star player out with injury"
-   - "Away team 2-6 on the road this season"
+3. KEY FACTORS (5 specific points with STATS):
+   ✓ "[Team] is 12-3 in last 15 games (80% win rate)"
+   ✓ "[Team] averages 118 PPG vs opponent allowing 108"
+   ✓ "[Player] out with [injury] per today's report"
+   ✓ "[Team] won last 4 head-to-head meetings"
+   ✓ "[Team] is 8-2 at home this season"
 
-4. ANALYSIS SUMMARY (2-3 sentences):
-   Explain your prediction based on the statistics you found
+4. ANALYSIS SUMMARY (2-3 sentences with stats)
 
 5. CONFIDENCE LEVEL:
-   - "high" if data strongly supports one outcome (>70% probability)
-   - "medium" if competitive match (50-70%)
-   - "low" if insufficient data or unpredictable
+   - HIGH: >70% probability, strong data
+   - MEDIUM: 50-70%, competitive match
+   - LOW: Insufficient data or unpredictable
 
 6. KEY PLAYERS (3-4 per team):
-   For EACH player provide:
-   - Name (verify they're on current roster via team website)
-   - Team and position
-   - Season averages (PPG/APG/RPG from StatMuse or Basketball-Reference)
-   - Predicted stats for THIS game (within ±30% of season average)
-   - Recent form: "Hot" if averaging above normal last 3 games, "Cold" if below
-   - Injury status: Check today's injury report
+   For EACH player:
+   - Name (verified on current roster)
+   - Position
+   - ${new Date().getFullYear()} season averages (PPG/APG/RPG)
+   - Predicted stats for THIS game
+   - Recent form (Hot/Cold/Average)
+   - Injury status from TODAY
 
 7. BETTING MARKETS:
-   Over/Under:
-   - Line: Average both teams' season PPG
-   - Probabilities: 50/50 split or adjust based on pace
-   
-   Both Teams Score (if soccer): Based on scoring rates
-   First to Score: Slight favor to home team (55/45)
+   Over/Under: Based on team averages
+   Both Teams Score (if soccer)
+   First to Score: Home/Away probabilities
 
-VALIDATION RULES:
-- Team names must match official league rosters
-- All statistics must be from ${new Date().getFullYear()} season
-- Win probabilities must be realistic (no team should have >95% or <5%)
-- If you can't find the match, say "Unable to find scheduled match" in analysis_summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 CRITICAL REMINDERS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
+• Use StatMuse FIRST, always
+• Verify EVERYTHING on official league sites
+• Only ${new Date().getFullYear()} season data
+• Real dates, real scores, real stats
+• If match not found: Say "Unable to locate scheduled match" in analysis_summary
+
+RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -215,7 +289,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         throw new Error("Invalid response - missing required match data");
       }
 
-      if (result.analysis_summary?.includes("Unable to find")) {
+      if (result.analysis_summary?.includes("Unable to")) {
         throw new Error("Match not found - try a different date or check team names");
       }
 
@@ -270,7 +344,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
 
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0yTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center max-w-4xl mx-auto">

@@ -60,77 +60,147 @@ export default function TeamStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
+        prompt: `You are a professional sports statistics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED team data.
 
 TEAM SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-CRITICAL: You have internet access. You MUST search these sources:
-1. StatMuse.com - Primary source for team statistics
-2. ESPN.com team pages
-3. Official league websites (NBA.com, NFL.com, PremierLeague.com)
-4. Basketball-Reference.com or Pro-Football-Reference.com
-5. Team official websites for roster and injury reports
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 MANDATORY DATA SOURCES (CHECK ALL):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-STEP-BY-STEP PROCESS:
-1. Identify the team's full official name and league
-2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
-3. Get current season record (wins, losses, draws)
-4. Get season averages (PPG, defensive stats, etc.)
-5. Get last 5 game results with dates, opponents, scores
-6. Check official injury report from team website
-7. Find next scheduled game
+1. ⭐ StatMuse.com - PRIMARY SOURCE
+   Search: "${query} stats ${new Date().getFullYear()}"
+   Get: Team record, season averages, recent games
 
-REQUIRED DATA TO EXTRACT:
+2. 🏀 Basketball-Reference.com (NBA teams)
+   URL: basketball-reference.com/teams/
+   Get: Standings, team stats, game results
 
-1. TEAM INFO (verify from official league):
-   - Full official name (e.g., "Los Angeles Lakers" not just "Lakers")
-   - Sport and league
-   - Current season record (W-L-D with exact numbers from standings)
-   - Win percentage
-   - Recent form: last 5 games in W/L format (e.g., "W-W-L-W-L")
+3. 🏈 Pro-Football-Reference.com (NFL teams)
+   URL: pro-football-reference.com/teams/
+   Get: Team records, offensive/defensive stats
 
-2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
-   For Basketball: PPG, Opp PPG, FG%, 3P%, APG, RPG, TO/game
-   For Soccer: Goals/game, Goals allowed, Possession%, Shots, Passing accuracy
-   For Football: Points/game, Points allowed, Total yards, Turnovers
+4. 📺 ESPN.com Team Pages
+   Get: Current standings, schedules, news
 
-3. LAST 5 GAMES (from official game logs):
-   For EACH game provide:
-   - Exact date (MM/DD/YYYY)
-   - Opponent (full team name)
-   - Result: "W" or "L" or "D"
-   - Score (e.g., "115-108")
-   - Home or away
-   - Key stats from that specific game
+5. 🏟️ Official Team Website
+   Get: Roster, injury reports, next game
 
-4. KEY PLAYERS (5-7 from current roster):
-   - Search team's official roster
-   - List player names and positions
-   - Verify they're currently active
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 VERIFICATION PROCESS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-5. INJURIES (check TODAY'S injury report):
-   - Search "[team name] injury report [today's date]"
-   - For each injured player: name, injury, status (Out/Day-to-Day/Questionable)
+STEP 1: IDENTIFY TEAM
+- Search StatMuse: "${query}"
+- Get OFFICIAL full team name
+- Verify sport and league
 
-6. NEXT GAME (from team schedule):
-   - Opponent
-   - Date and time
-   - Home or away
-   - Win/loss prediction with brief reasoning
+STEP 2: GET CURRENT SEASON RECORD
+- W-L-D from current ${new Date().getFullYear()} season
+- Win percentage
+- Current standing in division/conference
+- Home record
+- Away record
 
-7. ANALYSIS:
-   - Strengths: 3-5 statistical strengths (e.g., "#1 ranked defense allowing 98 PPG")
-   - Weaknesses: 2-3 statistical weaknesses (e.g., "28th in 3-point shooting at 32%")
+STEP 3: SEASON AVERAGES (${new Date().getFullYear()} ONLY)
 
-VALIDATION:
-- All stats must be from ${new Date().getFullYear()} season
-- Last 5 games must have actual dates and scores from game logs
-- Win-loss record must match current standings
-- If team not found, indicate in the response
+FOR NBA/BASKETBALL:
+✓ Points per game (team offense)
+✓ Points allowed per game (team defense)
+✓ Field goal %
+✓ 3-point %
+✓ Rebounds per game
+✓ Assists per game
+✓ Turnovers per game
 
-FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
+FOR NFL/FOOTBALL:
+✓ Points per game
+✓ Points allowed per game
+✓ Total yards per game (offense)
+✓ Yards allowed per game (defense)
+✓ Passing yards per game
+✓ Rushing yards per game
+✓ Turnovers/takeaways
+✓ Third down %
+✓ Red zone efficiency
+
+FOR SOCCER:
+✓ Goals per game
+✓ Goals allowed per game
+✓ Possession %
+✓ Shots per game
+✓ Passing accuracy %
+
+STEP 4: LAST 5 GAMES (MUST HAVE REAL DATES)
+For EACH of last 5 games:
+- Exact date (MM/DD/YYYY)
+- Opponent (full official name)
+- Result (W/L/D)
+- Final score
+- Home or away
+- Key team stats from that game
+
+STEP 5: CURRENT FORM
+- W-L-D pattern (e.g., "W-W-L-W-L")
+- Winning/losing streak
+
+STEP 6: KEY PLAYERS (5-7 players)
+- Search team roster
+- List starters and key contributors
+- Verify they're on CURRENT roster
+
+STEP 7: INJURY REPORT (TODAY)
+- Search: "[Team Name] injury report ${new Date().toLocaleDateString()}"
+- List injured players with:
+  * Player name
+  * Injury type
+  * Status (Out/Day-to-Day/Questionable)
+
+STEP 8: NEXT GAME
+- Opponent
+- Date and time
+- Home or away
+- Win/loss prediction with reasoning
+
+STEP 9: TEAM ANALYSIS
+STRENGTHS (3-5 with stats):
+- E.g., "#1 ranked defense allowing 98 PPG"
+- E.g., "Won 8 of last 10 games"
+
+WEAKNESSES (2-3 with stats):
+- E.g., "28th in 3-point shooting at 32%"
+- E.g., "Lost 4 straight on the road"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ DATA VALIDATION RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ REJECT if:
+- Team name doesn't match official name
+- Stats from previous seasons
+- Last 5 games don't have real dates
+- W-L record doesn't match standings
+- Using fake data
+
+✅ ACCEPT only if:
+- All stats from ${new Date().getFullYear()} season
+- Team verified on league website
+- Last 5 games have actual dates and scores
+- Current standings match
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 CRITICAL REMINDERS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Use StatMuse as PRIMARY source
+• Cross-reference with Basketball-Reference or Pro-Football-Reference
+• Only ${new Date().getFullYear()} season data
+• Last 5 games MUST have real dates and opponents
+• If team not found: indicate in response
+
+RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear()} data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
