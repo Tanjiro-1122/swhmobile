@@ -26,8 +26,8 @@ export default function LimitedOfferBanner() {
     checkAuth();
   }, []);
 
-  const spotsRemaining = Math.max(0, 100 - totalUsers);
-  const percentageFilled = Math.min(100, (totalUsers / 100) * 100);
+  const spotsRemaining = Math.max(0, 20 - totalUsers);
+  const percentageFilled = Math.min(100, (totalUsers / 20) * 100);
 
   if (isAuthenticated || spotsRemaining === 0) return null;
 
@@ -59,7 +59,7 @@ export default function LimitedOfferBanner() {
             </div>
             
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-              🎉 First 100 Users Get LIFETIME Unlimited Access!
+              🎉 First 20 Users Get LIFETIME Unlimited Access!
             </h2>
             
             <p className="text-white/90 text-base sm:text-lg font-semibold">
@@ -75,7 +75,7 @@ export default function LimitedOfferBanner() {
                   <Users className="w-4 h-4" />
                   Spots Remaining
                 </span>
-                <span className="text-white font-black text-2xl">{spotsRemaining}/100</span>
+                <span className="text-white font-black text-2xl">{spotsRemaining}/20</span>
               </div>
               
               {/* Progress bar */}
@@ -114,7 +114,7 @@ export default function LimitedOfferBanner() {
         {/* Bottom urgent message */}
         <div className="mt-4 text-center">
           <p className="text-white/90 text-sm font-bold animate-pulse">
-            ⏰ Once all 100 spots are claimed, this offer disappears forever!
+            ⏰ Once all 20 spots are claimed, this offer disappears forever!
           </p>
         </div>
       </div>

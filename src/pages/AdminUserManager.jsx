@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -88,7 +89,7 @@ export default function AdminUserManager() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-center">
-                <div className="text-3xl font-bold text-yellow-400">{vipCount}/100</div>
+                <div className="text-3xl font-bold text-yellow-400">{vipCount}/20</div>
                 <div className="text-sm text-yellow-300">VIP Lifetime Members</div>
               </div>
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 text-center">
@@ -155,7 +156,7 @@ export default function AdminUserManager() {
                       </div>
 
                       <div className="flex gap-2">
-                        {!user.vip_member && vipCount < 100 && (
+                        {!user.vip_member && vipCount < 20 && (
                           <Button
                             onClick={() => makeUserVIP(user, vipCount + 1)}
                             size="sm"
@@ -202,7 +203,7 @@ export default function AdminUserManager() {
             <ul className="space-y-2 text-blue-200 text-sm">
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 mt-0.5 text-green-400" />
-                <span><strong>VIP Lifetime:</strong> First 100 users get unlimited access forever (no dates, no expiration)</span>
+                <span><strong>VIP Lifetime:</strong> First 20 users get unlimited access forever (no dates, no expiration)</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 mt-0.5 text-green-400" />

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export function useFreeLookupTracker() {
         // Check if user has premium/VIP subscription
         const user = await base44.auth.me();
         
-        // VIP members (lifetime, first 100) or premium monthly subscribers
+        // VIP members (lifetime, first 20) or premium monthly subscribers
         const hasVIP = user.vip_member === true || user.subscription_status === 'lifetime_vip';
         const hasPremium = user.subscription_status === 'premium' || hasVIP;
         
@@ -85,7 +86,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
 
   if (!show) return null;
 
-  const spotsRemaining = Math.max(0, 100 - totalUsers);
+  const spotsRemaining = Math.max(0, 20 - totalUsers);
   const isLifetimeAvailable = spotsRemaining > 0;
 
   const handleUpgrade = () => {
@@ -167,7 +168,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                       </div>
                       <div className="text-center mb-4">
                         <div className="text-5xl font-black text-green-600 mb-1">FREE</div>
-                        <div className="text-sm text-gray-600 font-semibold">First 100 users only! No subscription dates, no expiration!</div>
+                        <div className="text-sm text-gray-600 font-semibold">First 20 users only! No subscription dates, no expiration!</div>
                       </div>
                       <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 mb-4">
                         <div className="grid grid-cols-2 gap-3">
@@ -260,7 +261,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
               {!isLifetimeAvailable && (
                 <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
                   <p className="text-sm text-red-800 font-semibold">
-                    😢 Sorry! All 100 lifetime VIP spots have been claimed.
+                    😢 Sorry! All 20 lifetime VIP spots have been claimed.
                   </p>
                   <p className="text-xs text-red-600 mt-1">
                     Monthly subscription is now the only option available.

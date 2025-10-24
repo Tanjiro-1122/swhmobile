@@ -36,11 +36,11 @@
     "vip_member": {
       "type": "boolean",
       "default": false,
-      "description": "Check this for first 100 lifetime users (no dates needed)"
+      "description": "Check this for first 20 lifetime users (no dates needed)"
     },
     "vip_spot_number": {
       "type": "number",
-      "description": "1-100 for lifetime VIP members only"
+      "description": "1-20 for lifetime VIP members only"
     }
   }
 }
