@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown, Mail } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown, Mail, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
@@ -114,19 +113,32 @@ export default function Layout({ children, currentPageName }) {
                 );
               })}
               
-              {/* Admin Link - Only visible to admins */}
+              {/* Admin Links - Only visible to admins */}
               {isAdmin && (
-                <Link
-                  to={createPageUrl("AdminUserManager")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    location.pathname === createPageUrl("AdminUserManager")
-                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-lg'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <Crown className="w-4 h-4" />
-                  <span className="hidden lg:inline">Admin</span>
-                </Link>
+                <>
+                  <Link
+                    to={createPageUrl("AdminUserManager")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      location.pathname === createPageUrl("AdminUserManager")
+                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-lg'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <Crown className="w-4 h-4" />
+                    <span className="hidden lg:inline">Admin</span>
+                  </Link>
+                  <Link
+                    to={createPageUrl("SystemHealthCheck")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      location.pathname === createPageUrl("SystemHealthCheck")
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <Activity className="w-4 h-4" />
+                    <span className="hidden lg:inline">Health</span>
+                  </Link>
+                </>
               )}
             </div>
 
@@ -152,12 +164,20 @@ export default function Layout({ children, currentPageName }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to={createPageUrl("AdminUserManager")} className="cursor-pointer">
-                          <Crown className="w-4 h-4 mr-2 text-yellow-500" />
-                          Admin Panel
-                        </Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to={createPageUrl("AdminUserManager")} className="cursor-pointer">
+                            <Crown className="w-4 h-4 mr-2 text-yellow-500" />
+                            Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to={createPageUrl("SystemHealthCheck")} className="cursor-pointer">
+                            <Activity className="w-4 h-4 mr-2 text-blue-500" />
+                            System Health
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                       <LogOut className="w-4 h-4 mr-2" />
@@ -199,12 +219,20 @@ export default function Layout({ children, currentPageName }) {
                     </DropdownMenuItem>
                   ))}
                   {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl("AdminUserManager")} className="flex items-center gap-2 cursor-pointer">
-                        <Crown className="w-4 h-4 text-yellow-500" />
-                        Admin Panel
-                      </Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("AdminUserManager")} className="flex items-center gap-2 cursor-pointer">
+                          <Crown className="w-4 h-4 text-yellow-500" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("SystemHealthCheck")} className="flex items-center gap-2 cursor-pointer">
+                          <Activity className="w-4 h-4 text-blue-500" />
+                          System Health
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
