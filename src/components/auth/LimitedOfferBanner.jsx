@@ -8,12 +8,12 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
 export default function LimitedOfferBanner() {
-  const [vipCount, setVipCount] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [vipCount, setVipCount] = React.useState(0);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [currentUser, setCurrentUser] = React.useState(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const checkAuth = async () => {
       try {
         const auth = await base44.auth.isAuthenticated();
@@ -24,27 +24,24 @@ export default function LimitedOfferBanner() {
           setCurrentUser(user);
         }
         
-        let currentVipCount = 0;
-        let fetchedFromCounter = false;
-
         // Try to get VIP count from public counter first
         try {
           // List with newest first, limit to 1
           const counters = await base44.entities.VIPCounter.list('-updated_date', 1);
-          if (counters && counters.length > 0 && typeof counters[0].current_vip_count === 'number') {
-            currentVipCount = counters[0].current_vip_count;
-            fetchedFromCounter = true;
+          if (counters && counters.length > 0 && counters[0].current_vip_count !== undefined) {
             console.log("=== VIP COUNT from PUBLIC COUNTER ===");
-            console.log("VIP Count:", currentVipCount);
+            console.log("VIP Count:", counters[0].current_vip_count);
+            setVipCount(counters[0].current_vip_count);
+            setIsLoading(false);
+            return; // Early exit if public counter is successful
           }
         } catch (counterError) {
-          console.log("VIPCounter not available or failed to fetch:", counterError.message);
+          console.log("VIPCounter not available, trying direct user query");
           // Continue to fallback if counter fails
         }
         
-        if (!fetchedFromCounter && auth) {
-          // Fallback: If authenticated (especially admin), count directly from users
-          // This also serves to update the public counter if it's stale or missing.
+        // Fallback: If authenticated, count directly from users and potentially update the public counter
+        if (auth) {
           try {
             const users = await base44.entities.User.list();
             const vipUsers = users.filter(u => {
@@ -53,10 +50,11 @@ export default function LimitedOfferBanner() {
               return hasVIPFlag || hasVIPStatus;
             });
             
-            currentVipCount = vipUsers.length;
-            console.log("=== VIP COUNT from USER LIST (Authenticated fallback) ===");
-            console.log("Total users fetched:", users.length);
+            console.log("=== VIP COUNT from USER LIST ===");
+            console.log("Total users:", users.length);
             console.log("VIP users found:", vipUsers.length);
+            
+            setVipCount(vipUsers.length);
             
             // Update the public counter for unauthenticated users if we calculated it
             try {
@@ -64,13 +62,13 @@ export default function LimitedOfferBanner() {
               if (existingCounters.length > 0) {
                 // Assuming only one counter is desired, update the latest one.
                 await base44.entities.VIPCounter.update(existingCounters[0].id, {
-                  current_vip_count: currentVipCount,
+                  current_vip_count: vipUsers.length,
                   last_updated: new Date().toISOString()
                 });
                 console.log("VIPCounter updated successfully.");
               } else {
                 await base44.entities.VIPCounter.create({
-                  current_vip_count: currentVipCount,
+                  current_vip_count: vipUsers.length,
                   last_updated: new Date().toISOString()
                 });
                 console.log("VIPCounter created successfully.");
@@ -79,27 +77,26 @@ export default function LimitedOfferBanner() {
               console.warn("Could not update/create VIPCounter (may not have permissions or entity not set up for current user):", updateError.message);
             }
           } catch (userError) {
-            console.error("Could not fetch users to determine VIP count:", userError);
+            console.error("Could not fetch users:", userError);
             // Fallback to cached localStorage value if user fetch fails
             const cached = localStorage.getItem('vipCount');
             if (cached) {
-              currentVipCount = parseInt(cached, 10);
+              setVipCount(parseInt(cached, 10));
               console.log("Using cached VIP count from localStorage (user fetch failed).");
             }
           }
-        } else if (!fetchedFromCounter && !auth) {
+        } else {
           // Not authenticated and no public counter - use cached value
           const cached = localStorage.getItem('vipCount');
           if (cached) {
-            currentVipCount = parseInt(cached, 10);
+            setVipCount(parseInt(cached, 10));
             console.log("Using cached VIP count from localStorage (not authenticated and public counter failed).");
           }
         }
 
-        setVipCount(currentVipCount);
         setIsLoading(false);
       } catch (error) {
-        console.error("Failed to check authentication or fetch initial VIP count:", error);
+        console.error("Could not fetch VIP count:", error);
         // Ensure isLoading is set to false even on critical errors
         const cached = localStorage.getItem('vipCount');
         if (cached) {
@@ -118,7 +115,7 @@ export default function LimitedOfferBanner() {
   }, []);
 
   // Cache the VIP count in localStorage whenever it changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (vipCount > 0) { // Only cache if it's a meaningful count
       localStorage.setItem('vipCount', vipCount.toString());
       console.log("VIP count cached:", vipCount);
@@ -233,7 +230,7 @@ export default function LimitedOfferBanner() {
       className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 border-b-4 border-yellow-300 shadow-2xl relative overflow-hidden"
     >
       {/* Animated background */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwlPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPg0KPC9nPg0KPC9zdmc+')] opacity-20 animate-pulse" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMTZjMCA2LjYyNy01LjM3MyAxMi0xMiAxMnsxMi01LjM3My0xMi0xMiA1LjM3My0xMiAxMi0xMiAxMiA1LjM3MyAxMiAxMiIvPjwvZz4NCjwvZz4NCjwvc3ZnPg==')] opacity-20 animate-pulse" />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Show VIP status for current user if they're VIP */}
