@@ -4,7 +4,7 @@
   "properties": {
     "sport": {
       "type": "string",
-      "description": "Type of sport (e.g., Football, Basketball, Tennis)"
+      "description": "Type of sport (e.g., Basketball, Football, Baseball, Soccer)"
     },
     "league": {
       "type": "string",
@@ -74,20 +74,81 @@
           "position": {
             "type": "string"
           },
+          "sport": {
+            "type": "string",
+            "description": "Sport the player plays"
+          },
           "predicted_points": {
-            "type": "number"
+            "type": "number",
+            "description": "Basketball/Soccer"
           },
           "predicted_assists": {
-            "type": "number"
+            "type": "number",
+            "description": "Basketball/Soccer"
           },
           "predicted_rebounds": {
-            "type": "number"
+            "type": "number",
+            "description": "Basketball"
           },
           "predicted_goals": {
-            "type": "number"
+            "type": "number",
+            "description": "Soccer"
+          },
+          "predicted_hits": {
+            "type": "number",
+            "description": "Baseball"
+          },
+          "predicted_runs": {
+            "type": "number",
+            "description": "Baseball"
+          },
+          "predicted_rbis": {
+            "type": "number",
+            "description": "Baseball - Runs Batted In"
+          },
+          "predicted_home_runs": {
+            "type": "number",
+            "description": "Baseball"
+          },
+          "predicted_stolen_bases": {
+            "type": "number",
+            "description": "Baseball"
+          },
+          "predicted_passing_yards": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_passing_touchdowns": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_interceptions": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_rushing_yards": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_rushing_touchdowns": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_receiving_yards": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_receiving_touchdowns": {
+            "type": "number",
+            "description": "Football/NFL"
+          },
+          "predicted_receptions": {
+            "type": "number",
+            "description": "Football/NFL"
           },
           "probability_to_score": {
-            "type": "number"
+            "type": "number",
+            "description": "Percentage chance to score (touchdown/goal/hit)"
           },
           "recent_form": {
             "type": "string"
