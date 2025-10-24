@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -223,11 +224,13 @@ export default function Layout({ children, currentPageName }) {
               />
               <span className="text-slate-400 text-sm">© 2024 Sports Wager Helper</span>
             </div>
-            <div className="text-slate-500 text-sm text-center">
-              <p className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="flex items-center gap-4">
+              <Link to={createPageUrl("Contact")} className="text-slate-400 hover:text-emerald-400 text-sm transition-colors">
+                Contact Us
+              </Link>
+              <span className="text-slate-500 text-sm">
                 Powered by live data from StatMuse, ESPN & official sources
-              </p>
+              </span>
             </div>
           </div>
         </div>

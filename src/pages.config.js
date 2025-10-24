@@ -3,6 +3,7 @@ import PlayerStats from './pages/PlayerStats';
 import TeamStats from './pages/TeamStats';
 import SavedResults from './pages/SavedResults';
 import AdminUserManager from './pages/AdminUserManager';
+import Contact from './pages/Contact';
 import Layout from './Layout.jsx';
 
 
@@ -12,6 +13,7 @@ export const PAGES = {
     "TeamStats": TeamStats,
     "SavedResults": SavedResults,
     "AdminUserManager": AdminUserManager,
+    "Contact": Contact,
 }
 
 export const pagesConfig = {
