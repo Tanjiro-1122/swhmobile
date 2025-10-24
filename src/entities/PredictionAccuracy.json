@@ -1,0 +1,62 @@
+{
+  "name": "PredictionAccuracy",
+  "type": "object",
+  "properties": {
+    "prediction_type": {
+      "type": "string",
+      "enum": [
+        "match",
+        "player",
+        "team"
+      ],
+      "description": "Type of prediction made"
+    },
+    "sport": {
+      "type": "string",
+      "description": "Sport of the prediction"
+    },
+    "predicted_outcome": {
+      "type": "string",
+      "description": "What we predicted would happen"
+    },
+    "actual_outcome": {
+      "type": "string",
+      "description": "What actually happened"
+    },
+    "was_correct": {
+      "type": "boolean",
+      "description": "Did our prediction match reality"
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "How confident we were"
+    },
+    "prediction_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When prediction was made"
+    },
+    "match_id": {
+      "type": "string",
+      "description": "Reference to Match entity if applicable"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "Reference to PlayerStats entity if applicable"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to TeamStats entity if applicable"
+    }
+  },
+  "required": [
+    "prediction_type",
+    "predicted_outcome",
+    "was_correct"
+  ]
+}

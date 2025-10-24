@@ -5,6 +5,9 @@ import SavedResults from './pages/SavedResults';
 import AdminUserManager from './pages/AdminUserManager';
 import Contact from './pages/Contact';
 import SystemHealthCheck from './pages/SystemHealthCheck';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import AccuracyTracker from './pages/AccuracyTracker';
 import Layout from './Layout.jsx';
 
 
@@ -16,6 +19,9 @@ export const PAGES = {
     "AdminUserManager": AdminUserManager,
     "Contact": Contact,
     "SystemHealthCheck": SystemHealthCheck,
+    "TermsOfService": TermsOfService,
+    "PrivacyPolicy": PrivacyPolicy,
+    "AccuracyTracker": AccuracyTracker,
 }
 
 export const pagesConfig = {

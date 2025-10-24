@@ -10,6 +10,7 @@ import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
+import LiveDataBadge from "../components/shared/LiveDataBadge"; // Added import
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -371,7 +372,7 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
 
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0yTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center max-w-4xl mx-auto">
@@ -393,9 +394,14 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
             </h1>
             
             {/* Subheadline */}
-            <p className="text-xl sm:text-2xl text-slate-300 mb-8 leading-relaxed">
+            <p className="text-xl sm:text-2xl text-slate-300 mb-6 leading-relaxed">
               AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources.
             </p>
+
+            {/* Live Data Badge */}
+            <div className="flex justify-center mb-8">
+              <LiveDataBadge sources={["StatMuse", "ESPN", "Basketball-Reference"]} />
+            </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
@@ -502,12 +508,18 @@ RETURN: Valid JSON matching schema exactly. NO placeholder data.`,
         )}
       </div>
 
-      {/* Disclaimer */}
+      {/* Updated Disclaimer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
-          <p className="text-sm text-amber-400">
-            <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
-            Always gamble responsibly and never bet more than you can afford to lose.
+        <div className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-6 backdrop-blur-sm">
+          <p className="text-sm text-red-300 text-center">
+            <strong className="font-bold text-lg">⚠️ IMPORTANT DISCLAIMER:</strong><br />
+            Sports Wager Helper predictions are AI-generated estimates for entertainment purposes only. 
+            We make no guarantees of accuracy. Past performance does not guarantee future results. 
+            Gambling involves risk of financial loss. Only bet what you can afford to lose. 
+            <br /><br />
+            <strong>21+ ONLY</strong> • Problem gambling? Call <strong>1-800-GAMBLER</strong>
+            <br />
+            Not affiliated with any sportsbook or gambling operator.
           </p>
         </div>
       </div>

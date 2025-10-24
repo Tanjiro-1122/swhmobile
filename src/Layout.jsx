@@ -1,12 +1,13 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown, Mail, Activity } from "lucide-react";
+import { Trophy, User, Shield, Bookmark, LogOut, Menu, Crown, Mail, Activity, Target, Scale, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useFreeLookupTracker } from "./components/auth/FreeLookupTracker";
+import GamblingDisclaimer from "./components/shared/GamblingDisclaimer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,12 @@ const navigationItems = [
     color: "from-orange-500 to-red-500"
   },
   {
+    title: "Accuracy",
+    url: createPageUrl("AccuracyTracker"),
+    icon: Target,
+    color: "from-emerald-500 to-teal-500"
+  },
+  {
     title: "Contact",
     url: createPageUrl("Contact"),
     icon: Mail,
@@ -49,7 +56,7 @@ const navigationItems = [
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
-  const { lookupsRemaining, isAuthenticated } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, isPremium, isVIP } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -74,6 +81,9 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Gambling Disclaimer */}
+      <GamblingDisclaimer />
+
       {/* Top Navigation Bar */}
       <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -247,9 +257,9 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900/50 border-t border-slate-800 py-6">
+      <footer className="bg-slate-900/50 border-t border-slate-800 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f7ec915ef_image.png"
@@ -258,13 +268,30 @@ export default function Layout({ children, currentPageName }) {
               />
               <span className="text-slate-400 text-sm">© 2024 Sports Wager Helper</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6 flex-wrap justify-center">
               <Link to={createPageUrl("Contact")} className="text-slate-400 hover:text-emerald-400 text-sm transition-colors">
                 Contact Us
               </Link>
-              <span className="text-slate-500 text-sm">
+              <Link to={createPageUrl("TermsOfService")} className="text-slate-400 hover:text-emerald-400 text-sm transition-colors flex items-center gap-1">
+                <Scale className="w-3.5 h-3.5" />
+                Terms
+              </Link>
+              <Link to={createPageUrl("PrivacyPolicy")} className="text-slate-400 hover:text-emerald-400 text-sm transition-colors flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Privacy
+              </Link>
+              <Link to={createPageUrl("AccuracyTracker")} className="text-slate-400 hover:text-emerald-400 text-sm transition-colors flex items-center gap-1">
+                <Target className="w-3.5 h-3.5" />
+                Accuracy
+              </Link>
+            </div>
+            <div className="text-center sm:text-right">
+              <div className="text-slate-500 text-xs mb-1">
                 Powered by live data from StatMuse, ESPN & official sources
-              </span>
+              </div>
+              <div className="text-red-400 text-xs font-semibold">
+                ⚠️ 21+ • Gamble Responsibly • 1-800-GAMBLER
+              </div>
             </div>
           </div>
         </div>
