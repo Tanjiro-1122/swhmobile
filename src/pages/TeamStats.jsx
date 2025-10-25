@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Sparkles, Info } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Shield, Sparkles } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import TeamSearchBar from "../components/team/TeamSearchBar";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import EmptyTeamState from "../components/team/EmptyTeamState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
-import { AnimatePresence, motion } from "framer-motion"; // Added motion
 
 export default function TeamStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
-  const [showDetailedError, setShowDetailedError] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Gathering team data...");
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
@@ -52,30 +49,6 @@ export default function TeamStats() {
     },
   });
 
-  // Multi-stage loading messages
-  useEffect(() => {
-    let interval;
-    if (isSearching) {
-      const messages = [
-        "Fetching live team data from StatMuse & ESPN...",
-        "Analyzing season records & recent form...",
-        "Compiling key players & injury reports...",
-        "Generating team strengths & weaknesses...",
-        "Verifying data from official sources...",
-        "Finalizing team analysis..."
-      ];
-      let i = 0;
-      setLoadingMessage(messages[i]);
-      interval = setInterval(() => {
-        i = (i + 1) % messages.length;
-        setLoadingMessage(messages[i]);
-      }, 3000); // Change message every 3 seconds
-    } else {
-      setLoadingMessage("Gathering team data...");
-    }
-    return () => clearInterval(interval);
-  }, [isSearching]);
-
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -84,7 +57,6 @@ export default function TeamStats() {
 
     setIsSearching(true);
     setError(null);
-    setShowDetailedError(false); // Reset detailed error view
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -329,15 +301,15 @@ RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear
       
     } catch (err) {
       console.error("❌ Team Stats Error:", err);
-      let shortMessage = "Failed to fetch team statistics.";
-      let detailedMessage = "Please try:\n• Full team name (e.g., 'Golden State Warriors')\n• Including league (e.g., 'Real Madrid La Liga')\n• Current professional teams only";
+      let errorMessage = "Failed to fetch team statistics. ";
       
       if (err.message?.includes("Invalid response")) {
-        shortMessage = "Couldn't find that team.";
-        detailedMessage = "Try:\n• Using the full official name (e.g., 'Los Angeles Lakers')\n• Adding the league (e.g., 'Manchester United Premier League')\n• Checking the spelling";
+        errorMessage += "Couldn't find that team. Try:\n• Using the full official name (e.g., 'Los Angeles Lakers')\n• Adding the league (e.g., 'Manchester United Premier League')\n• Checking the spelling";
+      } else {
+        errorMessage += "Please try:\n• Full team name (e.g., 'Golden State Warriors')\n• Including league (e.g., 'Real Madrid La Liga')\n• Current professional teams only";
       }
       
-      setError({ short: shortMessage, detailed: detailedMessage });
+      setError(errorMessage);
     }
 
     setIsSearching(false);
@@ -390,28 +362,7 @@ RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear
 
         {error && (
           <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertTitle className="flex items-center gap-2">
-              <Info className="h-4 w-4" />
-              {error.short}
-              <Button variant="ghost" size="sm" onClick={() => setShowDetailedError(!showDetailedError)} className="ml-auto text-red-300 hover:bg-red-500/20 hover:text-red-200">
-                {showDetailedError ? "Hide Details" : "Show Details"}
-              </Button>
-            </AlertTitle>
-            <AnimatePresence>
-              {showDetailedError && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <AlertDescription className="whitespace-pre-line mt-2 pt-2 border-t border-red-500/30">
-                    {error.detailed}
-                  </AlertDescription>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
@@ -426,7 +377,7 @@ RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear
                 <Sparkles className="w-5 h-5 text-green-400" />
                 <span className="font-bold text-lg">Fetching team statistics...</span>
               </div>
-              <p className="text-slate-400">{loadingMessage}</p>
+              <p className="text-slate-400">This may take 10-15 seconds</p>
             </div>
           </div>
         ) : (

@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User, Sparkles, Info } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { User, Sparkles } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import EmptyPlayerState from "../components/player/EmptyPlayerState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
-import { AnimatePresence, motion } from "framer-motion"; // Added motion
 
 export default function PlayerStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
-  const [showDetailedError, setShowDetailedError] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Gathering player data...");
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
@@ -52,30 +49,6 @@ export default function PlayerStats() {
     },
   });
 
-  // Multi-stage loading messages
-  useEffect(() => {
-    let interval;
-    if (isSearching) {
-      const messages = [
-        "Fetching live player data from StatMuse & ESPN...",
-        "Analyzing recent player performances...",
-        "Determining starting status & depth chart...",
-        "Calculating betting insights & predictions...",
-        "Compiling career highlights...",
-        "Verifying data from official sources..."
-      ];
-      let i = 0;
-      setLoadingMessage(messages[i]);
-      interval = setInterval(() => {
-        i = (i + 1) % messages.length;
-        setLoadingMessage(messages[i]);
-      }, 3000); // Change message every 3 seconds
-    } else {
-      setLoadingMessage("Gathering player data...");
-    }
-    return () => clearInterval(interval);
-  }, [isSearching]);
-
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -84,7 +57,6 @@ export default function PlayerStats() {
 
     setIsSearching(true);
     setError(null);
-    setShowDetailedError(false); // Reset detailed error view
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -381,10 +353,6 @@ If player not found, return with player_name set to "NOT_FOUND"`,
                 over_under_points: { type: "number" },
                 over_under_yards: { type: "number" },
                 over_under_hits: { type: "number" },
-                over_under_rbis: { type: "number" },
-                over_under_home_runs: { type: "number" },
-                over_probability: { type: "number" },
-                under_probability: { type: "number" },
                 probability_to_score: { type: "number" },
                 hot_streak: { type: "boolean" },
                 consistency_rating: { type: "string" }
@@ -399,7 +367,7 @@ If player not found, return with player_name set to "NOT_FOUND"`,
               items: { type: "string" }
             }
           },
-          required: ["player_name", "sport", "team"]
+          required: ["player_name", "sport", "team", "is_starting"]
         }
       });
 
@@ -415,15 +383,23 @@ If player not found, return with player_name set to "NOT_FOUND"`,
       
     } catch (err) {
       console.error("❌ Player Stats Error:", err);
-      let shortMessage = "Failed to fetch player statistics.";
-      let detailedMessage = "Please try:\n• Full name (e.g., 'Josh Allen NFL')\n• Adding sport/league (e.g., 'Tyreek Hill NFL')\n• Current active players only";
+      let errorMessage = "Failed to fetch player statistics. ";
       
       if (err.message?.includes("Player not found")) {
-        shortMessage = `Couldn't find "${query}".`;
-        detailedMessage = `Try:\n\n• Using the player's full name (e.g., 'Patrick Mahomes')\n• Including the sport/league (e.g., 'Will Smith MLB' or 'Will Smith Dodgers')\n• Checking the spelling\n• Making sure the player is currently active\n\n💡 Tip: For common names, add the team or league (e.g., 'Chris Davis Orioles')`;
+        errorMessage += `Couldn't find "${query}". Try:\n\n`;
+        errorMessage += "• Using the player's full name (e.g., 'Patrick Mahomes')\n";
+        errorMessage += "• Including the sport/league (e.g., 'Will Smith MLB' or 'Will Smith Dodgers')\n";
+        errorMessage += "• Checking the spelling\n";
+        errorMessage += "• Making sure the player is currently active\n\n";
+        errorMessage += "💡 Tip: For common names, add the team or league (e.g., 'Chris Davis Orioles')";
+      } else {
+        errorMessage += "Please try:\n";
+        errorMessage += "• Full name (e.g., 'Josh Allen NFL')\n";
+        errorMessage += "• Adding sport/league (e.g., 'Tyreek Hill NFL')\n";
+        errorMessage += "• Current active players only";
       }
       
-      setError({ short: shortMessage, detailed: detailedMessage });
+      setError(errorMessage);
     }
 
     setIsSearching(false);
@@ -476,28 +452,7 @@ If player not found, return with player_name set to "NOT_FOUND"`,
 
         {error && (
           <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertTitle className="flex items-center gap-2">
-              <Info className="h-4 w-4" />
-              {error.short}
-              <Button variant="ghost" size="sm" onClick={() => setShowDetailedError(!showDetailedError)} className="ml-auto text-red-300 hover:bg-red-500/20 hover:text-red-200">
-                {showDetailedError ? "Hide Details" : "Show Details"}
-              </Button>
-            </AlertTitle>
-            <AnimatePresence>
-              {showDetailedError && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <AlertDescription className="whitespace-pre-line mt-2 pt-2 border-t border-red-500/30">
-                    {error.detailed}
-                  </AlertDescription>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -512,7 +467,7 @@ If player not found, return with player_name set to "NOT_FOUND"`,
                 <Sparkles className="w-5 h-5 text-purple-400" />
                 <span className="font-bold text-lg">Fetching live player statistics...</span>
               </div>
-              <p className="text-slate-400">{loadingMessage}</p>
+              <p className="text-slate-400">Searching StatMuse, ESPN & official sources</p>
             </div>
           </div>
         ) : (

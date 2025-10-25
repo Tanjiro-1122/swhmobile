@@ -14,8 +14,7 @@ import {
   ThumbsDown,
   Trash2,
   Users,
-  BarChart3,
-  Flag
+  BarChart3
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -49,33 +48,21 @@ export default function TeamStatsDisplay({ team, onDelete, index }) {
     const stats = [];
     const averages = team.season_averages;
     
-    if (averages.points_per_game !== undefined) stats.push({ label: "PPG", value: averages.points_per_game.toFixed(1) });
-    if (averages.points_allowed_per_game !== undefined) stats.push({ label: "Opp PPG", value: averages.points_allowed_per_game.toFixed(1) });
-    if (averages.goals_per_game !== undefined) stats.push({ label: "Goals/Game", value: averages.goals_per_game.toFixed(1) });
-    if (averages.goals_allowed_per_game !== undefined) stats.push({ label: "Goals Allowed", value: averages.goals_allowed_per_game.toFixed(1) });
-    if (averages.possession_percentage !== undefined) stats.push({ label: "Possession %", value: `${averages.possession_percentage.toFixed(1)}%` });
-    if (averages.shots_per_game !== undefined) stats.push({ label: "Shots/Game", value: averages.shots_per_game.toFixed(1) });
-    if (averages.field_goal_percentage !== undefined) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%` });
-    if (averages.three_point_percentage !== undefined) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%` });
-    if (averages.assists_per_game !== undefined) stats.push({ label: "Assists/Game", value: averages.assists_per_game.toFixed(1) });
-    if (averages.rebounds_per_game !== undefined) stats.push({ label: "Rebounds/Game", value: averages.rebounds_per_game.toFixed(1) });
+    if (averages.points_per_game) stats.push({ label: "PPG", value: averages.points_per_game.toFixed(1) });
+    if (averages.points_allowed_per_game) stats.push({ label: "Opp PPG", value: averages.points_allowed_per_game.toFixed(1) });
+    if (averages.goals_per_game) stats.push({ label: "Goals/Game", value: averages.goals_per_game.toFixed(1) });
+    if (averages.goals_allowed_per_game) stats.push({ label: "Goals Allowed", value: averages.goals_allowed_per_game.toFixed(1) });
+    if (averages.possession_percentage) stats.push({ label: "Possession %", value: `${averages.possession_percentage.toFixed(1)}%` });
+    if (averages.shots_per_game) stats.push({ label: "Shots/Game", value: averages.shots_per_game.toFixed(1) });
+    if (averages.field_goal_percentage) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%` });
+    if (averages.three_point_percentage) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%` });
+    if (averages.assists_per_game) stats.push({ label: "Assists/Game", value: averages.assists_per_game.toFixed(1) });
+    if (averages.rebounds_per_game) stats.push({ label: "Rebounds/Game", value: averages.rebounds_per_game.toFixed(1) });
     
-    // Add Football specific stats for consistency in display
-    if (averages.total_yards_per_game !== undefined) stats.push({ label: "Total Yds/G", value: averages.total_yards_per_game.toFixed(1) });
-    if (averages.yards_allowed_per_game !== undefined) stats.push({ label: "Yds Allowed/G", value: averages.yards_allowed_per_game.toFixed(1) });
-    if (averages.passing_yards_per_game !== undefined) stats.push({ label: "Pass Yds/G", value: averages.passing_yards_per_game.toFixed(1) });
-    if (averages.rushing_yards_per_game !== undefined) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1) });
-    if (averages.third_down_percentage !== undefined) stats.push({ label: "3rd Down %", value: `${averages.third_down_percentage.toFixed(1)}%` });
-    if (averages.red_zone_percentage !== undefined) stats.push({ label: "Red Zone %", value: `${averages.red_zone_percentage.toFixed(1)}%` });
-
     return stats;
   };
 
   const seasonStats = renderSeasonAverages();
-
-  const handleReportIssue = () => {
-    alert("Reporting functionality coming soon! Thank you for your feedback.");
-  };
 
   return (
     <motion.div
@@ -104,34 +91,22 @@ export default function TeamStatsDisplay({ team, onDelete, index }) {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleReportIssue}
-                className="hover:bg-yellow-500/20 hover:text-yellow-400 text-white/80"
-                title="Report an issue with this data"
-              >
-                <Flag className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(team.id)}
-                className="hover:bg-red-500/20 hover:text-red-400 text-white"
-                title="Delete this analysis"
-              >
-                <Trash2 className="w-5 h-5" />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(team.id)}
+              className="hover:bg-white/20 text-white"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
           </div>
           {team.current_record && (
             <div className="flex items-center gap-4 text-white/90">
               <span className="text-lg">
                 Record: {team.current_record.wins}W - {team.current_record.losses}L
-                {team.current_record.draws !== undefined && team.current_record.draws > 0 ? ` - ${team.current_record.draws}D` : ''}
+                {team.current_record.draws ? ` - ${team.current_record.draws}D` : ''}
               </span>
-              {team.current_record.win_percentage !== undefined && (
+              {team.current_record.win_percentage && (
                 <span className="text-lg">
                   ({team.current_record.win_percentage.toFixed(1)}%)
                 </span>
@@ -280,6 +255,7 @@ export default function TeamStatsDisplay({ team, onDelete, index }) {
             </Card>
           )}
 
+          {/* Strengths & Weaknesses */}
           <div className="grid md:grid-cols-2 gap-4">
             {team.strengths && team.strengths.length > 0 && (
               <div>

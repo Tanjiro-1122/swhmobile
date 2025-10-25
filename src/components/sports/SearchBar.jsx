@@ -1,49 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles, Info, History } from "lucide-react";
+import { Search, Sparkles, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SearchBar({ onSearch, isSearching }) {
   const [query, setQuery] = useState("");
-  const [recentSearches, setRecentSearches] = useState([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("recentMatchSearches");
-      if (stored) {
-        setRecentSearches(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Failed to load recent searches:", e);
-    }
-  }, []);
-
-  const handleSearchSubmit = (searchQuery) => {
-    if (searchQuery.trim()) {
-      onSearch(searchQuery);
-      setRecentSearches((prevSearches) => {
-        const newSearches = [searchQuery, ...prevSearches.filter((s) => s !== searchQuery)];
-        const trimmedSearches = newSearches.slice(0, 5);
-        try {
-          localStorage.setItem("recentMatchSearches", JSON.stringify(trimmedSearches));
-        } catch (e) {
-          console.error("Failed to save recent searches:", e);
-        }
-        return trimmedSearches;
-      });
-      setQuery(searchQuery);
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleSearchSubmit(query);
-  };
-
-  const handleRecentSearchClick = (search) => {
-    setQuery(search);
-    handleSearchSubmit(search);
+    if (query.trim()) {
+      onSearch(query);
+    }
   };
 
   const popularSearches = [
@@ -100,38 +68,21 @@ export default function SearchBar({ onSearch, isSearching }) {
         </div>
       </div>
 
-      {/* Recent Searches */}
-      {recentSearches.length > 0 && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <History className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-400 font-medium">Recent:</span>
-          {recentSearches.map((search, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              onClick={() => handleRecentSearchClick(search)}
-              className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-emerald-500/50"
-            >
-              {search}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {/* Popular Searches */}
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm text-slate-400 font-medium">Popular:</span>
         {popularSearches.map((search, index) => (
-          <motion.button
+          <Button
             key={index}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleRecentSearchClick(search)}
-            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-emerald-500/50 transition-all"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setQuery(search);
+              onSearch(search);
+            }}
+            className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-emerald-500/50"
           >
             {search}
-          </motion.button>
+          </Button>
         ))}
       </div>
     </div>
