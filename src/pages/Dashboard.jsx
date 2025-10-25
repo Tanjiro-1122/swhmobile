@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target, Info } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target, Info, RefreshCcw } from "lucide-react"; // Added RefreshCcw for loading icon
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import SearchBar from "../components/sports/SearchBar";
@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [showDetailedError, setShowDetailedError] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Gathering live data...");
+  const [checkingResults, setCheckingResults] = useState(false); // New state for result checking status
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
@@ -55,6 +56,16 @@ export default function Dashboard() {
     },
   });
 
+  // New mutation for updating match outcome and result tracking
+  const updateMatchOutcomeMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      return await base44.entities.Match.update(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    },
+  });
+
   useEffect(() => {
     let interval;
     if (isSearching) {
@@ -77,6 +88,135 @@ export default function Dashboard() {
     }
     return () => clearInterval(interval);
   }, [isSearching]);
+
+  // Function to check and update match outcomes
+  const checkMatchOutcome = useCallback(async (match) => {
+    if (!match.id || !match.match_date || !match.home_team || !match.away_team) {
+      console.warn("Skipping outcome check for invalid match data:", match);
+      return;
+    }
+
+    const matchDate = new Date(match.match_date);
+    const now = new Date();
+    // Only check for games that have passed, are not already final, and haven't been checked recently (e.g., in the last hour)
+    const lastChecked = match.last_checked_for_result ? new Date(match.last_checked_for_result) : null;
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // Check every hour
+
+    if (matchDate > now || match.game_status === 'final' || (lastChecked && lastChecked > oneHourAgo)) {
+      return; // Game not in the past, already final, or checked recently
+    }
+
+    console.log(`Checking outcome for: ${match.home_team} vs ${match.away_team} (ID: ${match.id})`);
+
+    try {
+      const llmResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `
+          Find the actual final score and winner for the following sports match.
+          Provide the game status, actual scores, and the actual winner.
+          
+          Match details:
+          - Sport: ${match.sport || 'Unknown'}
+          - League: ${match.league || 'Unknown'}
+          - Home Team: ${match.home_team}
+          - Away Team: ${match.away_team}
+          - Match Date/Time: ${match.match_date}
+          - Venue: ${match.venue || 'Unknown'}
+
+          IMPORTANT:
+          1. Search for the FINAL score. If the game is not finished, indicate that in 'game_status'.
+          2. If the game is postponed or cancelled, also indicate that in 'game_status'.
+          3. Use reliable sports data sources (e.g., ESPN, StatMuse, official league websites) to find the result.
+          4. If you cannot find a definitive result or the game is not yet final, set 'game_status' appropriately and leave scores/winner blank.
+        `,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            game_status: { "type": "string", "enum": ["final", "scheduled", "in_progress", "postponed", "cancelled"] },
+            actual_home_score: { "type": ["number", "null"] },
+            actual_away_score: { "type": ["number", "null"] },
+            actual_winner: { "type": "string", "enum": ["home", "away", "draw", "unknown", "null"] },
+            match_summary: { "type": "string" }
+          },
+          required: ["game_status"]
+        }
+      });
+
+      let predictionCorrect = null;
+      let actualWinnerEnum = llmResult.actual_winner;
+
+      if (llmResult.game_status === 'final' && actualWinnerEnum && match.home_win_probability !== undefined && match.away_win_probability !== undefined) {
+        let predictedWinner = 'unknown';
+        // Determine the predicted winner based on highest probability
+        if (match.home_win_probability > match.away_win_probability && match.home_win_probability > (match.draw_probability || 0)) {
+            predictedWinner = 'home';
+        } else if (match.away_win_probability > match.home_win_probability && match.away_win_probability > (match.draw_probability || 0)) {
+            predictedWinner = 'away';
+        } else if (match.draw_probability !== undefined && match.draw_probability > match.home_win_probability && match.draw_probability > match.away_win_probability) {
+            predictedWinner = 'draw';
+        }
+
+        predictionCorrect = (predictedWinner === actualWinnerEnum);
+        
+        console.log(`Match ID: ${match.id}, Predicted: ${predictedWinner}, Actual: ${actualWinnerEnum}, Correct: ${predictionCorrect}`);
+      }
+
+      await updateMatchOutcomeMutation.mutateAsync({
+        id: match.id,
+        data: {
+          game_status: llmResult.game_status,
+          actual_home_score: llmResult.actual_home_score,
+          actual_away_score: llmResult.actual_away_score,
+          actual_winner: actualWinnerEnum,
+          prediction_correct: predictionCorrect,
+          last_checked_for_result: now.toISOString(),
+          match_summary: llmResult.match_summary || match.match_summary, 
+        }
+      });
+      console.log(`Outcome updated for match ID: ${match.id}`);
+
+    } catch (err) {
+      console.error(`Error checking outcome for match ID ${match.id}:`, err);
+      // Update last_checked_for_result even on error to avoid re-attempting immediately
+      await updateMatchOutcomeMutation.mutateAsync({
+        id: match.id,
+        data: {
+          last_checked_for_result: now.toISOString(), // Mark as checked to prevent immediate retry
+        }
+      });
+    }
+  }, [updateMatchOutcomeMutation]);
+
+  // Effect to automatically check outcomes for past games
+  useEffect(() => {
+    if (matches && matches.length > 0 && !isLoading) {
+      const pastMatchesToCheck = matches.filter(match => {
+        const matchDate = new Date(match.match_date);
+        const now = new Date();
+        const lastChecked = match.last_checked_for_result ? new Date(match.last_checked_for_result) : null;
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); 
+        
+        // Game has passed, is not yet final, and hasn't been checked recently
+        return matchDate < now && match.game_status !== 'final' && (!lastChecked || lastChecked < oneHourAgo);
+      });
+
+      if (pastMatchesToCheck.length > 0) {
+        setCheckingResults(true); // Indicate that result checks are in progress
+        console.log(`Found ${pastMatchesToCheck.length} past matches to check outcomes for.`);
+        // Run checks in parallel but with a slight delay to avoid hitting rate limits too hard
+        pastMatchesToCheck.forEach((match, index) => {
+          setTimeout(() => checkMatchOutcome(match), index * 500); // 500ms delay between each check
+        });
+        // Set checkingResults to false after a reasonable time for all checks to finish
+        setTimeout(() => setCheckingResults(false), pastMatchesToCheck.length * 500 + 2000); 
+      } else {
+        setCheckingResults(false);
+      }
+    } else {
+        setCheckingResults(false); // No matches or still loading, so no checks are happening
+    }
+  }, [matches, isLoading, checkMatchOutcome]);
+
 
   const handleSearch = async (query) => {
     if (!canLookup()) {
@@ -432,7 +572,18 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
         }
       }
 
-      await base44.entities.Match.create(llmResult);
+      // Add default game_status and last_checked_for_result for newly created matches
+      const newMatchData = {
+        ...llmResult,
+        game_status: 'scheduled', // New matches are initially 'scheduled'
+        actual_home_score: null,
+        actual_away_score: null,
+        actual_winner: null,
+        prediction_correct: null,
+        last_checked_for_result: null, // No result check yet
+      };
+
+      await base44.entities.Match.create(newMatchData); 
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       
@@ -471,6 +622,12 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
     );
   }
 
+  // Calculate overall accuracy if matches are loaded and some have results
+  const totalPredictions = matches?.filter(m => m.prediction_correct !== null).length || 0;
+  const correctPredictions = matches?.filter(m => m.prediction_correct === true).length || 0;
+  const overallAccuracy = totalPredictions > 0 ? ((correctPredictions / totalPredictions) * 100).toFixed(1) : "N/A";
+
+
   return (
     <div className="min-h-screen">
       <FreeLookupBanner 
@@ -488,7 +645,7 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
 
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWghtDoiNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center max-w-4xl mx-auto">
@@ -523,11 +680,11 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
                 <div className="text-3xl font-bold text-emerald-400">{matches?.length || 0}</div>
-                <div className="text-xs text-slate-400 mt-1">Matches</div>
+                <div className="text-xs text-slate-400 mt-1">Predictions</div>
               </div>
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
-                <div className="text-3xl font-bold text-cyan-400">Live</div>
-                <div className="text-xs text-slate-400 mt-1">Real-Time</div>
+                <div className="text-3xl font-bold text-cyan-400">{overallAccuracy}%</div>
+                <div className="text-xs text-slate-400 mt-1">Accuracy</div>
               </div>
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
                 <div className="text-3xl font-bold text-purple-400">AI</div>
@@ -599,18 +756,18 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
         )}
 
         {/* Loading State */}
-        {isSearching && (
+        {(isSearching || checkingResults) && ( // Show loading for both search and result checking
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="relative w-24 h-24 mx-auto mb-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
                 <div className="absolute inset-2 bg-slate-900 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 text-emerald-400" />
+                  {isSearching ? <Sparkles className="w-10 h-10 text-emerald-400" /> : <RefreshCcw className="w-10 h-10 text-teal-400" />}
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
-              <p className="text-slate-400">{loadingMessage}</p>
+              <h3 className="text-xl font-bold text-white mb-2">{isSearching ? "Analyzing Match Data" : "Updating Game Results"}</h3>
+              <p className="text-slate-400">{isSearching ? loadingMessage : "Fetching final scores and verifying predictions..."}</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -621,7 +778,7 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
         )}
 
         {/* Results */}
-        {!isSearching && (
+        {!isSearching && !checkingResults && ( // Hide results while searching OR checking results
           <>
             {matches.length > 0 ? (
               <>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -5,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import AutoAccuracyTracker from "../components/accuracy/AutoAccuracyTracker";
 
 export default function AccuracyTracker() {
   const [testingTracking, setTestingTracking] = useState(false);
@@ -15,7 +17,8 @@ export default function AccuracyTracker() {
   const { data: predictions, isLoading } = useQuery({
     queryKey: ['predictions'],
     queryFn: () => base44.entities.PredictionAccuracy.list('-prediction_date', 100),
-    initialData: []
+    initialData: [],
+    refetchInterval: 60000 // Refetch every minute to show updates
   });
 
   const createTestPrediction = useMutation({
@@ -45,6 +48,10 @@ export default function AccuracyTracker() {
       alert("❌ Error creating test prediction: " + error.message);
     }
     setTestingTracking(false);
+  };
+
+  const handleManualRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['predictions'] });
   };
 
   // Calculate statistics
@@ -104,13 +111,28 @@ export default function AccuracyTracker() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Auto Accuracy Tracker */}
+        <AutoAccuracyTracker />
+
+        {/* Manual Refresh Button */}
+        <div className="flex justify-end mb-6">
+          <Button
+            onClick={handleManualRefresh}
+            variant="outline"
+            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh Data
+          </Button>
+        </div>
+
         {/* System Status Alert */}
         {totalPredictions === 0 && (
           <Alert className="bg-yellow-500/10 border-2 border-yellow-500/50 mb-8">
             <AlertTriangle className="w-5 h-5 text-yellow-400" />
             <AlertDescription className="text-yellow-200">
               <strong>⚠️ Prediction Tracking Status:</strong> No predictions have been tracked yet. 
-              The system is ready and will automatically track accuracy once predictions are verified.
+              The system automatically checks finished games every 6 hours and updates accuracy data.
               <div className="mt-4">
                 <Button 
                   onClick={handleTestTracking}
