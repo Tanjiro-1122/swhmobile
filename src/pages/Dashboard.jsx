@@ -88,11 +88,12 @@ export default function Dashboard() {
     setError(null);
     setShowDetailedError(false);
 
-    try {
-      const currentYear = new Date().getFullYear();
-      const currentMonth = new Date().getMonth() + 1; // 1-12
-      const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    // Declare date-related variables outside the try block to ensure scope
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
       
+    try {
       const llmResult = await base44.integrations.Core.InvokeLLM({
         prompt: `🚨 CRITICAL: You MUST use ONLY ${currentYear}-${currentYear + 1} season data. NO EXCEPTIONS. 🚨
 
@@ -395,7 +396,7 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
         throw new Error("Invalid response - missing required match data");
       }
 
-      if (llmResult.analysis_summary?.includes("Unable to find current " + currentYear + " data for this match")) {
+      if (llmResult.analysis_summary?.includes(`Unable to find current ${currentYear} data for this match`)) {
         throw new Error(`Match not found for ${currentYear} - try a different query or wait for data to become available.`);
       } else if (llmResult.analysis_summary?.includes("Unable to")) {
         throw new Error("Match not found - try a different date or verify team names");
@@ -441,7 +442,7 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
       let detailedMessage = "Please try:\n• Using official team names\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team\n• Being more specific about the league";
       
       if (err.message?.includes("Match not found for")) {
-        shortMessage = `Couldn't find current ${currentYear} data for that match.`;
+        shortMessage = `Couldn't find current ${new Date().getFullYear()} data for that match.`;
         detailedMessage = "This might mean the season hasn't started, or data isn't yet available. Please try a different query or check back later.";
       }
       else if (err.message?.includes("Match not found")) {
