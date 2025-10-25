@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,9 +98,9 @@ export default function MatchCard({ match, onDelete, index }) {
           <ProbabilityMeter
             homeTeam={match.home_team}
             awayTeam={match.away_team}
-            homeProb={match.home_win_probability ? match.home_win_probability.toFixed(1) : 0}
-            awayProb={match.away_win_probability ? match.away_win_probability.toFixed(1) : 0}
-            drawProb={match.draw_probability ? match.draw_probability.toFixed(1) : 0}
+            homeProb={match.home_win_probability || 0}
+            awayProb={match.away_win_probability || 0}
+            drawProb={match.draw_probability || 0}
           />
 
           {match.analysis_summary && (
