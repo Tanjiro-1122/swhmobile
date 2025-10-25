@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,25 +48,25 @@ export default function SystemHealthCheck() {
     };
 
     try {
-      // TEST 1: Entity Schemas
-      console.log("🔍 TEST 1: Checking entity schemas...");
+      // TEST 1: Entity Access Check
+      console.log("🔍 TEST 1: Checking entity access...");
       try {
-        const matchSchema = await base44.entities.Match.schema();
-        results.entities.push({ name: "Match", status: "success", schema: Object.keys(matchSchema).length });
+        const matchTest = await base44.entities.Match.list('-created_date', 1);
+        results.entities.push({ name: "Match", status: "success", records: matchTest.length });
         
-        const playerSchema = await base44.entities.PlayerStats.schema();
-        results.entities.push({ name: "PlayerStats", status: "success", schema: Object.keys(playerSchema).length });
+        const playerTest = await base44.entities.PlayerStats.list('-created_date', 1);
+        results.entities.push({ name: "PlayerStats", status: "success", records: playerTest.length });
         
-        const teamSchema = await base44.entities.TeamStats.schema();
-        results.entities.push({ name: "TeamStats", status: "success", schema: Object.keys(teamSchema).length });
+        const teamTest = await base44.entities.TeamStats.list('-created_date', 1);
+        results.entities.push({ name: "TeamStats", status: "success", records: teamTest.length });
         
-        const accuracySchema = await base44.entities.PredictionAccuracy.schema();
-        results.entities.push({ name: "PredictionAccuracy", status: "success", schema: Object.keys(accuracySchema).length });
+        const accuracyTest = await base44.entities.PredictionAccuracy.list('-created_date', 1);
+        results.entities.push({ name: "PredictionAccuracy", status: "success", records: accuracyTest.length });
         
-        const vipSchema = await base44.entities.VIPCounter.schema();
-        results.entities.push({ name: "VIPCounter", status: "success", schema: Object.keys(vipSchema).length });
+        const vipTest = await base44.entities.VIPCounter.list('-created_date', 1);
+        results.entities.push({ name: "VIPCounter", status: "success", records: vipTest.length });
       } catch (error) {
-        results.entities.push({ name: "Schema Check", status: "error", message: error.message });
+        results.entities.push({ name: "Entity Access", status: "error", message: error.message });
       }
 
       // TEST 2: Data Integrity - Check for duplicate records
@@ -100,10 +101,26 @@ export default function SystemHealthCheck() {
               type: "Players", 
               status: "warning", 
               count: duplicatePlayers.length,
-              message: `Found ${duplicatePlayers.length} potential duplicate players`
+              message: `Found ${duplicatePlayers.length} potential duplicate players`,
+              action: "Delete duplicates from Dashboard > Data > PlayerStats"
             });
           } else {
             results.duplicates.push({ type: "Players", status: "success", message: "No duplicates found" });
+          }
+
+          // Check for duplicate teams
+          const teamNames = teams.map(t => t.team_name);
+          const duplicateTeams = teamNames.filter((item, index) => teamNames.indexOf(item) !== index);
+          
+          if (duplicateTeams.length > 0) {
+            results.duplicates.push({ 
+              type: "Teams", 
+              status: "warning", 
+              count: duplicateTeams.length,
+              message: `Found ${duplicateTeams.length} potential duplicate teams`
+            });
+          } else {
+            results.duplicates.push({ type: "Teams", status: "success", message: "No duplicates found" });
           }
 
           results.dataIntegrity.push({ 
@@ -112,6 +129,12 @@ export default function SystemHealthCheck() {
             matches: matches.length, 
             players: players.length, 
             teams: teams.length 
+          });
+        } else {
+          results.dataIntegrity.push({ 
+            type: "Record Count", 
+            status: "info", 
+            message: "User not authenticated - cannot check user-specific data" 
           });
         }
       } catch (error) {
@@ -181,9 +204,12 @@ export default function SystemHealthCheck() {
       console.log("🔍 TEST 5: Validating player stats structure...");
       try {
         if (currentUser) {
-          const players = await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date', 5);
+          const players = await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date', 10);
           
           if (players.length > 0) {
+            let validCount = 0;
+            let issueCount = 0;
+            
             players.forEach((player, index) => {
               const issues = [];
               
@@ -194,54 +220,73 @@ export default function SystemHealthCheck() {
               
               // Check if sport-specific stats match
               const sport = player.sport?.toLowerCase() || '';
+              
               if (sport.includes('baseball') || sport.includes('mlb')) {
+                // Baseball should have hits/runs/rbis, NOT points
                 if (!player.season_averages?.hits_per_game && !player.season_averages?.batting_average) {
-                  issues.push("Missing baseball stats (hits/batting avg)");
+                  issues.push("❌ Missing baseball stats (hits/batting avg)");
                 }
                 if (player.season_averages?.points_per_game) {
                   issues.push("❌ REDUNDANCY: Baseball player has basketball stats (points)");
                 }
+                if (player.season_averages?.passing_yards_per_game) {
+                  issues.push("❌ REDUNDANCY: Baseball player has football stats");
+                }
               }
               
               if (sport.includes('basketball') || sport.includes('nba')) {
+                // Basketball should have points, NOT hits
                 if (!player.season_averages?.points_per_game) {
-                  issues.push("Missing basketball stats (points)");
+                  issues.push("❌ Missing basketball stats (points)");
                 }
                 if (player.season_averages?.hits_per_game) {
                   issues.push("❌ REDUNDANCY: Basketball player has baseball stats (hits)");
                 }
+                if (player.season_averages?.passing_yards_per_game) {
+                  issues.push("❌ REDUNDANCY: Basketball player has football stats");
+                }
               }
               
               if (sport.includes('football') || sport.includes('nfl')) {
+                // Football should have yards, NOT hits or points (except TDs)
                 const hasFootballStats = player.season_averages?.passing_yards_per_game || 
                                        player.season_averages?.rushing_yards_per_game || 
                                        player.season_averages?.receiving_yards_per_game;
                 if (!hasFootballStats) {
-                  issues.push("Missing football stats");
+                  issues.push("❌ Missing football stats (passing/rushing/receiving yards)");
                 }
-                if (player.season_averages?.hits_per_game || player.season_averages?.points_per_game) {
-                  issues.push("❌ REDUNDANCY: Football player has wrong sport stats");
+                if (player.season_averages?.hits_per_game) {
+                  issues.push("❌ REDUNDANCY: Football player has baseball stats (hits)");
+                }
+                if (player.season_averages?.points_per_game) {
+                  issues.push("❌ REDUNDANCY: Football player has basketball stats (points per game)");
                 }
               }
 
               if (issues.length > 0) {
-                results.betting.push({
-                  type: `Player: ${player.player_name}`,
-                  status: issues.some(i => i.includes('REDUNDANCY')) ? "error" : "warning",
-                  issues: issues
-                });
+                issueCount++;
+                if (issueCount <= 5) { // Only show first 5 to avoid clutter
+                  results.betting.push({
+                    type: `Player: ${player.player_name}`,
+                    status: issues.some(i => i.includes('REDUNDANCY') || i.includes('❌')) ? "error" : "warning",
+                    issues: issues
+                  });
+                }
               } else {
-                results.betting.push({
-                  type: `Player: ${player.player_name}`,
-                  status: "success",
-                  sport: player.sport,
-                  starting: player.is_starting
-                });
+                validCount++;
               }
+            });
+            
+            results.betting.push({
+              type: "Player Stats Summary",
+              status: issueCount === 0 ? "success" : (issueCount > players.length / 2 ? "error" : "warning"),
+              message: `${validCount} valid, ${issueCount} with issues (showing first ${Math.min(issueCount, 5)} issues)`
             });
           } else {
             results.betting.push({ type: "Player Stats", status: "info", message: "No player stats to validate" });
           }
+        } else {
+          results.betting.push({ type: "Player Stats", status: "info", message: "Not authenticated - cannot validate" });
         }
       } catch (error) {
         results.betting.push({ type: "Player Validation", status: "error", message: error.message });
@@ -254,6 +299,9 @@ export default function SystemHealthCheck() {
           const matches = await base44.entities.Match.filter({ created_by: currentUser.email }, '-created_date', 5);
           
           if (matches.length > 0) {
+            let validCount = 0;
+            let issueCount = 0;
+            
             matches.forEach(match => {
               const issues = [];
               
@@ -279,13 +327,24 @@ export default function SystemHealthCheck() {
               }
               
               if (issues.length > 0) {
+                issueCount++;
                 results.betting.push({
                   type: `Match: ${match.home_team} vs ${match.away_team}`,
                   status: issues.some(i => i.includes('❌')) ? "error" : "warning",
                   issues: issues
                 });
+              } else {
+                validCount++;
               }
             });
+            
+            results.betting.push({
+              type: "Match Summary",
+              status: issueCount === 0 ? "success" : (issueCount > matches.length / 2 ? "error" : "warning"),
+              message: `${validCount} valid, ${issueCount} with issues`
+            });
+          } else {
+            results.betting.push({ type: "Match Data", status: "info", message: "No matches to validate" });
           }
         }
       } catch (error) {
@@ -309,6 +368,8 @@ export default function SystemHealthCheck() {
         return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
       case 'error':
         return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'info':
+        return <Activity className="w-5 h-5 text-blue-500" />;
       default:
         return <Activity className="w-5 h-5 text-blue-500" />;
     }
@@ -403,7 +464,7 @@ export default function SystemHealthCheck() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Database className="w-5 h-5 text-blue-400" />
-                  Entity Schemas
+                  Entity Access Check
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -415,7 +476,7 @@ export default function SystemHealthCheck() {
                         <span className="font-semibold text-white">{entity.name}</span>
                       </div>
                       <Badge className={getStatusBadge(entity.status)}>
-                        {entity.schema ? `${entity.schema} fields` : entity.message}
+                        {entity.records !== undefined ? `${entity.records} records accessible` : entity.message}
                       </Badge>
                     </div>
                   ))}
@@ -434,21 +495,28 @@ export default function SystemHealthCheck() {
               <CardContent>
                 <div className="space-y-3">
                   {testResults.duplicates.map((dup, index) => (
-                    <div key={index} className="flex items-center justify-between bg-slate-900 rounded-lg p-4">
-                      <div className="flex items-center gap-3">
-                        {getStatusIcon(dup.status)}
-                        <span className="font-semibold text-white">{dup.type}</span>
-                      </div>
-                      <div className="text-right">
+                    <div key={index} className="bg-slate-900 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(dup.status)}
+                          <span className="font-semibold text-white">{dup.type}</span>
+                        </div>
                         <Badge className={getStatusBadge(dup.status)}>
                           {dup.message}
                         </Badge>
-                        {dup.count > 0 && (
-                          <div className="text-xs text-red-400 mt-1">
-                            Action needed: {dup.count} duplicates
-                          </div>
-                        )}
                       </div>
+                      {dup.count > 0 && (
+                        <div className="ml-8 mt-2">
+                          <div className="text-sm text-red-400 font-bold">
+                            ⚠️ Action needed: {dup.count} duplicates found
+                          </div>
+                          {dup.action && (
+                            <div className="text-xs text-slate-400 mt-1">
+                              {dup.action}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -552,16 +620,11 @@ export default function SystemHealthCheck() {
                           <div className="ml-8 mt-2 space-y-1">
                             {bet.issues.map((issue, i) => (
                               <div key={i} className={`text-sm ${
-                                issue.includes('REDUNDANCY') ? 'text-red-400 font-bold' : 'text-yellow-400'
+                                issue.includes('REDUNDANCY') || issue.includes('❌') ? 'text-red-400 font-bold' : 'text-yellow-400'
                               }`}>
                                 • {issue}
                               </div>
                             ))}
-                          </div>
-                        )}
-                        {bet.sport && (
-                          <div className="ml-8 text-slate-400 text-sm mt-2">
-                            Sport: {bet.sport} | Starting: {bet.starting ? 'Yes' : 'No'}
                           </div>
                         )}
                         {bet.message && (
