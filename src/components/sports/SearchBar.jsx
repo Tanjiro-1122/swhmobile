@@ -3,39 +3,36 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Sparkles, Info, History } from "lucide-react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge"; // Import Badge for styling recent searches
 
 export default function SearchBar({ onSearch, isSearching }) {
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState([]);
 
   useEffect(() => {
-    // Load recent searches from localStorage on component mount
     try {
-      const storedSearches = localStorage.getItem("recentMatchSearches");
-      if (storedSearches) {
-        setRecentSearches(JSON.parse(storedSearches));
+      const stored = localStorage.getItem("recentMatchSearches");
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
       }
     } catch (e) {
-      console.error("Failed to load recent searches from localStorage:", e);
+      console.error("Failed to load recent searches:", e);
     }
   }, []);
 
   const handleSearchSubmit = (searchQuery) => {
     if (searchQuery.trim()) {
       onSearch(searchQuery);
-      // Add to recent searches, keeping only unique and a maximum of 5-7 items
       setRecentSearches((prevSearches) => {
         const newSearches = [searchQuery, ...prevSearches.filter((s) => s !== searchQuery)];
-        const trimmedSearches = newSearches.slice(0, 7); // Keep up to 7 recent searches
+        const trimmedSearches = newSearches.slice(0, 5);
         try {
           localStorage.setItem("recentMatchSearches", JSON.stringify(trimmedSearches));
         } catch (e) {
-          console.error("Failed to save recent searches to localStorage:", e);
+          console.error("Failed to save recent searches:", e);
         }
         return trimmedSearches;
       });
-      setQuery(searchQuery); // Set query for display in input
+      setQuery(searchQuery);
     }
   };
 
@@ -45,8 +42,8 @@ export default function SearchBar({ onSearch, isSearching }) {
   };
 
   const handleRecentSearchClick = (search) => {
-    setQuery(search); // Set query in input box
-    handleSearchSubmit(search); // Re-run search
+    setQuery(search);
+    handleSearchSubmit(search);
   };
 
   const popularSearches = [
@@ -130,9 +127,7 @@ export default function SearchBar({ onSearch, isSearching }) {
             key={index}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              handleRecentSearchClick(search); // Use the new handler for popular too
-            }}
+            onClick={() => handleRecentSearchClick(search)}
             className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-emerald-500/50 transition-all"
           >
             {search}
