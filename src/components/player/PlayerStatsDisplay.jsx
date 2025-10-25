@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert"; // Added Alert and AlertDescription
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   TrendingUp,
   Target,
@@ -85,10 +86,10 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // BASEBALL PREDICTIONS
     if (sport.includes('baseball') || sport.includes('mlb')) {
       const predictions = [];
-      if (averages.hits_per_game !== undefined) predictions.push(`${averages.hits_per_game.toFixed(1)} hits`);
-      if (averages.runs_per_game !== undefined) predictions.push(`${averages.runs_per_game.toFixed(1)} runs`);
-      if (averages.rbis_per_game !== undefined) predictions.push(`${averages.rbis_per_game.toFixed(1)} RBIs`);
-      if (averages.home_runs_per_game !== undefined && averages.home_runs_per_game > 0.1) {
+      if (averages.hits_per_game !== undefined && averages.hits_per_game !== null) predictions.push(`${averages.hits_per_game.toFixed(1)} hits`);
+      if (averages.runs_per_game !== undefined && averages.runs_per_game !== null) predictions.push(`${averages.runs_per_game.toFixed(1)} runs`);
+      if (averages.rbis_per_game !== undefined && averages.rbis_per_game !== null) predictions.push(`${averages.rbis_per_game.toFixed(1)} RBIs`);
+      if (averages.home_runs_per_game !== undefined && averages.home_runs_per_game !== null && averages.home_runs_per_game > 0.1) {
         predictions.push(`${averages.home_runs_per_game.toFixed(1)} home runs`);
       }
 
@@ -100,9 +101,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // BASKETBALL PREDICTIONS
     if (sport.includes('basketball') || sport.includes('nba')) {
       const predictions = [];
-      if (averages.points_per_game !== undefined) predictions.push(`${averages.points_per_game.toFixed(1)} points`);
-      if (averages.rebounds_per_game !== undefined) predictions.push(`${averages.rebounds_per_game.toFixed(1)} rebounds`);
-      if (averages.assists_per_game !== undefined) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
+      if (averages.points_per_game !== undefined && averages.points_per_game !== null) predictions.push(`${averages.points_per_game.toFixed(1)} points`);
+      if (averages.rebounds_per_game !== undefined && averages.rebounds_per_game !== null) predictions.push(`${averages.rebounds_per_game.toFixed(1)} rebounds`);
+      if (averages.assists_per_game !== undefined && averages.assists_per_game !== null) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
 
       if (predictions.length > 0) {
         return `This player per historical data will score ${predictions.join(', ')} per game`;
@@ -112,9 +113,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // FOOTBALL PREDICTIONS - QUARTERBACK
     if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('qb') || position.includes('quarterback'))) {
       const predictions = [];
-      if (averages.passing_yards_per_game !== undefined) predictions.push(`${averages.passing_yards_per_game.toFixed(0)} passing yards`);
-      if (averages.passing_touchdowns_per_game !== undefined) predictions.push(`${averages.passing_touchdowns_per_game.toFixed(1)} passing touchdowns`);
-      if (averages.interceptions_per_game !== undefined) predictions.push(`${averages.interceptions_per_game.toFixed(1)} interceptions`);
+      if (averages.passing_yards_per_game !== undefined && averages.passing_yards_per_game !== null) predictions.push(`${averages.passing_yards_per_game.toFixed(0)} passing yards`);
+      if (averages.passing_touchdowns_per_game !== undefined && averages.passing_touchdowns_per_game !== null) predictions.push(`${averages.passing_touchdowns_per_game.toFixed(1)} passing touchdowns`);
+      if (averages.interceptions_per_game !== undefined && averages.interceptions_per_game !== null) predictions.push(`${averages.interceptions_per_game.toFixed(1)} interceptions`);
 
       if (predictions.length > 0) {
         return `This quarterback per historical data will throw for ${predictions.join(', ')} per game`;
@@ -124,9 +125,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // FOOTBALL PREDICTIONS - RUNNING BACK
     if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('rb') || position.includes('running'))) {
       const predictions = [];
-      if (averages.rushing_yards_per_game !== undefined) predictions.push(`${averages.rushing_yards_per_game.toFixed(0)} rushing yards`);
-      if (averages.rushing_touchdowns_per_game !== undefined) predictions.push(`${averages.rushing_touchdowns_per_game.toFixed(1)} rushing touchdowns`);
-      if (averages.receptions_per_game !== undefined) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
+      if (averages.rushing_yards_per_game !== undefined && averages.rushing_yards_per_game !== null) predictions.push(`${averages.rushing_yards_per_game.toFixed(0)} rushing yards`);
+      if (averages.rushing_touchdowns_per_game !== undefined && averages.rushing_touchdowns_per_game !== null) predictions.push(`${averages.rushing_touchdowns_per_game.toFixed(1)} rushing touchdowns`);
+      if (averages.receptions_per_game !== undefined && averages.receptions_per_game !== null) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
 
       if (predictions.length > 0) {
         return `This running back per historical data will rush for ${predictions.join(', ')} per game`;
@@ -136,9 +137,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // FOOTBALL PREDICTIONS - WIDE RECEIVER / TIGHT END
     if ((sport.includes('football') || sport.includes('nfl')) && (position.includes('wr') || position.includes('te') || position.includes('receiver') || position.includes('tight'))) {
       const predictions = [];
-      if (averages.receptions_per_game !== undefined) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
-      if (averages.receiving_yards_per_game !== undefined) predictions.push(`${averages.receiving_yards_per_game.toFixed(0)} receiving yards`);
-      if (averages.receiving_touchdowns_per_game !== undefined) predictions.push(`${averages.receiving_touchdowns_per_game.toFixed(1)} touchdowns`);
+      if (averages.receptions_per_game !== undefined && averages.receptions_per_game !== null) predictions.push(`${averages.receptions_per_game.toFixed(1)} receptions`);
+      if (averages.receiving_yards_per_game !== undefined && averages.receiving_yards_per_game !== null) predictions.push(`${averages.receiving_yards_per_game.toFixed(0)} receiving yards`);
+      if (averages.receiving_touchdowns_per_game !== undefined && averages.receiving_touchdowns_per_game !== null) predictions.push(`${averages.receiving_touchdowns_per_game.toFixed(1)} touchdowns`);
 
       if (predictions.length > 0) {
         return `This receiver per historical data will catch ${predictions.join(', ')} per game`;
@@ -148,9 +149,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     // SOCCER PREDICTIONS
     if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
       const predictions = [];
-      if (averages.goals_per_game !== undefined) predictions.push(`${averages.goals_per_game.toFixed(1)} goals`);
-      if (averages.assists_per_game !== undefined) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
-      if (averages.shots_per_game !== undefined) predictions.push(`${averages.shots_per_game.toFixed(1)} shots`);
+      if (averages.goals_per_game !== undefined && averages.goals_per_game !== null) predictions.push(`${averages.goals_per_game.toFixed(1)} goals`);
+      if (averages.assists_per_game !== undefined && averages.assists_per_game !== null) predictions.push(`${averages.assists_per_game.toFixed(1)} assists`);
+      if (averages.shots_per_game !== undefined && averages.shots_per_game !== null) predictions.push(`${averages.shots_per_game.toFixed(1)} shots`);
 
       if (predictions.length > 0) {
         return `This player per historical data will score ${predictions.join(', ')} per game`;
@@ -170,14 +171,14 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
 
     // BASEBALL STATS
     if (sport.includes('baseball') || sport.includes('mlb')) {
-      if (averages.batting_average !== undefined) stats.push({ label: "Batting Avg", value: averages.batting_average.toFixed(3), key: "batting_average", highlight: true });
-      if (averages.hits_per_game !== undefined) stats.push({ label: "Hits/G", value: averages.hits_per_game.toFixed(2), key: "hits", highlight: true });
-      if (averages.runs_per_game !== undefined) stats.push({ label: "Runs/G", value: averages.runs_per_game.toFixed(2), key: "runs" });
-      if (averages.rbis_per_game !== undefined) stats.push({ label: "RBIs/G", value: averages.rbis_per_game.toFixed(2), key: "rbis", highlight: true });
-      if (averages.home_runs_per_game !== undefined) stats.push({ label: "HRs/G", value: averages.home_runs_per_game.toFixed(2), key: "home_runs" });
-      if (averages.stolen_bases_per_game !== undefined) stats.push({ label: "SBs/G", value: averages.stolen_bases_per_game.toFixed(2), key: "stolen_bases" });
-      if (averages.on_base_percentage !== undefined) stats.push({ label: "OBP", value: averages.on_base_percentage.toFixed(3), key: "obp" });
-      if (averages.slugging_percentage !== undefined) stats.push({ label: "SLG", value: averages.slugging_percentage.toFixed(3), key: "slg" });
+      if (averages.batting_average !== undefined && averages.batting_average !== null) stats.push({ label: "Batting Avg", value: averages.batting_average.toFixed(3), key: "batting_average", highlight: true });
+      if (averages.hits_per_game !== undefined && averages.hits_per_game !== null) stats.push({ label: "Hits/G", value: averages.hits_per_game.toFixed(2), key: "hits", highlight: true });
+      if (averages.runs_per_game !== undefined && averages.runs_per_game !== null) stats.push({ label: "Runs/G", value: averages.runs_per_game.toFixed(2), key: "runs" });
+      if (averages.rbis_per_game !== undefined && averages.rbis_per_game !== null) stats.push({ label: "RBIs/G", value: averages.rbis_per_game.toFixed(2), key: "rbis", highlight: true });
+      if (averages.home_runs_per_game !== undefined && averages.home_runs_per_game !== null) stats.push({ label: "HRs/G", value: averages.home_runs_per_game.toFixed(2), key: "home_runs" });
+      if (averages.stolen_bases_per_game !== undefined && averages.stolen_bases_per_game !== null) stats.push({ label: "SBs/G", value: averages.stolen_bases_per_game.toFixed(2), key: "stolen_bases" });
+      if (averages.on_base_percentage !== undefined && averages.on_base_percentage !== null) stats.push({ label: "OBP", value: averages.on_base_percentage.toFixed(3), key: "obp" });
+      if (averages.slugging_percentage !== undefined && averages.slugging_percentage !== null) stats.push({ label: "SLG", value: averages.slugging_percentage.toFixed(3), key: "slg" });
       return stats;
     }
 
@@ -185,28 +186,28 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     if (sport.includes('football') || sport.includes('nfl')) {
       // Quarterback Stats
       if (position.includes('qb') || position.includes('quarterback')) {
-        if (averages.passing_yards_per_game !== undefined) stats.push({ label: "Pass Yds/G", value: averages.passing_yards_per_game.toFixed(1), key: "pass_yds", highlight: true });
-        if (averages.passing_touchdowns_per_game !== undefined) stats.push({ label: "Pass TDs/G", value: averages.passing_touchdowns_per_game.toFixed(1), key: "pass_tds" });
-        if (averages.interceptions_per_game !== undefined) stats.push({ label: "INTs/G", value: averages.interceptions_per_game.toFixed(1), key: "ints" });
-        if (averages.completion_percentage !== undefined) stats.push({ label: "Comp %", value: `${averages.completion_percentage.toFixed(1)}%`, key: "comp" });
-        if (averages.rushing_yards_per_game !== undefined) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds" });
+        if (averages.passing_yards_per_game !== undefined && averages.passing_yards_per_game !== null) stats.push({ label: "Pass Yds/G", value: averages.passing_yards_per_game.toFixed(1), key: "pass_yds", highlight: true });
+        if (averages.passing_touchdowns_per_game !== undefined && averages.passing_touchdowns_per_game !== null) stats.push({ label: "Pass TDs/G", value: averages.passing_touchdowns_per_game.toFixed(1), key: "pass_tds" });
+        if (averages.interceptions_per_game !== undefined && averages.interceptions_per_game !== null) stats.push({ label: "INTs/G", value: averages.interceptions_per_game.toFixed(1), key: "ints" });
+        if (averages.completion_percentage !== undefined && averages.completion_percentage !== null) stats.push({ label: "Comp %", value: `${averages.completion_percentage.toFixed(1)}%`, key: "comp" });
+        if (averages.rushing_yards_per_game !== undefined && averages.rushing_yards_per_game !== null) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds" });
       }
       // Running Back Stats
       else if (position.includes('rb') || position.includes('running')) {
-        if (averages.rushing_yards_per_game !== undefined) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds", highlight: true });
-        if (averages.rushing_touchdowns_per_game !== undefined) stats.push({ label: "Rush TDs/G", value: averages.rushing_touchdowns_per_game.toFixed(1), key: "rush_tds" });
-        if (averages.carries_per_game !== undefined) stats.push({ label: "Carries/G", value: averages.carries_per_game.toFixed(1), key: "carries" });
-        if (averages.yards_per_carry !== undefined) stats.push({ label: "Yds/Carry", value: averages.yards_per_carry.toFixed(1), key: "ypc" });
-        if (averages.receptions_per_game !== undefined) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
-        if (averages.receiving_yards_per_game !== undefined) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds" });
+        if (averages.rushing_yards_per_game !== undefined && averages.rushing_yards_per_game !== null) stats.push({ label: "Rush Yds/G", value: averages.rushing_yards_per_game.toFixed(1), key: "rush_yds", highlight: true });
+        if (averages.rushing_touchdowns_per_game !== undefined && averages.rushing_touchdowns_per_game !== null) stats.push({ label: "Rush TDs/G", value: averages.rushing_touchdowns_per_game.toFixed(1), key: "rush_tds" });
+        if (averages.carries_per_game !== undefined && averages.carries_per_game !== null) stats.push({ label: "Carries/G", value: averages.carries_per_game.toFixed(1), key: "carries" });
+        if (averages.yards_per_carry !== undefined && averages.yards_per_carry !== null) stats.push({ label: "Yds/Carry", value: averages.yards_per_carry.toFixed(1), key: "ypc" });
+        if (averages.receptions_per_game !== undefined && averages.receptions_per_game !== null) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
+        if (averages.receiving_yards_per_game !== undefined && averages.receiving_yards_per_game !== null) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds" });
       }
       // Wide Receiver / Tight End Stats
       else if (position.includes('wr') || position.includes('te') || position.includes('receiver') || position.includes('tight')) {
-        if (averages.receptions_per_game !== undefined) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
-        if (averages.receiving_yards_per_game !== undefined) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds", highlight: true });
-        if (averages.receiving_touchdowns_per_game !== undefined) stats.push({ label: "Rec TDs/G", value: averages.receiving_touchdowns_per_game.toFixed(1), key: "rec_tds" });
-        if (averages.targets_per_game !== undefined) stats.push({ label: "Targets/G", value: averages.targets_per_game.toFixed(1), key: "targets" });
-        if (averages.yards_per_reception !== undefined) stats.push({ label: "Yds/Rec", value: averages.yards_per_reception.toFixed(1), key: "ypr" });
+        if (averages.receptions_per_game !== undefined && averages.receptions_per_game !== null) stats.push({ label: "Rec/G", value: averages.receptions_per_game.toFixed(1), key: "rec" });
+        if (averages.receiving_yards_per_game !== undefined && averages.receiving_yards_per_game !== null) stats.push({ label: "Rec Yds/G", value: averages.receiving_yards_per_game.toFixed(1), key: "rec_yds", highlight: true });
+        if (averages.receiving_touchdowns_per_game !== undefined && averages.receiving_touchdowns_per_game !== null) stats.push({ label: "Rec TDs/G", value: averages.receiving_touchdowns_per_game.toFixed(1), key: "rec_tds" });
+        if (averages.targets_per_game !== undefined && averages.targets_per_game !== null) stats.push({ label: "Targets/G", value: averages.targets_per_game.toFixed(1), key: "targets" });
+        if (averages.yards_per_reception !== undefined && averages.yards_per_reception !== null) stats.push({ label: "Yds/Rec", value: averages.yards_per_reception.toFixed(1), key: "ypr" });
       }
       return stats;
     }
@@ -218,24 +219,24 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       const assists = averages.assists_per_game || 0;
       const combinedStat = points + rebounds + assists;
 
-      if (averages.points_per_game !== undefined) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
-      if (averages.assists_per_game !== undefined) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
-      if (averages.rebounds_per_game !== undefined) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
-      if (combinedStat !== undefined) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
-      if (averages.steals_per_game !== undefined) stats.push({ label: "Steals/G", value: averages.steals_per_game.toFixed(1), key: "steals" });
-      if (averages.blocks_per_game !== undefined) stats.push({ label: "Blocks/G", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
-      if (averages.field_goal_percentage !== undefined) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
-      if (averages.three_point_percentage !== undefined) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
-      if (averages.minutes_per_game !== undefined) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+      if (averages.points_per_game !== undefined && averages.points_per_game !== null) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
+      if (averages.assists_per_game !== undefined && averages.assists_per_game !== null) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
+      if (averages.rebounds_per_game !== undefined && averages.rebounds_per_game !== null) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+      if (combinedStat !== undefined && combinedStat !== null) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
+      if (averages.steals_per_game !== undefined && averages.steals_per_game !== null) stats.push({ label: "Steals/G", value: averages.steals_per_game.toFixed(1), key: "steals" });
+      if (averages.blocks_per_game !== undefined && averages.blocks_per_game !== null) stats.push({ label: "Blocks/G", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
+      if (averages.field_goal_percentage !== undefined && averages.field_goal_percentage !== null) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
+      if (averages.three_point_percentage !== undefined && averages.three_point_percentage !== null) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
+      if (averages.minutes_per_game !== undefined && averages.minutes_per_game !== null) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
       return stats;
     }
 
     // SOCCER STATS
     if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
-      if (averages.goals_per_game !== undefined) stats.push({ label: "Goals/G", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
-      if (averages.shots_per_game !== undefined) stats.push({ label: "Shots/G", value: averages.shots_per_game.toFixed(1), key: "shots" });
-      if (averages.passes_per_game !== undefined) stats.push({ label: "Passes/G", value: averages.passes_per_game.toFixed(1), key: "passes" });
-      if (averages.tackles_per_game !== undefined) stats.push({ label: "Tackles/G", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
+      if (averages.goals_per_game !== undefined && averages.goals_per_game !== null) stats.push({ label: "Goals/G", value: averages.goals_per_game.toFixed(2), key: "goals", highlight: true });
+      if (averages.shots_per_game !== undefined && averages.shots_per_game !== null) stats.push({ label: "Shots/G", value: averages.shots_per_game.toFixed(1), key: "shots" });
+      if (averages.passes_per_game !== undefined && averages.passes_per_game !== null) stats.push({ label: "Passes/G", value: averages.passes_per_game.toFixed(1), key: "passes" });
+      if (averages.tackles_per_game !== undefined && averages.tackles_per_game !== null) stats.push({ label: "Tackles/G", value: averages.tackles_per_game.toFixed(1), key: "tackles" });
       return stats;
     }
 
@@ -387,7 +388,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                           {stat.label}
                         </span>
                       </div>
-                      <div className={`text-2xl font-bold ${stat.highlight ? 'text-orange-600' : 'text-purple-900'}`}>
+                      <div className="text-2xl font-bold text-purple-900">
                         {stat.value}
                       </div>
                     </div>
@@ -409,7 +410,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {/* Baseball Betting Lines */}
                 {sport.includes('baseball') || sport.includes('mlb') ? (
                   <>
-                    {player.betting_insights.over_under_hits !== undefined && (
+                    {player.betting_insights.over_under_hits !== undefined && player.betting_insights.over_under_hits !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-gray-700 font-semibold">Hits Over/Under:</span>
@@ -417,7 +418,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                             {player.betting_insights.over_under_hits.toFixed(1)}
                           </span>
                         </div>
-                        {player.betting_insights.over_probability !== undefined && (
+                        {player.betting_insights.over_probability !== undefined && player.betting_insights.over_probability !== null && (
                           <div className="flex justify-between text-sm mt-2">
                             <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability.toFixed(0)}%</strong></span>
                             <span className="text-gray-600">Under: <strong>{(100 - player.betting_insights.over_probability).toFixed(0)}%</strong></span>
@@ -425,7 +426,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                         )}
                       </div>
                     )}
-                    {player.betting_insights.over_under_rbis !== undefined && (
+                    {player.betting_insights.over_under_rbis !== undefined && player.betting_insights.over_under_rbis !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center">
                           <span className="text-gray-700 font-semibold">RBIs Over/Under:</span>
@@ -435,7 +436,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                         </div>
                       </div>
                     )}
-                    {player.betting_insights.over_under_home_runs !== undefined && (
+                    {player.betting_insights.over_under_home_runs !== undefined && player.betting_insights.over_under_home_runs !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center">
                           <span className="text-gray-700 font-semibold">Home Runs Over/Under:</span>
@@ -451,7 +452,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {/* Basketball Betting Lines */}
                 {sport.includes('basketball') || sport.includes('nba') ? (
                   <>
-                    {player.betting_insights.over_under_points !== undefined && (
+                    {player.betting_insights.over_under_points !== undefined && player.betting_insights.over_under_points !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-gray-700 font-semibold">Points Over/Under:</span>
@@ -459,7 +460,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                             {player.betting_insights.over_under_points.toFixed(1)}
                           </span>
                         </div>
-                        {player.betting_insights.over_probability !== undefined && (
+                        {player.betting_insights.over_probability !== undefined && player.betting_insights.over_probability !== null && (
                           <div className="flex justify-between text-sm mt-2">
                             <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability.toFixed(0)}%</strong></span>
                             <span className="text-gray-600">Under: <strong>{(100 - player.betting_insights.over_probability).toFixed(0)}%</strong></span>
@@ -473,7 +474,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {/* Football Betting Lines */}
                 {sport.includes('football') || sport.includes('nfl') ? (
                   <>
-                    {player.betting_insights.over_under_yards !== undefined && (
+                    {player.betting_insights.over_under_yards !== undefined && player.betting_insights.over_under_yards !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-gray-700 font-semibold">Yards Over/Under:</span>
@@ -481,7 +482,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                             {player.betting_insights.over_under_yards.toFixed(1)}
                           </span>
                         </div>
-                        {player.betting_insights.over_probability !== undefined && (
+                        {player.betting_insights.over_probability !== undefined && player.betting_insights.over_probability !== null && (
                           <div className="flex justify-between text-sm mt-2">
                             <span className="text-gray-600">Over: <strong>{player.betting_insights.over_probability.toFixed(0)}%</strong></span>
                             <span className="text-gray-600">Under: <strong>{(100 - player.betting_insights.over_probability).toFixed(0)}%</strong></span>
@@ -489,7 +490,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                         )}
                       </div>
                     )}
-                    {player.betting_insights.probability_to_score !== undefined && (
+                    {player.betting_insights.probability_to_score !== undefined && player.betting_insights.probability_to_score !== null && (
                       <div className="bg-white rounded-lg p-4 border border-green-200">
                         <div className="flex justify-between items-center">
                           <span className="text-gray-700 font-semibold">Probability to Score TD:</span>
