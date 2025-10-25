@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +11,8 @@ import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
-import LiveDataBadge from "../components/shared/LiveDataBadge"; // Added import
+import LiveDataBadge from "../components/shared/LiveDataBadge";
+import { AnimatePresence, motion } from "framer-motion"; // Add this import
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);

@@ -1,7 +1,8 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trophy, User, Shield, Trash2, Filter, SortAsc, SportsBasketball, Baseball, Football } from "lucide-react"; // Added Sport icons
+import { Bookmark, Trophy, User, Shield, Trash2, Filter, SortAsc } from "lucide-react"; // Removed non-existent icons
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
