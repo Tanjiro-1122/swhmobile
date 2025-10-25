@@ -1,851 +1,633 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   CheckCircle, 
   XCircle, 
-  AlertTriangle,
-  RefreshCw,
-  Database,
-  Users,
+  AlertTriangle, 
+  Activity, 
+  Database, 
+  Users, 
+  Target,
   Zap,
-  Shield,
-  Globe,
-  Activity,
-  Wrench,
-  Target // Added Target icon for Prediction Accuracy
+  RefreshCw
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SystemHealthCheck() {
-  const [checks, setChecks] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [lastRun, setLastRun] = useState(null);
-  const [fixingIndex, setFixingIndex] = useState(null);
-  const [fixResult, setFixResult] = useState(null);
+  const [isRunningTest, setIsRunningTest] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+  const queryClient = useQueryClient();
 
-  const runHealthCheck = async () => {
-    setIsRunning(true);
-    setFixResult(null);
-    const results = [];
-
-    try {
-      // 1. Check Authentication System
-      results.push(await checkAuthentication());
-
-      // 2. Check User Entity
-      results.push(await checkUserEntity());
-
-      // 3. Check VIP Count
-      results.push(await checkVIPCount());
-
-      // 4. Check Match Entity
-      results.push(await checkMatchEntity());
-
-      // 5. Check PlayerStats Entity
-      results.push(await checkPlayerStatsEntity());
-
-      // 6. Check TeamStats Entity
-      results.push(await checkTeamStatsEntity());
-
-      // 7. Check LLM Integration
-      results.push(await checkLLMIntegration());
-
-      // 8. Check Email Integration
-      results.push(await checkEmailIntegration());
-
-      // 9. Check Free Lookup Tracking
-      results.push(await checkFreeLookupTracking());
-
-      // 10. Check Navigation Pages
-      results.push(await checkNavigationPages());
-
-      // 11. Check Prediction Accuracy Tracking
-      results.push(await checkPredictionTracking());
-
-      setChecks(results);
-      setLastRun(new Date());
-    } catch (error) {
-      console.error("Health check failed:", error);
-    }
-
-    setIsRunning(false);
-  };
-
-  const fixIssue = async (check, index) => {
-    setFixingIndex(index);
-    setFixResult(null);
-    
-    try {
-      let fixed = false;
-      let message = "";
-      
-      switch (check.name) {
-        case "Authentication System":
-          fixed = await fixAuthentication();
-          message = fixed ? "✅ Authentication refreshed successfully" : "❌ Could not fix authentication";
-          break;
-        case "User Entity":
-          fixed = await fixUserEntity();
-          message = fixed ? "✅ User entity verified and working" : "❌ Could not fix user entity";
-          break;
-        case "VIP Subscription System":
-          const result = await fixVIPSystem();
-          fixed = result.fixed;
-          message = result.message;
-          break;
-        case "Match Entity":
-          fixed = await fixMatchEntity();
-          message = fixed ? "✅ Match entity verified and working" : "❌ Could not fix match entity";
-          break;
-        case "PlayerStats Entity":
-          fixed = await fixPlayerStatsEntity();
-          message = fixed ? "✅ PlayerStats entity verified and working" : "❌ Could not fix player stats entity";
-          break;
-        case "TeamStats Entity":
-          fixed = await fixTeamStatsEntity();
-          message = fixed ? "✅ TeamStats entity verified and working" : "❌ Could not fix team stats entity";
-          break;
-        case "LLM Integration (AI Analysis)":
-          fixed = await fixLLMIntegration();
-          message = fixed ? "✅ LLM integration tested successfully" : "❌ Could not fix LLM integration";
-          break;
-        case "Email Integration":
-          fixed = await fixEmailIntegration();
-          message = fixed ? "✅ Email integration verified" : "❌ Could not fix email integration";
-          break;
-        case "Free Lookup Tracking":
-          fixed = await fixFreeLookupTracking();
-          message = fixed ? "✅ Free lookup tracking reset" : "❌ Could not fix lookup tracking";
-          break;
-        case "Navigation Pages":
-          fixed = await fixNavigationPages();
-          message = fixed ? "✅ Navigation pages verified" : "❌ Could not fix navigation pages";
-          break;
-        case "Prediction Accuracy Tracking":
-          fixed = await fixPredictionTracking();
-          message = fixed ? "✅ Prediction tracking verified and working" : "❌ Could not fix prediction tracking";
-          break;
-        default:
-          message = "❌ Unknown issue type";
-          break;
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
       }
-      
-      setFixResult({
-        success: fixed,
-        message: message
-      });
-      
-      if (fixed) {
-        // Re-run the health check to verify fix
-        setTimeout(() => runHealthCheck(), 2000);
-      }
-    } catch (error) {
-      console.error("Fix failed:", error);
-      setFixResult({
-        success: false,
-        message: `❌ Fix failed: ${error.message}`
-      });
-    }
-    
-    setFixingIndex(null);
-  };
+    },
+  });
 
-  // FIX FUNCTIONS
-  const fixAuthentication = async () => {
-    try {
-      const isAuth = await base44.auth.isAuthenticated();
-      console.log("Authentication refreshed:", isAuth);
-      return true;
-    } catch (error) {
-      console.error("Cannot fix authentication:", error);
-      return false;
-    }
-  };
+  const runComprehensiveTest = async () => {
+    setIsRunningTest(true);
+    const results = {
+      entities: [],
+      dataIntegrity: [],
+      duplicates: [],
+      authentication: [],
+      vipSystem: [],
+      betting: [],
+      timestamp: new Date().toISOString()
+    };
 
-  const fixUserEntity = async () => {
     try {
-      const users = await base44.entities.User.list();
-      console.log("User entity verified with", users.length, "users");
-      return true;
-    } catch (error) {
-      console.error("Cannot fix user entity:", error);
-      return false;
-    }
-  };
-
-  const fixVIPSystem = async () => {
-    try {
-      const users = await base44.entities.User.list();
-      let fixedCount = 0;
-      
-      for (const user of users) {
-        let needsUpdate = false;
-        let updates = {};
+      // TEST 1: Entity Schemas
+      console.log("🔍 TEST 1: Checking entity schemas...");
+      try {
+        const matchSchema = await base44.entities.Match.schema();
+        results.entities.push({ name: "Match", status: "success", schema: Object.keys(matchSchema).length });
         
-        // If user has vip_member = true but wrong subscription_status
-        if (user.vip_member === true && user.subscription_status !== 'lifetime_vip') {
-          updates.subscription_status = 'lifetime_vip';
-          updates.subscription_type = 'lifetime';
-          updates.subscription_start_date = null;
-          updates.subscription_end_date = null;
-          needsUpdate = true;
-        }
+        const playerSchema = await base44.entities.PlayerStats.schema();
+        results.entities.push({ name: "PlayerStats", status: "success", schema: Object.keys(playerSchema).length });
         
-        // If user has subscription_status = 'lifetime_vip' but vip_member not set
-        if (user.subscription_status === 'lifetime_vip' && !user.vip_member) {
-          updates.vip_member = true;
-          updates.subscription_type = 'lifetime';
-          updates.subscription_start_date = null;
-          updates.subscription_end_date = null;
-          needsUpdate = true;
-        }
+        const teamSchema = await base44.entities.TeamStats.schema();
+        results.entities.push({ name: "TeamStats", status: "success", schema: Object.keys(teamSchema).length });
         
-        if (needsUpdate) {
-          await base44.entities.User.update(user.id, updates);
-          fixedCount++;
+        const accuracySchema = await base44.entities.PredictionAccuracy.schema();
+        results.entities.push({ name: "PredictionAccuracy", status: "success", schema: Object.keys(accuracySchema).length });
+        
+        const vipSchema = await base44.entities.VIPCounter.schema();
+        results.entities.push({ name: "VIPCounter", status: "success", schema: Object.keys(vipSchema).length });
+      } catch (error) {
+        results.entities.push({ name: "Schema Check", status: "error", message: error.message });
+      }
+
+      // TEST 2: Data Integrity - Check for duplicate records
+      console.log("🔍 TEST 2: Checking for duplicate data...");
+      try {
+        if (currentUser) {
+          const matches = await base44.entities.Match.filter({ created_by: currentUser.email });
+          const players = await base44.entities.PlayerStats.filter({ created_by: currentUser.email });
+          const teams = await base44.entities.TeamStats.filter({ created_by: currentUser.email });
+          
+          // Check for duplicate matches
+          const matchNames = matches.map(m => `${m.home_team}-${m.away_team}-${m.match_date}`);
+          const duplicateMatches = matchNames.filter((item, index) => matchNames.indexOf(item) !== index);
+          
+          if (duplicateMatches.length > 0) {
+            results.duplicates.push({ 
+              type: "Matches", 
+              status: "warning", 
+              count: duplicateMatches.length,
+              message: `Found ${duplicateMatches.length} potential duplicate matches`
+            });
+          } else {
+            results.duplicates.push({ type: "Matches", status: "success", message: "No duplicates found" });
+          }
+
+          // Check for duplicate players
+          const playerNames = players.map(p => `${p.player_name}-${p.team}`);
+          const duplicatePlayers = playerNames.filter((item, index) => playerNames.indexOf(item) !== index);
+          
+          if (duplicatePlayers.length > 0) {
+            results.duplicates.push({ 
+              type: "Players", 
+              status: "warning", 
+              count: duplicatePlayers.length,
+              message: `Found ${duplicatePlayers.length} potential duplicate players`
+            });
+          } else {
+            results.duplicates.push({ type: "Players", status: "success", message: "No duplicates found" });
+          }
+
+          results.dataIntegrity.push({ 
+            type: "Record Count", 
+            status: "success", 
+            matches: matches.length, 
+            players: players.length, 
+            teams: teams.length 
+          });
         }
+      } catch (error) {
+        results.dataIntegrity.push({ type: "Data Check", status: "error", message: error.message });
       }
-      
-      if (fixedCount > 0) {
-        return {
-          fixed: true,
-          message: `✅ Fixed ${fixedCount} VIP inconsistenc${fixedCount === 1 ? 'y' : 'ies'}`
-        };
-      } else {
-        return {
-          fixed: true,
-          message: "✅ No VIP inconsistencies found"
-        };
+
+      // TEST 3: Authentication System
+      console.log("🔍 TEST 3: Testing authentication...");
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        results.authentication.push({ 
+          type: "Auth Status", 
+          status: "success", 
+          authenticated: isAuth,
+          user: currentUser?.email || "Not logged in"
+        });
+
+        if (currentUser) {
+          results.authentication.push({
+            type: "User Data",
+            status: "success",
+            role: currentUser.role,
+            subscription: currentUser.subscription_status || "free",
+            vip: currentUser.vip_member || false
+          });
+        }
+      } catch (error) {
+        results.authentication.push({ type: "Auth Check", status: "error", message: error.message });
       }
-    } catch (error) {
-      console.error("Cannot fix VIP system:", error);
-      return {
-        fixed: false,
-        message: `❌ Error: ${error.message}`
-      };
-    }
-  };
 
-  const fixMatchEntity = async () => {
-    try {
-      const matches = await base44.entities.Match.list();
-      console.log("Match entity verified with", matches.length, "matches");
-      return true;
-    } catch (error) {
-      console.error("Cannot fix match entity:", error);
-      return false;
-    }
-  };
+      // TEST 4: VIP Counter System
+      console.log("🔍 TEST 4: Checking VIP counter...");
+      try {
+        const counters = await base44.entities.VIPCounter.list('-updated_date', 1);
+        if (counters.length > 0) {
+          results.vipSystem.push({
+            type: "VIP Counter",
+            status: "success",
+            current_count: counters[0].current_vip_count,
+            last_updated: counters[0].last_updated,
+            spots_remaining: 20 - counters[0].current_vip_count
+          });
 
-  const fixPlayerStatsEntity = async () => {
-    try {
-      const players = await base44.entities.PlayerStats.list();
-      console.log("PlayerStats entity verified with", players.length, "players");
-      return true;
-    } catch (error) {
-      console.error("Cannot fix player stats entity:", error);
-      return false;
-    }
-  };
+          // Verify cached count matches
+          const cached = localStorage.getItem('vipCount');
+          if (cached && parseInt(cached) !== counters[0].current_vip_count) {
+            results.vipSystem.push({
+              type: "Cache Sync",
+              status: "warning",
+              message: `Cache (${cached}) doesn't match DB (${counters[0].current_vip_count})`
+            });
+          } else {
+            results.vipSystem.push({ type: "Cache Sync", status: "success", message: "Cache synchronized" });
+          }
+        } else {
+          results.vipSystem.push({
+            type: "VIP Counter",
+            status: "warning",
+            message: "No VIP counter found - needs initialization"
+          });
+        }
+      } catch (error) {
+        results.vipSystem.push({ type: "VIP Check", status: "error", message: error.message });
+      }
 
-  const fixTeamStatsEntity = async () => {
-    try {
-      const teams = await base44.entities.TeamStats.list();
-      console.log("TeamStats entity verified with", teams.length, "teams");
-      return true;
-    } catch (error) {
-      console.error("Cannot fix team stats entity:", error);
-      return false;
-    }
-  };
+      // TEST 5: Player Stats Validation
+      console.log("🔍 TEST 5: Validating player stats structure...");
+      try {
+        if (currentUser) {
+          const players = await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date', 5);
+          
+          if (players.length > 0) {
+            players.forEach((player, index) => {
+              const issues = [];
+              
+              // Check if starting status is present
+              if (player.is_starting === undefined || player.is_starting === null) {
+                issues.push("Missing starting status");
+              }
+              
+              // Check if sport-specific stats match
+              const sport = player.sport?.toLowerCase() || '';
+              if (sport.includes('baseball') || sport.includes('mlb')) {
+                if (!player.season_averages?.hits_per_game && !player.season_averages?.batting_average) {
+                  issues.push("Missing baseball stats (hits/batting avg)");
+                }
+                if (player.season_averages?.points_per_game) {
+                  issues.push("❌ REDUNDANCY: Baseball player has basketball stats (points)");
+                }
+              }
+              
+              if (sport.includes('basketball') || sport.includes('nba')) {
+                if (!player.season_averages?.points_per_game) {
+                  issues.push("Missing basketball stats (points)");
+                }
+                if (player.season_averages?.hits_per_game) {
+                  issues.push("❌ REDUNDANCY: Basketball player has baseball stats (hits)");
+                }
+              }
+              
+              if (sport.includes('football') || sport.includes('nfl')) {
+                const hasFootballStats = player.season_averages?.passing_yards_per_game || 
+                                       player.season_averages?.rushing_yards_per_game || 
+                                       player.season_averages?.receiving_yards_per_game;
+                if (!hasFootballStats) {
+                  issues.push("Missing football stats");
+                }
+                if (player.season_averages?.hits_per_game || player.season_averages?.points_per_game) {
+                  issues.push("❌ REDUNDANCY: Football player has wrong sport stats");
+                }
+              }
 
-  const fixLLMIntegration = async () => {
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: "Return a simple test response with status 'ok'",
-        response_json_schema: {
-          type: "object",
-          properties: {
-            status: { type: "string" }
+              if (issues.length > 0) {
+                results.betting.push({
+                  type: `Player: ${player.player_name}`,
+                  status: issues.some(i => i.includes('REDUNDANCY')) ? "error" : "warning",
+                  issues: issues
+                });
+              } else {
+                results.betting.push({
+                  type: `Player: ${player.player_name}`,
+                  status: "success",
+                  sport: player.sport,
+                  starting: player.is_starting
+                });
+              }
+            });
+          } else {
+            results.betting.push({ type: "Player Stats", status: "info", message: "No player stats to validate" });
           }
         }
-      });
-      
-      console.log("LLM integration tested successfully:", result);
-      return true;
-    } catch (error) {
-      console.error("Cannot fix LLM integration:", error);
-      return false;
-    }
-  };
-
-  const fixEmailIntegration = async () => {
-    try {
-      console.log("Email integration is configuration-based, no fix needed");
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  const fixFreeLookupTracking = async () => {
-    try {
-      const stored = localStorage.getItem('freeLookups');
-      if (!stored || isNaN(parseInt(stored))) {
-        localStorage.setItem('freeLookups', '0');
-        console.log("Free lookup tracking reset to 0");
-        return true;
+      } catch (error) {
+        results.betting.push({ type: "Player Validation", status: "error", message: error.message });
       }
-      return true;
-    } catch (error) {
-      console.error("Cannot fix free lookup tracking:", error);
-      return false;
-    }
-  };
 
-  const fixNavigationPages = async () => {
-    try {
-      console.log("Navigation pages are code-based, verify all page files exist");
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  const fixPredictionTracking = async () => {
-    try {
-      // Test if we can create a prediction
-      const testPred = await base44.entities.PredictionAccuracy.create({
-        prediction_type: "match",
-        sport: "Test",
-        predicted_outcome: "System test",
-        actual_outcome: "System test passed",
-        was_correct: true,
-        confidence_level: "high",
-        prediction_date: new Date().toISOString()
-      });
-      
-      // Delete the test prediction
-      await base44.entities.PredictionAccuracy.delete(testPred.id);
-      
-      console.log("Prediction tracking verified and working");
-      return true;
-    } catch (error) {
-      console.error("Cannot fix prediction tracking:", error);
-      return false;
-    }
-  };
-
-  // CHECK FUNCTIONS
-  const checkAuthentication = async () => {
-    try {
-      const isAuth = await base44.auth.isAuthenticated();
-      return {
-        name: "Authentication System",
-        status: "success",
-        message: `Authentication working (User ${isAuth ? 'logged in' : 'not logged in'})`,
-        icon: Shield,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "Authentication System",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Shield,
-        canFix: true
-      };
-    }
-  };
-
-  const checkUserEntity = async () => {
-    try {
-      const users = await base44.entities.User.list();
-      
-      return {
-        name: "User Entity",
-        status: "success",
-        message: `${users.length} users found, entity accessible`,
-        details: `Fields: subscription_status, vip_member, subscription_type`,
-        icon: Users,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "User Entity",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Users,
-        canFix: true
-      };
-    }
-  };
-
-  const checkVIPCount = async () => {
-    try {
-      const users = await base44.entities.User.list();
-      const vipUsers = users.filter(u => u.vip_member === true || u.subscription_status === 'lifetime_vip');
-      const premiumUsers = users.filter(u => u.subscription_status === 'premium');
-      const freeUsers = users.filter(u => u.subscription_status === 'free' || !u.subscription_status);
-      
-      // Check for inconsistencies
-      const hasInconsistencies = users.some(u => 
-        (u.vip_member && u.subscription_status !== 'lifetime_vip') ||
-        (u.subscription_status === 'lifetime_vip' && !u.vip_member)
-      );
-      
-      const spotsRemaining = 20 - vipUsers.length;
-      
-      return {
-        name: "VIP Subscription System",
-        status: hasInconsistencies ? "warning" : (spotsRemaining > 0 ? "success" : "warning"),
-        message: `${vipUsers.length}/20 VIP spots taken (${spotsRemaining} remaining)${hasInconsistencies ? ' - Inconsistencies detected' : ''}`,
-        details: `Premium: ${premiumUsers.length}, Free: ${freeUsers.length}`,
-        icon: Zap,
-        canFix: hasInconsistencies
-      };
-    } catch (error) {
-      return {
-        name: "VIP Subscription System",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Zap,
-        canFix: true
-      };
-    }
-  };
-
-  const checkMatchEntity = async () => {
-    try {
-      const matches = await base44.entities.Match.list();
-      
-      return {
-        name: "Match Entity",
-        status: "success",
-        message: `${matches.length} matches saved`,
-        details: `Fields: home_team, away_team, probabilities, betting_markets`,
-        icon: Database,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "Match Entity",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Database,
-        canFix: true
-      };
-    }
-  };
-
-  const checkPlayerStatsEntity = async () => {
-    try {
-      const players = await base44.entities.PlayerStats.list();
-      
-      return {
-        name: "PlayerStats Entity",
-        status: "success",
-        message: `${players.length} players analyzed`,
-        details: `Fields: season_averages, recent_form, betting_insights`,
-        icon: Database,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "PlayerStats Entity",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Database,
-        canFix: true
-      };
-    }
-  };
-
-  const checkTeamStatsEntity = async () => {
-    try {
-      const teams = await base44.entities.TeamStats.list();
-      
-      return {
-        name: "TeamStats Entity",
-        status: "success",
-        message: `${teams.length} teams analyzed`,
-        details: `Fields: current_record, season_averages, last_five_games`,
-        icon: Database,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "TeamStats Entity",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Database,
-        canFix: true
-      };
-    }
-  };
-
-  const checkLLMIntegration = async () => {
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: "Return a simple test response",
-        response_json_schema: {
-          type: "object",
-          properties: {
-            status: { type: "string" }
+      // TEST 6: Match Data Validation
+      console.log("🔍 TEST 6: Validating match data...");
+      try {
+        if (currentUser) {
+          const matches = await base44.entities.Match.filter({ created_by: currentUser.email }, '-created_date', 5);
+          
+          if (matches.length > 0) {
+            matches.forEach(match => {
+              const issues = [];
+              
+              // Check home/away teams
+              if (!match.home_team || !match.away_team) {
+                issues.push("Missing home or away team");
+              }
+              
+              // Check venue
+              if (!match.venue) {
+                issues.push("Missing venue information");
+              }
+              
+              // Check probabilities total 100%
+              const total = (match.home_win_probability || 0) + (match.away_win_probability || 0) + (match.draw_probability || 0);
+              if (Math.abs(total - 100) > 1) {
+                issues.push(`❌ Probabilities don't total 100% (total: ${total.toFixed(1)}%)`);
+              }
+              
+              // Check key players
+              if (!match.key_players || match.key_players.length === 0) {
+                issues.push("No key players data");
+              }
+              
+              if (issues.length > 0) {
+                results.betting.push({
+                  type: `Match: ${match.home_team} vs ${match.away_team}`,
+                  status: issues.some(i => i.includes('❌')) ? "error" : "warning",
+                  issues: issues
+                });
+              }
+            });
           }
         }
-      });
-      
-      return {
-        name: "LLM Integration (AI Analysis)",
-        status: "success",
-        message: "LLM responding correctly",
-        details: "Used for match, player, and team analysis",
-        icon: Globe,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "LLM Integration (AI Analysis)",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Globe,
-        canFix: true
-      };
-    }
-  };
-
-  const checkEmailIntegration = async () => {
-    try {
-      return {
-        name: "Email Integration",
-        status: "success",
-        message: "Email system configured",
-        details: "Contact form uses sportswagerhelper@outlook.com",
-        icon: Globe,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "Email Integration",
-        status: "warning",
-        message: "Email integration not tested (to avoid spam)",
-        icon: Globe,
-        canFix: false
-      };
-    }
-  };
-
-  const checkFreeLookupTracking = async () => {
-    try {
-      const stored = localStorage.getItem('freeLookups');
-      const count = parseInt(stored || '0');
-      
-      if (isNaN(count)) {
-        return {
-          name: "Free Lookup Tracking",
-          status: "error",
-          message: "LocalStorage corrupted",
-          details: "Free lookup counter is not a valid number",
-          icon: Activity,
-          canFix: true
-        };
+      } catch (error) {
+        results.betting.push({ type: "Match Validation", status: "error", message: error.message });
       }
-      
-      return {
-        name: "Free Lookup Tracking",
-        status: "success",
-        message: `LocalStorage tracking working (${count}/5 used)`,
-        details: "Resets after user signs up",
-        icon: Activity,
-        canFix: false
-      };
+
+      setTestResults(results);
     } catch (error) {
-      return {
-        name: "Free Lookup Tracking",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Activity,
-        canFix: true
-      };
+      console.error("Test error:", error);
+      setTestResults({ error: error.message });
     }
+
+    setIsRunningTest(false);
   };
-
-  const checkNavigationPages = async () => {
-    try {
-      const pages = [
-        'Dashboard',
-        'PlayerStats',
-        'TeamStats',
-        'SavedResults',
-        'Contact',
-        'AdminUserManager',
-        'SystemHealthCheck'
-      ];
-      
-      return {
-        name: "Navigation Pages",
-        status: "success",
-        message: `All ${pages.length} pages configured`,
-        details: pages.join(', '),
-        icon: Activity,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "Navigation Pages",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Activity,
-        canFix: false
-      };
-    }
-  };
-
-  const checkPredictionTracking = async () => {
-    try {
-      const predictions = await base44.entities.PredictionAccuracy.list();
-      // Optionally, check schema if base44 client exposes it or if there's a way to verify entity structure
-      // const schema = await base44.entities.PredictionAccuracy.schema();
-      
-      return {
-        name: "Prediction Accuracy Tracking",
-        status: "success",
-        message: `${predictions.length} predictions tracked`,
-        details: predictions.length === 0 
-          ? "System ready - no predictions tracked yet" 
-          : `Tracking ${predictions.filter(p => p.was_correct).length} correct out of ${predictions.length} total`,
-        icon: Target,
-        canFix: false
-      };
-    } catch (error) {
-      return {
-        name: "Prediction Accuracy Tracking",
-        status: "error",
-        message: `Failed: ${error.message}`,
-        icon: Target,
-        canFix: true
-      };
-    }
-  };
-
-  useEffect(() => {
-    // Run health check on mount
-    runHealthCheck();
-
-    // Set up daily check at midnight
-    const now = new Date();
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-    const msUntilMidnight = tomorrow - now;
-
-    const timeout = setTimeout(() => {
-      runHealthCheck();
-      // Then run every 24 hours
-      const interval = setInterval(runHealthCheck, 24 * 60 * 60 * 1000);
-      return () => clearInterval(interval);
-    }, msUntilMidnight);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  const successCount = checks.filter(c => c.status === 'success').length;
-  const warningCount = checks.filter(c => c.status === 'warning').length;
-  const errorCount = checks.filter(c => c.status === 'error').length;
-  const totalChecks = checks.length;
 
   const getStatusIcon = (status) => {
-    if (status === 'success') return <CheckCircle className="w-5 h-5 text-green-500" />;
-    if (status === 'warning') return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-    return <XCircle className="w-5 h-5 text-red-500" />;
+    switch (status) {
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning':
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'error':
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <Activity className="w-5 h-5 text-blue-500" />;
+    }
   };
 
-  const getStatusColor = (status) => {
-    if (status === 'success') return 'border-green-500 bg-green-50';
-    if (status === 'warning') return 'border-yellow-500 bg-yellow-50';
-    return 'border-red-500 bg-red-50';
+  const getStatusBadge = (status) => {
+    const colors = {
+      success: 'bg-green-100 text-green-800 border-green-300',
+      warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      error: 'bg-red-100 text-red-800 border-red-300',
+      info: 'bg-blue-100 text-blue-800 border-blue-300'
+    };
+    return colors[status] || colors.info;
   };
+
+  const isAdmin = currentUser?.role === 'admin';
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <Alert variant="destructive" className="max-w-md">
+          <XCircle className="h-4 w-4" />
+          <AlertDescription>
+            Admin access required to view system health check.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <Card className="border-2 border-blue-500/50 bg-slate-800/50 backdrop-blur-xl mb-6">
-          <CardHeader>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Hero */}
+      <div className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <Activity className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black">System Health Check</h1>
+                <p className="text-blue-100">Comprehensive app diagnostics and validation</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Run Test Button */}
+        <Card className="mb-8 bg-slate-800 border-slate-700">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Activity className="w-8 h-8 text-blue-400" />
-                <div>
-                  <CardTitle className="text-3xl font-bold text-white">
-                    System Health Check
-                  </CardTitle>
-                  <p className="text-slate-400 mt-1">
-                    Automated daily inspection • Last run: {lastRun ? lastRun.toLocaleString() : 'Never'}
-                  </p>
-                </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">Run Comprehensive Test</h3>
+                <p className="text-slate-400">
+                  Check entities, data integrity, duplicates, authentication, and betting stats
+                </p>
               </div>
               <Button
-                onClick={runHealthCheck}
-                disabled={isRunning}
-                className="bg-blue-600 hover:bg-blue-700"
+                onClick={runComprehensiveTest}
+                disabled={isRunningTest}
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
               >
-                {isRunning ? (
+                {isRunningTest ? (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Running...
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    Running Tests...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Run Check Now
+                    <Zap className="w-5 h-5 mr-2" />
+                    Run Full Diagnostic
                   </>
                 )}
               </Button>
             </div>
-          </CardHeader>
-        </Card>
-
-        {/* Fix Result Alert */}
-        {fixResult && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <Alert className={fixResult.success ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50"}>
-              <AlertDescription className={fixResult.success ? "text-green-300" : "text-red-300"}>
-                {fixResult.message}
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">{totalChecks}</div>
-                <div className="text-sm text-slate-400">Total Checks</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-green-500/10 border-green-500/30">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-green-400 mb-2">{successCount}</div>
-                <div className="text-sm text-green-300">Passing</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-yellow-500/10 border-yellow-500/30">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-yellow-400 mb-2">{warningCount}</div>
-                <div className="text-sm text-yellow-300">Warnings</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-red-500/10 border-red-500/30">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-red-400 mb-2">{errorCount}</div>
-                <div className="text-sm text-red-300">Errors</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Check Results */}
-        <div className="space-y-4">
-          {checks.map((check, index) => {
-            const Icon = check.icon;
-            const isFixing = fixingIndex === index;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className={`border-2 ${getStatusColor(check.status)}`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-6 h-6 text-slate-700" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-bold text-gray-900">{check.name}</h3>
-                            {getStatusIcon(check.status)}
-                          </div>
-                          <p className="text-gray-700 mb-1">{check.message}</p>
-                          {check.details && (
-                            <p className="text-sm text-gray-600">{check.details}</p>
-                          )}
-                        </div>
-                      </div>
-                      {(check.status === 'error' || check.status === 'warning') && check.canFix && (
-                        <Button
-                          onClick={() => fixIssue(check, index)}
-                          disabled={isFixing}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 ml-4"
-                        >
-                          {isFixing ? (
-                            <>
-                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                              Fixing...
-                            </>
-                          ) : (
-                            <>
-                              <Wrench className="w-4 h-4 mr-2" />
-                              Fix Issue
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Auto-Run Info */}
-        <Card className="mt-6 bg-blue-500/10 border-2 border-blue-500/30">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              <Activity className="w-5 h-5 text-blue-400 mt-0.5" />
-              <div>
-                <h3 className="text-lg font-bold text-blue-300 mb-2">🤖 Automated Daily Checks</h3>
-                <p className="text-blue-200 text-sm mb-2">
-                  This health check runs automatically every day at midnight (server time) to ensure everything is working correctly.
-                </p>
-                <ul className="text-blue-200 text-sm space-y-1">
-                  <li>✅ Authentication & user management</li>
-                  <li>✅ VIP subscription tracking (20 lifetime spots)</li>
-                  <li>✅ All data entities (Match, Player, Team)</li>
-                  <li>✅ AI integrations (LLM, email)</li>
-                  <li>✅ Free lookup limiting system</li>
-                  <li>✅ Navigation and page routing</li>
-                  <li>✅ Prediction accuracy tracking</li> {/* Added this item */}
-                  <li>🔧 <strong>Auto-fix capability</strong> for detected errors</li>
-                </ul>
-              </div>
-            </div>
           </CardContent>
         </Card>
+
+        {/* Test Results */}
+        {testResults && !testResults.error && (
+          <div className="space-y-6">
+            {/* Entities */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Database className="w-5 h-5 text-blue-400" />
+                  Entity Schemas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testResults.entities.map((entity, index) => (
+                    <div key={index} className="flex items-center justify-between bg-slate-900 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(entity.status)}
+                        <span className="font-semibold text-white">{entity.name}</span>
+                      </div>
+                      <Badge className={getStatusBadge(entity.status)}>
+                        {entity.schema ? `${entity.schema} fields` : entity.message}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Duplicates */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Target className="w-5 h-5 text-yellow-400" />
+                  Duplicate Detection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testResults.duplicates.map((dup, index) => (
+                    <div key={index} className="flex items-center justify-between bg-slate-900 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(dup.status)}
+                        <span className="font-semibold text-white">{dup.type}</span>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={getStatusBadge(dup.status)}>
+                          {dup.message}
+                        </Badge>
+                        {dup.count > 0 && (
+                          <div className="text-xs text-red-400 mt-1">
+                            Action needed: {dup.count} duplicates
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Authentication */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Users className="w-5 h-5 text-green-400" />
+                  Authentication System
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testResults.authentication.map((auth, index) => (
+                    <div key={index} className="bg-slate-900 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        {getStatusIcon(auth.status)}
+                        <span className="font-semibold text-white">{auth.type}</span>
+                      </div>
+                      {auth.authenticated !== undefined && (
+                        <div className="ml-8 text-slate-400 text-sm space-y-1">
+                          <div>Authenticated: {auth.authenticated ? 'Yes' : 'No'}</div>
+                          <div>User: {auth.user}</div>
+                        </div>
+                      )}
+                      {auth.role && (
+                        <div className="ml-8 text-slate-400 text-sm space-y-1">
+                          <div>Role: {auth.role}</div>
+                          <div>Subscription: {auth.subscription}</div>
+                          <div>VIP: {auth.vip ? 'Yes' : 'No'}</div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* VIP System */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Activity className="w-5 h-5 text-purple-400" />
+                  VIP Counter System
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testResults.vipSystem.map((vip, index) => (
+                    <div key={index} className="bg-slate-900 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(vip.status)}
+                          <span className="font-semibold text-white">{vip.type}</span>
+                        </div>
+                        <Badge className={getStatusBadge(vip.status)}>
+                          {vip.message || 'OK'}
+                        </Badge>
+                      </div>
+                      {vip.current_count !== undefined && (
+                        <div className="ml-8 text-slate-400 text-sm space-y-1">
+                          <div>Current VIP Count: {vip.current_count}/20</div>
+                          <div>Spots Remaining: {vip.spots_remaining}</div>
+                          {vip.last_updated && (
+                            <div>Last Updated: {new Date(vip.last_updated).toLocaleString()}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Betting Stats Validation */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Target className="w-5 h-5 text-emerald-400" />
+                  Betting Stats Validation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testResults.betting.length > 0 ? (
+                    testResults.betting.map((bet, index) => (
+                      <div key={index} className="bg-slate-900 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            {getStatusIcon(bet.status)}
+                            <span className="font-semibold text-white">{bet.type}</span>
+                          </div>
+                          <Badge className={getStatusBadge(bet.status)}>
+                            {bet.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        {bet.issues && bet.issues.length > 0 && (
+                          <div className="ml-8 mt-2 space-y-1">
+                            {bet.issues.map((issue, i) => (
+                              <div key={i} className={`text-sm ${
+                                issue.includes('REDUNDANCY') ? 'text-red-400 font-bold' : 'text-yellow-400'
+                              }`}>
+                                • {issue}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {bet.sport && (
+                          <div className="ml-8 text-slate-400 text-sm mt-2">
+                            Sport: {bet.sport} | Starting: {bet.starting ? 'Yes' : 'No'}
+                          </div>
+                        )}
+                        {bet.message && (
+                          <div className="ml-8 text-slate-400 text-sm mt-2">
+                            {bet.message}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-slate-400 py-8">
+                      No betting stats data to validate
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary */}
+            <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Test Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                    <div className="text-3xl font-bold text-green-400 mb-1">
+                      {[...testResults.entities, ...testResults.duplicates, ...testResults.authentication, ...testResults.vipSystem, ...testResults.betting]
+                        .filter(t => t.status === 'success').length}
+                    </div>
+                    <div className="text-sm text-green-300">Passed</div>
+                  </div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                    <div className="text-3xl font-bold text-yellow-400 mb-1">
+                      {[...testResults.entities, ...testResults.duplicates, ...testResults.authentication, ...testResults.vipSystem, ...testResults.betting]
+                        .filter(t => t.status === 'warning').length}
+                    </div>
+                    <div className="text-sm text-yellow-300">Warnings</div>
+                  </div>
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <div className="text-3xl font-bold text-red-400 mb-1">
+                      {[...testResults.entities, ...testResults.duplicates, ...testResults.authentication, ...testResults.vipSystem, ...testResults.betting]
+                        .filter(t => t.status === 'error').length}
+                    </div>
+                    <div className="text-sm text-red-300">Errors</div>
+                  </div>
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <div className="text-3xl font-bold text-blue-400 mb-1">
+                      {new Date(testResults.timestamp).toLocaleTimeString()}
+                    </div>
+                    <div className="text-sm text-blue-300">Last Run</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {testResults?.error && (
+          <Alert variant="destructive" className="bg-red-500/10 border-red-500/50">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription>
+              Test Error: {testResults.error}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
     </div>
   );
