@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -182,6 +181,25 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       return stats;
     }
 
+    // BASKETBALL STATS
+    if (sport.includes('basketball') || sport.includes('nba')) {
+      const points = averages.points_per_game || 0;
+      const rebounds = averages.rebounds_per_game || 0;
+      const assists = averages.assists_per_game || 0;
+      const combinedStat = points + rebounds + assists;
+
+      if (averages.points_per_game !== undefined && averages.points_per_game !== null) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
+      if (averages.assists_per_game !== undefined && averages.assists_per_game !== null) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
+      if (averages.rebounds_per_game !== undefined && averages.rebounds_per_game !== null) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
+      if (combinedStat !== undefined && combinedStat !== null) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
+      if (averages.steals_per_game !== undefined && averages.steals_per_game !== null) stats.push({ label: "Steals/G", value: averages.steals_per_game.toFixed(1), key: "steals" });
+      if (averages.blocks_per_game !== undefined && averages.blocks_per_game !== null) stats.push({ label: "Blocks/G", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
+      if (averages.field_goal_percentage !== undefined && averages.field_goal_percentage !== null) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
+      if (averages.three_point_percentage !== undefined && averages.three_point_percentage !== null) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
+      if (averages.minutes_per_game !== undefined && averages.minutes_per_game !== null) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
+      return stats;
+    }
+
     // FOOTBALL STATS
     if (sport.includes('football') || sport.includes('nfl')) {
       // Quarterback Stats
@@ -209,25 +227,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         if (averages.targets_per_game !== undefined && averages.targets_per_game !== null) stats.push({ label: "Targets/G", value: averages.targets_per_game.toFixed(1), key: "targets" });
         if (averages.yards_per_reception !== undefined && averages.yards_per_reception !== null) stats.push({ label: "Yds/Rec", value: averages.yards_per_reception.toFixed(1), key: "ypr" });
       }
-      return stats;
-    }
-
-    // BASKETBALL STATS
-    if (sport.includes('basketball') || sport.includes('nba')) {
-      const points = averages.points_per_game || 0;
-      const rebounds = averages.rebounds_per_game || 0;
-      const assists = averages.assists_per_game || 0;
-      const combinedStat = points + rebounds + assists;
-
-      if (averages.points_per_game !== undefined && averages.points_per_game !== null) stats.push({ label: "Points/G", value: averages.points_per_game.toFixed(1), key: "points" });
-      if (averages.assists_per_game !== undefined && averages.assists_per_game !== null) stats.push({ label: "Assists/G", value: averages.assists_per_game.toFixed(1), key: "assists" });
-      if (averages.rebounds_per_game !== undefined && averages.rebounds_per_game !== null) stats.push({ label: "Rebounds/G", value: averages.rebounds_per_game.toFixed(1), key: "rebounds" });
-      if (combinedStat !== undefined && combinedStat !== null) stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), key: "combined", highlight: true });
-      if (averages.steals_per_game !== undefined && averages.steals_per_game !== null) stats.push({ label: "Steals/G", value: averages.steals_per_game.toFixed(1), key: "steals" });
-      if (averages.blocks_per_game !== undefined && averages.blocks_per_game !== null) stats.push({ label: "Blocks/G", value: averages.blocks_per_game.toFixed(1), key: "blocks" });
-      if (averages.field_goal_percentage !== undefined && averages.field_goal_percentage !== null) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%`, key: "fg" });
-      if (averages.three_point_percentage !== undefined && averages.three_point_percentage !== null) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%`, key: "3p" });
-      if (averages.minutes_per_game !== undefined && averages.minutes_per_game !== null) stats.push({ label: "Minutes/G", value: averages.minutes_per_game.toFixed(1), key: "minutes" });
       return stats;
     }
 
