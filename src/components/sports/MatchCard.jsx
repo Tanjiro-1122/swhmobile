@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Flag } from "lucide-react";
 import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
 import PlayerStatsCard from "./PlayerStatsCard";
@@ -30,6 +29,10 @@ export default function MatchCard({ match, onDelete, index }) {
     }
   };
 
+  const handleReportIssue = () => {
+    alert("Reporting functionality coming soon! Thank you for your feedback.");
+  };
+
   const formattedDate = formatMatchDate(match.match_date);
 
   return (
@@ -40,7 +43,7 @@ export default function MatchCard({ match, onDelete, index }) {
     >
       <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
           
           <div className="relative flex justify-between items-start mb-4">
             <div className="space-y-2">
@@ -71,8 +74,18 @@ export default function MatchCard({ match, onDelete, index }) {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={handleReportIssue}
+                className="hover:bg-yellow-500/20 hover:text-yellow-400 text-white/80 backdrop-blur-sm"
+                title="Report an issue with this data"
+              >
+                <Flag className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onDelete(match.id)}
                 className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm"
+                title="Delete this analysis"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -84,9 +97,9 @@ export default function MatchCard({ match, onDelete, index }) {
           <ProbabilityMeter
             homeTeam={match.home_team}
             awayTeam={match.away_team}
-            homeProb={match.home_win_probability || 0}
-            awayProb={match.away_win_probability || 0}
-            drawProb={match.draw_probability || 0}
+            homeProb={match.home_win_probability ? match.home_win_probability.toFixed(1) : 0}
+            awayProb={match.away_win_probability ? match.away_win_probability.toFixed(1) : 0}
+            drawProb={match.draw_probability ? match.draw_probability.toFixed(1) : 0}
           />
 
           {match.analysis_summary && (

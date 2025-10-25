@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trophy, User, Shield, Trash2, Filter } from "lucide-react";
+import { Bookmark, Trophy, User, Shield, Trash2, Filter, SortAsc, SportsBasketball, Baseball, Football } from "lucide-react"; // Added Sport icons
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion } from "framer-motion";
 import MatchCard from "../components/sports/MatchCard";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
@@ -13,6 +20,8 @@ import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 
 export default function SavedResults() {
   const [activeTab, setActiveTab] = useState("matches");
+  const [filterSport, setFilterSport] = useState("all");
+  const [sortOrder, setSortOrder] = useState("-created_date"); // Default to most recent
   const queryClient = useQueryClient();
 
   // Get current user
@@ -22,7 +31,7 @@ export default function SavedResults() {
   });
 
   // Fetch user's saved matches
-  const { data: matches, isLoading: matchesLoading } = useQuery({
+  const { data: rawMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['savedMatches', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
@@ -36,7 +45,7 @@ export default function SavedResults() {
   });
 
   // Fetch user's saved players
-  const { data: players, isLoading: playersLoading } = useQuery({
+  const { data: rawPlayers, isLoading: playersLoading } = useQuery({
     queryKey: ['savedPlayers', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
@@ -50,7 +59,7 @@ export default function SavedResults() {
   });
 
   // Fetch user's saved teams
-  const { data: teams, isLoading: teamsLoading } = useQuery({
+  const { data: rawTeams, isLoading: teamsLoading } = useQuery({
     queryKey: ['savedTeams', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
@@ -86,7 +95,7 @@ export default function SavedResults() {
 
   const clearAllMatches = async () => {
     if (window.confirm('Are you sure you want to delete all saved matches?')) {
-      for (const match of matches) {
+      for (const match of rawMatches) {
         await deleteMatchMutation.mutateAsync(match.id);
       }
     }
@@ -94,7 +103,7 @@ export default function SavedResults() {
 
   const clearAllPlayers = async () => {
     if (window.confirm('Are you sure you want to delete all saved players?')) {
-      for (const player of players) {
+      for (const player of rawPlayers) {
         await deletePlayerMutation.mutateAsync(player.id);
       }
     }
@@ -102,13 +111,50 @@ export default function SavedResults() {
 
   const clearAllTeams = async () => {
     if (window.confirm('Are you sure you want to delete all saved teams?')) {
-      for (const team of teams) {
+      for (const team of rawTeams) {
         await deleteTeamMutation.mutateAsync(team.id);
       }
     }
   };
 
+  // Filtering and Sorting Logic
+  const getFilteredAndSortedData = (data, nameKey = 'team_name', sportKey = 'sport') => {
+    let filteredData = data;
+
+    if (filterSport !== "all") {
+      filteredData = filteredData.filter(item => item[sportKey]?.toLowerCase() === filterSport);
+    }
+
+    // Sort order: -created_date (newest), created_date (oldest), name_asc (A-Z), name_desc (Z-A)
+    return [...filteredData].sort((a, b) => {
+      if (sortOrder === "-created_date") {
+        return new Date(b.created_date).getTime() - new Date(a.created_date).getTime();
+      } else if (sortOrder === "created_date") {
+        return new Date(a.created_date).getTime() - new Date(b.created_date).getTime();
+      } else if (sortOrder === "name_asc") {
+        return (a[nameKey] || '').localeCompare(b[nameKey] || '');
+      } else if (sortOrder === "name_desc") {
+        return (b[nameKey] || '').localeCompare(a[nameKey] || '');
+      }
+      return 0;
+    });
+  };
+
+  const matches = getFilteredAndSortedData(rawMatches, 'home_team', 'sport'); // Match uses home_team for name and sport for sportKey
+  const players = getFilteredAndSortedData(rawPlayers, 'player_name', 'sport');
+  const teams = getFilteredAndSortedData(rawTeams, 'team_name', 'sport');
+
   const totalSaved = (matches?.length || 0) + (players?.length || 0) + (teams?.length || 0);
+
+  // Extract unique sports for filters
+  const uniqueSports = [
+    ...new Set([
+      ...(rawMatches || []).map(m => m.sport?.toLowerCase()),
+      ...(rawPlayers || []).map(p => p.sport?.toLowerCase()),
+      ...(rawTeams || []).map(t => t.sport?.toLowerCase()),
+    ].filter(Boolean))
+  ].sort();
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -167,6 +213,41 @@ export default function SavedResults() {
               </div>
             </TabsTrigger>
           </TabsList>
+
+          {/* Filters and Sorting */}
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div className="flex items-center gap-2 text-gray-700">
+              <Filter className="w-4 h-4" />
+              <span className="font-medium">Filter by Sport:</span>
+              <Select value={filterSport} onValueChange={setFilterSport}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Sports" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sports</SelectItem>
+                  {uniqueSports.map(sport => (
+                    <SelectItem key={sport} value={sport}>{sport.charAt(0).toUpperCase() + sport.slice(1)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2 text-gray-700">
+              <SortAsc className="w-4 h-4" />
+              <span className="font-medium">Sort by:</span>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Most Recent" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="-created_date">Most Recent</SelectItem>
+                  <SelectItem value="created_date">Oldest</SelectItem>
+                  <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+                  <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           {/* Matches Tab */}
           <TabsContent value="matches" className="space-y-6">

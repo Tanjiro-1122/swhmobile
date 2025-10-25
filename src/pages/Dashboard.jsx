@@ -1,9 +1,9 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Trophy, Sparkles, Zap, Target, Info } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
@@ -15,7 +15,9 @@ import LiveDataBadge from "../components/shared/LiveDataBadge"; // Added import
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [showDetailedError, setShowDetailedError] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Gathering live data...");
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
@@ -51,6 +53,30 @@ export default function Dashboard() {
     },
   });
 
+  // Multi-stage loading messages
+  useEffect(() => {
+    let interval;
+    if (isSearching) {
+      const messages = [
+        "Gathering live data from StatMuse & ESPN...",
+        "Analyzing team & player forms...",
+        "Calculating win probabilities & betting insights...",
+        "Fetching latest injury reports...",
+        "Verifying data from official sources...",
+        "Finalizing prediction model..."
+      ];
+      let i = 0;
+      setLoadingMessage(messages[i]);
+      interval = setInterval(() => {
+        i = (i + 1) % messages.length;
+        setLoadingMessage(messages[i]);
+      }, 3000); // Change message every 3 seconds
+    } else {
+      setLoadingMessage("Gathering live data...");
+    }
+    return () => clearInterval(interval);
+  }, [isSearching]);
+
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -59,9 +85,10 @@ export default function Dashboard() {
 
     setIsSearching(true);
     setError(null);
+    setShowDetailedError(false); // Reset detailed error view
 
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const llmResult = await base44.integrations.Core.InvokeLLM({
         prompt: `You are THE WORLD'S BEST sports analytics AI with LIVE INTERNET ACCESS. You MUST provide CURRENT ${new Date().getFullYear()} data.
 
 SEARCH QUERY: "${query}"
@@ -387,33 +414,54 @@ If match not found or data incomplete: Set analysis_summary to "Unable to locate
         }
       });
 
-      console.log("✅ Match Analysis Result:", result);
+      console.log("✅ Match Analysis Result:", llmResult);
 
-      if (!result || !result.sport || !result.home_team || !result.away_team || !result.venue) {
+      if (!llmResult || !llmResult.sport || !llmResult.home_team || !llmResult.away_team || !llmResult.venue) {
         throw new Error("Invalid response - missing required match data");
       }
 
-      if (result.analysis_summary?.includes("Unable to")) {
+      if (llmResult.analysis_summary?.includes("Unable to")) {
         throw new Error("Match not found - try a different date or verify team names");
       }
+      
+      // --- Probability validation ---
+      const totalProb = (llmResult.home_win_probability || 0) + (llmResult.away_win_probability || 0) + (llmResult.draw_probability || 0);
+      if (Math.abs(totalProb - 100) > 0.5) { // Allow for slight floating point inaccuracies
+        console.warn(`Probabilities sum to ${totalProb.toFixed(1)}%, adjusting to 100%`);
+        // Simple adjustment: re-normalize or attribute difference to draw
+        if (llmResult.draw_probability !== undefined) {
+          llmResult.draw_probability += (100 - totalProb);
+        } else {
+          // If no draw probability, divide the difference among home/away
+          const diff = 100 - totalProb;
+          llmResult.home_win_probability += diff / 2;
+          llmResult.away_win_probability += diff / 2;
+        }
+      }
+      // --- End probability validation ---
 
-      await base44.entities.Match.create(result);
+
+      await base44.entities.Match.create(llmResult);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       
     } catch (err) {
       console.error("❌ Match Analysis Error:", err);
-      let errorMessage = "Failed to analyze the match. ";
+      let shortMessage = "Failed to analyze the match.";
+      let detailedMessage = "Please try:\n• Using official team names\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team\n• Being more specific about the league";
       
       if (err.message?.includes("Match not found")) {
-        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers @ Celtics today')\n• Using full team names\n• Checking if the game is scheduled\n• Using @ for away team format";
+        shortMessage = "Couldn't find that specific match.";
+        detailedMessage = "Try:\n• Adding a date (e.g., 'Lakers @ Celtics today')\n• Using full team names\n• Checking if the game is scheduled\n• Using @ for away team format";
       } else if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'NFL games this week'\n• A specific matchup with @ or vs\n• Example: 'Lakers @ Celtics' (Lakers away)";
-      } else {
-        errorMessage += "Please try:\n• Using official team names\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team\n• Being more specific about the league";
+        shortMessage = "The AI couldn't find enough data.";
+        detailedMessage = "Try:\n• 'NBA games today'\n• 'NFL games this week'\n• A specific matchup with @ or vs\n• Example: 'Lakers @ Celtics' (Lakers away)";
+      } else if (err.message?.includes("Probability data is inconsistent")) {
+        shortMessage = "AI returned inconsistent probability data.";
+        detailedMessage = "This is an internal error. Please try again or report this issue if it persists.";
       }
       
-      setError(errorMessage);
+      setError({ short: shortMessage, detailed: detailedMessage });
     }
 
     setIsSearching(false);
@@ -528,7 +576,28 @@ If match not found or data incomplete: Set analysis_summary to "Unable to locate
         {/* Error Display */}
         {error && (
           <Alert variant="destructive" className="bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
+            <AlertTitle className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              {error.short}
+              <Button variant="ghost" size="sm" onClick={() => setShowDetailedError(!showDetailedError)} className="ml-auto text-red-300 hover:bg-red-500/20 hover:text-red-200">
+                {showDetailedError ? "Hide Details" : "Show Details"}
+              </Button>
+            </AlertTitle>
+            <AnimatePresence>
+              {showDetailedError && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <AlertDescription className="whitespace-pre-line mt-2 pt-2 border-t border-red-500/30">
+                    {error.detailed}
+                  </AlertDescription>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Alert>
         )}
 
@@ -544,7 +613,7 @@ If match not found or data incomplete: Set analysis_summary to "Unable to locate
                 </div>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
-              <p className="text-slate-400">Fetching live stats from StatMuse & ESPN...</p>
+              <p className="text-slate-400">{loadingMessage}</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

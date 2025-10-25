@@ -1,17 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles, Info } from "lucide-react";
+import { Search, Sparkles, Info, History } from "lucide-react";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge"; // Import Badge for styling recent searches
 
 export default function SearchBar({ onSearch, isSearching }) {
   const [query, setQuery] = useState("");
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  useEffect(() => {
+    // Load recent searches from localStorage on component mount
+    try {
+      const storedSearches = localStorage.getItem("recentMatchSearches");
+      if (storedSearches) {
+        setRecentSearches(JSON.parse(storedSearches));
+      }
+    } catch (e) {
+      console.error("Failed to load recent searches from localStorage:", e);
+    }
+  }, []);
+
+  const handleSearchSubmit = (searchQuery) => {
+    if (searchQuery.trim()) {
+      onSearch(searchQuery);
+      // Add to recent searches, keeping only unique and a maximum of 5-7 items
+      setRecentSearches((prevSearches) => {
+        const newSearches = [searchQuery, ...prevSearches.filter((s) => s !== searchQuery)];
+        const trimmedSearches = newSearches.slice(0, 7); // Keep up to 7 recent searches
+        try {
+          localStorage.setItem("recentMatchSearches", JSON.stringify(trimmedSearches));
+        } catch (e) {
+          console.error("Failed to save recent searches to localStorage:", e);
+        }
+        return trimmedSearches;
+      });
+      setQuery(searchQuery); // Set query for display in input
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query);
-    }
+    handleSearchSubmit(query);
+  };
+
+  const handleRecentSearchClick = (search) => {
+    setQuery(search); // Set query in input box
+    handleSearchSubmit(search); // Re-run search
   };
 
   const popularSearches = [
@@ -68,21 +103,40 @@ export default function SearchBar({ onSearch, isSearching }) {
         </div>
       </div>
 
+      {/* Recent Searches */}
+      {recentSearches.length > 0 && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <History className="w-4 h-4 text-slate-400" />
+          <span className="text-sm text-slate-400 font-medium">Recent:</span>
+          {recentSearches.map((search, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              size="sm"
+              onClick={() => handleRecentSearchClick(search)}
+              className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-emerald-500/50"
+            >
+              {search}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Popular Searches */}
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm text-slate-400 font-medium">Popular:</span>
         {popularSearches.map((search, index) => (
-          <Button
+          <motion.button
             key={index}
-            variant="outline"
-            size="sm"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
-              setQuery(search);
-              onSearch(search);
+              handleRecentSearchClick(search); // Use the new handler for popular too
             }}
-            className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-emerald-500/50"
+            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-emerald-500/50 transition-all"
           >
             {search}
-          </Button>
+          </motion.button>
         ))}
       </div>
     </div>
