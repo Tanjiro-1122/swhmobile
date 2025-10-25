@@ -88,10 +88,13 @@ CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
 5. 📺 ESPN.com Player Pages
    URL: espn.com/[league]/player/_/id/[player]
-   Get: Current team, position, injury status
+   Get: Current team, position, injury status, DEPTH CHART
 
 6. 🏟️ Official Team Websites
-   Check: Current roster, injury reports, depth charts
+   Check: Current roster, injury reports, DEPTH CHARTS, starting lineups
+
+7. 📰 Rotoworld / RotoBaller / FantasyPros
+   Get: Starting status, lineup confirmations, depth chart updates
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 VERIFICATION PROCESS:
@@ -103,10 +106,21 @@ STEP 1: IDENTIFY PLAYER & SPORT
 - Determine sport (NBA/NFL/MLB/Soccer)
 - Verify player is ACTIVE in ${new Date().getFullYear()} season
 
-STEP 2: GET CURRENT TEAM & POSITION
+STEP 2: GET CURRENT TEAM, POSITION & STARTING STATUS
 - Check official team roster
 - Verify player is on CURRENT roster
 - Get exact position (e.g., "Point Guard", "Quarterback", "Catcher")
+- CHECK DEPTH CHART on ESPN or team website
+- VERIFY IF STARTING: Look for "Starter", "1st String", "Starting Lineup"
+- SET is_starting = true if player is listed as starter
+- SET is_starting = false if player is backup/bench/2nd string
+- SET depth_chart_position (e.g., "Starter", "Backup", "2nd String", "Bench")
+
+CRITICAL SOURCES FOR STARTING STATUS:
+- ESPN depth charts: espn.com/[league]/team/depth/_/name/[team]
+- Official team website depth charts
+- Latest game starting lineups
+- Rotoworld/RotoBaller depth chart updates
 
 STEP 3: SEASON AVERAGES (${new Date().getFullYear()} ONLY)
 
@@ -182,7 +196,7 @@ STEP 6: NEXT GAME PREDICTION
 - Provide REALISTIC predictions
 
 STEP 7: BETTING LINES & PROBABILITIES
-- Search DraftKings/FanDuel for player props
+- Search DraftKings/Fanduel for player props
 - Get Over/Under lines for main stat
 - Calculate probability percentages
 - Example: "O/U 1.5 Hits, 60% chance to go Over"
@@ -197,12 +211,14 @@ STEP 7: BETTING LINES & PROBABILITIES
 - Stats from previous seasons
 - Game logs without actual dates
 - Fake/placeholder data
+- No depth chart info / starting status unknown
 
 ✅ ACCEPT only if:
 - All stats from ${new Date().getFullYear()} season
 - Player verified on team website
 - Game logs have real dates & opponents
 - Season averages match StatMuse
+- Starting status verified from depth chart
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚨 SPORT-SPECIFIC REQUIREMENTS:
@@ -231,7 +247,7 @@ Example: "Will Smith" in baseball → Will Smith (C, Los Angeles Dodgers)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new Date().getFullYear()} data.
+RETURN: Valid JSON with ALL position-appropriate fields filled using REAL ${new Date().getFullYear()} data, including is_starting and depth_chart_position.
 
 If player not found, return with player_name set to "NOT_FOUND"`,
         add_context_from_internet: true,
@@ -243,6 +259,14 @@ If player not found, return with player_name set to "NOT_FOUND"`,
             team: { type: "string" },
             position: { type: "string" },
             league: { type: "string" },
+            is_starting: { 
+              type: "boolean",
+              description: "True if player is in starting lineup, false if backup/bench"
+            },
+            depth_chart_position: {
+              type: "string",
+              description: "Position on depth chart: 'Starter', 'Backup', '2nd String', 'Bench', etc."
+            },
             season_averages: {
               type: "object",
               properties: {
@@ -343,7 +367,7 @@ If player not found, return with player_name set to "NOT_FOUND"`,
               items: { type: "string" }
             }
           },
-          required: ["player_name", "sport", "team"]
+          required: ["player_name", "sport", "team", "is_starting"]
         }
       });
 

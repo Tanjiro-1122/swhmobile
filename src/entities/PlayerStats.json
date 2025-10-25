@@ -22,6 +22,14 @@
       "type": "string",
       "description": "League or competition"
     },
+    "is_starting": {
+      "type": "boolean",
+      "description": "Whether the player is in the starting lineup"
+    },
+    "depth_chart_position": {
+      "type": "string",
+      "description": "Position on depth chart (e.g., 'Starter', 'Backup', '2nd String')"
+    },
     "season_averages": {
       "type": "object",
       "properties": {

@@ -3,6 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert"; // Added Alert and AlertDescription
 import {
   TrendingUp,
   Target,
@@ -268,6 +269,22 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 <Badge className="bg-white/20 text-white border-white/30">
                   {player.sport}
                 </Badge>
+                {/* Starting Status Badge */}
+                {player.is_starting !== undefined && (
+                  <Badge className={`${
+                    player.is_starting
+                      ? 'bg-green-500 text-white border-green-400'
+                      : 'bg-yellow-500 text-black border-yellow-400'
+                  } font-bold`}>
+                    {player.is_starting ? '⭐ STARTER' : '🔄 BACKUP'}
+                  </Badge>
+                )}
+                {/* Depth Chart Position */}
+                {player.depth_chart_position && (
+                  <Badge className="bg-blue-500/30 text-white border-blue-400/50">
+                    {player.depth_chart_position}
+                  </Badge>
+                )}
               </div>
             </div>
             <Button
@@ -285,6 +302,16 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         </div>
 
         <CardContent className="p-6 space-y-6">
+          {/* Starting Status Alert */}
+          {player.is_starting === false && (
+            <Alert className="bg-yellow-50 border-2 border-yellow-300">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800 font-semibold">
+                ⚠️ <strong>Not a Starter</strong> - This player is a backup/bench player. Playing time and stats may be limited.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Simplified Prediction Summary */}
           {simplifiedPrediction && (
             <motion.div
@@ -303,6 +330,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                   </div>
                   <div className="text-sm text-blue-100 mt-2">
                     ⚡ Based on {new Date().getFullYear()} season averages
+                    {player.is_starting === false && " (As backup player)"}
                   </div>
                 </div>
               </div>
