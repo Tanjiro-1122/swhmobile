@@ -9,6 +9,8 @@ import ParlayBuilder from './pages/ParlayBuilder';
 import LiveOdds from './pages/LiveOdds';
 import Alerts from './pages/Alerts';
 import Community from './pages/Community';
+import LearningCenter from './pages/LearningCenter';
+import BankrollManager from './pages/BankrollManager';
 import Layout from './Layout.jsx';
 
 
@@ -24,6 +26,8 @@ export const PAGES = {
     "LiveOdds": LiveOdds,
     "Alerts": Alerts,
     "Community": Community,
+    "LearningCenter": LearningCenter,
+    "BankrollManager": BankrollManager,
 }
 
 export const pagesConfig = {

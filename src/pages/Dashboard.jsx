@@ -2,25 +2,23 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react"; // Removed Crown, Clock, Users as VIP promo is removed
+import { Trophy, Sparkles, Zap, Target } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button"; // Kept as it might be used by other components or internally
-import { Badge } from "@/components/ui/badge";   // Kept as it might be used by other components or internally
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
-// import { motion } from "framer-motion"; // Removed framer-motion as VIP promo is removed
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  // const [showVipPromo, setShowVipPromo] = useState(true); // Removed VIP promo state
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker(); // Added userTier
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -54,7 +52,6 @@ export default function Dashboard() {
   });
 
   const handleSearch = async (query) => {
-    // setShowVipPromo(false); // Removed as VIP promo is removed
     
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -72,90 +69,58 @@ SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
 CRITICAL INSTRUCTIONS:
-1. You have internet access via add_context_from_internet parameter
-2. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
-3. Check ESPN.com for match schedules and team records
-4. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
-5. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
+1. You have internet access - search StatMuse.com, ESPN.com, official league websites
+2. Get SPORT-SPECIFIC statistics only - DO NOT MIX STATS
+3. Include INJURY REPORTS and WEATHER IMPACT
 
-TASK: Find the specific match the user is asking about and provide SPORT-SPECIFIC stats:
+REQUIRED SECTIONS:
 
 1. MATCH IDENTIFICATION:
-   - Sport (Basketball/Soccer/Football/etc)
-   - League (NBA/Premier League/NFL/etc)
-   - Home team (OFFICIAL full name from league)
-   - Away team (OFFICIAL full name from league)
-   - Match date/time (search for scheduled date)
+   - Sport, League, Teams, Date/Time
 
-2. WIN PROBABILITIES (must total 100%):
-   Calculate based on:
-   - Current season records (W-L from StatMuse)
-   - Last 5 games results
-   - Head-to-head history
-   - Home advantage
-   - Current injuries
-   
-   Home Win: X%
-   Away Win: Y%
-   Draw: Z% (only if applicable to sport)
+2. WIN PROBABILITIES & PREDICTION:
+   - Home/Away/Draw probabilities
+   - Predicted Winner
+   - Predicted Score (specific numbers)
+   - Win Margin
+   - Confidence Level (High/Medium/Low)
+   - Detailed Reasoning (2-3 sentences with stats)
 
-3. MATCH PREDICTION (NEW - REQUIRED):
-   - Predicted Winner: "Home Team Name" or "Away Team Name"
-   - Predicted Score: "115-108" (be specific with numbers)
-   - Win Margin: "+7 points" or "2 goals" (sport-specific)
-   - Confidence: "High" / "Medium" / "Low"
-   - Reasoning: 2-3 sentences explaining why based on stats
+3. KEY FACTORS (4-5 points with stats)
 
-4. KEY FACTORS (4-5 specific points with stats):
-   Example format:
-   - "Home team won 8 of last 10 games (80% win rate)"
-   - "Away team averaging 115 PPG vs opponent allowing 108 PPG"
+4. KEY PLAYERS (3-4 per team):
+   SPORT-SPECIFIC STATS ONLY:
+   - Basketball: PPG, APG, RPG, FG%, 3P% + predicted "28 PTS, 8 REB, 6 AST"
+   - Soccer: Goals/game, assists, shots + predicted "2 goals, 1 assist"
+   - Football: Passing/Rushing yards, TDs + predicted "285 passing yards, 2 TDs"
+   
+   DO NOT MIX - Basketball players should NOT have "goals"
 
-5. KEY PLAYERS (3-4 per team) - SPORT-SPECIFIC STATS ONLY:
-   For EACH player provide:
-   - Name (verify they're on current roster via team website)
-   - Team and position
-   - Season averages (PPG/APG/RPG from StatMuse or Basketball-Reference)
-   - Predicted performance for THIS game (e.g., "28 PTS, 8 REB, 6 AST" or "2 goals, 1 assist" or "285 passing yards, 2 TDs")
-   - Recent form: "Hot" if averaging above normal last 3 games, "Cold" if below
-   - Injury status: Check today's injury report
-   
-   FOR BASKETBALL (NBA):
-   - Points per game (PPG)
-   - Assists per game (APG)
-   - Rebounds per game (RPG)
-   - Field Goal % (FG%)
-   - Three-Point % (3P%)
-   
-   FOR SOCCER/FOOTBALL:
-   - Goals per game
-   - Assists per game
-   - Shots per game
-   - Pass accuracy %
-   
-   FOR AMERICAN FOOTBALL (NFL):
-   - Passing yards (if QB)
-   - Rushing yards (if RB)
-   - Receiving yards (if WR)
-   - Touchdowns (all positions)
-   
-   DO NOT MIX STATS - Basketball players should NOT have "goals", Soccer players should NOT have "3-pointers"
+5. INJURY REPORT (REQUIRED):
+   Search "[team name] injury report ${new Date().toLocaleDateString()}"
+   For EACH injured player:
+   - Player name
+   - Team
+   - Injury (e.g., "ankle sprain")
+   - Status: Out/Questionable/Day-to-Day
+   - Impact on game: "High" if star player, "Medium" if role player, "Low" if bench
 
-6. BETTING MARKETS (sport-appropriate):
-   Over/Under: Use correct terminology for sport
-   - Basketball: Points (e.g., "Over 225.5 points")
-   - Soccer: Goals (e.g., "Over 2.5 goals")
-   - Football: Points (e.g., "Over 47.5 points")
-   
-   Both Teams Score (if soccer): Based on scoring rates
-   First to Score: Slight favor to home team (55/45)
+6. WEATHER IMPACT (REQUIRED for outdoor sports):
+   Search "[venue name] weather forecast [game date]"
+   - Conditions: Clear/Rainy/Snowy/Windy
+   - Temperature: degrees + wind chill
+   - Wind Speed: mph
+   - Impact Rating: High/Medium/Low/None
+   - Betting Impact: How it affects totals/spread
 
-VALIDATION RULES:
-- Team names must match official league rosters
-- All statistics must be from ${new Date().getFullYear()} season
-- Win probabilities must be realistic (no team should have >95% or <5%)
-- If you can't find the match, say "Unable to find scheduled match" in 'prediction.reasoning'.
-- ALL fields in the JSON schema MUST be populated with real data.`,
+7. BETTING MARKETS (sport-appropriate totals)
+
+VALIDATION:
+- Stats MUST match the sport
+- All sections MUST be populated
+- Use real current-season data
+
+Return valid JSON.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -168,13 +133,13 @@ VALIDATION RULES:
             home_win_probability: { type: "number" },
             away_win_probability: { type: "number" },
             draw_probability: { type: "number" },
-            prediction: { // NEW FIELD
+            prediction: {
               type: "object",
               properties: {
                 winner: { type: "string" },
                 predicted_score: { type: "string" },
                 win_margin: { type: "string" },
-                confidence: { type: "string", enum: ["low", "medium", "high"] },
+                confidence: { type: "string" },
                 reasoning: { type: "string" }
               },
               required: ["winner", "predicted_score", "confidence", "reasoning"]
@@ -183,8 +148,6 @@ VALIDATION RULES:
               type: "array",
               items: { type: "string" }
             },
-            // analysis_summary removed from top-level properties
-            // confidence_level removed from top-level properties
             key_players: {
               type: "array",
               items: {
@@ -195,47 +158,44 @@ VALIDATION RULES:
                   position: { type: "string" },
                   recent_form: { type: "string" },
                   injury_status: { type: "string" },
-                  predicted_performance: { type: "string" } // Summarizes specific stats like "28 PTS, 8 REB, 6 AST"
-                },
-                required: ["name", "team", "position", "predicted_performance"]
+                  predicted_performance: { type: "string" }
+                }
               }
             },
             betting_markets: {
               type: "object",
               properties: {
-                over_under: {
-                  type: "object",
-                  properties: {
-                    line: { type: "number" },
-                    over_probability: { type: "number" },
-                    under_probability: { type: "number" }
-                  }
+                over_under: { type: "object" },
+                both_teams_score: { type: "object" },
+                first_to_score: { type: "object" }
+              }
+            },
+            injuries: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  player_name: { type: "string" },
+                  team: { type: "string" },
+                  injury: { type: "string" },
+                  status: { type: "string" },
+                  impact: { type: "string" }
                 },
-                both_teams_score: {
-                  type: "object",
-                  properties: {
-                    yes_probability: { type: "number" },
-                    no_probability: { type: "number" }
-                  }
-                },
-                total_goals_range: {
-                  type: "object",
-                  properties: {
-                    predicted_total: { type: "number" },
-                    range: { type: "string" }
-                  }
-                },
-                first_to_score: {
-                  type: "object",
-                  properties: {
-                    home_probability: { type: "number" },
-                    away_probability: { type: "number" }
-                  }
-                }
+                required: ["player_name", "team", "status"]
+              }
+            },
+            weather_impact: {
+              type: "object",
+              properties: {
+                conditions: { type: "string" },
+                temperature: { type: "string" },
+                wind_speed: { type: "string" },
+                impact_rating: { type: "string" },
+                betting_impact: { type: "string" }
               }
             }
           },
-          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "prediction"] // Updated required fields
+          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "prediction", "injuries"]
         }
       });
 
@@ -277,17 +237,13 @@ VALIDATION RULES:
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
-      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} /> {/* Passed userTier */}
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
         lookupsRemaining={lookupsRemaining}
       />
 
-      {/* VIP Promotional Section - REMOVED */}
-      {/* The entire VIP promo section JSX was removed based on the code_outline */}
-
-      {/* Main Content - No longer conditional on showVipPromo */}
         <div className="max-w-7xl mx-auto px-6 py-12">
           {/* Today's Best Bets Section */}
           <div className="mb-12">

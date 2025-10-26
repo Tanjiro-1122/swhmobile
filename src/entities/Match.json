@@ -68,19 +68,6 @@
       },
       "description": "Key factors affecting the prediction"
     },
-    "analysis_summary": {
-      "type": "string",
-      "description": "Brief summary of the analysis"
-    },
-    "confidence_level": {
-      "type": "string",
-      "enum": [
-        "low",
-        "medium",
-        "high"
-      ],
-      "description": "Confidence level of the prediction"
-    },
     "key_players": {
       "type": "array",
       "items": {
@@ -180,6 +167,51 @@
           }
         }
       }
+    },
+    "injuries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player_name": {
+            "type": "string"
+          },
+          "team": {
+            "type": "string"
+          },
+          "injury": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Current injury report"
+    },
+    "weather_impact": {
+      "type": "object",
+      "properties": {
+        "conditions": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "string"
+        },
+        "wind_speed": {
+          "type": "string"
+        },
+        "impact_rating": {
+          "type": "string"
+        },
+        "betting_impact": {
+          "type": "string"
+        }
+      },
+      "description": "Weather conditions and impact on game"
     }
   },
   "required": [
