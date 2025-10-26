@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -24,7 +25,7 @@ export default function Layout({ children, currentPageName }) {
   const getUserInitial = () => {
     if (currentUser?.full_name) return currentUser.full_name[0].toUpperCase();
     if (currentUser?.email) return currentUser.email[0].toUpperCase();
-    return "U";
+    return "J"; // Updated fallback from "U" to "J" as per outline
   };
 
   const menuItems = [
@@ -41,9 +42,11 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-lg">SWS</span>
-            </div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f277a0cdb_IMG_2141.jpg"
+              alt="Sports Wager Helper"
+              className="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-lg"
+            />
             <div className="hidden sm:block">
               <div className="text-white font-bold text-sm leading-tight">Sports Wager Helper</div>
             </div>
