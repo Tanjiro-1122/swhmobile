@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target, Crown, Clock, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showVipPromo, setShowVipPromo] = useState(true);
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
@@ -49,6 +53,8 @@ export default function Dashboard() {
   });
 
   const handleSearch = async (query) => {
+    setShowVipPromo(false);
+    
     if (!canLookup()) {
       setShowLimitModal(true);
       return;
@@ -241,7 +247,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600 p-6">
         <Alert variant="destructive" className="max-w-2xl mx-auto bg-red-500/10 border-red-500/50 text-red-400">
           <AlertDescription>
             Failed to load matches. Please refresh the page or contact support.
@@ -252,7 +258,7 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -260,154 +266,208 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 opacity-90" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-        
-        <div className="relative max-w-7xl mx-auto px-6 py-16">
-          <div className="flex items-start justify-between flex-wrap gap-6">
-            <div className="flex-1 min-w-[300px]">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Live AI Analysis</span>
+      {/* VIP Promotional Section */}
+      {showVipPromo && (
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* VIP Header Banner */}
+            <div className="bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-300 rounded-3xl p-6 border-4 border-white shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Crown className="w-12 h-12 text-yellow-600" />
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-black text-slate-900">VIP LIFETIME MEMBER -</h1>
+                    <p className="text-xl md:text-2xl font-bold text-slate-800">Unlimited Access Forever</p>
+                  </div>
+                </div>
+                <Crown className="w-12 h-12 text-yellow-600" />
               </div>
-              
-              <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
-                Win More.<br />
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  Bet Smarter.
-                </span>
-              </h1>
-              
-              <p className="text-xl text-emerald-100 max-w-2xl leading-relaxed mb-6">
-                AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources. Get match predictions, player insights, and team analysis.
+            </div>
+
+            {/* VIP Member Status */}
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-r from-emerald-400 to-teal-500 rounded-3xl p-6 border-4 border-white shadow-2xl"
+            >
+              <div className="flex items-center gap-3">
+                <Crown className="w-8 h-8 text-white" />
+                <span className="text-2xl md:text-3xl font-black text-white">🎉 You're VIP Lifetime Member #4!</span>
+              </div>
+            </motion.div>
+
+            {/* Countdown Badges */}
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-lg px-8 py-3 rounded-2xl shadow-xl animate-pulse">
+                🔥 LIMITED TIME OFFER
+              </Badge>
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg px-8 py-3 rounded-2xl shadow-xl">
+                <Clock className="w-5 h-5 mr-2" />
+                ENDING SOON
+              </Badge>
+            </div>
+
+            {/* Spots Counter */}
+            <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-3xl py-4 px-8 border-4 border-white shadow-2xl">
+              <p className="text-3xl font-black text-white text-center">14 SPOTS LEFT!</p>
+            </div>
+
+            {/* Main Headline */}
+            <div className="text-center py-6">
+              <h2 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg mb-4">
+                🎊 First 20 Users Get LIFETIME
+              </h2>
+              <h2 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg">
+                Unlimited Access!
+              </h2>
+              <p className="text-xl md:text-2xl text-white font-bold mt-6">
+                You already have lifetime access! Share this offer with friends before spots run out.
               </p>
+            </div>
 
-              <div className="flex items-center gap-4 mt-6">
+            {/* Progress Bar */}
+            <div className="bg-gradient-to-br from-yellow-200 to-orange-200 rounded-3xl p-8 border-4 border-yellow-300 shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Trophy className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-white">{matches?.length || 0}</div>
-                    <div className="text-xs text-emerald-100">Matches Analyzed</div>
-                  </div>
+                  <Users className="w-6 h-6 text-slate-700" />
+                  <span className="text-xl font-bold text-slate-900">VIP Spots Claimed</span>
                 </div>
-                
-                <div className="w-px h-12 bg-white/20" />
-                
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Zap className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-white">Live</div>
-                    <div className="text-xs text-emerald-100">Real-time Data</div>
-                  </div>
-                </div>
+                <span className="text-5xl font-black text-slate-900">6/20</span>
+              </div>
+              
+              <div className="w-full bg-white/50 rounded-full h-8 mb-4 overflow-hidden border-2 border-slate-300">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: '30%' }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="bg-gradient-to-r from-emerald-400 to-teal-500 h-full rounded-full"
+                />
+              </div>
+
+              <div className="flex justify-between text-slate-700 font-bold">
+                <span>⚡ 6 claimed</span>
+                <span>14 remaining</span>
               </div>
             </div>
 
-            <div className="flex-shrink-0">
-              <div className="w-64 h-64 relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl opacity-20 blur-3xl" />
-                <div className="relative w-full h-full bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 flex items-center justify-center">
-                  <Trophy className="w-32 h-32 text-white opacity-50" />
+            {/* Final Warning */}
+            <div className="bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl p-6 border-4 border-white shadow-2xl">
+              <p className="text-xl md:text-2xl font-black text-white text-center">
+                ⏰ Only 14 lifetime spots remaining! Once claimed, this offer disappears forever!
+              </p>
+            </div>
+
+            {/* Get Started Button */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                onClick={() => setShowVipPromo(false)}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-2xl py-8 rounded-3xl shadow-2xl font-black"
+              >
+                <Trophy className="w-8 h-8 mr-3" />
+                START ANALYZING MATCHES
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Main Content - Only show when VIP promo is dismissed */}
+      {!showVipPromo && (
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Today's Best Bets Section */}
+          <div className="mb-12">
+            <TodaysBestBets 
+              onLookupUsed={recordLookup}
+              canLookup={canLookup}
+              onLimitReached={() => setShowLimitModal(true)}
+            />
+          </div>
+
+          {/* Search Section */}
+          <div className="mb-12">
+            <div className="bg-white/90 backdrop-blur-xl border-4 border-white rounded-3xl p-8 shadow-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Analyze Any Match</h2>
+                  <p className="text-slate-600">Get instant win probabilities and betting insights</p>
                 </div>
               </div>
+              <SearchBar onSearch={handleSearch} isSearching={isSearching} />
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Today's Best Bets Section */}
-        <div className="mb-12">
-          <TodaysBestBets 
-            onLookupUsed={recordLookup}
-            canLookup={canLookup}
-            onLimitReached={() => setShowLimitModal(true)}
-          />
-        </div>
+          {error && (
+            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+              <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
+            </Alert>
+          )}
 
-        {/* Search Section */}
-        <div className="mb-12">
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
-                <p className="text-slate-400">Get instant win probabilities and betting insights</p>
+          {isSearching && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="relative w-24 h-24 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
+                  <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
+                    <Sparkles className="w-10 h-10 text-emerald-400" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
+                <p className="text-white/80">Fetching live stats from StatMuse & ESPN...</p>
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
               </div>
             </div>
-            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
-          </div>
+          )}
+
+          {!isSearching && (
+            <>
+              {matches.length > 0 ? (
+                <>
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
+                      Your Match Predictions
+                      <span className="text-white/70">({matches.length})</span>
+                    </h2>
+                  </div>
+                  <div className="grid lg:grid-cols-2 gap-8">
+                    {matches.map((match, index) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        onDelete={deleteMutation.mutate}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <EmptyState />
+              )}
+            </>
+          )}
         </div>
-
-        {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {isSearching && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="relative w-24 h-24 mx-auto mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
-                <div className="absolute inset-2 bg-slate-900 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 text-emerald-400" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
-              <p className="text-slate-400">Fetching live stats from StatMuse & ESPN...</p>
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isSearching && (
-          <>
-            {matches.length > 0 ? (
-              <>
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
-                    Your Match Predictions
-                    <span className="text-slate-500">({matches.length})</span>
-                  </h2>
-                </div>
-                <div className="grid lg:grid-cols-2 gap-8">
-                  {matches.map((match, index) => (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      onDelete={deleteMutation.mutate}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <EmptyState />
-            )}
-          </>
-        )}
-      </div>
+      )}
 
       {/* Footer Disclaimer */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
-          <p className="text-sm text-amber-400">
+        <div className="bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-6">
+          <p className="text-sm text-white">
             <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
             Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>

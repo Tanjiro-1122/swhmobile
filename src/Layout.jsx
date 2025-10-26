@@ -1,61 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, Zap, Target, UserPlus, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Trophy, User, Shield, Bookmark, Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { useFreeLookupTracker } from "./components/auth/FreeLookupTracker";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-
-const navigationItems = [
-  {
-    title: "Match Analysis",
-    url: createPageUrl("Dashboard"),
-    icon: Trophy,
-    description: "Live match predictions",
-    color: "from-blue-500 to-cyan-500"
-  },
-  {
-    title: "Player Stats",
-    url: createPageUrl("PlayerStats"),
-    icon: User,
-    description: "Individual performance",
-    color: "from-purple-500 to-pink-500"
-  },
-  {
-    title: "Team Stats",
-    url: createPageUrl("TeamStats"),
-    icon: Shield,
-    description: "Team analytics",
-    color: "from-green-500 to-emerald-500"
-  },
-  {
-    title: "Saved Results",
-    url: createPageUrl("SavedResults"),
-    icon: Bookmark,
-    description: "Your predictions",
-    color: "from-orange-500 to-red-500"
-  },
-];
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Layout({ children, currentPageName }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const { lookupsRemaining, isAuthenticated } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -68,197 +21,92 @@ export default function Layout({ children, currentPageName }) {
     },
   });
 
-  const handleSignup = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+  const getUserInitial = () => {
+    if (currentUser?.full_name) return currentUser.full_name[0].toUpperCase();
+    if (currentUser?.email) return currentUser.email[0].toUpperCase();
+    return "U";
   };
 
-  const handleLogout = () => {
-    base44.auth.logout();
-  };
+  const menuItems = [
+    { label: "Match Analysis", url: createPageUrl("Dashboard"), icon: "🏆" },
+    { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
+    { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
+    { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
+  ];
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
-          <SidebarHeader className="border-b border-slate-700 p-6">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/50">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-white">Sports Wager Saver</h2>
-                <p className="text-xs text-slate-400 flex items-center gap-1">
-                  <Target className="w-3 h-3" />
-                  AI Sports Analytics
-                </p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
+      {/* Header */}
+      <header className="bg-slate-900 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Logo */}
+          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-lg">SWS</span>
             </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="p-3">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 py-2 mb-2">
-                Navigation
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-2">
-                  {navigationItems.map((item) => {
-                    const isActive = location.pathname === item.url;
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                          asChild 
-                          className={`relative overflow-hidden rounded-xl transition-all duration-300 ${
-                            isActive 
-                              ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg scale-105' 
-                              : 'hover:bg-slate-800 text-slate-300 hover:text-white hover:scale-102'
-                          }`}
-                        >
-                          <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              isActive ? 'bg-white/20' : 'bg-slate-800'
-                            }`}>
-                              <item.icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold">{item.title}</div>
-                              <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
-                                {item.description}
-                              </div>
-                            </div>
-                            {isActive && (
-                              <div className="absolute right-0 top-0 bottom-0 w-1 bg-white rounded-l-full" />
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            {/* Auth Section in Sidebar */}
-            {!isAuthenticated && (
-              <div className="mx-3 mt-4">
-                <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-4">
-                  <div className="text-center mb-3">
-                    <div className="text-2xl font-bold text-emerald-400 mb-1">
-                      {lookupsRemaining}/5
-                    </div>
-                    <div className="text-xs text-slate-300">Free Lookups Left</div>
-                  </div>
-                  <Button
-                    onClick={handleSignup}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
-                    size="sm"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Sign Up Free
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {isAuthenticated && currentUser && (
-              <div className="mx-3 mt-4">
-                <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {currentUser.full_name?.[0] || currentUser.email?.[0] || 'U'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-white truncate">
-                        {currentUser.full_name || 'User'}
-                      </div>
-                      <div className="text-xs text-slate-400 truncate">
-                        {currentUser.email}
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleLogout}
-                    variant="outline"
-                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
-                    size="sm"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </div>
-              </div>
-            )}
-          </SidebarContent>
-
-          <SidebarFooter className="border-t border-slate-700 p-4">
-            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                <p className="text-xs font-semibold text-amber-400">Live Data</p>
-              </div>
-              <p className="text-xs text-slate-400">
-                Powered by StatMuse, ESPN & official league sources
-              </p>
+            <div className="hidden sm:block">
+              <div className="text-white font-bold text-sm leading-tight">Sports Wager Helper</div>
             </div>
-          </SidebarFooter>
-        </Sidebar>
+          </Link>
 
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Mobile Header */}
-          <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 px-4 py-3 md:hidden">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors text-white" />
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-bold text-white leading-tight">Sports Wager Saver</h1>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Auth Buttons */}
-              <div className="flex items-center gap-2">
-                {!isAuthenticated ? (
-                  <>
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs px-2 py-1">
-                      {lookupsRemaining}/5 Free
-                    </Badge>
-                    <Button
-                      onClick={handleSignup}
-                      size="sm"
-                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white h-8 px-3 text-xs"
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      Sign Up
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={handleLogout}
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700 h-8 px-3 text-xs"
-                  >
-                    <LogOut className="w-3 h-3 mr-1" />
-                    Logout
-                  </Button>
-                )}
-              </div>
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            {/* User Avatar */}
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl border-2 border-white shadow-lg">
+              {getUserInitial()}
             </div>
-          </header>
 
-          {/* Main content area */}
-          <div className="flex-1 overflow-auto">
-            {children}
+            {/* Hamburger Menu */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-12 h-12 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition-colors"
+            >
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </header>
+
+      {/* Dropdown Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-[73px] right-4 z-50 w-64 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 overflow-hidden"
+          >
+            <div className="py-2">
+              {menuItems.map((item, index) => (
+                <Link
+                  key={index}
+                  to={item.url}
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors ${
+                    location.pathname === item.url ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                  }`}
+                >
+                  <span className="text-2xl">{item.icon}</span>
+                  <span className="font-semibold text-slate-900">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Click outside to close menu */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <main>
+        {children}
+      </main>
+    </div>
   );
 }
