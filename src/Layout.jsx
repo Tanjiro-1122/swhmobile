@@ -28,6 +28,10 @@ export default function Layout({ children, currentPageName }) {
     return "J";
   };
 
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
+
   const menuItems = [
     { label: "Match Analysis", url: createPageUrl("Dashboard"), icon: "🏆" },
     { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
@@ -85,6 +89,21 @@ export default function Layout({ children, currentPageName }) {
             className="absolute top-[73px] right-4 z-50 w-64 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 overflow-hidden"
           >
             <div className="py-2">
+              {/* User Info Section */}
+              {currentUser && (
+                <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+                  <div className="font-bold text-slate-900">{currentUser.full_name || 'User'}</div>
+                  <div className="text-sm text-slate-600">{currentUser.email}</div>
+                  {currentUser.subscription_type === 'vip_lifetime' && (
+                    <div className="mt-2 flex items-center gap-1">
+                      <span className="text-yellow-600">👑</span>
+                      <span className="text-xs font-bold text-yellow-700">VIP Lifetime #{currentUser.vip_member_number}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Menu Items */}
               {menuItems.map((item, index) => (
                 <Link
                   key={index}
@@ -98,6 +117,32 @@ export default function Layout({ children, currentPageName }) {
                   <span className="font-semibold text-slate-900">{item.label}</span>
                 </Link>
               ))}
+
+              {/* Logout Button */}
+              {currentUser && (
+                <div className="border-t border-slate-200 mt-2">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-6 py-4 hover:bg-red-50 transition-colors text-red-600"
+                  >
+                    <span className="text-2xl">🚪</span>
+                    <span className="font-semibold">Logout</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Login Button for non-authenticated users */}
+              {!currentUser && (
+                <div className="border-t border-slate-200 mt-2">
+                  <button
+                    onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+                    className="w-full flex items-center gap-3 px-6 py-4 hover:bg-emerald-50 transition-colors text-emerald-600"
+                  >
+                    <span className="text-2xl">🔐</span>
+                    <span className="font-semibold">Sign In</span>
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
