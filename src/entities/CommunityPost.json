@@ -1,0 +1,64 @@
+{
+  "name": "CommunityPost",
+  "type": "object",
+  "properties": {
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "pick",
+        "analysis",
+        "question",
+        "discussion"
+      ],
+      "description": "Type of post"
+    },
+    "title": {
+      "type": "string",
+      "description": "Post title"
+    },
+    "content": {
+      "type": "string",
+      "description": "Post content"
+    },
+    "sport": {
+      "type": "string",
+      "description": "Related sport"
+    },
+    "match_description": {
+      "type": "string",
+      "description": "Related match if applicable"
+    },
+    "pick": {
+      "type": "string",
+      "description": "The pick if post_type is 'pick'"
+    },
+    "odds": {
+      "type": "string",
+      "description": "Odds for the pick"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Confidence level"
+    },
+    "upvotes": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of upvotes"
+    },
+    "comments_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of comments"
+    }
+  },
+  "required": [
+    "post_type",
+    "title",
+    "content"
+  ]
+}

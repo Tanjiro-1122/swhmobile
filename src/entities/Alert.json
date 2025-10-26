@@ -1,0 +1,43 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "odds_change",
+        "injury_report",
+        "line_movement",
+        "game_start"
+      ],
+      "description": "Type of alert"
+    },
+    "match_description": {
+      "type": "string",
+      "description": "Match or player to track"
+    },
+    "trigger_condition": {
+      "type": "string",
+      "description": "When to trigger (e.g., 'Odds move to +150 or better')"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether alert is active"
+    },
+    "triggered_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times triggered"
+    },
+    "last_triggered": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time alert triggered"
+    }
+  },
+  "required": [
+    "alert_type",
+    "match_description"
+  ]
+}

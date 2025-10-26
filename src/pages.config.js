@@ -6,6 +6,9 @@ import AdminPanel from './pages/AdminPanel';
 import BettingCalculator from './pages/BettingCalculator';
 import ROITracker from './pages/ROITracker';
 import ParlayBuilder from './pages/ParlayBuilder';
+import LiveOdds from './pages/LiveOdds';
+import Alerts from './pages/Alerts';
+import Community from './pages/Community';
 import Layout from './Layout.jsx';
 
 
@@ -18,6 +21,9 @@ export const PAGES = {
     "BettingCalculator": BettingCalculator,
     "ROITracker": ROITracker,
     "ParlayBuilder": ParlayBuilder,
+    "LiveOdds": LiveOdds,
+    "Alerts": Alerts,
+    "Community": Community,
 }
 
 export const pagesConfig = {

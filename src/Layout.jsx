@@ -36,10 +36,15 @@ export default function Layout({ children, currentPageName }) {
     { label: "Match Analysis", url: createPageUrl("Dashboard"), icon: "🏆" },
     { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
     { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
-    { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
+    { label: "Live Odds", url: createPageUrl("LiveOdds"), icon: "💰" },
     { label: "Betting Calculator", url: createPageUrl("BettingCalculator"), icon: "🧮" },
     { label: "ROI Tracker", url: createPageUrl("ROITracker"), icon: "📊" },
     { label: "Parlay Builder", url: createPageUrl("ParlayBuilder"), icon: "🎰" },
+    { label: "Alerts", url: createPageUrl("Alerts"), icon: "🔔" },
+    { label: "Community", url: createPageUrl("Community"), icon: "👥" },
+    { label: "Learning Center", url: createPageUrl("LearningCenter"), icon: "📚" },
+    { label: "Bankroll Manager", url: createPageUrl("BankrollManager"), icon: "💼" },
+    { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
   ];
 
   // Add Admin Panel for admin users

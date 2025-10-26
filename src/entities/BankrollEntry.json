@@ -1,0 +1,39 @@
+{
+  "name": "BankrollEntry",
+  "type": "object",
+  "properties": {
+    "entry_type": {
+      "type": "string",
+      "enum": [
+        "deposit",
+        "withdrawal",
+        "win",
+        "loss"
+      ],
+      "description": "Type of transaction"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Transaction amount"
+    },
+    "current_bankroll": {
+      "type": "number",
+      "description": "Bankroll after transaction"
+    },
+    "description": {
+      "type": "string",
+      "description": "Transaction description"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Transaction date"
+    }
+  },
+  "required": [
+    "entry_type",
+    "amount",
+    "current_bankroll",
+    "date"
+  ]
+}
