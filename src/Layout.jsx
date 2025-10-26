@@ -37,6 +37,9 @@ export default function Layout({ children, currentPageName }) {
     { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
     { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
     { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
+    { label: "Betting Calculator", url: createPageUrl("BettingCalculator"), icon: "🧮" },
+    { label: "ROI Tracker", url: createPageUrl("ROITracker"), icon: "📊" },
+    { label: "Parlay Builder", url: createPageUrl("ParlayBuilder"), icon: "🎰" },
   ];
 
   // Add Admin Panel for admin users

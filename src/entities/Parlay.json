@@ -1,0 +1,66 @@
+{
+  "name": "Parlay",
+  "type": "object",
+  "properties": {
+    "parlay_name": {
+      "type": "string",
+      "description": "User-given name for the parlay"
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "match_description": {
+            "type": "string"
+          },
+          "pick": {
+            "type": "string"
+          },
+          "odds": {
+            "type": "string"
+          },
+          "sport": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Individual bets in the parlay"
+    },
+    "total_odds": {
+      "type": "string",
+      "description": "Combined parlay odds"
+    },
+    "stake_amount": {
+      "type": "number",
+      "description": "Total amount wagered"
+    },
+    "potential_payout": {
+      "type": "number",
+      "description": "Potential return if all legs hit"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "won",
+        "lost"
+      ],
+      "default": "pending"
+    },
+    "legs_won": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of legs that hit"
+    },
+    "legs_total": {
+      "type": "number",
+      "description": "Total number of legs"
+    }
+  },
+  "required": [
+    "parlay_name",
+    "legs",
+    "stake_amount"
+  ]
+}

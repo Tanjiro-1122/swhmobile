@@ -40,7 +40,7 @@ export default function MatchCard({ match, onDelete, index }) {
     >
       <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBfiWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
           
           <div className="relative flex justify-between items-start mb-4">
             <div className="space-y-2">
@@ -127,6 +127,66 @@ export default function MatchCard({ match, onDelete, index }) {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* NEW: Head-to-Head History - Add after prediction */}
+          {match.head_to_head && match.head_to_head.length > 0 && (
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <span className="font-bold text-white">Head-to-Head History</span>
+              </div>
+              <div className="space-y-2">
+                {match.head_to_head.map((game, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-sm bg-slate-900/50 rounded p-2">
+                    <span className="text-slate-300">{game.date}</span>
+                    <span className="font-semibold text-white">{game.result}</span>
+                    <span className="text-slate-400">{game.score}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* NEW: Betting Trends - Add after head-to-head */}
+          {match.betting_trends && (
+            <div className="p-4 bg-orange-500/10 rounded-xl border border-orange-500/30">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-orange-400" />
+                <span className="font-bold text-white">Betting Trends</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-slate-400 mb-1">Public Bets</div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white">{match.home_team}:</span>
+                    <span className="font-bold text-blue-400">{match.betting_trends.public_bets_home}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white">{match.away_team}:</span>
+                    <span className="font-bold text-purple-400">{match.betting_trends.public_bets_away}%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-slate-400 mb-1">Money %</div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white">{match.home_team}:</span>
+                    <span className="font-bold text-blue-400">{match.betting_trends.money_percent_home}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white">{match.away_team}:</span>
+                    <span className="font-bold text-purple-400">{match.betting_trends.money_percent_away}%</span>
+                  </div>
+                </div>
+              </div>
+              {match.betting_trends.sharp_money && (
+                <div className="mt-3 pt-3 border-t border-orange-500/30">
+                  <div className="text-xs text-orange-300">
+                    💡 <strong>Sharp Money:</strong> {match.betting_trends.sharp_money}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

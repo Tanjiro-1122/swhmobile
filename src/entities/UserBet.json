@@ -1,0 +1,73 @@
+{
+  "name": "UserBet",
+  "type": "object",
+  "properties": {
+    "bet_type": {
+      "type": "string",
+      "enum": [
+        "spread",
+        "moneyline",
+        "over_under",
+        "parlay",
+        "prop"
+      ],
+      "description": "Type of bet placed"
+    },
+    "sport": {
+      "type": "string",
+      "description": "Sport category"
+    },
+    "match_description": {
+      "type": "string",
+      "description": "Description of the bet (e.g., Lakers -5.5 vs Celtics)"
+    },
+    "odds": {
+      "type": "string",
+      "description": "Odds at time of bet (e.g., -110, +150)"
+    },
+    "stake_amount": {
+      "type": "number",
+      "description": "Amount wagered"
+    },
+    "potential_payout": {
+      "type": "number",
+      "description": "Potential return including stake"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "won",
+        "lost",
+        "push"
+      ],
+      "default": "pending",
+      "description": "Outcome of the bet"
+    },
+    "actual_payout": {
+      "type": "number",
+      "description": "Actual amount returned if won"
+    },
+    "bet_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the bet was placed"
+    },
+    "game_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the game is/was played"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes about the bet"
+    }
+  },
+  "required": [
+    "bet_type",
+    "match_description",
+    "odds",
+    "stake_amount",
+    "bet_date"
+  ]
+}
