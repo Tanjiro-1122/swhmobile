@@ -67,6 +67,8 @@ export default function Layout({ children, currentPageName }) {
         return null;
       }
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to reduce API calls
+    cacheTime: 10 * 60 * 1000,
   });
 
   const handleSignup = () => {
