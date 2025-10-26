@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,7 @@ import {
   Activity, 
   Award, 
   AlertCircle,
-  Calendar, // Still used for formatDate logic, but not as the main icon for next game section
+  Calendar,
   Zap,
   ThumbsUp,
   ThumbsDown,
@@ -41,9 +40,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
       shots: Target,
       passes: Activity,
       tackles: Activity,
-      // For combined stat "PTS+REB+AST", it will match "points" and use Target, which is acceptable.
-      // If a specific icon is desired for combined stats, it could be added here.
-      combined: TrendingUp // Using TrendingUp for combined stats
+      combined: TrendingUp
     };
     
     for (const key in icons) {
@@ -60,7 +57,6 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     const stats = [];
     const averages = player.season_averages;
     
-    // Calculate combined stat for basketball
     let combinedStat = null;
     if (player.sport?.toLowerCase().includes('basketball') || player.sport?.toLowerCase().includes('nba')) {
       const points = averages.points_per_game || 0;
@@ -215,12 +211,10 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </Card>
           )}
 
-          {/* Recent Form - Enhanced */}
           {player.recent_form && player.recent_form.length > 0 && (
             <PlayerRecentGames recentForm={player.recent_form} />
           )}
 
-          {/* NEW: Next Game Prediction Section */}
           {player.next_game && (
             <Card className="border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
