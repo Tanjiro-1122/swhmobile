@@ -58,88 +58,173 @@ export default function PlayerStats() {
     setError(null);
 
     try {
+      const currentYear = new Date().getFullYear();
+      const nextYear = currentYear + 1;
+      const currentDateString = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
+        prompt: `You are a professional sports statistics analyst with REAL-TIME INTERNET ACCESS. Fetch LIVE, VERIFIED data ONLY.
+
+MANDATORY DATA SOURCES - USE THESE IN ORDER:
+1. StatMuse.com - PRIMARY source for all player statistics
+2. Basketball-Reference.com (NBA/NCAAB)
+3. Pro-Football-Reference.com (NFL)
+4. FBref.com (Soccer/Football)
+5. ESPN.com player pages
+6. Official team websites for injury reports
+7. WhoScored.com (Soccer)
 
 PLAYER SEARCH: "${query}"
-TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
+TODAY: ${currentDateString}
+CURRENT SEASON: ${currentYear}-${nextYear} (Basketball/Hockey)
+CURRENT SEASON: ${currentYear} (Soccer/Football/Baseball)
 
-CRITICAL INSTRUCTIONS:
-1. You have internet access - search StatMuse.com, Basketball-Reference.com, ESPN.com
-2. Search for "${query} stats ${new Date().getFullYear()}"
-3. Get SPORT-SPECIFIC statistics only
-4. DO NOT MIX stats from different sports
+STEP-BY-STEP VERIFICATION PROCESS:
+1. Search StatMuse: "${query} stats ${currentYear}"
+2. Identify sport, team, position
+3. Get CURRENT season averages (verify it's ${currentYear} season)
+4. Pull last 10 game logs with EXACT dates and stats
+5. Check official injury report: "[player name] injury" or "[team] injury report"
+6. Find next scheduled game: "[team name] schedule"
+7. Research opponent's defensive stats against player's position
 
-STEP-BY-STEP:
-1. Identify player's sport, team, position
-2. Get season averages from StatMuse
-3. Get last 5-10 game logs with dates
-4. Check injury report
-5. Find next scheduled game
-6. Make PERFORMANCE PREDICTION for next game
+REQUIRED DATA - ALL FIELDS MUST BE FILLED:
 
-REQUIRED DATA:
+1. PLAYER IDENTIFICATION (from official roster):
+   - Full official name (first + last)
+   - Current team (official team name)
+   - Position (PG, SG, SF, PF, C for basketball; QB, RB, WR, etc for football)
+   - Sport (Basketball/Soccer/Football/Baseball/Hockey)
+   - League (NBA, NFL, Premier League, La Liga, etc.)
+   - Jersey number (if available)
 
-1. PLAYER INFO:
-   - Full name, current team, position, sport, league
-
-2. SEASON AVERAGES (SPORT-SPECIFIC STATS ONLY):
+2. CURRENT SEASON AVERAGES - SPORT-SPECIFIC ONLY:
    
-   FOR BASKETBALL:
-   - PPG, APG, RPG, FG%, 3P%, FT%, SPG, BPG, MPG
-   - DO NOT include goals, shots_per_game, tackles
+   FOR BASKETBALL (NBA, NCAAB):
+   Search: "${query} ${currentYear} stats" on Basketball-Reference
+   - Points Per Game (PPG): current season average
+   - Rebounds Per Game (RPG): total rebounds
+   - Assists Per Game (APG)
+   - Steals Per Game (SPG)
+   - Blocks Per Game (BPG)
+   - Field Goal % (FG%)
+   - Three-Point % (3P%)
+   - Free Throw % (FT%)
+   - Minutes Per Game (MPG)
    
-   FOR SOCCER:
-   - Goals/90min, Assists/90min, Shots/game, Passes/game, Tackles/game
-   - DO NOT include rebounds, blocks, 3P%
+   DO NOT INCLUDE: goals, shots per game, passes
    
-   FOR FOOTBALL (NFL):
-   - Passing yards, Completions, TDs, INTs (QB)
-   - Rushing yards, Carries, TDs (RB)
-   - Receptions, Receiving yards, TDs (WR)
-   - DO NOT include rebounds or assists
+   FOR SOCCER/FOOTBALL:
+   Search: "${query} ${currentYear} stats" on FBref.com
+   - Goals per 90 minutes
+   - Assists per 90 minutes
+   - Shots per game
+   - Shot accuracy %
+   - Passes per game
+   - Pass completion %
+   - Tackles per game
+   - Dribbles completed per game
+   
+   DO NOT INCLUDE: rebounds, field goal %, three-pointers
+   
+   FOR AMERICAN FOOTBALL (NFL):
+   Search: "${query} ${currentYear} stats" on Pro-Football-Reference
+   - Passing Yards Per Game (if QB)
+   - Completion % (if QB)
+   - Touchdowns (passing/rushing/receiving)
+   - Interceptions (if QB)
+   - Rushing Yards Per Game (if RB/QB)
+   - Yards Per Carry (if RB)
+   - Receptions Per Game (if WR/TE/RB)
+   - Receiving Yards Per Game (if WR/TE)
+   
+   DO NOT INCLUDE: rebounds, assists, three-pointers, goals
 
-3. RECENT GAMES (last 5-10 with ACTUAL data):
-   - Exact date (MM/DD/YYYY)
-   - Opponent
-   - Sport-specific stats
-   - Performance rating
+3. RECENT FORM - LAST 10 GAMES (with EXACT data):
+   Search: "${query} game log ${currentYear}" on Basketball-Reference or equivalent
+   
+   For EACH of last 5-10 games provide:
+   - Exact date (MM/DD/YYYY format)
+   - Opponent (full team name)
+   - SPORT-SPECIFIC stats from that specific game:
+     * Basketball: Points, Rebounds, Assists, FG made/attempted
+     * Soccer: Goals, Assists, Shots, Minutes played
+     * Football: Passing/Rushing/Receiving yards, TDs
+   - Performance rating: "Excellent" (above season avg), "Good" (near avg), "Below Average" (below avg)
+   
+   Calculate trend: "Trending up" if last 3 > season avg, "Trending down" if last 3 < season avg
 
-4. INJURY STATUS:
-   - Search "[player name] injury report ${new Date().toLocaleDateString()}"
-   - Status: Healthy/Day-to-Day/Out/Questionable
+4. INJURY STATUS (from official source):
+   Search: "${query} injury report" OR "[team name] injury report ${new Date().toLocaleDateString()}"
+   - Status: "Healthy", "Questionable", "Doubtful", "Out", "Day-to-Day"
+   - If injured: specific injury ("left ankle sprain", "hamstring strain")
+   - Games missed: number of games
+   - Expected return: date or "unknown"
 
-5. NEXT GAME PREDICTION (NEW - REQUIRED):
-   - Opponent
-   - Date
-   - Predicted Performance (sport-specific numbers):
-     * Basketball: "32 PTS, 9 REB, 7 AST" 
-     * Soccer: "2 goals, 1 assist, 5 shots"
-     * Football: "285 passing yards, 2 TDs"
-   - Confidence: High/Medium/Low
-   - Reasoning: Why these numbers based on:
-     * Opponent's defensive stats
-     * Player's history vs this opponent
-     * Recent form trend
-     * Home/away advantage
+5. NEXT GAME PREDICTION (CRITICAL - REQUIRED):
+   Search: "[team name] schedule" to find NEXT game
+   
+   - Opponent: "[Team Name]" (exact official name)
+   - Date: "MM/DD/YYYY HH:MM" (exact from schedule)
+   - Location: "Home" or "Away" or "Neutral"
+   
+   - Predicted Performance (MUST be specific numbers for the sport):
+     * Basketball: "32 PTS, 9 REB, 7 AST, 2 STL" (specific stat line)
+     * Soccer: "2 goals, 1 assist, 6 shots, 4 shots on target"
+     * Football (QB): "285 passing yards, 2 passing TDs, 1 INT, 45 rushing yards"
+     * Football (RB): "95 rushing yards, 1 rushing TD, 3 receptions, 25 receiving yards"
+     * Football (WR): "7 receptions, 95 receiving yards, 1 TD"
+   
+   - Confidence: "High" (player hot, favorable matchup), "Medium" (neutral), "Low" (cold streak or tough matchup)
+   
+   - Reasoning (3-4 detailed sentences with STATS):
+     Example for basketball: "LeBron averaging 32 PPG over last 5 games (career-high pace). Opponent allows 28 PPG to opposing small forwards (ranked 25th in league). Lakers playing at home where LeBron averages 4 more PPG than road games. Last time vs this opponent (2 weeks ago), LeBron had 35 PTS, 10 REB, 8 AST."
+     
+     Base prediction on:
+     * Player's recent form (last 5-10 games)
+     * Opponent's defensive stats vs player's position
+     * Home vs Away splits
+     * Head-to-head history vs this opponent
+     * Any relevant injuries or rest
 
-6. BETTING INSIGHTS:
-   - Over/Under line (sport-appropriate)
-   - Probability to score/perform
-   - Hot streak: true if last 3 games > season average
+6. BETTING INSIGHTS (for betting context):
+   - Over/Under Line: prop bet line if available (e.g., "28.5 points")
+   - Probability to Score/Perform: % chance based on season data
+   - Hot Streak: true/false (true if last 3 games > season average)
+   - Consistency Rating: "Very Consistent", "Consistent", "Inconsistent", "Very Inconsistent"
+   - Best Bet: "Over on points" or "Under on rebounds" etc
 
-7. ANALYSIS:
-   - Strengths (3-5 statistical strengths)
-   - Weaknesses (2-3 areas for improvement)
+7. CAREER HIGHLIGHTS (recent achievements):
+   - All-Star selections
+   - Awards (MVP, Rookie of Year, etc.)
+   - Career high stats
+   - Notable records
 
-VALIDATION:
-- Stats MUST match the sport
-- No mixing sports stats
-- Predictions MUST be specific numbers
-- All from ${new Date().getFullYear()} season
+8. STRENGTHS (3-5 statistical strengths):
+   Example: "Elite three-point shooter (42% from 3, top 5 in league)"
+   Example: "Exceptional passer with 9 APG (league leader)"
 
-Return valid JSON with sport-appropriate stats only.`,
+9. WEAKNESSES (2-3 areas for improvement):
+   Example: "Free throw shooting needs work (68%, below league avg)"
+   Example: "Turnover prone (3.5 TO per game)"
+
+VALIDATION - VERIFY BEFORE RETURNING:
+✓ All season averages are from ${currentYear} season
+✓ Stats match the player's sport (no mixing)
+✓ Recent games have actual dates and scores
+✓ Next game exists on official schedule
+✓ Prediction is specific numbers, not ranges
+✓ Injury status is current (within 24 hours)
+✓ All percentages and averages are realistic
+
+FAILURE CONDITIONS:
+If player not found OR stats unavailable:
+- Set predicted_performance to "Unable to find current stats for [player name]. Try using player's full name and current team."
+- Still populate other fields with "N/A" or null as appropriate
+
+CRITICAL: Return only stats that match the sport. Basketball players should NEVER have "goals per game" or "tackles". Soccer players should NEVER have "rebounds" or "three-point percentage".
+
+Return complete JSON with ALL fields using LIVE VERIFIED DATA from ${currentYear} season.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -149,25 +234,26 @@ Return valid JSON with sport-appropriate stats only.`,
             team: { type: "string" },
             position: { type: "string" },
             league: { type: "string" },
+            jersey_number: { type: "string", nullable: true }, // Added nullable as it might not always be available
             season_averages: {
               type: "object",
               properties: {
-                points_per_game: { type: "number" },
-                assists_per_game: { type: "number" },
-                rebounds_per_game: { type: "number" },
-                steals_per_game: { type: "number" },
-                blocks_per_game: { type: "number" },
-                field_goal_percentage: { type: "number" },
-                three_point_percentage: { type: "number" },
-                free_throw_percentage: { type: "number" },
-                goals_per_game: { type: "number" },
-                shots_per_game: { type: "number" },
-                passes_per_game: { type: "number" },
-                tackles_per_game: { type: "number" },
-                passing_yards_per_game: { type: "number" },
-                rushing_yards_per_game: { type: "number" },
-                receptions_per_game: { type: "number" },
-                minutes_per_game: { type: "number" }
+                points_per_game: { type: "number", nullable: true },
+                assists_per_game: { type: "number", nullable: true },
+                rebounds_per_game: { type: "number", nullable: true },
+                steals_per_game: { type: "number", nullable: true },
+                blocks_per_game: { type: "number", nullable: true },
+                field_goal_percentage: { type: "number", nullable: true },
+                three_point_percentage: { type: "number", nullable: true },
+                free_throw_percentage: { type: "number", nullable: true },
+                goals_per_game: { type: "number", nullable: true },
+                shots_per_game: { type: "number", nullable: true },
+                passes_per_game: { type: "number", nullable: true },
+                tackles_per_game: { type: "number", nullable: true },
+                passing_yards_per_game: { type: "number", nullable: true },
+                rushing_yards_per_game: { type: "number", nullable: true },
+                receptions_per_game: { type: "number", nullable: true },
+                minutes_per_game: { type: "number", nullable: true }
               }
             },
             recent_form: {
@@ -177,28 +263,38 @@ Return valid JSON with sport-appropriate stats only.`,
                 properties: {
                   date: { type: "string" },
                   opponent: { type: "string" },
-                  points: { type: "number" },
-                  assists: { type: "number" },
-                  rebounds: { type: "number" },
-                  goals: { type: "number" },
-                  passing_yards: { type: "number" },
-                  rushing_yards: { type: "number" },
-                  performance_rating: { type: "string" }
-                }
+                  points: { type: "number", nullable: true },
+                  assists: { type: "number", nullable: true },
+                  rebounds: { type: "number", nullable: true },
+                  goals: { type: "number", nullable: true },
+                  passing_yards: { type: "number", nullable: true },
+                  rushing_yards: { type: "number", nullable: true },
+                  performance_rating: { type: "string", nullable: true }
+                },
+                required: ["date", "opponent"] // Date and opponent should always be available for a game.
               }
             },
-            injury_status: { type: "string" },
+            injury_status: {
+              type: "object",
+              properties: {
+                status: { type: "string" }, // Healthy, Questionable, Doubtful, Out, Day-to-Day
+                specific_injury: { type: "string", nullable: true },
+                games_missed: { type: "number", nullable: true },
+                expected_return: { type: "string", nullable: true } // "MM/DD/YYYY" or "unknown"
+              },
+              required: ["status"]
+            },
             next_game: {
               type: "object",
               properties: {
                 opponent: { type: "string" },
-                date: { type: "string" },
-                location: { type: "string" },
+                date: { type: "string" }, // MM/DD/YYYY HH:MM
+                location: { type: "string" }, // Home, Away, Neutral
                 predicted_performance: { type: "string" },
-                confidence: { type: "string" },
+                confidence: { type: "string" }, // High, Medium, Low
                 reasoning: { type: "string" }
               },
-              required: ["opponent", "predicted_performance", "confidence", "reasoning"]
+              required: ["opponent", "date", "location", "predicted_performance", "confidence", "reasoning"]
             },
             career_highlights: {
               type: "array",
@@ -207,10 +303,11 @@ Return valid JSON with sport-appropriate stats only.`,
             betting_insights: {
               type: "object",
               properties: {
-                over_under_points: { type: "number" },
-                probability_to_score: { type: "number" },
-                hot_streak: { type: "boolean" },
-                consistency_rating: { type: "string" }
+                over_under_line: { type: "string", nullable: true }, // Changed to string for flexibility (e.g., "28.5 points")
+                probability_to_score: { type: "number", nullable: true },
+                hot_streak: { type: "boolean", nullable: true },
+                consistency_rating: { type: "string", nullable: true },
+                best_bet: { type: "string", nullable: true }
               }
             },
             strengths: {
@@ -220,9 +317,18 @@ Return valid JSON with sport-appropriate stats only.`,
             weaknesses: {
               type: "array",
               items: { type: "string" }
+            },
+            data_sources: {
+              type: "object",
+              properties: {
+                stats_source: { type: "string", nullable: true },
+                injury_source: { type: "string", nullable: true },
+                schedule_source: { type: "string", nullable: true }
+              },
+              required: [] // Not strictly required, but good to have if LLM provides.
             }
           },
-          required: ["player_name", "sport", "team", "next_game"]
+          required: ["player_name", "sport", "team", "position", "league", "injury_status", "next_game", "career_highlights", "betting_insights", "strengths", "weaknesses"]
         }
       });
 

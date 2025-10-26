@@ -63,64 +63,156 @@ export default function Dashboard() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports analytics AI with INTERNET ACCESS. You MUST use real-time data from the web.
+        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. You MUST fetch LIVE, CURRENT data.
+
+CRITICAL DATA SOURCES - YOU MUST USE THESE:
+1. StatMuse.com (statmuse.com) - PRIMARY source for all statistics
+2. ESPN.com - Match schedules, team records, injury reports
+3. Official League Sites: NBA.com, NFL.com, PremierLeague.com, MLB.com
+4. Basketball-Reference.com or Pro-Football-Reference.com for historical data
+5. TheScore.com or CBS Sports for live updates
 
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CURRENT SEASON (e.g., ${new Date().getFullYear()}-${new Date().getFullYear() + 1} for NBA/NHL, ${new Date().getFullYear()} for MLB/NFL/Soccer): Use the most recent completed or ongoing season.
 
-CRITICAL INSTRUCTIONS:
-1. You have internet access - search StatMuse.com, ESPN.com, official league websites
-2. Get SPORT-SPECIFIC statistics only - DO NOT MIX STATS
-3. Include INJURY REPORTS and WEATHER IMPACT
+VERIFICATION PROCESS - FOLLOW THESE STEPS:
+1. Search "${query} schedule ${new Date().toLocaleDateString()}" on ESPN.com
+2. Verify match exists and get EXACT date/time
+3. Search "[team name] stats ${new Date().getFullYear()}" on StatMuse.com
+4. Cross-reference with official league website
+5. Check injury report: "[team] injury report today"
+6. Get weather: "[stadium/city] weather [game date]" if outdoor sport
 
-REQUIRED SECTIONS:
+REQUIRED DATA WITH SOURCES:
 
-1. MATCH IDENTIFICATION:
-   - Sport, League, Teams, Date/Time
+1. MATCH IDENTIFICATION (verify from ESPN schedule):
+   - Sport (exact: NBA, NFL, MLB, Premier League, etc.)
+   - League (official full name)
+   - Home Team (OFFICIAL name from league website)
+   - Away Team (OFFICIAL name from league website)
+   - Match Date/Time (exact from schedule)
+   - Venue/Stadium
 
-2. WIN PROBABILITIES & PREDICTION:
-   - Home/Away/Draw probabilities
-   - Predicted Winner
-   - Predicted Score (specific numbers)
-   - Win Margin
-   - Confidence Level (High/Medium/Low)
-   - Detailed Reasoning (2-3 sentences with stats)
-
-3. KEY FACTORS (4-5 points with stats)
-
-4. KEY PLAYERS (3-4 per team):
-   SPORT-SPECIFIC STATS ONLY:
-   - Basketball: PPG, APG, RPG, FG%, 3P% + predicted "28 PTS, 8 REB, 6 AST"
-   - Soccer: Goals/game, assists, shots + predicted "2 goals, 1 assist"
-   - Football: Passing/Rushing yards, TDs + predicted "285 passing yards, 2 TDs"
+2. CURRENT SEASON RECORDS (from StatMuse + League standings):
+   Home Team Record: X-Y (from standings page)
+   Away Team Record: X-Y (from standings page)
    
-   DO NOT MIX - Basketball players should NOT have "goals"
+3. WIN PROBABILITIES (calculate from multiple factors):
+   Base calculation on:
+   - Current season win % (from standings)
+   - Last 10 games record (from recent results)
+   - Head-to-head last 3 seasons (from StatMuse)
+   - Home court advantage (~60% for home team baseline)
+   - Key player injuries (reduce win % by 5-15% per star player out)
+   
+   Home Win: X%
+   Away Win: Y%
+   Draw: Z% (ONLY for soccer/hockey)
+   
+   IMPORTANT: Must total exactly 100%
 
-5. INJURY REPORT (REQUIRED):
-   Search "[team name] injury report ${new Date().toLocaleDateString()}"
+4. DETAILED MATCH PREDICTION (REQUIRED):
+   - Predicted Winner: "[Team Name]" (the team most likely to win)
+   - Predicted Score: "115-108" (specific final score based on averages)
+   - Win Margin: "+7 points" or "2 goals" (difference)
+   - Confidence: "High" (80%+), "Medium" (65-79%), or "Low" (<65%)
+   - Reasoning: 3-4 sentences with SPECIFIC STATS:
+     Example: "Lakers have won 8 of last 10 home games (80% win rate) averaging 118 PPG. Celtics are 2-8 on road trips averaging 105 PPG. Lakers star players are healthy while Celtics missing starting PG (team averages 8 fewer assists without him). Historical H2H shows Lakers won last 4 meetings by average margin of 9 points."
+
+5. KEY FACTORS (5-7 bullet points with STATISTICS):
+   Example format:
+   - "Home team won 12 of last 15 games (80% win rate since Jan 1)"
+   - "Away team averaging 118 PPG vs opponent allowing 112 PPG (6-point offensive advantage)"
+   - "Home team's star player averaging 32 PPG in last 5 games (career high)"
+   - "Weather forecast: 45°F with 15mph winds (affects passing game in NFL)"
+   - "Away team on 3rd road game in 4 days (fatigue factor)"
+
+6. KEY PLAYERS (3-4 per team) - SPORT-SPECIFIC STATS ONLY:
+   
+   FOR BASKETBALL (NBA/NCAAB):
+   Search: "[player name] stats ${new Date().getFullYear()}" on StatMuse
+   - Season averages: PPG, RPG, APG, FG%, 3P%, MPG
+   - Last 5 games: actual stats from game logs
+   - PREDICTED performance for THIS game: "32 PTS, 9 REB, 7 AST"
+   - Recent form: "Averaging 28 PPG in last 5 games"
+   - Injury status: Check official injury report
+   
+   FOR SOCCER:
+   Search: "[player name] stats ${new Date().getFullYear()}" on FBref.com or WhoScored
+   - Season averages: Goals/90min, Assists/90min, Shots/game
+   - Last 5 games: goals, assists from match logs
+   - PREDICTED performance: "2 goals, 1 assist, 6 shots"
+   - Recent form: "3 goals in last 3 matches"
+   
+   FOR AMERICAN FOOTBALL (NFL):
+   Search: "[player name] stats ${new Date().getFullYear()}" on Pro-Football-Reference
+   - QB: Pass yards/game, TDs, INTs, Completion %
+   - RB: Rush yards/game, YPC, TDs
+   - WR: Receptions/game, Yards, TDs
+   - PREDICTED performance: "285 passing yards, 2 TDs, 1 INT"
+   
+   CRITICAL: DO NOT MIX STATS - Basketball players should NEVER have "goals", Soccer players should NEVER have "rebounds" or "3-pointers"
+
+7. INJURY REPORT (REQUIRED - from official team/league source):
+   Search: "[team name] injury report ${new Date().toLocaleDateString()}"
    For EACH injured player:
-   - Player name
+   - Player name (exact)
    - Team
-   - Injury (e.g., "ankle sprain")
-   - Status: Out/Questionable/Day-to-Day
-   - Impact on game: "High" if star player, "Medium" if role player, "Low" if bench
+   - Injury description: "ankle sprain", "knee soreness"
+   - Status: "Out", "Questionable", "Doubtful", "Day-to-Day"
+   - Impact on team: "High" if star player (>20 PPG), "Medium" if starter, "Low" if bench
+   - Games missed: number
 
-6. WEATHER IMPACT (REQUIRED for outdoor sports):
-   Search "[venue name] weather forecast [game date]"
-   - Conditions: Clear/Rainy/Snowy/Windy
-   - Temperature: degrees + wind chill
-   - Wind Speed: mph
-   - Impact Rating: High/Medium/Low/None
-   - Betting Impact: How it affects totals/spread
+8. WEATHER IMPACT (REQUIRED for outdoor sports - NFL, MLB, Soccer):
+   Search: "[stadium name] weather forecast [game date]" on Weather.com
+   - Conditions: "Clear", "Rainy", "Snowy", "Overcast", "Windy"
+   - Temperature: "45°F (feels like 38°F with wind chill)"
+   - Wind Speed: "15 mph sustained, gusts to 25 mph"
+   - Precipitation: "40% chance of rain in 2nd half"
+   - Impact Rating: "High", "Medium", "Low", "None"
+   - Betting Impact: "Heavy wind reduces passing game efficiency, favor Under on total points"
+   
+   For indoor sports (NBA, NHL indoor arenas): Set to null or "N/A - Indoor venue"
 
-7. BETTING MARKETS (sport-appropriate totals)
+9. HEAD-TO-HEAD HISTORY (from StatMuse or Basketball-Reference):
+   Search: "[home team] vs [away team] history"
+   Last 5 meetings (with dates and scores):
+   - "11/15/2024: Lakers 118 - Celtics 112 (Home win)"
+   - Include who won, final score, location
 
-VALIDATION:
-- Stats MUST match the sport
-- All sections MUST be populated
-- Use real current-season data
+10. BETTING MARKETS (sport-appropriate):
+    Over/Under Total:
+    - Line: Calculate from season averages (Home PPG + Away PPG ± 5)
+    - Over probability: X%
+    - Under probability: Y%
+    
+    Spread:
+    - Predicted spread based on win probability difference
+    - Cover probability for favorite
 
-Return valid JSON.`,
+VALIDATION CHECKLIST:
+✓ All stats from CURRENT ${new Date().getFullYear()} season only
+✓ Team names match official league records
+✓ Player stats match the sport (no mixing)
+✓ Injury report is from TODAY'S date
+✓ Weather is for GAME DAY (if applicable)
+✓ Predictions include specific numbers, not ranges
+✓ Probabilities total 100%
+✓ All "predicted performance" fields are sport-appropriate
+
+DATA VERIFICATION:
+Before returning, verify:
+1. Match date exists on ESPN schedule
+2. Team records match official standings
+3. Player stats are current season averages
+4. Injury report is within last 24 hours
+5. Weather forecast is for correct date/time
+
+FAILURE CONDITIONS:
+If match not found: Return reasoning in prediction.reasoning: "Unable to find scheduled match for [query]. Please verify team names and date. Try searching with full team names and league (e.g., 'Los Angeles Lakers vs Boston Celtics NBA')."
+
+Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -130,6 +222,7 @@ Return valid JSON.`,
             home_team: { type: "string" },
             away_team: { type: "string" },
             match_date: { type: "string" },
+            venue: { type: "string" },
             home_win_probability: { type: "number" },
             away_win_probability: { type: "number" },
             draw_probability: { type: "number" },
@@ -156,18 +249,47 @@ Return valid JSON.`,
                   name: { type: "string" },
                   team: { type: "string" },
                   position: { type: "string" },
+                  predicted_points: { type: "number" },
+                  predicted_assists: { type: "number" },
+                  predicted_rebounds: { type: "number" },
+                  predicted_goals: { type: "number" },
+                  predicted_passing_yards: { type: "number" },
+                  predicted_rushing_yards: { type: "number" },
+                  probability_to_score: { type: "number" },
                   recent_form: { type: "string" },
                   injury_status: { type: "string" },
                   predicted_performance: { type: "string" }
                 }
               }
             },
+            head_to_head: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  date: { type: "string" },
+                  result: { type: "string" },
+                  score: { type: "string" }
+                }
+              }
+            },
             betting_markets: {
               type: "object",
               properties: {
-                over_under: { type: "object" },
-                both_teams_score: { type: "object" },
-                first_to_score: { type: "object" }
+                over_under: { type: "object", properties: {
+                  line: { type: "number" },
+                  over_probability: { type: "number" },
+                  under_probability: { type: "number" }
+                }},
+                spread: {
+                  type: "object",
+                  properties: {
+                    line: { type: "string" }, // e.g. "-7.5"
+                    cover_probability: { type: "number" }
+                  }
+                },
+                both_teams_score: { type: "object" }, // Left as generic object as no specific properties defined in prompt
+                first_to_score: { type: "object" } // Left as generic object as no specific properties defined in prompt
               }
             },
             injuries: {
@@ -179,7 +301,8 @@ Return valid JSON.`,
                   team: { type: "string" },
                   injury: { type: "string" },
                   status: { type: "string" },
-                  impact: { type: "string" }
+                  impact: { type: "string" },
+                  games_missed: { type: "number" }
                 },
                 required: ["player_name", "team", "status"]
               }
@@ -190,12 +313,41 @@ Return valid JSON.`,
                 conditions: { type: "string" },
                 temperature: { type: "string" },
                 wind_speed: { type: "string" },
+                precipitation: { type: "string" },
                 impact_rating: { type: "string" },
                 betting_impact: { type: "string" }
               }
+            },
+            data_sources: {
+              type: "object",
+              properties: {
+                stats_source: { type: "string" },
+                schedule_source: { type: "string" },
+                injury_source: { type: "string" },
+                weather_source: { type: "string" },
+                head_to_head_source: { type: "string" },
+                betting_market_source: { type: "string" }
+              }
             }
           },
-          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "prediction", "injuries"]
+          required: [
+            "sport",
+            "league",
+            "home_team",
+            "away_team",
+            "match_date",
+            "venue",
+            "home_win_probability",
+            "away_win_probability",
+            "prediction",
+            "key_factors",
+            "key_players",
+            "injuries",
+            "weather_impact",
+            "head_to_head",
+            "betting_markets",
+            "data_sources"
+          ]
         }
       });
 

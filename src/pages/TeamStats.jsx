@@ -59,77 +59,175 @@ export default function TeamStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
+        prompt: `You are a professional sports statistics analyst with REAL-TIME INTERNET ACCESS. Fetch LIVE, CURRENT, VERIFIED data.
+
+MANDATORY DATA SOURCES - USE IN THIS ORDER:
+1. StatMuse.com (statmuse.com) - PRIMARY for all team statistics
+2. ESPN.com - Team pages, standings, schedules
+3. Official League Websites: NBA.com, NFL.com, PremierLeague.com, MLB.com
+4. Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
+5. TeamRankings.com for advanced analytics
+6. Official team websites for injury reports
 
 TEAM SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
+CURRENT SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1} (Basketball/Hockey)
+CURRENT SEASON: ${new Date().getFullYear()} (Soccer/Football/Baseball)
 
-CRITICAL: You have internet access. You MUST search these sources:
-1. StatMuse.com - Primary source for team statistics
-2. ESPN.com team pages
-3. Official league websites (NBA.com, NFL.com, PremierLeague.com)
-4. Basketball-Reference.com or Pro-Football-Reference.com
-5. Team official websites for roster and injury reports
+VERIFICATION PROCESS - FOLLOW THESE STEPS:
+1. Search: "${query} ${new Date().getFullYear()} stats" on StatMuse.com
+2. Verify team exists and get official full name from league website
+3. Get current standings: "${query} standings ${new Date().getFullYear()}"
+4. Pull last 10 game results: "${query} schedule results"
+5. Get roster from official team website
+6. Check injury report: "${query} injury report ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}"
+7. Find next game: "${query} schedule upcoming"
 
-STEP-BY-STEP PROCESS:
-1. Identify the team's full official name and league
-2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
-3. Get current season record (wins, losses, draws)
-4. Get season averages (PPG, defensive stats, etc.)
-5. Get last 5 game results with dates, opponents, scores
-6. Check official injury report from team website
-7. Find next scheduled game
+REQUIRED DATA - ALL FIELDS MUST BE COMPLETE:
 
-REQUIRED DATA TO EXTRACT:
+1. TEAM IDENTIFICATION (verify from official league):
+   - Full Official Name (e.g., "Los Angeles Lakers", NOT just "Lakers")
+   - Sport (Basketball, Soccer, Football, Baseball, Hockey)
+   - League (NBA, NFL, Premier League, La Liga, etc.)
+   - City/Location
+   - Conference/Division (if applicable)
 
-1. TEAM INFO (verify from official league):
-   - Full official name (e.g., "Los Angeles Lakers" not just "Lakers")
-   - Sport and league
-   - Current season record (W-L-D with exact numbers from standings)
-   - Win percentage
-   - Recent form: last 5 games in W/L format (e.g., "W-W-L-W-L")
+2. CURRENT SEASON RECORD (from official standings page):
+   Search: "${query} standings ${new Date().getFullYear()}"
+   - Wins: exact number from current standings
+   - Losses: exact number from current standings
+   - Draws: (only for soccer/hockey, exact from standings)
+   - Win Percentage: calculate (Wins / Total Games)
+   - Current Ranking: position in division/conference/league
+   - Streak: "W3" (won last 3), "L2" (lost last 2), etc.
 
-2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
-   For Basketball: PPG, Opp PPG, FG%, 3P%, APG, RPG, TO/game
-   For Soccer: Goals/game, Goals allowed, Possession%, Shots, Passing accuracy
-   For Football: Points/game, Points allowed, Total yards, Turnovers
+3. SEASON AVERAGES - SPORT-SPECIFIC ONLY:
+   
+   FOR BASKETBALL (NBA, NCAAB):
+   Search: "${query} stats ${new Date().getFullYear()}" on Basketball-Reference
+   - Points Per Game (PPG): team average
+   - Points Allowed Per Game: opponent average
+   - Field Goal % (FG%)
+   - Three-Point % (3P%)
+   - Assists Per Game (APG)
+   - Rebounds Per Game (RPG)
+   - Turnovers Per Game
+   - Blocks Per Game
+   - Steals Per Game
+   
+   DO NOT INCLUDE: goals, possession %, passes
+   
+   FOR SOCCER/FOOTBALL:
+   Search: "${query} stats ${new Date().getFullYear()}" on WhoScored or FBref
+   - Goals Per Game
+   - Goals Allowed Per Game
+   - Possession % (average)
+   - Shots Per Game
+   - Shots Allowed Per Game
+   - Pass Completion % (accuracy)
+   - Tackles Per Game
+   - Clean Sheets (games without conceding)
+   
+   DO NOT INCLUDE: rebounds, field goal %, three-point %
+   
+   FOR AMERICAN FOOTBALL (NFL):
+   Search: "${query} stats ${new Date().getFullYear()}" on Pro-Football-Reference
+   - Points Per Game
+   - Points Allowed Per Game
+   - Total Yards Per Game (offense)
+   - Yards Allowed Per Game (defense)
+   - Passing Yards Per Game
+   - Rushing Yards Per Game
+   - Turnovers (giveaways/game)
+   - Takeaways Per Game
+   - Third Down Conversion %
+   - Red Zone Scoring %
+   
+   DO NOT INCLUDE: assists, rebounds, possession %
 
-3. LAST 5 GAMES (from official game logs):
-   For EACH game provide:
+4. LAST 10 GAMES (with EXACT data from game logs):
+   Search: "${query} schedule results" on ESPN or team website
+   
+   For EACH of last 5-10 games provide:
    - Exact date (MM/DD/YYYY)
-   - Opponent (full team name)
+   - Opponent (full official team name)
    - Result: "W" or "L" or "D"
-   - Score (e.g., "115-108")
-   - Home or away
-   - Key stats from that specific game
+   - Score: "115-108" (team score first)
+   - Home/Away: "Home" or "Away"
+   - Team Points: their score
+   - Opponent Points: opponent's score
+   - Key Stats: {} object with 2-3 notable stats from that game
+   
+   Example:
+   {
+     "date": "12/15/2024",
+     "opponent": "Boston Celtics",
+     "result": "W",
+     "score": "118-112",
+     "home_away": "Home",
+     "team_points": 118,
+     "opponent_points": 112,
+     "key_stats": {"field_goal_pct": "52%", "three_pointers": 15, "rebounds": 48}
+   }
 
-4. KEY PLAYERS (5-7 from current roster):
-   - Search team's official roster
-   - List player names and positions
-   - Verify they're currently active
+5. FORM STRING (from last 10 games):
+   Create string like "W-W-L-W-W-L-W-W-W-L" based on results
+   - W = Win
+   - L = Loss
+   - D = Draw (soccer only)
+   Most recent game on the right
 
-5. INJURIES (check TODAY'S injury report):
-   - Search "[team name] injury report [today's date]"
-   - For each injured player: name, injury, status (Out/Day-to-Day/Questionable)
+6. KEY PLAYERS (5-7 from current roster):
+   Search: "${query} roster ${new Date().getFullYear()}"
+   - List players by: "[First Last] ([Position])"
+   - Include starters and key bench players
+   - Example: "LeBron James (SF)", "Anthony Davis (PF)"
 
-6. NEXT GAME (from team schedule):
-   - Opponent
-   - Date and time
-   - Home or away
-   - Win/loss prediction with brief reasoning
+7. INJURIES (TODAY'S official injury report):
+   Search: "${query} injury report ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}"
+   For EACH injured player:
+   - Player Name (full name)
+   - Injury: specific injury ("ankle sprain", "knee soreness")
+   - Status: "Out", "Doubtful", "Questionable", "Day-to-Day"
+   - Games Missed: number
+   - Expected Return: date or "TBD"
 
-7. ANALYSIS:
-   - Strengths: 3-5 statistical strengths (e.g., "#1 ranked defense allowing 98 PPG")
-   - Weaknesses: 2-3 statistical weaknesses (e.g., "28th in 3-point shooting at 32%")
+8. NEXT GAME PREDICTION:
+   Search: "${query} schedule" for upcoming game
+   - Opponent: "[Team Name]" (exact official name)
+   - Date: "MM/DD/YYYY HH:MM" (exact from schedule)
+   - Location: "Home" or "Away"
+   - Prediction: 2-3 sentences predicting outcome with stats:
+     Example: "Lakers favored at home (12-3 home record) averaging 118 PPG. Opponent struggling on road (4-10) allowing 115 PPG. Key matchup: Lakers' elite defense (ranked 3rd, 105 PPG allowed) vs opponent's inconsistent offense. Prediction: Lakers win by 8-12 points."
 
-VALIDATION:
-- All stats must be from ${new Date().getFullYear()} season
-- Last 5 games must have actual dates and scores from game logs
-- Win-loss record must match current standings
-- If team not found, indicate in the response
+9. STRENGTHS (3-5 statistical strengths):
+   Example: "#1 ranked defense allowing only 102 PPG (league average 112)"
+   Example: "Elite three-point shooting at 39% (2nd in league)"
+   Base on rankings and stats vs league average
 
-FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
+10. WEAKNESSES (2-3 statistical weaknesses):
+    Example: "Turnover-prone with 16 TO/game (28th in league, avg is 13)"
+    Example: "Poor rebounding (42 RPG, ranked 25th)"
+    Base on rankings and stats vs league average
+
+VALIDATION - VERIFY BEFORE RETURNING:
+✓ Team name is OFFICIAL full name from league
+✓ Win-loss record matches current standings exactly
+✓ Last 5-10 games have actual dates and real scores
+✓ All stats are from ${new Date().getFullYear()} season
+✓ Stats match the sport (no mixing)
+✓ Injury report is current (within 24 hours)
+✓ Next game exists on official schedule
+✓ Form string matches last game results
+
+FAILURE CONDITIONS:
+If team not found:
+- Return error in prediction field explaining issue
+- Suggest using full official team name with league
+
+CRITICAL: Stats must match the sport. Basketball teams should NEVER have "goals per game" or "possession %". Soccer teams should NEVER have "rebounds" or "three-point %".
+
+Return complete JSON with ALL fields using LIVE VERIFIED DATA from ${new Date().getFullYear()} season.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -137,13 +235,16 @@ FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
             team_name: { type: "string" },
             sport: { type: "string" },
             league: { type: "string" },
+            city: { type: "string" },
             current_record: {
               type: "object",
               properties: {
                 wins: { type: "number" },
                 losses: { type: "number" },
                 draws: { type: "number" },
-                win_percentage: { type: "number" }
+                win_percentage: { type: "number" },
+                current_ranking: { type: "string" },
+                streak: { type: "string" }
               }
             },
             season_averages: {
@@ -161,10 +262,21 @@ FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
                 three_point_percentage: { type: "number" },
                 assists_per_game: { type: "number" },
                 rebounds_per_game: { type: "number" },
-                turnovers_per_game: { type: "number" }
+                turnovers_per_game: { type: "number" },
+                blocks_per_game: { type: "number" }, // Added for Basketball
+                steals_per_game: { type: "number" }, // Added for Basketball
+                tackles_per_game: { type: "number" }, // Added for Soccer
+                clean_sheets: { type: "number" }, // Added for Soccer
+                total_yards_per_game: { type: "number" }, // Added for American Football
+                yards_allowed_per_game: { type: "number" }, // Added for American Football
+                passing_yards_per_game: { type: "number" }, // Added for American Football
+                rushing_yards_per_game: { type: "number" }, // Added for American Football
+                takeaways_per_game: { type: "number" }, // Added for American Football
+                third_down_conversion_percentage: { type: "number" }, // Added for American Football
+                red_zone_scoring_percentage: { type: "number" } // Added for American Football
               }
             },
-            last_five_games: {
+            last_five_games: { // Naming retained as per existing schema item, though prompt asks for more
               type: "array",
               items: {
                 type: "object",
@@ -200,7 +312,9 @@ FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
                 properties: {
                   player_name: { type: "string" },
                   injury: { type: "string" },
-                  status: { type: "string" }
+                  status: { type: "string" },
+                  games_missed: { type: "number" }, // Added
+                  expected_return: { type: "string" } // Added
                 }
               }
             },
@@ -212,9 +326,18 @@ FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
                 location: { type: "string" },
                 prediction: { type: "string" }
               }
+            },
+            data_sources: { // Added
+              type: "object",
+              properties: {
+                stats_source: { type: "string" },
+                standings_source: { type: "string" },
+                injury_source: { type: "string" },
+                schedule_source: { type: "string" }
+              }
             }
           },
-          required: ["team_name", "sport"]
+          required: ["team_name", "sport", "current_record"]
         }
       });
 
