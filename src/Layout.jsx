@@ -41,14 +41,14 @@ export default function Layout({ children, currentPageName }) {
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
-          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
+          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f277a0cdb_IMG_2141.jpg"
-              alt="Sports Wager Helper"
-              className="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-lg"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/b28834497_IMG_2146.jpeg"
+              alt="Sports Wager Saver"
+              className="w-14 h-14 rounded-xl object-cover shadow-lg"
             />
             <div className="hidden sm:block">
-              <div className="text-white font-bold text-sm leading-tight">Sports Wager Helper</div>
+              <div className="text-white font-bold text-base leading-tight">Sports Wager Saver</div>
             </div>
           </Link>
 
