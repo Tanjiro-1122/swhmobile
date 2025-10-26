@@ -13,7 +13,7 @@ export default function LearningCenter() {
     {
       id: 1,
       title: "Understanding Betting Odds",
-      icon: DollarSign,
+      icon: "DollarSign",
       difficulty: "Beginner",
       duration: "5 min",
       content: `# Understanding Betting Odds
@@ -44,7 +44,7 @@ For underdogs: (odds / 100) × stake = profit`
     {
       id: 2,
       title: "Types of Bets Explained",
-      icon: Target,
+      icon: "Target",
       difficulty: "Beginner",
       duration: "8 min",
       content: `# Types of Bets Explained
@@ -80,7 +80,7 @@ Combine multiple bets for bigger payout.
     {
       id: 3,
       title: "Bankroll Management Basics",
-      icon: Shield,
+      icon: "Shield",
       difficulty: "Beginner",
       duration: "10 min",
       content: `# Bankroll Management Basics
@@ -120,37 +120,37 @@ Track every bet:
     {
       id: 4,
       title: "Reading Sports Statistics",
-      icon: TrendingUp,
+      icon: "TrendingUp",
       difficulty: "Beginner",
       duration: "12 min",
       content: `# Reading Sports Statistics
 
 **Basketball (NBA)**
 Key stats to analyze:
-- **Points Per Game (PPG)**: Team/player scoring average
-- **Field Goal % (FG%)**: Shooting efficiency (45%+ is good)
-- **Three-Point % (3P%)**: Beyond the arc (35%+ is good)
-- **Rebounds**: Defensive (DEF) and Offensive (OFF)
-- **Assists**: Ball movement indicator
-- **Turnovers**: Mistakes (fewer is better)
-- **+/- (Plus/Minus)**: Point differential when player is on court
+- Points Per Game (PPG): Team/player scoring average
+- Field Goal % (FG%): Shooting efficiency (45%+ is good)
+- Three-Point % (3P%): Beyond the arc (35%+ is good)
+- Rebounds: Defensive (DEF) and Offensive (OFF)
+- Assists: Ball movement indicator
+- Turnovers: Mistakes (fewer is better)
+- +/- (Plus/Minus): Point differential when player is on court
 
 **Football (NFL)**
 Key stats to analyze:
-- **Passing Yards**: QB effectiveness
-- **Rushing Yards**: Running game strength
-- **Turnovers**: INT + Fumbles (game changers)
-- **Red Zone %**: Scoring efficiency inside 20-yard line
-- **Third Down %**: Ability to sustain drives
-- **Sacks Allowed/Made**: Pass protection/pressure
+- Passing Yards: QB effectiveness
+- Rushing Yards: Running game strength
+- Turnovers: INT + Fumbles (game changers)
+- Red Zone %: Scoring efficiency inside 20-yard line
+- Third Down %: Ability to sustain drives
+- Sacks Allowed/Made: Pass protection/pressure
 
 **Soccer/Football**
 Key stats to analyze:
-- **Goals Scored/Allowed**: Offensive/defensive strength
-- **Possession %**: Ball control
-- **Shots on Target**: Accuracy indicator
-- **Pass Completion %**: Team cohesion (80%+ is good)
-- **Expected Goals (xG)**: Quality of chances created
+- Goals Scored/Allowed: Offensive/defensive strength
+- Possession %: Ball control
+- Shots on Target: Accuracy indicator
+- Pass Completion %: Team cohesion (80%+ is good)
+- Expected Goals (xG): Quality of chances created
 
 **What to Look For:**
 - Recent form (last 5-10 games)
@@ -165,7 +165,7 @@ Key stats to analyze:
     {
       id: 5,
       title: "Line Shopping & Finding Value",
-      icon: Zap,
+      icon: "Zap",
       difficulty: "Intermediate",
       duration: "10 min",
       content: `# Line Shopping & Finding Value
@@ -211,7 +211,7 @@ When odds suddenly shift across all books
     {
       id: 6,
       title: "Understanding Public vs Sharp Money",
-      icon: Brain,
+      icon: "Brain",
       difficulty: "Intermediate",
       duration: "12 min",
       content: `# Public vs Sharp Money
@@ -259,7 +259,7 @@ Sometimes sharps are wrong too!
     {
       id: 7,
       title: "Live Betting Strategies",
-      icon: Award,
+      icon: "Award",
       difficulty: "Intermediate",
       duration: "15 min",
       content: `# Live Betting Strategies
@@ -319,7 +319,7 @@ Placing bets while the game is in progress.
     {
       id: 8,
       title: "Advanced Statistical Models",
-      icon: Brain,
+      icon: "Brain",
       difficulty: "Advanced",
       duration: "20 min",
       content: `# Advanced Statistical Models
@@ -396,7 +396,18 @@ Dynamic rating that updates after each game:
     }
   ];
 
-  const allLessons = [...beginnerLessons, ...intermediateLessons, ...advancedLessons];
+  const getIconComponent = (iconName) => {
+    const icons = {
+      DollarSign,
+      Target,
+      Shield,
+      TrendingUp,
+      Zap,
+      Brain,
+      Award
+    };
+    return icons[iconName] || BookOpen;
+  };
 
   const getDifficultyColor = (difficulty) => {
     switch(difficulty) {
@@ -405,6 +416,42 @@ Dynamic rating that updates after each game:
       case 'Advanced': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const renderLessonCard = (lesson, index, colorScheme) => {
+    const IconComponent = getIconComponent(lesson.icon);
+    
+    return (
+      <motion.div
+        key={lesson.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+      >
+        <Card className={`border-2 ${colorScheme.border} hover:${colorScheme.borderHover} transition-colors cursor-pointer`}
+              onClick={() => setSelectedLesson(lesson)}>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 ${colorScheme.gradient} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                <IconComponent className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{lesson.title}</h3>
+                <div className="flex items-center gap-3">
+                  <Badge className={getDifficultyColor(lesson.difficulty)}>
+                    {lesson.difficulty}
+                  </Badge>
+                  <span className="text-sm text-gray-600">⏱️ {lesson.duration}</span>
+                </div>
+              </div>
+              <Button variant="outline">
+                Start Lesson →
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
   };
 
   return (
@@ -449,7 +496,10 @@ Dynamic rating that updates after each game:
                     </div>
                   </div>
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    {React.createElement(selectedLesson.icon, { className: "w-8 h-8" })}
+                    {(() => {
+                      const IconComponent = getIconComponent(selectedLesson.icon);
+                      return <IconComponent className="w-8 h-8" />;
+                    })()}
                   </div>
                 </div>
               </CardHeader>
@@ -488,105 +538,33 @@ Dynamic rating that updates after each game:
             </TabsList>
 
             <TabsContent value="beginner" className="space-y-4">
-              {beginnerLessons.map((lesson, index) => (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="border-2 border-green-200 hover:border-green-400 transition-colors cursor-pointer"
-                        onClick={() => setSelectedLesson(lesson)}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                          {React.createElement(lesson.icon, { className: "w-8 h-8 text-white" })}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">{lesson.title}</h3>
-                          <div className="flex items-center gap-3">
-                            <Badge className={getDifficultyColor(lesson.difficulty)}>
-                              {lesson.difficulty}
-                            </Badge>
-                            <span className="text-sm text-gray-600">⏱️ {lesson.duration}</span>
-                          </div>
-                        </div>
-                        <Button variant="outline">
-                          Start Lesson →
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+              {beginnerLessons.map((lesson, index) => 
+                renderLessonCard(lesson, index, {
+                  border: 'border-green-200',
+                  borderHover: 'border-green-400',
+                  gradient: 'bg-gradient-to-br from-green-500 to-emerald-600'
+                })
+              )}
             </TabsContent>
 
             <TabsContent value="intermediate" className="space-y-4">
-              {intermediateLessons.map((lesson, index) => (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="border-2 border-yellow-200 hover:border-yellow-400 transition-colors cursor-pointer"
-                        onClick={() => setSelectedLesson(lesson)}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                          {React.createElement(lesson.icon, { className: "w-8 h-8 text-white" })}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">{lesson.title}</h3>
-                          <div className="flex items-center gap-3">
-                            <Badge className={getDifficultyColor(lesson.difficulty)}>
-                              {lesson.difficulty}
-                            </Badge>
-                            <span className="text-sm text-gray-600">⏱️ {lesson.duration}</span>
-                          </div>
-                        </div>
-                        <Button variant="outline">
-                          Start Lesson →
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+              {intermediateLessons.map((lesson, index) => 
+                renderLessonCard(lesson, index, {
+                  border: 'border-yellow-200',
+                  borderHover: 'border-yellow-400',
+                  gradient: 'bg-gradient-to-br from-yellow-500 to-orange-600'
+                })
+              )}
             </TabsContent>
 
             <TabsContent value="advanced" className="space-y-4">
-              {advancedLessons.map((lesson, index) => (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="border-2 border-red-200 hover:border-red-400 transition-colors cursor-pointer"
-                        onClick={() => setSelectedLesson(lesson)}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                          {React.createElement(lesson.icon, { className: "w-8 h-8 text-white" })}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">{lesson.title}</h3>
-                          <div className="flex items-center gap-3">
-                            <Badge className={getDifficultyColor(lesson.difficulty)}>
-                              {lesson.difficulty}
-                            </Badge>
-                            <span className="text-sm text-gray-600">⏱️ {lesson.duration}</span>
-                          </div>
-                        </div>
-                        <Button variant="outline">
-                          Start Lesson →
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+              {advancedLessons.map((lesson, index) => 
+                renderLessonCard(lesson, index, {
+                  border: 'border-red-200',
+                  borderHover: 'border-red-400',
+                  gradient: 'bg-gradient-to-br from-red-500 to-pink-600'
+                })
+              )}
             </TabsContent>
           </Tabs>
         )}

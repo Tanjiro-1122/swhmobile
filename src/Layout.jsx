@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Trophy, User, Shield, Bookmark, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,12 +35,9 @@ export default function Layout({ children, currentPageName }) {
     { label: "Match Analysis", url: createPageUrl("Dashboard"), icon: "🏆" },
     { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
     { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
-    { label: "Live Odds", url: createPageUrl("LiveOdds"), icon: "💰" },
     { label: "Betting Calculator", url: createPageUrl("BettingCalculator"), icon: "🧮" },
     { label: "ROI Tracker", url: createPageUrl("ROITracker"), icon: "📊" },
     { label: "Parlay Builder", url: createPageUrl("ParlayBuilder"), icon: "🎰" },
-    { label: "Alerts", url: createPageUrl("Alerts"), icon: "🔔" },
-    { label: "Community", url: createPageUrl("Community"), icon: "👥" },
     { label: "Learning Center", url: createPageUrl("LearningCenter"), icon: "📚" },
     { label: "Bankroll Manager", url: createPageUrl("BankrollManager"), icon: "💼" },
     { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
