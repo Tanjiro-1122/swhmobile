@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
+import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle, RefreshCw, Clock, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import AutoAccuracyTracker from "../components/accuracy/AutoAccuracyTracker";
 
 export default function AccuracyTracker() {
   const [testingTracking, setTestingTracking] = useState(false);
+  const [isManualCheckRunning, setIsManualCheckRunning] = useState(false);
+  const [manualCheckMessage, setManualCheckMessage] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: predictions, isLoading } = useQuery({
@@ -44,7 +46,7 @@ export default function AccuracyTracker() {
     try {
       await createTestPrediction.mutateAsync();
       alert("✅ Test prediction created successfully! Check the stats below.");
-    } catch (error) {
+    } catch (error: any) {
       alert("❌ Error creating test prediction: " + error.message);
     }
     setTestingTracking(false);
@@ -52,6 +54,118 @@ export default function AccuracyTracker() {
 
   const handleManualRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['predictions'] });
+  };
+
+  const runManualAccuracyCheck = async () => {
+    // Check cooldown
+    const lastManualCheck = localStorage.getItem('lastManualAccuracyCheck');
+    if (lastManualCheck) {
+      const timeSince = Date.now() - parseInt(lastManualCheck);
+      const oneHour = 60 * 60 * 1000;
+      if (timeSince < oneHour) {
+        const minutesRemaining = Math.ceil((oneHour - timeSince) / (60 * 1000));
+        alert(`⏸️ Please wait ${minutesRemaining} minutes before running another manual check to avoid rate limits.`);
+        return;
+      }
+    }
+
+    if (!confirm("This will check ONE finished game and may take 15-20 seconds. Continue?")) {
+      return;
+    }
+
+    setIsManualCheckRunning(true);
+    setManualCheckMessage(null);
+
+    try {
+      setManualCheckMessage("1/5: Fetching recent matches...");
+      const allMatches = await base44.entities.Match.list('-match_date', 50);
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay to simulate work and prevent aggressive rate limiting
+
+      setManualCheckMessage("2/5: Filtering finished matches...");
+      const now = new Date();
+      // Consider matches finished more than 6 hours ago as 'past games' eligible for accuracy check
+      const sixHoursAgo = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+      
+      const finishedMatches = allMatches.filter(match => {
+        if (!match.match_date) return false;
+        const matchDate = new Date(match.match_date);
+        return matchDate < sixHoursAgo;
+      });
+
+      setManualCheckMessage("3/5: Checking existing accuracy records...");
+      const existingRecords = await base44.entities.PredictionAccuracy.list();
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay
+
+      // Create a Set of match_ids that already have accuracy records
+      const existingMatchIds = new Set(existingRecords.map(r => r.match_id).filter(Boolean));
+      // Filter out matches that already have accuracy records
+      const unprocessedMatches = finishedMatches.filter(match => !existingMatchIds.has(match.id));
+
+      if (unprocessedMatches.length === 0) {
+        setManualCheckMessage("✅ All finished games have been processed!");
+        setIsManualCheckRunning(false);
+        return;
+      }
+
+      const matchToProcess = unprocessedMatches[0];
+      
+      setManualCheckMessage(`4/5: Invoking AI to verify ${matchToProcess.home_team} vs ${matchToProcess.away_team}... (This takes 10 seconds)`);
+
+      // Significant delay before LLM call to respect rate limits and simulate real world processing
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
+      const verificationResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `Verify the ACTUAL result of this completed game.
+GAME: ${matchToProcess.home_team} vs ${matchToProcess.away_team}
+Date: ${matchToProcess.match_date}
+Sport: ${matchToProcess.sport}
+Get the official final score from ESPN or StatMuse. Return game_status and was_correct.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            game_status: { type: "string", enum: ["completed", "postponed", "cancelled", "not_found"] },
+            actual_outcome: { type: "string" },
+            final_score: { type: "string" },
+            winner: { type: "string" },
+            was_correct: { type: "boolean" }
+          },
+          required: ["game_status"]
+        }
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Delay after LLM call
+
+      if (verificationResult.game_status === "completed" && verificationResult.was_correct !== undefined) {
+        await base44.entities.PredictionAccuracy.create({
+          prediction_type: "match",
+          sport: matchToProcess.sport,
+          predicted_outcome: `${matchToProcess.home_win_probability > matchToProcess.away_win_probability ? matchToProcess.home_team : matchToProcess.away_team} to win`, // Simplified prediction
+          actual_outcome: verificationResult.actual_outcome || `${verificationResult.winner} won`,
+          was_correct: verificationResult.was_correct,
+          // Assuming Match entity has confidence_level, or default to medium
+          confidence_level: matchToProcess.confidence_level || "medium", 
+          prediction_date: matchToProcess.match_date,
+          match_id: matchToProcess.id
+        });
+
+        setManualCheckMessage(`✅ 5/5: Successfully processed: ${matchToProcess.home_team} vs ${matchToProcess.away_team} - ${verificationResult.was_correct ? 'Prediction CORRECT' : 'Prediction INCORRECT'}`);
+        localStorage.setItem('lastManualAccuracyCheck', Date.now().toString()); // Update cooldown
+        queryClient.invalidateQueries({ queryKey: ['predictions'] }); // Invalidate to refetch accuracy data
+      } else {
+        setManualCheckMessage(`⏭️ 5/5: Skipped. Game status: ${verificationResult.game_status}. No accuracy record created.`);
+      }
+
+    } catch (error: any) {
+      console.error("Manual check error:", error);
+      if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+        setManualCheckMessage("🚫 Rate limit reached. Please wait 1 hour before trying again.");
+      } else {
+        setManualCheckMessage(`❌ Error: ${error.message}`);
+      }
+    }
+
+    setIsManualCheckRunning(false);
   };
 
   // Calculate statistics
@@ -89,10 +203,10 @@ export default function AccuracyTracker() {
   const recentAccuracy = recentPredictions.length > 0 ? ((recentCorrect / recentPredictions.length) * 100).toFixed(1) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Hero */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -110,9 +224,52 @@ export default function AccuracyTracker() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Auto Accuracy Tracker */}
         <AutoAccuracyTracker />
+
+        {/* Manual Check Button with Cooldown */}
+        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700 mb-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-400" />
+              Manual Accuracy Check
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-slate-300 text-sm">
+                Manually check one finished game at a time to update accuracy data. 
+                <strong className="text-yellow-400"> Limited to once per hour</strong> to avoid rate limits.
+                This process involves AI verification and takes about 15-20 seconds.
+              </p>
+              <Button
+                onClick={runManualAccuracyCheck}
+                disabled={isManualCheckRunning}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                {isManualCheckRunning ? (
+                  <>
+                    <Activity className="w-4 h-4 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <Target className="w-4 h-4 mr-2" />
+                    Check One Game Now
+                  </>
+                )}
+              </Button>
+              {manualCheckMessage && (
+                <Alert className="bg-blue-500/10 border-blue-500/30">
+                  <AlertDescription className="text-blue-200">
+                    {manualCheckMessage}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Manual Refresh Button */}
         <div className="flex justify-end mb-6">
@@ -122,7 +279,7 @@ export default function AccuracyTracker() {
             className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Data
+            Refresh Displayed Data
           </Button>
         </div>
 
@@ -269,7 +426,7 @@ export default function AccuracyTracker() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {predictions.slice(0, 10).map((pred, idx) => (
+                    {predictions.slice(0, 10).map((pred: any, idx: number) => (
                       <div key={idx} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 flex items-start gap-4">
                         <div className="flex-shrink-0">
                           {pred.was_correct ? (

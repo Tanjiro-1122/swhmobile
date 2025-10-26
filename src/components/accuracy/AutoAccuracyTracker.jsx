@@ -31,41 +31,52 @@ export default function AutoAccuracyTracker() {
   });
 
   const checkFinishedGames = async () => {
-    if (!currentUser || isProcessing) return;
+    if (!currentUser || isProcessing) {
+      console.log("⏸️ Skipping accuracy check - not ready");
+      return;
+    }
     
-    // Check if we've run this recently (within last 6 hours)
+    // CRITICAL: Check if we've run this recently (within last 24 hours)
     const lastCheckTime = localStorage.getItem('lastAccuracyCheck');
     if (lastCheckTime) {
       const timeSinceLastCheck = Date.now() - parseInt(lastCheckTime);
-      const sixHours = 6 * 60 * 60 * 1000;
-      if (timeSinceLastCheck < sixHours) {
-        console.log("⏸️ Accuracy check skipped - last check was less than 6 hours ago");
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (timeSinceLastCheck < twentyFourHours) {
+        const hoursRemaining = Math.ceil((twentyFourHours - timeSinceLastCheck) / (60 * 60 * 1000));
+        console.log(`⏸️ Accuracy check skipped - last check was ${hoursRemaining} hours ago. Wait ${hoursRemaining} more hours.`);
         return;
       }
     }
 
     setIsProcessing(true);
     setErrorMessage(null);
-    console.log("🔍 Checking for finished games...");
+    console.log("🔍 Starting accuracy check (rate-limited mode)...");
 
     try {
       // Get all matches
-      const allMatches = await base44.entities.Match.list('-match_date', 100);
+      const allMatches = await base44.entities.Match.list('-match_date', 50); // Reduced from 100 to 50
       
-      // Filter matches that have finished (date is in the past and more than 3 hours ago to ensure game is complete)
+      // Add delay after first API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Filter matches that have finished (date is in the past and more than 6 hours ago to ensure game is complete)
       const now = new Date();
-      const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+      const sixHoursAgo = new Date(now.getTime() - (6 * 60 * 60 * 1000)); // Increased from 3 to 6 hours
       
       const finishedMatches = allMatches.filter(match => {
         if (!match.match_date) return false;
         const matchDate = new Date(match.match_date);
-        return matchDate < threeHoursAgo;
+        return matchDate < sixHoursAgo;
       });
 
       console.log(`Found ${finishedMatches.length} finished matches`);
 
       // Get existing accuracy records to avoid duplicates
       const existingRecords = await base44.entities.PredictionAccuracy.list();
+      
+      // Add delay after second API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const existingMatchIds = new Set(existingRecords.map(r => r.match_id).filter(Boolean));
 
       // Filter out already processed matches
@@ -73,8 +84,8 @@ export default function AutoAccuracyTracker() {
       
       console.log(`${unprocessedMatches.length} matches need processing`);
 
-      // CRITICAL: Limit to processing only 3 games per run to avoid rate limits
-      const matchesToProcess = unprocessedMatches.slice(0, 3);
+      // CRITICAL: Only process 1 game per run to avoid rate limits
+      const matchesToProcess = unprocessedMatches.slice(0, 1);
       
       if (matchesToProcess.length === 0) {
         console.log("✅ No new games to process");
@@ -83,15 +94,18 @@ export default function AutoAccuracyTracker() {
         return;
       }
 
-      console.log(`⚠️ Processing ${matchesToProcess.length} games (rate limit protection)`);
+      console.log(`⚠️ Processing ONLY ${matchesToProcess.length} game (strict rate limit protection)`);
 
       let processed = 0;
-      let rateLimitHit = false;
 
       for (const match of matchesToProcess) {
         console.log(`📊 Verifying result for: ${match.home_team} vs ${match.away_team}`);
 
         try {
+          // CRITICAL: Wait 10 seconds before making LLM call
+          console.log("⏳ Waiting 10 seconds before API call...");
+          await new Promise(resolve => setTimeout(resolve, 10000));
+
           // Use AI to verify actual game result
           const verificationResult = await base44.integrations.Core.InvokeLLM({
             prompt: `Verify the ACTUAL result of this completed game. Use official sources.
@@ -136,6 +150,9 @@ RETURN:
             }
           });
 
+          // Wait after LLM call
+          await new Promise(resolve => setTimeout(resolve, 3000));
+
           if (verificationResult.game_status === "completed" && verificationResult.was_correct !== undefined) {
             // Create accuracy record
             await createAccuracyRecord.mutateAsync({
@@ -155,19 +172,18 @@ RETURN:
             console.log(`⏭️ Skipping: ${match.home_team} vs ${match.away_team} - Status: ${verificationResult.game_status}`);
           }
 
-          // CRITICAL: Wait 5 seconds between each game to avoid rate limits
-          console.log("⏳ Waiting 5 seconds before next check...");
-          await new Promise(resolve => setTimeout(resolve, 5000));
-
         } catch (error) {
           console.error(`❌ Error verifying ${match.home_team} vs ${match.away_team}:`, error);
           
           // Check if it's a rate limit error
-          if (error.message?.includes('Rate limit') || error.message?.includes('rate limit')) {
-            console.error("🚫 Rate limit hit - stopping processing");
-            rateLimitHit = true;
-            setErrorMessage("Rate limit reached. Will retry in 6 hours.");
-            break; // Stop processing more games
+          if (error.message?.includes('Rate limit') || error.message?.includes('rate limit') || error.message?.includes('429')) {
+            console.error("🚫 Rate limit hit - stopping all processing");
+            setErrorMessage("Rate limit reached. Accuracy checks paused for 24 hours.");
+            // Don't save lastCheck time if we hit rate limit - will try again on next page load
+            setIsProcessing(false);
+            return; // Exit immediately without saving check time
+          } else {
+            setErrorMessage(error.message);
           }
         }
       }
@@ -176,16 +192,12 @@ RETURN:
       setLastCheck(new Date().toISOString());
       localStorage.setItem('lastAccuracyCheck', Date.now().toString());
       
-      if (rateLimitHit) {
-        console.log(`⚠️ Accuracy check stopped due to rate limit. Processed ${processed} games.`);
-      } else {
-        console.log(`✅ Accuracy check complete. Processed ${processed} new games.`);
-      }
+      console.log(`✅ Accuracy check complete. Processed ${processed} game(s). Next check in 24 hours.`);
 
     } catch (error) {
       console.error("❌ Error in accuracy tracking:", error);
-      if (error.message?.includes('Rate limit') || error.message?.includes('rate limit')) {
-        setErrorMessage("Rate limit reached. Will retry in 6 hours.");
+      if (error.message?.includes('Rate limit') || error.message?.includes('rate limit') || error.message?.includes('429')) {
+        setErrorMessage("Rate limit reached. Accuracy checks paused for 24 hours.");
       } else {
         setErrorMessage(error.message);
       }
@@ -194,19 +206,12 @@ RETURN:
     setIsProcessing(false);
   };
 
-  // Check for finished games when component mounts (only once, then every 6 hours)
+  // DISABLED: Auto-check on mount to prevent rate limit issues
+  // Only run if explicitly triggered or after 24 hours
   useEffect(() => {
-    if (currentUser) {
-      // Check immediately on mount
-      checkFinishedGames();
-
-      // Then check every 6 hours (not more frequent to avoid rate limits)
-      const interval = setInterval(() => {
-        checkFinishedGames();
-      }, 6 * 60 * 60 * 1000); // 6 hours
-
-      return () => clearInterval(interval);
-    }
+    // Do NOT auto-run on mount - too aggressive
+    // User can manually trigger from Accuracy page if needed
+    console.log("⏸️ Auto accuracy check disabled to prevent rate limits. Check manually from Accuracy page.");
   }, [currentUser]);
 
   if (!isProcessing && processedCount === 0 && !errorMessage) return null;
@@ -218,8 +223,9 @@ RETURN:
           <Activity className="w-5 h-5 text-blue-400 animate-spin" />
           <AlertDescription className="text-blue-200">
             Checking finished games and updating accuracy data...
-            <div className="text-xs text-blue-300 mt-1">
-              ⏳ Processing slowly to avoid rate limits (max 3 games per check)
+            <div className="text-xs text-blue-300 mt-1 flex items-center gap-2">
+              <Clock className="w-3 h-3" />
+              ⏳ Processing very slowly with 10-15 second delays to avoid rate limits (1 game per day maximum)
             </div>
           </AlertDescription>
         </div>
@@ -245,6 +251,9 @@ RETURN:
                 Last checked: {new Date(lastCheck).toLocaleTimeString()}
               </Badge>
             )}
+            <div className="text-xs text-green-300 mt-1">
+              Next auto-check in 24 hours
+            </div>
           </AlertDescription>
         </div>
       ) : null}
