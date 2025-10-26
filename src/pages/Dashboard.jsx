@@ -1,29 +1,21 @@
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target, Info, RefreshCcw } from "lucide-react"; // Added RefreshCcw for loading icon
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Trophy, Sparkles, Zap, Target } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
-import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
-import LiveDataBadge from "../components/shared/LiveDataBadge";
-import { AnimatePresence, motion } from "framer-motion";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
-  const [showDetailedError, setShowDetailedError] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Gathering live data...");
-  const [checkingResults, setCheckingResults] = useState(false); // New state for result checking status
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, isPremium, isVIP, recordLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -56,168 +48,6 @@ export default function Dashboard() {
     },
   });
 
-  // New mutation for updating match outcome and result tracking
-  const updateMatchOutcomeMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
-      return await base44.entities.Match.update(id, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-    },
-  });
-
-  useEffect(() => {
-    let interval;
-    if (isSearching) {
-      const messages = [
-        "Gathering live data from StatMuse & ESPN...",
-        "Analyzing team & player forms...",
-        "Calculating win probabilities & betting insights...",
-        "Fetching latest injury reports...",
-        "Verifying data from official sources...",
-        "Finalizing prediction model..."
-      ];
-      let i = 0;
-      setLoadingMessage(messages[i]);
-      interval = setInterval(() => {
-        i = (i + 1) % messages.length;
-        setLoadingMessage(messages[i]);
-      }, 3000);
-    } else {
-      setLoadingMessage("Gathering live data...");
-    }
-    return () => clearInterval(interval);
-  }, [isSearching]);
-
-  // Function to check and update match outcomes
-  const checkMatchOutcome = useCallback(async (match) => {
-    if (!match.id || !match.match_date || !match.home_team || !match.away_team) {
-      console.warn("Skipping outcome check for invalid match data:", match);
-      return;
-    }
-
-    const matchDate = new Date(match.match_date);
-    const now = new Date();
-    // Only check for games that have passed, are not already final, and haven't been checked recently (e.g., in the last hour)
-    const lastChecked = match.last_checked_for_result ? new Date(match.last_checked_for_result) : null;
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // Check every hour
-
-    if (matchDate > now || match.game_status === 'final' || (lastChecked && lastChecked > oneHourAgo)) {
-      return; // Game not in the past, already final, or checked recently
-    }
-
-    console.log(`Checking outcome for: ${match.home_team} vs ${match.away_team} (ID: ${match.id})`);
-
-    try {
-      const llmResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `
-          Find the actual final score and winner for the following sports match.
-          Provide the game status, actual scores, and the actual winner.
-          
-          Match details:
-          - Sport: ${match.sport || 'Unknown'}
-          - League: ${match.league || 'Unknown'}
-          - Home Team: ${match.home_team}
-          - Away Team: ${match.away_team}
-          - Match Date/Time: ${match.match_date}
-          - Venue: ${match.venue || 'Unknown'}
-
-          IMPORTANT:
-          1. Search for the FINAL score. If the game is not finished, indicate that in 'game_status'.
-          2. If the game is postponed or cancelled, also indicate that in 'game_status'.
-          3. Use reliable sports data sources (e.g., ESPN, StatMuse, official league websites) to find the result.
-          4. If you cannot find a definitive result or the game is not yet final, set 'game_status' appropriately and leave scores/winner blank.
-        `,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            game_status: { "type": "string", "enum": ["final", "scheduled", "in_progress", "postponed", "cancelled"] },
-            actual_home_score: { "type": ["number", "null"] },
-            actual_away_score: { "type": ["number", "null"] },
-            actual_winner: { "type": "string", "enum": ["home", "away", "draw", "unknown", "null"] },
-            match_summary: { "type": "string" }
-          },
-          required: ["game_status"]
-        }
-      });
-
-      let predictionCorrect = null;
-      let actualWinnerEnum = llmResult.actual_winner;
-
-      if (llmResult.game_status === 'final' && actualWinnerEnum && match.home_win_probability !== undefined && match.away_win_probability !== undefined) {
-        let predictedWinner = 'unknown';
-        // Determine the predicted winner based on highest probability
-        if (match.home_win_probability > match.away_win_probability && match.home_win_probability > (match.draw_probability || 0)) {
-            predictedWinner = 'home';
-        } else if (match.away_win_probability > match.home_win_probability && match.away_win_probability > (match.draw_probability || 0)) {
-            predictedWinner = 'away';
-        } else if (match.draw_probability !== undefined && match.draw_probability > match.home_win_probability && match.draw_probability > match.away_win_probability) {
-            predictedWinner = 'draw';
-        }
-
-        predictionCorrect = (predictedWinner === actualWinnerEnum);
-        
-        console.log(`Match ID: ${match.id}, Predicted: ${predictedWinner}, Actual: ${actualWinnerEnum}, Correct: ${predictionCorrect}`);
-      }
-
-      await updateMatchOutcomeMutation.mutateAsync({
-        id: match.id,
-        data: {
-          game_status: llmResult.game_status,
-          actual_home_score: llmResult.actual_home_score,
-          actual_away_score: llmResult.actual_away_score,
-          actual_winner: actualWinnerEnum,
-          prediction_correct: predictionCorrect,
-          last_checked_for_result: now.toISOString(),
-          match_summary: llmResult.match_summary || match.match_summary, 
-        }
-      });
-      console.log(`Outcome updated for match ID: ${match.id}`);
-
-    } catch (err) {
-      console.error(`Error checking outcome for match ID ${match.id}:`, err);
-      // Update last_checked_for_result even on error to avoid re-attempting immediately
-      await updateMatchOutcomeMutation.mutateAsync({
-        id: match.id,
-        data: {
-          last_checked_for_result: now.toISOString(), // Mark as checked to prevent immediate retry
-        }
-      });
-    }
-  }, [updateMatchOutcomeMutation]);
-
-  // Effect to automatically check outcomes for past games
-  useEffect(() => {
-    if (matches && matches.length > 0 && !isLoading) {
-      const pastMatchesToCheck = matches.filter(match => {
-        const matchDate = new Date(match.match_date);
-        const now = new Date();
-        const lastChecked = match.last_checked_for_result ? new Date(match.last_checked_for_result) : null;
-        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); 
-        
-        // Game has passed, is not yet final, and hasn't been checked recently
-        return matchDate < now && match.game_status !== 'final' && (!lastChecked || lastChecked < oneHourAgo);
-      });
-
-      if (pastMatchesToCheck.length > 0) {
-        setCheckingResults(true); // Indicate that result checks are in progress
-        console.log(`Found ${pastMatchesToCheck.length} past matches to check outcomes for.`);
-        // Run checks in parallel but with a slight delay to avoid hitting rate limits too hard
-        pastMatchesToCheck.forEach((match, index) => {
-          setTimeout(() => checkMatchOutcome(match), index * 500); // 500ms delay between each check
-        });
-        // Set checkingResults to false after a reasonable time for all checks to finish
-        setTimeout(() => setCheckingResults(false), pastMatchesToCheck.length * 500 + 2000); 
-      } else {
-        setCheckingResults(false);
-      }
-    } else {
-        setCheckingResults(false); // No matches or still loading, so no checks are happening
-    }
-  }, [matches, isLoading, checkMatchOutcome]);
-
-
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -226,190 +56,79 @@ export default function Dashboard() {
 
     setIsSearching(true);
     setError(null);
-    setShowDetailedError(false);
 
-    // Declare date-related variables outside the try block to ensure scope
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1; // 1-12
-    const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-      
     try {
-      const llmResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `🚨 CRITICAL: You MUST use ONLY ${currentYear}-${currentYear + 1} season data. NO EXCEPTIONS. 🚨
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a sports analytics AI with INTERNET ACCESS. You MUST use real-time data from the web.
 
 SEARCH QUERY: "${query}"
-TODAY'S DATE: ${currentDate}
-CURRENT SEASON: ${currentYear}-${currentYear + 1}
-CURRENT MONTH: ${new Date().toLocaleString('en-US', { month: 'long' })} ${currentYear}
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ DATA FRESHNESS VERIFICATION REQUIRED ⚠️
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: You have internet access via the add_context_from_internet parameter. You MUST:
+1. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
+2. Check ESPN.com for match schedules and team records
+3. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
+4. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
 
-BEFORE providing ANY data, you MUST verify:
-✅ All stats are from ${currentYear}-${currentYear + 1} season
-✅ Last 5 games have dates from the last 60 days (within ${currentYear})
-✅ Current injury reports are from THIS WEEK (${currentDate})
-✅ Team records reflect games played in ${currentYear}
-✅ Betting odds are CURRENT (not archived)
+TASK: Find the specific match the user is asking about and provide:
 
-IF YOU CANNOT FIND ${currentYear} DATA:
-❌ DO NOT use ${currentYear - 1} or older data
-❌ DO NOT make up placeholder data
-✅ INSTEAD: Return with analysis_summary starting with "Unable to find current ${currentYear} data for this match"
+1. MATCH IDENTIFICATION:
+   - Sport (Basketball/Soccer/Football/etc)
+   - League (NBA/Premier League/NFL/etc)
+   - Home team (use OFFICIAL full name from league website)
+   - Away team (use OFFICIAL full name from league website)
+   - Match date/time (search for scheduled date - could be today, tomorrow, or this week)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 MANDATORY DATA SOURCES (CHECK IN ORDER):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WIN PROBABILITIES (must total 100%):
+   Home Win: Calculate based on:
+   - Current season records (W-L from official stats)
+   - Last 5 games results for both teams
+   - Head-to-head history (last 3-5 meetings)
+   - Home court/field advantage (home team win % at home)
+   - Current injuries (search "[team name] injury report")
+   
+   Away Win: Calculate similarly
+   Draw: If applicable (soccer/hockey), otherwise 0
 
-1. ⭐ StatMuse.com - PRIMARY SOURCE
-   Search EXACTLY: "${query} ${currentYear}"
-   Example queries:
-   - "Lakers at Celtics ${currentYear}"
-   - "${query} season stats ${currentYear}"
-   Verify: Results show "${currentYear}-${currentYear + 1}" season
+3. KEY FACTORS (4-5 specific points with stats):
+   Example format:
+   - "Home team won 8 of last 10 games (80% win rate)"
+   - "Away team averaging 115 PPG vs opponent allowing 108 PPG"
+   - "Home team's star player out with injury"
+   - "Away team 2-6 on the road this season"
 
-2. 🏀 Basketball-Reference.com (NBA)
-   URL: basketball-reference.com/leagues/NBA_${currentYear + 1}.html
-   Verify current season schedule and stats
+4. ANALYSIS SUMMARY (2-3 sentences):
+   Explain your prediction based on the statistics you found
 
-3. 🏈 Pro-Football-Reference.com (NFL)
-   URL: pro-football-reference.com/years/${currentYear}/
-   Get ${currentYear} season stats ONLY
+5. CONFIDENCE LEVEL:
+   - "high" if data strongly supports one outcome (>70% probability)
+   - "medium" if competitive match (50-70%)
+   - "low" if insufficient data or unpredictable
 
-4. ⚾ Baseball-Reference.com (MLB)
-   URL: baseball-reference.com/leagues/majors/${currentYear}.shtml
-   Get ${currentYear} season stats ONLY
+6. KEY PLAYERS (3-4 per team):
+   For EACH player provide:
+   - Name (verify they're on current roster via team website)
+   - Team and position
+   - Season averages (PPG/APG/RPG from StatMuse or Basketball-Reference)
+   - Predicted stats for THIS game (within ±30% of season average)
+   - Recent form: "Hot" if averaging above normal last 3 games, "Cold" if below
+   - Injury status: Check today's injury report
 
-5. 📺 ESPN.com
-   URL: espn.com/[league]/scoreboard/_/date/${currentYear}${String(currentMonth).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}
-   Get TODAY's schedule and current injury reports
+7. BETTING MARKETS:
+   Over/Under:
+   - Line: Average both teams' season PPG
+   - Probabilities: 50/50 split or adjust based on pace
+   
+   Both Teams Score (if soccer): Based on scoring rates
+   First to Score: Slight favor to home team (55/45)
 
-6. 💰 DraftKings / FanDuel / BetMGM
-   Get LIVE odds for THIS match (not historical)
-   Verify odds were updated within last 24 hours
+VALIDATION RULES:
+- Team names must match official league rosters
+- All statistics must be from ${new Date().getFullYear()} season
+- Win probabilities must be realistic (no team should have >95% or <5%)
+- If you can't find the match, say "Unable to find scheduled match" in analysis_summary
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 CRITICAL: HOME vs AWAY VERIFICATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PARSING RULES:
-📍 "Team A @ Team B" → Team A is AWAY, Team B is HOME
-📍 "Team A at Team B" → Team A is AWAY, Team B is HOME
-📍 "Team A vs Team B" → Team A is HOME, Team B is AWAY
-
-VERIFICATION STEPS:
-1. Check ESPN schedule for venue location
-2. Confirm which team owns the stadium/arena
-3. Cross-reference with team's official schedule
-4. Include FULL venue name and city
-
-EXAMPLES OF CORRECT PARSING:
-✅ "Lakers @ Celtics" → Lakers (AWAY) at TD Garden in Boston, Celtics (HOME)
-✅ "Chiefs at Bills" → Chiefs (AWAY) at Highmark Stadium in Buffalo, Bills (HOME)
-✅ "Warriors vs Nuggets" → Warriors (HOME) at Chase Center in San Francisco, Nuggets (AWAY)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 STEP-BY-STEP DATA COLLECTION:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-STEP 1: VERIFY MATCH EXISTS & GET DETAILS
-- Search StatMuse: "${query} ${currentYear}"
-- Confirm match is scheduled for ${currentYear}
-- Get OFFICIAL team names (not nicknames)
-- Verify EXACT date and time (with timezone)
-- Confirm venue name and location
-
-STEP 2: CURRENT SEASON TEAM STATS (${currentYear}-${currentYear + 1})
-For EACH team, fetch:
-  ✅ Overall record (W-L-D) as of TODAY
-  ✅ Home record (for home team)
-  ✅ Away record (for away team)
-  ✅ Points per game (${currentYear} average)
-  ✅ Points allowed per game (${currentYear} average)
-  ✅ Last 5 games with REAL dates (MM/DD/${currentYear} format)
-  
-VALIDATION: Last 5 games MUST have dates within last 60 days
-
-STEP 3: KEY PLAYERS (5-7 PER TEAM)
-For EACH player:
-  ✅ ${currentYear}-${currentYear + 1} season averages
-  ✅ Last 5 games (with dates from ${currentYear})
-  ✅ Predicted stats for UPCOMING game
-  ✅ Current injury status (from THIS WEEK)
-  ✅ Over/Under prop lines (from today's sportsbooks)
-  
-SPORT-SPECIFIC STATS:
-Baseball (MLB): Hits/G, Runs/G, RBIs/G, HRs/G, Batting Avg, OBP, SLG
-Basketball (NBA): Points/G, Rebounds/G, Assists/G, FG%, 3P%, Combined (PTS+REB+AST)
-Football (NFL): 
-  - QB: Pass Yds/G, Pass TDs/G, INTs/G, Comp%, Passer Rating
-  - RB: Rush Yds/G, Rush TDs/G, Rec/G, Yds/Carry
-  - WR/TE: Rec/G, Rec Yds/G, Rec TDs/G, Targets/G
-Soccer: Goals/G, Assists/G, Shots/G, Pass Accuracy%
-
-STEP 4: INJURY REPORTS (CRITICAL - MUST BE CURRENT)
-- Search: "[Team Name] injury report ${currentDate}"
-- Get OFFICIAL team injury list from team website or ESPN
-- For each injured player:
-  * Full name
-  * Injury type (e.g., "Knee - MCL Sprain")
-  * Status: Out / Doubtful / Questionable / Day-to-Day
-  * Expected return date
-  * Impact rating: Major / Moderate / Minor
-
-VALIDATION: Injury reports MUST be from this week (${currentDate})
-
-STEP 5: BETTING MARKETS (LIVE ODDS ONLY)
-Get CURRENT odds from DraftKings/FanDuel:
-  ✅ Moneyline (e.g., Home -150, Away +130)
-  ✅ Spread (e.g., Home -3.5, -110)
-  ✅ Over/Under total (e.g., 225.5, Over -110)
-  ✅ Player props (for key players)
-  
-VALIDATION: Odds MUST be current (updated within 24 hours)
-
-STEP 6: WIN PROBABILITY CALCULATION
-Based on:
-  - Current ${currentYear} season stats
-  - Home/away splits
-  - Recent form (last 5 games)
-  - Head-to-head history (recent meetings)
-  - Key injuries
-  - Betting market consensus
-
-PROBABILITIES MUST:
-  ✅ Sum exactly to 100%
-  ✅ Reflect statistical analysis
-  ✅ Consider home court advantage
-  ✅ Account for injuries
-
-STEP 7: CONFIDENCE LEVEL ASSIGNMENT
-- HIGH (85-95%): Strong statistical edge, clear favorite, minimal uncertainty
-- MEDIUM (70-85%): Moderate edge, some uncertainty factors
-- LOW (50-70%): Toss-up game, high uncertainty
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ FINAL VALIDATION CHECKLIST:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Before returning data, verify:
-☑️ All stats are from ${currentYear}-${currentYear + 1} season
-☑️ Last 5 games have dates from last 60 days
-☑️ Injury reports are from this week
-☑️ Probabilities sum to exactly 100%
-☑️ Venue is correctly identified
-☑️ Home/away teams are correct
-☑️ Betting odds are current
-☑️ Player predictions are reasonable (within ±30% of season average)
-
-IF ANY VALIDATION FAILS:
-❌ Do NOT return fake/placeholder data
-✅ Include specific error in analysis_summary
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error message if data unavailable.`,
+FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -418,7 +137,6 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
             league: { type: "string" },
             home_team: { type: "string" },
             away_team: { type: "string" },
-            venue: { type: "string" },
             match_date: { type: "string" },
             home_win_probability: { type: "number" },
             away_win_probability: { type: "number" },
@@ -440,66 +158,39 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
                   name: { type: "string" },
                   team: { type: "string" },
                   position: { type: "string" },
-                  sport: { type: "string" },
-                  season_average: { type: "string" },
-                  last_five_games: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        date: { type: "string" },
-                        opponent: { type: "string" },
-                        stats: { type: "string" }
-                      }
-                    }
-                  },
                   predicted_points: { type: "number" },
                   predicted_assists: { type: "number" },
                   predicted_rebounds: { type: "number" },
                   predicted_goals: { type: "number" },
-                  predicted_hits: { type: "number" },
-                  predicted_runs: { type: "number" },
-                  predicted_rbis: { type: "number" },
-                  predicted_home_runs: { type: "number" },
-                  predicted_passing_yards: { type: "number" },
-                  predicted_passing_touchdowns: { type: "number" },
-                  predicted_rushing_yards: { type: "number" },
-                  predicted_receiving_yards: { type: "number" },
-                  predicted_receptions: { type: "number" },
-                  over_under_line: { type: "number" },
-                  over_probability: { type: "number" },
-                  under_probability: { type: "number" },
                   probability_to_score: { type: "number" },
-                  recent_form: { type: "string", enum: ["Hot", "Average", "Cold"] },
-                  injury_status: { type: "string" },
-                  injury_details: { type: "string" }
+                  recent_form: { type: "string" },
+                  injury_status: { type: "string" }
                 }
               }
             },
             betting_markets: {
               type: "object",
               properties: {
-                moneyline: {
-                  type: "object",
-                  properties: {
-                    home_odds: { type: "string" },
-                    away_odds: { type: "string" }
-                  }
-                },
-                spread: {
-                  type: "object",
-                  properties: {
-                    line: { type: "number" },
-                    home_cover_probability: { type: "number" },
-                    away_cover_probability: { type: "number" }
-                  }
-                },
                 over_under: {
                   type: "object",
                   properties: {
                     line: { type: "number" },
                     over_probability: { type: "number" },
                     under_probability: { type: "number" }
+                  }
+                },
+                both_teams_score: {
+                  type: "object",
+                  properties: {
+                    yes_probability: { type: "number" },
+                    no_probability: { type: "number" }
+                  }
+                },
+                total_goals_range: {
+                  type: "object",
+                  properties: {
+                    predicted_total: { type: "number" },
+                    range: { type: "string" }
                   }
                 },
                 first_to_score: {
@@ -510,101 +201,39 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
                   }
                 }
               }
-            },
-            current_injuries: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  player_name: { type: "string" },
-                  team: { type: "string" },
-                  injury_type: { type: "string" },
-                  status: { type: "string", enum: ["Out", "Doubtful", "Questionable", "Day-to-Day"] },
-                  impact: { type: "string" }
-                }
-              }
             }
           },
-          required: ["sport", "home_team", "away_team", "venue"]
+          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "analysis_summary"]
         }
       });
 
-      console.log("✅ Match Analysis Result:", llmResult);
+      console.log("✅ Match Analysis Result:", result);
 
-      // POST-PROCESSING VALIDATION
-      if (!llmResult || !llmResult.sport || !llmResult.home_team || !llmResult.away_team || !llmResult.venue) {
+      if (!result || !result.sport || !result.home_team || !result.away_team) {
         throw new Error("Invalid response - missing required match data");
       }
 
-      if (llmResult.analysis_summary?.includes(`Unable to find current ${currentYear} data for this match`)) {
-        throw new Error(`Match not found for ${currentYear} - try a different query or wait for data to become available.`);
-      } else if (llmResult.analysis_summary?.includes("Unable to")) {
-        throw new Error("Match not found - try a different date or verify team names");
-      }
-      
-      // Validate data freshness for key players on the client side as an extra safeguard
-      if (llmResult.key_players && llmResult.key_players.length > 0) {
-        for (const player of llmResult.key_players) {
-          if (player.last_five_games && player.last_five_games.length > 0) {
-            // Check if last game date is recent (within last 90 days)
-            // Assuming `last_five_games` is sorted by date, latest first.
-            const lastGameDate = new Date(player.last_five_games[0].date);
-            const daysSinceLastGame = Math.floor((new Date() - lastGameDate) / (1000 * 60 * 60 * 24));
-            
-            if (daysSinceLastGame > 90) {
-              console.warn(`⚠️ Warning: Player ${player.name} last game was ${daysSinceLastGame} days ago - data might be outdated`);
-              // Optionally, you could throw an error or mark the result as low confidence here.
-            }
-          }
-        }
-      }
-      
-      // Probability validation
-      const totalProb = (llmResult.home_win_probability || 0) + (llmResult.away_win_probability || 0) + (llmResult.draw_probability || 0);
-      if (Math.abs(totalProb - 100) > 0.5) {
-        console.warn(`⚠️ Probabilities sum to ${totalProb.toFixed(1)}%, adjusting to 100%`);
-        if (llmResult.draw_probability !== undefined) {
-          llmResult.draw_probability += (100 - totalProb);
-        } else {
-          const diff = 100 - totalProb;
-          llmResult.home_win_probability += diff / 2;
-          llmResult.away_win_probability += diff / 2;
-        }
+      if (result.analysis_summary?.includes("Unable to find")) {
+        throw new Error("Match not found - try a different date or check team names");
       }
 
-      // Add default game_status and last_checked_for_result for newly created matches
-      const newMatchData = {
-        ...llmResult,
-        game_status: 'scheduled', // New matches are initially 'scheduled'
-        actual_home_score: null,
-        actual_away_score: null,
-        actual_winner: null,
-        prediction_correct: null,
-        last_checked_for_result: null, // No result check yet
-      };
-
-      await base44.entities.Match.create(newMatchData); 
+      await base44.entities.Match.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       
     } catch (err) {
       console.error("❌ Match Analysis Error:", err);
-      let shortMessage = "Failed to analyze the match.";
-      let detailedMessage = "Please try:\n• Using official team names\n• Adding 'today' or 'tonight'\n• Using @ to indicate away team\n• Being more specific about the league";
+      let errorMessage = "Failed to analyze the match. ";
       
-      if (err.message?.includes("Match not found for")) {
-        shortMessage = `Couldn't find current ${new Date().getFullYear()} data for that match.`;
-        detailedMessage = "This might mean the season hasn't started, or data isn't yet available. Please try a different query or check back later.";
-      }
-      else if (err.message?.includes("Match not found")) {
-        shortMessage = "Couldn't find that specific match.";
-        detailedMessage = "Try:\n• Adding a date (e.g., 'Lakers @ Celtics today')\n• Using full team names\n• Checking if the game is scheduled\n• Using @ for away team format";
+      if (err.message?.includes("Match not found")) {
+        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers vs Celtics today')\n• Using full team names\n• Checking if the game is scheduled";
       } else if (err.message?.includes("Invalid response")) {
-        shortMessage = "The AI couldn't find enough data.";
-        detailedMessage = "Try:\n• 'NBA games today'\n• 'NFL games this week'\n• A specific matchup with @ or vs\n• Example: 'Lakers @ Celtics' (Lakers away)";
+        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'Premier League matches this weekend'\n• A specific team matchup";
+      } else {
+        errorMessage += "Please try:\n• Using official team names (e.g., 'Los Angeles Lakers')\n• Adding 'today' or 'tonight'\n• Being more specific about the league";
       }
       
-      setError({ short: shortMessage, detailed: detailedMessage });
+      setError(errorMessage);
     }
 
     setIsSearching(false);
@@ -622,21 +251,9 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
     );
   }
 
-  // Calculate overall accuracy if matches are loaded and some have results
-  const totalPredictions = matches?.filter(m => m.prediction_correct !== null).length || 0;
-  const correctPredictions = matches?.filter(m => m.prediction_correct === true).length || 0;
-  const overallAccuracy = totalPredictions > 0 ? ((correctPredictions / totalPredictions) * 100).toFixed(1) : "N/A";
-
-
   return (
-    <div className="min-h-screen">
-      <FreeLookupBanner 
-        lookupsRemaining={lookupsRemaining} 
-        isAuthenticated={isAuthenticated}
-        isPremium={isPremium}
-        isVIP={isVIP}
-      />
-      <LimitedOfferBanner />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
@@ -644,55 +261,60 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
       />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWghtDoiNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 opacity-90" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Logo Badge */}
-            <div className="mb-6 flex justify-center">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/f7ec915ef_image.png" 
-                alt="SWH Sports Wager Helper" 
-                className="h-20 sm:h-24 w-auto object-contain" 
-              />
-            </div>
-            
-            {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
-              Win More.<br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                Bet Smarter.
-              </span>
-            </h1>
-            
-            {/* Subheadline */}
-            <p className="text-xl sm:text-2xl text-slate-300 mb-6 leading-relaxed">
-              AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources.
-            </p>
+        <div className="relative max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-start justify-between flex-wrap gap-6">
+            <div className="flex-1 min-w-[300px]">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-white text-sm font-medium">Live AI Analysis</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
+                Win More.<br />
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                  Bet Smarter.
+                </span>
+              </h1>
+              
+              <p className="text-xl text-emerald-100 max-w-2xl leading-relaxed mb-6">
+                AI-powered sports analytics with real-time stats from StatMuse, ESPN, and official league sources. Get match predictions, player insights, and team analysis.
+              </p>
 
-            {/* Live Data Badge */}
-            <div className="flex justify-center mb-8">
-              <LiveDataBadge sources={["StatMuse", "ESPN", "Basketball-Reference"]} />
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Trophy className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">{matches?.length || 0}</div>
+                    <div className="text-xs text-emerald-100">Matches Analyzed</div>
+                  </div>
+                </div>
+                
+                <div className="w-px h-12 bg-white/20" />
+                
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">Live</div>
+                    <div className="text-xs text-emerald-100">Real-time Data</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
-                <div className="text-3xl font-bold text-emerald-400">{matches?.length || 0}</div>
-                <div className="text-xs text-slate-400 mt-1">Predictions</div>
-              </div>
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
-                <div className="text-3xl font-bold text-cyan-400">{overallAccuracy}%</div>
-                <div className="text-xs text-slate-400 mt-1">Accuracy</div>
-              </div>
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
-                <div className="text-3xl font-bold text-purple-400">AI</div>
-                <div className="text-xs text-slate-400 mt-1">Powered</div>
-              </div>
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700">
-                <div className="text-3xl font-bold text-pink-400">Free</div>
-                <div className="text-xs text-slate-400 mt-1">To Try</div>
+            <div className="flex-shrink-0">
+              <div className="w-64 h-64 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl opacity-20 blur-3xl" />
+                <div className="relative w-full h-full bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 flex items-center justify-center">
+                  <Trophy className="w-32 h-32 text-white opacity-50" />
+                </div>
               </div>
             </div>
           </div>
@@ -700,74 +322,50 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-        {/* Today's Best Bets */}
-        <TodaysBestBets 
-          onLookupUsed={recordLookup}
-          canLookup={canLookup}
-          onLimitReached={() => setShowLimitModal(true)}
-        />
-
-        {/* Search Section */}
-        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <Target className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
-              <p className="text-slate-400">Get instant win probabilities and betting insights</p>
-            </div>
-          </div>
-          <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Today's Best Bets Section */}
+        <div className="mb-12">
+          <TodaysBestBets 
+            onLookupUsed={recordLookup}
+            canLookup={canLookup}
+            onLimitReached={() => setShowLimitModal(true)}
+          />
         </div>
 
-        {/* Error Display */}
+        {/* Search Section */}
+        <div className="mb-12">
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Analyze Any Match</h2>
+                <p className="text-slate-400">Get instant win probabilities and betting insights</p>
+              </div>
+            </div>
+            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+          </div>
+        </div>
+
         {error && (
-          <Alert variant="destructive" className="bg-red-500/10 border-red-500/50 text-red-400">
-            <AlertTitle className="flex items-center gap-2">
-              <Info className="h-4 w-4" />
-              {error.short}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowDetailedError(!showDetailedError)} 
-                className="ml-auto text-red-300 hover:bg-red-500/20 hover:text-red-200"
-              >
-                {showDetailedError ? "Hide Details" : "Show Details"}
-              </Button>
-            </AlertTitle>
-            <AnimatePresence>
-              {showDetailedError && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <AlertDescription className="whitespace-pre-line mt-2 pt-2 border-t border-red-500/30">
-                    {error.detailed}
-                  </AlertDescription>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+            <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Loading State */}
-        {(isSearching || checkingResults) && ( // Show loading for both search and result checking
+        {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="relative w-24 h-24 mx-auto mb-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
                 <div className="absolute inset-2 bg-slate-900 rounded-full flex items-center justify-center">
-                  {isSearching ? <Sparkles className="w-10 h-10 text-emerald-400" /> : <RefreshCcw className="w-10 h-10 text-teal-400" />}
+                  <Sparkles className="w-10 h-10 text-emerald-400" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{isSearching ? "Analyzing Match Data" : "Updating Game Results"}</h3>
-              <p className="text-slate-400">{isSearching ? loadingMessage : "Fetching final scores and verifying predictions..."}</p>
+              <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
+              <p className="text-slate-400">Fetching live stats from StatMuse & ESPN...</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -777,19 +375,18 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
           </div>
         )}
 
-        {/* Results */}
-        {!isSearching && !checkingResults && ( // Hide results while searching OR checking results
+        {!isSearching && (
           <>
             {matches.length > 0 ? (
               <>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-8">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
-                    Your Predictions
+                    Your Match Predictions
                     <span className="text-slate-500">({matches.length})</span>
                   </h2>
                 </div>
-                <div className="grid lg:grid-cols-2 gap-6">
+                <div className="grid lg:grid-cols-2 gap-8">
                   {matches.map((match, index) => (
                     <MatchCard
                       key={match.id}
@@ -807,18 +404,12 @@ RETURN: Complete JSON with ALL ${currentYear} data verified, or clear error mess
         )}
       </div>
 
-      {/* Updated Disclaimer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-6 backdrop-blur-sm">
-          <p className="text-sm text-red-300 text-center">
-            <strong className="font-bold text-lg">⚠️ IMPORTANT DISCLAIMER:</strong><br />
-            Sports Wager Helper predictions are AI-generated estimates for entertainment purposes only. 
-            We make no guarantees of accuracy. Past performance does not guarantee future results. 
-            Gambling involves risk of financial loss. Only bet what you can afford to lose. 
-            <br /><br />
-            <strong>21+ ONLY</strong> • Problem gambling? Call <strong>1-800-GAMBLER</strong>
-            <br />
-            Not affiliated with any sportsbook or gambling operator.
+      {/* Footer Disclaimer */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
+          <p className="text-sm text-amber-400">
+            <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
+            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>
         </div>
       </div>

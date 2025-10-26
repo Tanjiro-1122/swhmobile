@@ -26,22 +26,22 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative group">
-          <Shield className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-green-400 transition-colors z-10" />
+          <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for any team (e.g., 'Los Angeles Lakers', 'Manchester United')"
-            className="pl-14 pr-36 h-14 text-base bg-slate-900/50 border-2 border-slate-700 focus:border-green-500 text-white placeholder:text-slate-500 rounded-xl transition-all shadow-lg"
+            className="pl-12 pr-32 h-14 text-lg border-2 focus:border-green-500 transition-all"
             disabled={isSearching}
           />
           <Button
             type="submit"
             disabled={isSearching || !query.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
           >
             {isSearching ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                 Analyzing...
               </>
             ) : (
@@ -54,9 +54,9 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
         </div>
       </form>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <TrendingUp className="w-4 h-4 text-slate-400" />
-        <span className="text-sm text-slate-400 font-medium">Popular teams:</span>
+      <div className="flex items-center gap-2 flex-wrap">
+        <TrendingUp className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-gray-500">Popular teams:</span>
         {popularTeams.map((team, index) => (
           <motion.button
             key={index}
@@ -66,7 +66,7 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
               setQuery(team);
               onSearch(team);
             }}
-            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-green-500/50 transition-all"
+            className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 rounded-full text-green-700 transition-colors"
           >
             {team}
           </motion.button>

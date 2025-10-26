@@ -72,30 +72,6 @@
         },
         "turnovers_per_game": {
           "type": "number"
-        },
-        "total_yards_per_game": {
-          "type": "number"
-        },
-        "passing_yards_per_game": {
-          "type": "number"
-        },
-        "rushing_yards_per_game": {
-          "type": "number"
-        },
-        "yards_allowed_per_game": {
-          "type": "number"
-        },
-        "sacks_per_game": {
-          "type": "number"
-        },
-        "takeaways_per_game": {
-          "type": "number"
-        },
-        "third_down_percentage": {
-          "type": "number"
-        },
-        "red_zone_percentage": {
-          "type": "number"
         }
       }
     },

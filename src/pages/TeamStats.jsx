@@ -8,7 +8,6 @@ import TeamSearchBar from "../components/team/TeamSearchBar";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import EmptyTeamState from "../components/team/EmptyTeamState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
-import LimitedOfferBanner from "../components/auth/LimitedOfferBanner";
 
 export default function TeamStats() {
   const [isSearching, setIsSearching] = useState(false);
@@ -60,147 +59,77 @@ export default function TeamStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports statistics AI with LIVE INTERNET ACCESS. You MUST fetch REAL, VERIFIED team data.
+        prompt: `You are a sports statistics AI with INTERNET ACCESS. You MUST fetch real, current data from the web.
 
 TEAM SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 MANDATORY DATA SOURCES (CHECK ALL):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: You have internet access. You MUST search these sources:
+1. StatMuse.com - Primary source for team statistics
+2. ESPN.com team pages
+3. Official league websites (NBA.com, NFL.com, PremierLeague.com)
+4. Basketball-Reference.com or Pro-Football-Reference.com
+5. Team official websites for roster and injury reports
 
-1. ⭐ StatMuse.com - PRIMARY SOURCE
-   Search: "${query} stats ${new Date().getFullYear()}"
-   Get: Team record, season averages, recent games
+STEP-BY-STEP PROCESS:
+1. Identify the team's full official name and league
+2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
+3. Get current season record (wins, losses, draws)
+4. Get season averages (PPG, defensive stats, etc.)
+5. Get last 5 game results with dates, opponents, scores
+6. Check official injury report from team website
+7. Find next scheduled game
 
-2. 🏀 Basketball-Reference.com (NBA teams)
-   URL: basketball-reference.com/teams/
-   Get: Standings, team stats, game results
+REQUIRED DATA TO EXTRACT:
 
-3. 🏈 Pro-Football-Reference.com (NFL teams)
-   URL: pro-football-reference.com/teams/
-   Get: Team records, offensive/defensive stats
+1. TEAM INFO (verify from official league):
+   - Full official name (e.g., "Los Angeles Lakers" not just "Lakers")
+   - Sport and league
+   - Current season record (W-L-D with exact numbers from standings)
+   - Win percentage
+   - Recent form: last 5 games in W/L format (e.g., "W-W-L-W-L")
 
-4. 📺 ESPN.com Team Pages
-   Get: Current standings, schedules, news
+2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
+   For Basketball: PPG, Opp PPG, FG%, 3P%, APG, RPG, TO/game
+   For Soccer: Goals/game, Goals allowed, Possession%, Shots, Passing accuracy
+   For Football: Points/game, Points allowed, Total yards, Turnovers
 
-5. 🏟️ Official Team Website
-   Get: Roster, injury reports, next game
+3. LAST 5 GAMES (from official game logs):
+   For EACH game provide:
+   - Exact date (MM/DD/YYYY)
+   - Opponent (full team name)
+   - Result: "W" or "L" or "D"
+   - Score (e.g., "115-108")
+   - Home or away
+   - Key stats from that specific game
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 VERIFICATION PROCESS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. KEY PLAYERS (5-7 from current roster):
+   - Search team's official roster
+   - List player names and positions
+   - Verify they're currently active
 
-STEP 1: IDENTIFY TEAM
-- Search StatMuse: "${query}"
-- Get OFFICIAL full team name
-- Verify sport and league
+5. INJURIES (check TODAY'S injury report):
+   - Search "[team name] injury report [today's date]"
+   - For each injured player: name, injury, status (Out/Day-to-Day/Questionable)
 
-STEP 2: GET CURRENT SEASON RECORD
-- W-L-D from current ${new Date().getFullYear()} season
-- Win percentage
-- Current standing in division/conference
-- Home record
-- Away record
+6. NEXT GAME (from team schedule):
+   - Opponent
+   - Date and time
+   - Home or away
+   - Win/loss prediction with brief reasoning
 
-STEP 3: SEASON AVERAGES (${new Date().getFullYear()} ONLY)
+7. ANALYSIS:
+   - Strengths: 3-5 statistical strengths (e.g., "#1 ranked defense allowing 98 PPG")
+   - Weaknesses: 2-3 statistical weaknesses (e.g., "28th in 3-point shooting at 32%")
 
-FOR NBA/BASKETBALL:
-✓ Points per game (team offense)
-✓ Points allowed per game (team defense)
-✓ Field goal %
-✓ 3-point %
-✓ Rebounds per game
-✓ Assists per game
-✓ Turnovers per game
+VALIDATION:
+- All stats must be from ${new Date().getFullYear()} season
+- Last 5 games must have actual dates and scores from game logs
+- Win-loss record must match current standings
+- If team not found, indicate in the response
 
-FOR NFL/FOOTBALL:
-✓ Points per game
-✓ Points allowed per game
-✓ Total yards per game (offense)
-✓ Yards allowed per game (defense)
-✓ Passing yards per game
-✓ Rushing yards per game
-✓ Turnovers/takeaways
-✓ Third down %
-✓ Red zone efficiency
-
-FOR SOCCER:
-✓ Goals per game
-✓ Goals allowed per game
-✓ Possession %
-✓ Shots per game
-✓ Passing accuracy %
-
-STEP 4: LAST 5 GAMES (MUST HAVE REAL DATES)
-For EACH of last 5 games:
-- Exact date (MM/DD/YYYY)
-- Opponent (full official name)
-- Result (W/L/D)
-- Final score
-- Home or away
-- Key team stats from that game
-
-STEP 5: CURRENT FORM
-- W-L-D pattern (e.g., "W-W-L-W-L")
-- Winning/losing streak
-
-STEP 6: KEY PLAYERS (5-7 players)
-- Search team roster
-- List starters and key contributors
-- Verify they're on CURRENT roster
-
-STEP 7: INJURY REPORT (TODAY)
-- Search: "[Team Name] injury report ${new Date().toLocaleDateString()}"
-- List injured players with:
-  * Player name
-  * Injury type
-  * Status (Out/Day-to-Day/Questionable)
-
-STEP 8: NEXT GAME
-- Opponent
-- Date and time
-- Home or away
-- Win/loss prediction with reasoning
-
-STEP 9: TEAM ANALYSIS
-STRENGTHS (3-5 with stats):
-- E.g., "#1 ranked defense allowing 98 PPG"
-- E.g., "Won 8 of last 10 games"
-
-WEAKNESSES (2-3 with stats):
-- E.g., "28th in 3-point shooting at 32%"
-- E.g., "Lost 4 straight on the road"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ DATA VALIDATION RULES:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-❌ REJECT if:
-- Team name doesn't match official name
-- Stats from previous seasons
-- Last 5 games don't have real dates
-- W-L record doesn't match standings
-- Using fake data
-
-✅ ACCEPT only if:
-- All stats from ${new Date().getFullYear()} season
-- Team verified on league website
-- Last 5 games have actual dates and scores
-- Current standings match
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 CRITICAL REMINDERS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Use StatMuse as PRIMARY source
-• Cross-reference with Basketball-Reference or Pro-Football-Reference
-• Only ${new Date().getFullYear()} season data
-• Last 5 games MUST have real dates and opponents
-• If team not found: indicate in response
-
-RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear()} data.`,
+FORMAT: Return valid JSON with ALL fields populated using REAL data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -328,56 +257,51 @@ RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
-      <LimitedOfferBanner />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
         lookupsRemaining={lookupsRemaining}
       />
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-green-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-xl">
-              <Shield className="w-8 h-8" />
+      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Shield className="w-7 h-7" />
             </div>
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-black">Team Statistics</h1>
-              <p className="text-green-100 text-lg mt-2">
-                Season stats, last 5 games & complete team analysis
-              </p>
-            </div>
+            <h1 className="text-4xl font-bold">Team Statistics</h1>
           </div>
+          <p className="text-green-100 text-lg max-w-2xl">
+            Get comprehensive team stats including season averages, last 5 games, key players, injuries, and next game predictions
+          </p>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-2xl">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-8">
           <TeamSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+          <Alert variant="destructive" className="mb-6">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {isSearching ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-green-200 opacity-20" />
+              <div className="w-16 h-16 mx-auto mb-4 relative">
+                <div className="absolute inset-0 rounded-full border-4 border-green-200" />
                 <div className="absolute inset-0 rounded-full border-4 border-green-600 border-t-transparent animate-spin" />
               </div>
-              <div className="flex items-center gap-2 text-white justify-center mb-2">
-                <Sparkles className="w-5 h-5 text-green-400" />
-                <span className="font-bold text-lg">Fetching team statistics...</span>
+              <div className="flex items-center gap-2 text-gray-600 justify-center">
+                <Sparkles className="w-5 h-5 text-green-600" />
+                <span className="font-medium">Fetching team statistics...</span>
               </div>
-              <p className="text-slate-400">This may take 10-15 seconds</p>
+              <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds</p>
             </div>
           </div>
         ) : (
@@ -385,10 +309,8 @@ RETURN: Valid JSON with ALL fields populated using REAL ${new Date().getFullYear
             {teams.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
-                    Analyzed Teams
-                    <span className="text-slate-500">({teams.length})</span>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Your Analyzed Teams ({teams.length})
                   </h2>
                 </div>
                 <div className="space-y-6">

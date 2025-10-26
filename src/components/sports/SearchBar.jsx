@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles, Info } from "lucide-react";
+import { Search, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SearchBar({ onSearch, isSearching }) {
@@ -15,37 +15,37 @@ export default function SearchBar({ onSearch, isSearching }) {
   };
 
   const popularSearches = [
-    "Lakers @ Celtics",
-    "Chiefs @ Bills",
-    "Warriors vs Nuggets",
-    "Man United vs Liverpool"
+    "Lakers vs Celtics",
+    "Man United vs Liverpool",
+    "NBA tonight",
+    "Champions League today"
   ];
 
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 transition-colors z-10" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-blue-400 transition-colors z-10" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search: 'Lakers @ Celtics' or 'Warriors vs Nuggets'..."
-            className="pl-14 pr-36 h-14 text-base bg-slate-900/50 border-2 border-slate-700 focus:border-emerald-500 text-white placeholder:text-slate-500 rounded-xl transition-all shadow-lg"
+            placeholder="Search any match: 'Lakers vs Celtics', 'Man United vs Liverpool'..."
+            className="pl-16 pr-36 h-16 text-lg bg-slate-800/50 border-2 border-slate-700 focus:border-blue-500 text-white placeholder:text-slate-500 rounded-xl transition-all"
             disabled={isSearching}
           />
           <Button
             type="submit"
             disabled={isSearching || !query.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-blue-500/50 transition-all hover:scale-105"
           >
             {isSearching ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
                 Analyzing...
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Zap className="w-5 h-5 mr-2" />
                 Analyze
               </>
             )}
@@ -53,36 +53,21 @@ export default function SearchBar({ onSearch, isSearching }) {
         </div>
       </form>
 
-      {/* Format Guide */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <div className="text-sm font-bold text-blue-300 mb-2">📝 How to Search:</div>
-            <div className="text-sm text-blue-200 space-y-1">
-              <div>✅ <strong>"Lakers @ Celtics"</strong> = Lakers away, Celtics home</div>
-              <div>✅ <strong>"Chiefs @ Bills"</strong> = Chiefs away, Bills home</div>
-              <div>✅ <strong>"Warriors vs Nuggets"</strong> = Warriors home, Nuggets away</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm text-slate-400 font-medium">Popular:</span>
         {popularSearches.map((search, index) => (
-          <Button
+          <motion.button
             key={index}
-            variant="outline"
-            size="sm"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               setQuery(search);
               onSearch(search);
             }}
-            className="text-sm bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:border-emerald-500/50"
+            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500/50 transition-all"
           >
             {search}
-          </Button>
+          </motion.button>
         ))}
       </div>
     </div>

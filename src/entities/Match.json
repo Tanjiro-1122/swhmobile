@@ -3,41 +3,48 @@
   "type": "object",
   "properties": {
     "sport": {
-      "type": "string"
+      "type": "string",
+      "description": "Type of sport (e.g., Football, Basketball, Tennis)"
     },
     "league": {
-      "type": "string"
+      "type": "string",
+      "description": "League or competition name"
     },
     "home_team": {
-      "type": "string"
+      "type": "string",
+      "description": "Name of the home team"
     },
     "away_team": {
-      "type": "string"
-    },
-    "venue": {
-      "type": "string"
+      "type": "string",
+      "description": "Name of the away team"
     },
     "match_date": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "Date and time of the match"
     },
     "home_win_probability": {
-      "type": "number"
+      "type": "number",
+      "description": "Probability of home team winning (0-100)"
     },
     "away_win_probability": {
-      "type": "number"
+      "type": "number",
+      "description": "Probability of away team winning (0-100)"
     },
     "draw_probability": {
-      "type": "number"
+      "type": "number",
+      "description": "Probability of a draw (0-100)"
     },
     "key_factors": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "Key factors affecting the prediction"
     },
     "analysis_summary": {
-      "type": "string"
+      "type": "string",
+      "description": "Brief summary of the analysis"
     },
     "confidence_level": {
       "type": "string",
@@ -45,7 +52,8 @@
         "low",
         "medium",
         "high"
-      ]
+      ],
+      "description": "Confidence level of the prediction"
     },
     "key_players": {
       "type": "array",
@@ -61,29 +69,6 @@
           "position": {
             "type": "string"
           },
-          "sport": {
-            "type": "string"
-          },
-          "season_average": {
-            "type": "string"
-          },
-          "last_five_games": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "date": {
-                  "type": "string"
-                },
-                "opponent": {
-                  "type": "string"
-                },
-                "stats": {
-                  "type": "string"
-                }
-              }
-            }
-          },
           "predicted_points": {
             "type": "number"
           },
@@ -96,90 +81,22 @@
           "predicted_goals": {
             "type": "number"
           },
-          "predicted_hits": {
-            "type": "number"
-          },
-          "predicted_runs": {
-            "type": "number"
-          },
-          "predicted_rbis": {
-            "type": "number"
-          },
-          "predicted_home_runs": {
-            "type": "number"
-          },
-          "predicted_passing_yards": {
-            "type": "number"
-          },
-          "predicted_passing_touchdowns": {
-            "type": "number"
-          },
-          "predicted_rushing_yards": {
-            "type": "number"
-          },
-          "predicted_receiving_yards": {
-            "type": "number"
-          },
-          "predicted_receptions": {
-            "type": "number"
-          },
-          "over_under_line": {
-            "type": "number"
-          },
-          "over_probability": {
-            "type": "number"
-          },
-          "under_probability": {
-            "type": "number"
-          },
           "probability_to_score": {
             "type": "number"
           },
           "recent_form": {
-            "type": "string",
-            "enum": [
-              "Hot",
-              "Average",
-              "Cold"
-            ]
+            "type": "string"
           },
           "injury_status": {
             "type": "string"
-          },
-          "injury_details": {
-            "type": "string"
           }
         }
-      }
+      },
+      "description": "Key players and their predicted contributions"
     },
     "betting_markets": {
       "type": "object",
       "properties": {
-        "moneyline": {
-          "type": "object",
-          "properties": {
-            "home_odds": {
-              "type": "string"
-            },
-            "away_odds": {
-              "type": "string"
-            }
-          }
-        },
-        "spread": {
-          "type": "object",
-          "properties": {
-            "line": {
-              "type": "number"
-            },
-            "home_cover_probability": {
-              "type": "number"
-            },
-            "away_cover_probability": {
-              "type": "number"
-            }
-          }
-        },
         "over_under": {
           "type": "object",
           "properties": {
@@ -191,6 +108,28 @@
             },
             "under_probability": {
               "type": "number"
+            }
+          }
+        },
+        "both_teams_score": {
+          "type": "object",
+          "properties": {
+            "yes_probability": {
+              "type": "number"
+            },
+            "no_probability": {
+              "type": "number"
+            }
+          }
+        },
+        "total_goals_range": {
+          "type": "object",
+          "properties": {
+            "predicted_total": {
+              "type": "number"
+            },
+            "range": {
+              "type": "string"
             }
           }
         },
@@ -206,41 +145,13 @@
           }
         }
       }
-    },
-    "current_injuries": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "player_name": {
-            "type": "string"
-          },
-          "team": {
-            "type": "string"
-          },
-          "injury_type": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "Out",
-              "Doubtful",
-              "Questionable",
-              "Day-to-Day"
-            ]
-          },
-          "impact": {
-            "type": "string"
-          }
-        }
-      }
     }
   },
   "required": [
     "sport",
     "home_team",
     "away_team",
-    "venue"
+    "home_win_probability",
+    "away_win_probability"
   ]
 }

@@ -22,14 +22,6 @@
       "type": "string",
       "description": "League or competition"
     },
-    "is_starting": {
-      "type": "boolean",
-      "description": "Whether the player is in the starting lineup"
-    },
-    "depth_chart_position": {
-      "type": "string",
-      "description": "Position on depth chart (e.g., 'Starter', 'Backup', '2nd String')"
-    },
     "season_averages": {
       "type": "object",
       "properties": {
@@ -71,69 +63,6 @@
         },
         "minutes_per_game": {
           "type": "number"
-        },
-        "passing_yards_per_game": {
-          "type": "number"
-        },
-        "passing_touchdowns_per_game": {
-          "type": "number"
-        },
-        "interceptions_per_game": {
-          "type": "number"
-        },
-        "completion_percentage": {
-          "type": "number"
-        },
-        "rushing_yards_per_game": {
-          "type": "number"
-        },
-        "rushing_touchdowns_per_game": {
-          "type": "number"
-        },
-        "carries_per_game": {
-          "type": "number"
-        },
-        "receiving_yards_per_game": {
-          "type": "number"
-        },
-        "receiving_touchdowns_per_game": {
-          "type": "number"
-        },
-        "receptions_per_game": {
-          "type": "number"
-        },
-        "targets_per_game": {
-          "type": "number"
-        },
-        "yards_per_carry": {
-          "type": "number"
-        },
-        "yards_per_reception": {
-          "type": "number"
-        },
-        "hits_per_game": {
-          "type": "number"
-        },
-        "runs_per_game": {
-          "type": "number"
-        },
-        "rbis_per_game": {
-          "type": "number"
-        },
-        "home_runs_per_game": {
-          "type": "number"
-        },
-        "stolen_bases_per_game": {
-          "type": "number"
-        },
-        "batting_average": {
-          "type": "number"
-        },
-        "on_base_percentage": {
-          "type": "number"
-        },
-        "slugging_percentage": {
-          "type": "number"
         }
       }
     },
@@ -158,42 +87,6 @@
             "type": "number"
           },
           "goals": {
-            "type": "number"
-          },
-          "passing_yards": {
-            "type": "number"
-          },
-          "passing_touchdowns": {
-            "type": "number"
-          },
-          "interceptions": {
-            "type": "number"
-          },
-          "rushing_yards": {
-            "type": "number"
-          },
-          "rushing_touchdowns": {
-            "type": "number"
-          },
-          "receiving_yards": {
-            "type": "number"
-          },
-          "receiving_touchdowns": {
-            "type": "number"
-          },
-          "receptions": {
-            "type": "number"
-          },
-          "hits": {
-            "type": "number"
-          },
-          "runs": {
-            "type": "number"
-          },
-          "rbis": {
-            "type": "number"
-          },
-          "home_runs": {
             "type": "number"
           },
           "performance_rating": {
@@ -235,24 +128,6 @@
       "type": "object",
       "properties": {
         "over_under_points": {
-          "type": "number"
-        },
-        "over_under_yards": {
-          "type": "number"
-        },
-        "over_under_hits": {
-          "type": "number"
-        },
-        "over_under_rbis": {
-          "type": "number"
-        },
-        "over_under_home_runs": {
-          "type": "number"
-        },
-        "over_probability": {
-          "type": "number"
-        },
-        "under_probability": {
           "type": "number"
         },
         "probability_to_score": {
