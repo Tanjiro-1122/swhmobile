@@ -6,120 +6,133 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp, Target, Award, Calendar, BarChart3, CheckCircle, XCircle, AlertTriangle, RefreshCw, Clock, Activity } from "lucide-react";
+import {
+  Target, // Used for Overall Accuracy card icon
+  Activity, // Used for Total Predictions card icon
+  CheckCircle, // Used for Correct Predictions card icon and recent prediction icon
+  XCircle, // Used for recent prediction icon
+  AlertCircle, // Used for 'No Accuracy Data Yet' card icon
+  RefreshCw, // Used for checking state of manual check button
+  Zap // Used for manual check button icon
+} from "lucide-react";
 import { motion } from "framer-motion";
-import AutoAccuracyTracker from "../components/accuracy/AutoAccuracyTracker";
+// AutoAccuracyTracker component is completely removed to disable automatic checks
 
 export default function AccuracyTracker() {
-  const [testingTracking, setTestingTracking] = useState(false);
-  const [isManualCheckRunning, setIsManualCheckRunning] = useState(false);
-  const [manualCheckMessage, setManualCheckMessage] = useState(null);
+  const [isCheckingAccuracy, setIsCheckingAccuracy] = useState(false);
+  const [checkMessage, setCheckMessage] = useState(null);
   const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+  });
 
   const { data: predictions, isLoading } = useQuery({
     queryKey: ['predictions'],
-    queryFn: () => base44.entities.PredictionAccuracy.list('-prediction_date', 100),
+    queryFn: () => base44.entities.PredictionAccuracy.list('-prediction_date'),
     initialData: [],
-    refetchInterval: 60000 // Refetch every minute to show updates
+    // Removed refetchInterval to prevent automatic checks
   });
 
-  const createTestPrediction = useMutation({
-    mutationFn: async () => {
-      // Create a test prediction
-      return await base44.entities.PredictionAccuracy.create({
-        prediction_type: "match",
-        sport: "Basketball",
-        predicted_outcome: "Lakers win by 5+ points",
-        actual_outcome: "Lakers won by 8 points",
-        was_correct: true,
-        confidence_level: "high",
-        prediction_date: new Date().toISOString()
-      });
-    },
+  const createAccuracyRecord = useMutation({
+    mutationFn: (data) => base44.entities.PredictionAccuracy.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predictions'] });
     }
   });
 
-  const handleTestTracking = async () => {
-    setTestingTracking(true);
-    try {
-      await createTestPrediction.mutateAsync();
-      alert("✅ Test prediction created successfully! Check the stats below.");
-    } catch (error) { // Removed : any type annotation
-      alert("❌ Error creating test prediction: " + error.message);
-    }
-    setTestingTracking(false);
-  };
-
-  const handleManualRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['predictions'] });
-  };
-
-  const runManualAccuracyCheck = async () => {
-    // Check cooldown
-    const lastManualCheck = localStorage.getItem('lastManualAccuracyCheck');
-    if (lastManualCheck) {
-      const timeSince = Date.now() - parseInt(lastManualCheck);
-      const oneHour = 60 * 60 * 1000;
-      if (timeSince < oneHour) {
-        const minutesRemaining = Math.ceil((oneHour - timeSince) / (60 * 1000));
-        alert(`⏸️ Please wait ${minutesRemaining} minutes before running another manual check to avoid rate limits.`);
+  // Manual accuracy check with aggressive rate limiting
+  const handleManualAccuracyCheck = async () => {
+    // Check if we've run this recently (within last 12 hours)
+    const lastCheckTime = localStorage.getItem('lastManualAccuracyCheck');
+    if (lastCheckTime) {
+      const timeSinceLastCheck = Date.now() - parseInt(lastCheckTime, 10);
+      const twelveHours = 12 * 60 * 60 * 1000;
+      if (timeSinceLastCheck < twelveHours) {
+        const hoursRemaining = Math.ceil((twelveHours - timeSinceLastCheck) / (60 * 60 * 1000));
+        setCheckMessage({
+          type: "warning",
+          text: `⏸️ Please wait ${hoursRemaining} more hours before checking again to avoid rate limits.`
+        });
         return;
       }
     }
 
-    if (!confirm("This will check ONE finished game and may take 15-20 seconds. Continue?")) {
-      return;
-    }
-
-    setIsManualCheckRunning(true);
-    setManualCheckMessage(null);
+    setIsCheckingAccuracy(true);
+    setCheckMessage(null);
 
     try {
-      setManualCheckMessage("1/5: Fetching recent matches...");
-      const allMatches = await base44.entities.Match.list('-match_date', 50);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay to simulate work and prevent aggressive rate limiting
+      console.log("🔍 Starting manual accuracy check...");
 
-      setManualCheckMessage("2/5: Filtering finished matches...");
+      // Get all matches
+      setCheckMessage({ type: "info", text: "1/5: Fetching recent matches..." });
+      const allMatches = await base44.entities.Match.list('-match_date', 30); // Reduced to 30
+
+      // Wait 3 seconds after first API call
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Filter matches that have finished (6+ hours ago)
+      setCheckMessage({ type: "info", text: "2/5: Filtering finished matches..." });
       const now = new Date();
-      // Consider matches finished more than 6 hours ago as 'past games' eligible for accuracy check
       const sixHoursAgo = new Date(now.getTime() - (6 * 60 * 60 * 1000));
-      
+
       const finishedMatches = allMatches.filter(match => {
         if (!match.match_date) return false;
         const matchDate = new Date(match.match_date);
         return matchDate < sixHoursAgo;
       });
 
-      setManualCheckMessage("3/5: Checking existing accuracy records...");
+      // Get existing accuracy records
+      setCheckMessage({ type: "info", text: "3/5: Checking existing accuracy records..." });
       const existingRecords = await base44.entities.PredictionAccuracy.list();
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay
 
-      // Create a Set of match_ids that already have accuracy records
+      // Wait 3 seconds after second API call
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       const existingMatchIds = new Set(existingRecords.map(r => r.match_id).filter(Boolean));
-      // Filter out matches that already have accuracy records
+
+      // Filter unprocessed matches
       const unprocessedMatches = finishedMatches.filter(match => !existingMatchIds.has(match.id));
 
       if (unprocessedMatches.length === 0) {
-        setManualCheckMessage("✅ All finished games have been processed!");
-        setIsManualCheckRunning(false);
+        setCheckMessage({
+          type: "success",
+          text: "✅ All finished games have been checked. No new results to verify."
+        });
+        setIsCheckingAccuracy(false);
+        localStorage.setItem('lastManualAccuracyCheck', Date.now().toString());
         return;
       }
 
+      // Process ONLY 1 game to avoid rate limits
       const matchToProcess = unprocessedMatches[0];
-      
-      setManualCheckMessage(`4/5: Invoking AI to verify ${matchToProcess.home_team} vs ${matchToProcess.away_team}... (This takes 10 seconds)`);
 
-      // Significant delay before LLM call to respect rate limits and simulate real world processing
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      setCheckMessage({ type: "info", text: `4/5: Invoking AI to verify ${matchToProcess.home_team} vs ${matchToProcess.away_team}... (This takes a few seconds)` });
+      console.log(`📊 Verifying: ${matchToProcess.home_team} vs ${matchToProcess.away_team}`);
+
+      // Wait 5 seconds before LLM call
+      console.log("⏳ Waiting 5 seconds before API call...");
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       const verificationResult = await base44.integrations.Core.InvokeLLM({
         prompt: `Verify the ACTUAL result of this completed game.
-GAME: ${matchToProcess.home_team} vs ${matchToProcess.away_team}
-Date: ${matchToProcess.match_date}
-Sport: ${matchToProcess.sport}
-Get the official final score from ESPN or StatMuse. Return game_status and was_correct.`,
+
+GAME:
+- Sport: ${matchToProcess.sport}
+- Home: ${matchToProcess.home_team}
+- Away: ${matchToProcess.away_team}
+- Date: ${matchToProcess.match_date}
+
+OUR PREDICTION: ${matchToProcess.home_win_probability > matchToProcess.away_win_probability ? matchToProcess.home_team : matchToProcess.away_team} to win
+
+Search ESPN or StatMuse for the final score. Was our prediction correct?`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -127,182 +140,153 @@ Get the official final score from ESPN or StatMuse. Return game_status and was_c
             game_status: { type: "string", enum: ["completed", "postponed", "cancelled", "not_found"] },
             actual_outcome: { type: "string" },
             final_score: { type: "string" },
-            winner: { type: "string" },
-            was_correct: { type: "boolean" }
-          },
-          required: ["game_status"]
+            was_correct: { type: "boolean" },
+            notes: { type: "string" }
+          }
         }
       });
 
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Delay after LLM call
-
+      setCheckMessage({ type: "info", text: "5/5: Processing verification result..." });
       if (verificationResult.game_status === "completed" && verificationResult.was_correct !== undefined) {
-        await base44.entities.PredictionAccuracy.create({
+        await createAccuracyRecord.mutateAsync({
           prediction_type: "match",
           sport: matchToProcess.sport,
-          predicted_outcome: `${matchToProcess.home_win_probability > matchToProcess.away_win_probability ? matchToProcess.home_team : matchToProcess.away_team} to win`, // Simplified prediction
-          actual_outcome: verificationResult.actual_outcome || `${verificationResult.winner} won`,
+          predicted_outcome: `${matchToProcess.home_win_probability > matchToProcess.away_win_probability ? matchToProcess.home_team : matchToProcess.away_team} to win`,
+          actual_outcome: verificationResult.actual_outcome || verificationResult.final_score,
           was_correct: verificationResult.was_correct,
-          // Assuming Match entity has confidence_level, or default to medium
-          confidence_level: matchToProcess.confidence_level || "medium", 
+          confidence_level: matchToProcess.confidence_level || 'medium', // Default if not present
           prediction_date: matchToProcess.match_date,
           match_id: matchToProcess.id
         });
 
-        setManualCheckMessage(`✅ 5/5: Successfully processed: ${matchToProcess.home_team} vs ${matchToProcess.away_team} - ${verificationResult.was_correct ? 'Prediction CORRECT' : 'Prediction INCORRECT'}`);
-        localStorage.setItem('lastManualAccuracyCheck', Date.now().toString()); // Update cooldown
+        setCheckMessage({
+          type: "success",
+          text: `✅ Verified 1 game result. ${unprocessedMatches.length - 1} games remaining. Run again in 12 hours to check more.`
+        });
         queryClient.invalidateQueries({ queryKey: ['predictions'] }); // Invalidate to refetch accuracy data
       } else {
-        setManualCheckMessage(`⏭️ 5/5: Skipped. Game status: ${verificationResult.game_status}. No accuracy record created.`);
+        setCheckMessage({
+          type: "info",
+          text: `ℹ️ Game status: ${verificationResult.game_status}. ${verificationResult.notes || ''}. No accuracy record created.`
+        });
       }
 
-    } catch (error) { // Removed : any type annotation
-      console.error("Manual check error:", error);
-      if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
-        setManualCheckMessage("🚫 Rate limit reached. Please wait 1 hour before trying again.");
-      } else {
-        setManualCheckMessage(`❌ Error: ${error.message}`);
+      localStorage.setItem('lastManualAccuracyCheck', Date.now().toString());
+
+    } catch (error) {
+      console.error("Error checking accuracy:", error);
+      let errorMessage = "An unknown error occurred. Please try again in 12 hours.";
+      if (error.message) {
+        errorMessage = `❌ Error: ${error.message}. Please try again in 12 hours.`;
       }
+      if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+        errorMessage = "🚫 Rate limit reached. Please wait 12 hours before trying again.";
+      }
+      setCheckMessage({
+        type: "error",
+        text: errorMessage
+      });
     }
 
-    setIsManualCheckRunning(false);
+    setIsCheckingAccuracy(false);
   };
 
-  // Calculate statistics
-  const totalPredictions = predictions?.length || 0;
-  const correctPredictions = predictions?.filter(p => p.was_correct).length || 0;
-  const accuracyRate = totalPredictions > 0 ? ((correctPredictions / totalPredictions) * 100).toFixed(1) : 0;
+  // Stats Calculations
+  const totalPredictions = predictions.length;
+  const correctPredictions = predictions.filter(p => p.was_correct === true).length;
+  const incorrectPredictions = predictions.filter(p => p.was_correct === false).length;
+  const overallAccuracy = totalPredictions > 0 ? ((correctPredictions / totalPredictions) * 100).toFixed(1) : "N/A";
 
-  // By sport
-  const sports = [...new Set(predictions?.map(p => p.sport).filter(Boolean))];
-  const sportStats = sports.map(sport => {
-    const sportPreds = predictions.filter(p => p.sport === sport);
-    const correct = sportPreds.filter(p => p.was_correct).length;
-    return {
-      sport,
-      total: sportPreds.length,
-      correct,
-      accuracy: sportPreds.length > 0 ? ((correct / sportPreds.length) * 100).toFixed(1) : 0
-    };
-  });
+  const bySport = predictions.reduce((acc, p) => {
+    if (!p.sport) return acc;
+    if (!acc[p.sport]) {
+      acc[p.sport] = { total: 0, correct: 0, incorrect: 0 };
+    }
+    acc[p.sport].total++;
+    if (p.was_correct === true) acc[p.sport].correct++;
+    if (p.was_correct === false) acc[p.sport].incorrect++;
+    return acc;
+  }, {});
 
-  // By confidence level
-  const highConfidence = predictions?.filter(p => p.confidence_level === 'high') || [];
-  const mediumConfidence = predictions?.filter(p => p.confidence_level === 'medium') || [];
-  const lowConfidence = predictions?.filter(p => p.confidence_level === 'low') || [];
-
-  const highAccuracy = highConfidence.length > 0 ? ((highConfidence.filter(p => p.was_correct).length / highConfidence.length) * 100).toFixed(1) : 0;
-  const mediumAccuracy = mediumConfidence.length > 0 ? ((mediumConfidence.filter(p => p.was_correct).length / mediumConfidence.length) * 100).toFixed(1) : 0;
-  const lowAccuracy = lowConfidence.length > 0 ? ((lowConfidence.filter(p => p.was_correct).length / lowConfidence.length) * 100).toFixed(1) : 0;
-
-  // Last 30 days
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentPredictions = predictions?.filter(p => new Date(p.prediction_date) > thirtyDaysAgo) || [];
-  const recentCorrect = recentPredictions.filter(p => p.was_correct).length;
-  const recentAccuracy = recentPredictions.length > 0 ? ((recentCorrect / recentPredictions.length) * 100).toFixed(1) : 0;
+  const byConfidence = predictions.reduce((acc, p) => {
+    const level = p.confidence_level || 'unknown';
+    if (!acc[level]) {
+      acc[level] = { total: 0, correct: 0, incorrect: 0 };
+    }
+    acc[level].total++;
+    if (p.was_correct === true) acc[level].correct++;
+    if (p.was_correct === false) acc[level].incorrect++;
+    return acc;
+  }, {});
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Hero */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm mx-auto mb-6">
-              <Target className="w-10 h-10" />
+      {/* AutoAccuracyTracker component removed */}
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-xl">
+              <Target className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black mb-4">Prediction Accuracy</h1>
-            <p className="text-xl text-emerald-100">
-              Track our AI's historical performance across all sports
-            </p>
-          </motion.div>
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-black">Accuracy Tracker</h1>
+              <p className="text-emerald-100 text-lg mt-2">
+                Real-time verification of our AI predictions
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Auto Accuracy Tracker */}
-        <AutoAccuracyTracker />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        {/* Manual Check Button with Cooldown */}
-        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700 mb-8">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-400" />
-              Manual Accuracy Check
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-slate-300 text-sm">
-                Manually check one finished game at a time to update accuracy data. 
-                <strong className="text-yellow-400"> Limited to once per hour</strong> to avoid rate limits.
-                This process involves AI verification and takes about 15-20 seconds.
-              </p>
+        {/* Manual Check Button */}
+        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">Manual Accuracy Check</h3>
+                <p className="text-slate-400 text-sm">
+                  Verify finished games and update accuracy stats (limited to once every 12 hours)
+                </p>
+              </div>
               <Button
-                onClick={runManualAccuracyCheck}
-                disabled={isManualCheckRunning}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                onClick={handleManualAccuracyCheck}
+                disabled={isCheckingAccuracy}
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold"
               >
-                {isManualCheckRunning ? (
+                {isCheckingAccuracy ? (
                   <>
-                    <Activity className="w-4 h-4 mr-2 animate-spin" />
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
                     Checking...
                   </>
                 ) : (
                   <>
-                    <Target className="w-4 h-4 mr-2" />
-                    Check One Game Now
+                    <Zap className="w-5 h-5 mr-2" />
+                    Check Accuracy Now
                   </>
                 )}
               </Button>
-              {manualCheckMessage && (
-                <Alert className="bg-blue-500/10 border-blue-500/30">
-                  <AlertDescription className="text-blue-200">
-                    {manualCheckMessage}
-                  </AlertDescription>
-                </Alert>
-              )}
             </div>
+
+            {checkMessage && (
+              <Alert className={`mt-4 ${
+                checkMessage.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-400' :
+                checkMessage.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-400' :
+                checkMessage.type === 'error' ? 'bg-red-500/10 border-red-500/50 text-red-400' :
+                'bg-blue-500/10 border-blue-500/50 text-blue-400'
+              }`}>
+                <AlertDescription>{checkMessage.text}</AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
 
-        {/* Manual Refresh Button */}
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={handleManualRefresh}
-            variant="outline"
-            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Displayed Data
-          </Button>
-        </div>
-
-        {/* System Status Alert */}
-        {totalPredictions === 0 && (
-          <Alert className="bg-yellow-500/10 border-2 border-yellow-500/50 mb-8">
-            <AlertTriangle className="w-5 h-5 text-yellow-400" />
-            <AlertDescription className="text-yellow-200">
-              <strong>⚠️ Prediction Tracking Status:</strong> No predictions have been tracked yet. 
-              The system automatically checks finished games every 6 hours and updates accuracy data.
-              <div className="mt-4">
-                <Button 
-                  onClick={handleTestTracking}
-                  disabled={testingTracking}
-                  className="bg-yellow-600 hover:bg-yellow-700"
-                >
-                  {testingTracking ? "Creating Test..." : "🧪 Create Test Prediction"}
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
+        {/* Loading State */}
         {isLoading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
@@ -311,184 +295,190 @@ Get the official final score from ESPN or StatMuse. Return game_status and was_c
         ) : (
           <>
             {/* Overall Stats */}
-            <div className="grid md:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-500/30">
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl font-black text-emerald-400 mb-2">{accuracyRate}%</div>
-                  <div className="text-sm text-emerald-300">Overall Accuracy</div>
-                  <div className="text-xs text-slate-400 mt-2">{correctPredictions}/{totalPredictions} correct</div>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Activity className="w-5 h-5 text-emerald-400" />
+                    Total Predictions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-5xl font-black text-white">{totalPredictions}</div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30">
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl font-black text-blue-400 mb-2">{recentAccuracy}%</div>
-                  <div className="text-sm text-blue-300">Last 30 Days</div>
-                  <div className="text-xs text-slate-400 mt-2">{recentCorrect}/{recentPredictions.length} correct</div>
+              <Card className="bg-gradient-to-br from-green-800/80 to-emerald-900/80 backdrop-blur-xl border-2 border-green-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    Correct
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-5xl font-black text-green-400">{correctPredictions}</div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30">
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl font-black text-purple-400 mb-2">{highAccuracy}%</div>
-                  <div className="text-sm text-purple-300">High Confidence</div>
-                  <div className="text-xs text-slate-400 mt-2">{highConfidence.filter(p => p.was_correct).length}/{highConfidence.length} correct</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border-orange-500/30">
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl font-black text-orange-400 mb-2">{totalPredictions}</div>
-                  <div className="text-sm text-orange-300">Total Predictions</div>
-                  <div className="text-xs text-slate-400 mt-2">All-time tracked</div>
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Target className="w-5 h-5 text-emerald-400" />
+                    Overall Accuracy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-5xl font-black text-emerald-400">{overallAccuracy}%</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* By Sport */}
-            {sportStats.length > 0 && (
-              <Card className="bg-slate-800/50 border-slate-700 mb-8">
+            {Object.keys(bySport).length > 0 && (
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <BarChart3 className="w-6 h-6 text-emerald-400" />
-                    Accuracy by Sport
-                  </CardTitle>
+                  <CardTitle className="text-white">Accuracy by Sport</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {sportStats.map((stat, idx) => (
-                      <div key={idx} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-lg font-bold text-white">{stat.sport}</span>
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                            {stat.accuracy}%
-                          </Badge>
+                  <div className="space-y-4">
+                    {Object.entries(bySport).map(([sport, stats]) => {
+                      const accuracy = stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(1) : 0;
+                      return (
+                        <div key={sport} className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-lg font-bold text-white">{sport}</span>
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                              {accuracy}% Accurate
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-slate-400">
+                            {stats.correct} correct / {stats.incorrect} incorrect / {stats.total} total
+                          </div>
+                          <div className="mt-2 bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full transition-all"
+                              style={{ width: `${accuracy}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="text-sm text-slate-400">
-                          {stat.correct}/{stat.total} correct predictions
-                        </div>
-                        <div className="mt-2 bg-slate-800 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full transition-all"
-                            style={{ width: `${stat.accuracy}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* By Confidence Level */}
-            <Card className="bg-slate-800/50 border-slate-700 mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Award className="w-6 h-6 text-purple-400" />
-                  Accuracy by Confidence Level
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg p-6 border border-green-500/30">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-green-400 mb-2">{highAccuracy}%</div>
-                      <div className="text-sm text-green-300 mb-1">High Confidence</div>
-                      <div className="text-xs text-slate-400">{highConfidence.length} predictions</div>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-lg p-6 border border-blue-500/30">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-blue-400 mb-2">{mediumAccuracy}%</div>
-                      <div className="text-sm text-blue-300 mb-1">Medium Confidence</div>
-                      <div className="text-xs text-slate-400">{mediumConfidence.length} predictions</div>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-lg p-6 border border-yellow-500/30">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-yellow-400 mb-2">{lowAccuracy}%</div>
-                      <div className="text-sm text-yellow-300 mb-1">Low Confidence</div>
-                      <div className="text-xs text-slate-400">{lowConfidence.length} predictions</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Predictions List */}
-            {predictions.length > 0 && (
-              <Card className="bg-slate-800/50 border-slate-700 mb-8">
+            {/* By Confidence */}
+            {Object.keys(byConfidence).length > 0 && (
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Calendar className="w-6 h-6 text-blue-400" />
-                    Recent Predictions
-                  </CardTitle>
+                  <CardTitle className="text-white">Accuracy by Confidence Level</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Object.entries(byConfidence).map(([level, stats]) => {
+                      const accuracy = stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(1) : 0;
+                      let badgeClasses = 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+                      if (level === 'high') {
+                        badgeClasses = 'bg-green-500/20 text-green-400 border-green-500/30';
+                      } else if (level === 'medium') {
+                        badgeClasses = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                      } else if (level === 'low') {
+                        badgeClasses = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                      }
+
+                      return (
+                        <div key={level} className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-lg font-bold text-white capitalize">{level} Confidence</span>
+                            <Badge className={badgeClasses}>
+                              {accuracy}% Accurate
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-slate-400">
+                            {stats.correct} correct / {stats.incorrect} incorrect / {stats.total} total
+                          </div>
+                          <div className="mt-2 bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div
+                              className={ `h-full transition-all ${
+                                level === 'high' ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                                level === 'medium' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+                                level === 'low' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                                'bg-slate-500'
+                              }`
+                            }
+                              style={{ width: `${accuracy}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recent Predictions */}
+            {predictions.length > 0 && (
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Recent Predictions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {predictions.slice(0, 10).map((pred, idx) => (
-                      <div key={idx} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 flex items-start gap-4">
-                        <div className="flex-shrink-0">
-                          {pred.was_correct ? (
-                            <CheckCircle className="w-6 h-6 text-green-400" />
-                          ) : (
-                            <XCircle className="w-6 h-6 text-red-400" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="text-slate-300">
-                              {pred.sport || pred.prediction_type}
-                            </Badge>
-                            <Badge className={
-                              pred.confidence_level === 'high' ? 'bg-green-500/20 text-green-400' :
-                              pred.confidence_level === 'medium' ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-yellow-500/20 text-yellow-400'
-                            }>
-                              {pred.confidence_level} confidence
-                            </Badge>
-                          </div>
-                          <div className="text-white font-semibold">{pred.predicted_outcome}</div>
-                          {pred.actual_outcome && (
-                            <div className="text-sm text-slate-400 mt-1">
-                              Actual: {pred.actual_outcome}
+                      <motion.div
+                        key={pred.id || idx} // Use pred.id if available, fallback to idx
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="p-4 bg-slate-900/50 rounded-lg border border-slate-700"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              {pred.was_correct ? (
+                                <CheckCircle className="w-5 h-5 text-green-400" />
+                              ) : (
+                                <XCircle className="w-5 h-5 text-red-400" />
+                              )}
+                              <span className="font-bold text-white">
+                                {pred.was_correct ? 'Correct' : 'Incorrect'}
+                              </span>
+                              <Badge variant="outline" className="text-slate-400">
+                                {pred.sport}
+                              </Badge>
+                              {pred.confidence_level && (
+                                <Badge variant="outline" className="text-slate-400 capitalize">
+                                  {pred.confidence_level}
+                                </Badge>
+                              )}
                             </div>
-                          )}
-                          <div className="text-xs text-slate-500 mt-2">
-                            {new Date(pred.prediction_date).toLocaleDateString()}
+                            <div className="text-sm text-slate-400 mb-1">
+                              <strong>Predicted:</strong> {pred.predicted_outcome}
+                            </div>
+                            <div className="text-sm text-slate-400">
+                              <strong>Actual:</strong> {pred.actual_outcome || 'N/A'}
+                            </div>
+                            <div className="text-xs text-slate-500 mt-2">
+                                {pred.prediction_date ? new Date(pred.prediction_date).toLocaleDateString() : 'N/A'}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Methodology */}
-            <Card className="bg-blue-500/10 border-2 border-blue-500/30">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-blue-300 mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  How We Track Accuracy
-                </h3>
-                <p className="text-blue-200 text-sm leading-relaxed">
-                  All predictions are logged with timestamps and confidence levels. After games conclude, 
-                  we verify outcomes against official results from ESPN, StatMuse, and league sources. 
-                  Our AI learns from these results to continuously improve prediction accuracy. Note: 
-                  Historical accuracy does not guarantee future results.
-                </p>
-              </CardContent>
-            </Card>
-
-            {totalPredictions === 0 && (
-              <Card className="bg-yellow-500/10 border-2 border-yellow-500/30 mt-8">
-                <CardContent className="p-6 text-center">
-                  <Calendar className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-yellow-300 mb-2">No Predictions Tracked Yet</h3>
-                  <p className="text-yellow-200">
-                    Start making predictions to see accuracy stats here. Our system will automatically 
-                    track and verify results.
+            {predictions.length === 0 && !isLoading && (
+              <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-2 border-slate-700">
+                <CardContent className="p-12 text-center">
+                  <AlertCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-white mb-2">No Accuracy Data Yet</h3>
+                  <p className="text-slate-400 mb-6">
+                    Click "Check Accuracy Now" to start verifying finished games and tracking prediction accuracy.
                   </p>
                 </CardContent>
               </Card>
