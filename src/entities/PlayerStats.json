@@ -61,6 +61,15 @@
         "tackles_per_game": {
           "type": "number"
         },
+        "passing_yards_per_game": {
+          "type": "number"
+        },
+        "rushing_yards_per_game": {
+          "type": "number"
+        },
+        "receptions_per_game": {
+          "type": "number"
+        },
         "minutes_per_game": {
           "type": "number"
         }
@@ -89,6 +98,12 @@
           "goals": {
             "type": "number"
           },
+          "passing_yards": {
+            "type": "number"
+          },
+          "rushing_yards": {
+            "type": "number"
+          },
           "performance_rating": {
             "type": "string"
           }
@@ -113,9 +128,25 @@
           "type": "string"
         },
         "predicted_performance": {
-          "type": "string"
+          "type": "string",
+          "description": "Specific predicted stats for next game"
+        },
+        "confidence": {
+          "type": "string",
+          "description": "Prediction confidence level"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Why this prediction based on history"
         }
-      }
+      },
+      "required": [
+        "opponent",
+        "predicted_performance",
+        "confidence",
+        "reasoning"
+      ],
+      "description": "Next game prediction"
     },
     "career_highlights": {
       "type": "array",
@@ -157,6 +188,7 @@
   "required": [
     "player_name",
     "sport",
-    "team"
+    "team",
+    "next_game"
   ]
 }

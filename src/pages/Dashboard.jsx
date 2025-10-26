@@ -1,25 +1,26 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target, Crown, Clock, Users } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target } from "lucide-react"; // Removed Crown, Clock, Users as VIP promo is removed
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button"; // Kept as it might be used by other components or internally
+import { Badge } from "@/components/ui/badge";   // Kept as it might be used by other components or internally
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion"; // Removed framer-motion as VIP promo is removed
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [showVipPromo, setShowVipPromo] = useState(true);
+  // const [showVipPromo, setShowVipPromo] = useState(true); // Removed VIP promo state
   const queryClient = useQueryClient();
   
-  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker(); // Added userTier
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -53,7 +54,7 @@ export default function Dashboard() {
   });
 
   const handleSearch = async (query) => {
-    setShowVipPromo(false);
+    // setShowVipPromo(false); // Removed as VIP promo is removed
     
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -70,60 +71,81 @@ export default function Dashboard() {
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
-CRITICAL: You have internet access via the add_context_from_internet parameter. You MUST:
-1. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
-2. Check ESPN.com for match schedules and team records
-3. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
-4. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
+CRITICAL INSTRUCTIONS:
+1. You have internet access via add_context_from_internet parameter
+2. Search StatMuse.com for current ${new Date().getFullYear()} season statistics
+3. Check ESPN.com for match schedules and team records
+4. Verify data from official league websites (NBA.com, NFL.com, PremierLeague.com)
+5. Use Basketball-Reference.com or Pro-Football-Reference.com for detailed stats
 
-TASK: Find the specific match the user is asking about and provide:
+TASK: Find the specific match the user is asking about and provide SPORT-SPECIFIC stats:
 
 1. MATCH IDENTIFICATION:
    - Sport (Basketball/Soccer/Football/etc)
    - League (NBA/Premier League/NFL/etc)
-   - Home team (use OFFICIAL full name from league website)
-   - Away team (use OFFICIAL full name from league website)
-   - Match date/time (search for scheduled date - could be today, tomorrow, or this week)
+   - Home team (OFFICIAL full name from league)
+   - Away team (OFFICIAL full name from league)
+   - Match date/time (search for scheduled date)
 
 2. WIN PROBABILITIES (must total 100%):
-   Home Win: Calculate based on:
-   - Current season records (W-L from official stats)
-   - Last 5 games results for both teams
-   - Head-to-head history (last 3-5 meetings)
-   - Home court/field advantage (home team win % at home)
-   - Current injuries (search "[team name] injury report")
+   Calculate based on:
+   - Current season records (W-L from StatMuse)
+   - Last 5 games results
+   - Head-to-head history
+   - Home advantage
+   - Current injuries
    
-   Away Win: Calculate similarly
-   Draw: If applicable (soccer/hockey), otherwise 0
+   Home Win: X%
+   Away Win: Y%
+   Draw: Z% (only if applicable to sport)
 
-3. KEY FACTORS (4-5 specific points with stats):
+3. MATCH PREDICTION (NEW - REQUIRED):
+   - Predicted Winner: "Home Team Name" or "Away Team Name"
+   - Predicted Score: "115-108" (be specific with numbers)
+   - Win Margin: "+7 points" or "2 goals" (sport-specific)
+   - Confidence: "High" / "Medium" / "Low"
+   - Reasoning: 2-3 sentences explaining why based on stats
+
+4. KEY FACTORS (4-5 specific points with stats):
    Example format:
    - "Home team won 8 of last 10 games (80% win rate)"
    - "Away team averaging 115 PPG vs opponent allowing 108 PPG"
-   - "Home team's star player out with injury"
-   - "Away team 2-6 on the road this season"
 
-4. ANALYSIS SUMMARY (2-3 sentences):
-   Explain your prediction based on the statistics you found
-
-5. CONFIDENCE LEVEL:
-   - "high" if data strongly supports one outcome (>70% probability)
-   - "medium" if competitive match (50-70%)
-   - "low" if insufficient data or unpredictable
-
-6. KEY PLAYERS (3-4 per team):
+5. KEY PLAYERS (3-4 per team) - SPORT-SPECIFIC STATS ONLY:
    For EACH player provide:
    - Name (verify they're on current roster via team website)
    - Team and position
    - Season averages (PPG/APG/RPG from StatMuse or Basketball-Reference)
-   - Predicted stats for THIS game (within ±30% of season average)
+   - Predicted performance for THIS game (e.g., "28 PTS, 8 REB, 6 AST" or "2 goals, 1 assist" or "285 passing yards, 2 TDs")
    - Recent form: "Hot" if averaging above normal last 3 games, "Cold" if below
    - Injury status: Check today's injury report
+   
+   FOR BASKETBALL (NBA):
+   - Points per game (PPG)
+   - Assists per game (APG)
+   - Rebounds per game (RPG)
+   - Field Goal % (FG%)
+   - Three-Point % (3P%)
+   
+   FOR SOCCER/FOOTBALL:
+   - Goals per game
+   - Assists per game
+   - Shots per game
+   - Pass accuracy %
+   
+   FOR AMERICAN FOOTBALL (NFL):
+   - Passing yards (if QB)
+   - Rushing yards (if RB)
+   - Receiving yards (if WR)
+   - Touchdowns (all positions)
+   
+   DO NOT MIX STATS - Basketball players should NOT have "goals", Soccer players should NOT have "3-pointers"
 
-7. BETTING MARKETS:
-   Over/Under:
-   - Line: Average both teams' season PPG
-   - Probabilities: 50/50 split or adjust based on pace
+6. BETTING MARKETS (sport-appropriate):
+   Over/Under: Use correct terminology for sport
+   - Basketball: Points (e.g., "Over 225.5 points")
+   - Soccer: Goals (e.g., "Over 2.5 goals")
+   - Football: Points (e.g., "Over 47.5 points")
    
    Both Teams Score (if soccer): Based on scoring rates
    First to Score: Slight favor to home team (55/45)
@@ -132,9 +154,8 @@ VALIDATION RULES:
 - Team names must match official league rosters
 - All statistics must be from ${new Date().getFullYear()} season
 - Win probabilities must be realistic (no team should have >95% or <5%)
-- If you can't find the match, say "Unable to find scheduled match" in analysis_summary
-
-FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
+- If you can't find the match, say "Unable to find scheduled match" in 'prediction.reasoning'.
+- ALL fields in the JSON schema MUST be populated with real data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -147,15 +168,23 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
             home_win_probability: { type: "number" },
             away_win_probability: { type: "number" },
             draw_probability: { type: "number" },
+            prediction: { // NEW FIELD
+              type: "object",
+              properties: {
+                winner: { type: "string" },
+                predicted_score: { type: "string" },
+                win_margin: { type: "string" },
+                confidence: { type: "string", enum: ["low", "medium", "high"] },
+                reasoning: { type: "string" }
+              },
+              required: ["winner", "predicted_score", "confidence", "reasoning"]
+            },
             key_factors: {
               type: "array",
               items: { type: "string" }
             },
-            analysis_summary: { type: "string" },
-            confidence_level: {
-              type: "string",
-              enum: ["low", "medium", "high"]
-            },
+            // analysis_summary removed from top-level properties
+            // confidence_level removed from top-level properties
             key_players: {
               type: "array",
               items: {
@@ -164,14 +193,11 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
                   name: { type: "string" },
                   team: { type: "string" },
                   position: { type: "string" },
-                  predicted_points: { type: "number" },
-                  predicted_assists: { type: "number" },
-                  predicted_rebounds: { type: "number" },
-                  predicted_goals: { type: "number" },
-                  probability_to_score: { type: "number" },
                   recent_form: { type: "string" },
-                  injury_status: { type: "string" }
-                }
+                  injury_status: { type: "string" },
+                  predicted_performance: { type: "string" } // Summarizes specific stats like "28 PTS, 8 REB, 6 AST"
+                },
+                required: ["name", "team", "position", "predicted_performance"]
               }
             },
             betting_markets: {
@@ -209,17 +235,18 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
               }
             }
           },
-          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "analysis_summary"]
+          required: ["sport", "home_team", "away_team", "home_win_probability", "away_win_probability", "prediction"] // Updated required fields
         }
       });
 
       console.log("✅ Match Analysis Result:", result);
 
-      if (!result || !result.sport || !result.home_team || !result.away_team) {
-        throw new Error("Invalid response - missing required match data");
+      if (!result || !result.sport || !result.home_team || !result.away_team || !result.prediction) {
+        throw new Error("Invalid response - missing required match data or prediction");
       }
 
-      if (result.analysis_summary?.includes("Unable to find")) {
+      // Check the new prediction.reasoning field for "Unable to find"
+      if (result.prediction?.reasoning?.includes("Unable to find scheduled match")) {
         throw new Error("Match not found - try a different date or check team names");
       }
 
@@ -229,17 +256,8 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
       
     } catch (err) {
       console.error("❌ Match Analysis Error:", err);
-      let errorMessage = "Failed to analyze the match. ";
-      
-      if (err.message?.includes("Match not found")) {
-        errorMessage += "Couldn't find that specific match. Try:\n• Adding a date (e.g., 'Lakers vs Celtics today')\n• Using full team names\n• Checking if the game is scheduled";
-      } else if (err.message?.includes("Invalid response")) {
-        errorMessage += "The AI couldn't find enough data. Try:\n• 'NBA games today'\n• 'Premier League matches this weekend'\n• A specific team matchup";
-      } else {
-        errorMessage += "Please try:\n• Using official team names (e.g., 'Los Angeles Lakers')\n• Adding 'today' or 'tonight'\n• Being more specific about the league";
-      }
-      
-      setError(errorMessage);
+      // Simplified error handling message
+      setError("Failed to analyze the match. Please try again with more specific details (team names, league, or date).");
     }
 
     setIsSearching(false);
@@ -259,128 +277,17 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
-      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} /> {/* Passed userTier */}
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
         lookupsRemaining={lookupsRemaining}
       />
 
-      {/* VIP Promotional Section */}
-      {showVipPromo && (
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* VIP Header Banner */}
-            <div className="bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-300 rounded-3xl p-6 border-4 border-white shadow-2xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Crown className="w-12 h-12 text-yellow-600" />
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-900">VIP LIFETIME MEMBER -</h1>
-                    <p className="text-xl md:text-2xl font-bold text-slate-800">Unlimited Access Forever</p>
-                  </div>
-                </div>
-                <Crown className="w-12 h-12 text-yellow-600" />
-              </div>
-            </div>
+      {/* VIP Promotional Section - REMOVED */}
+      {/* The entire VIP promo section JSX was removed based on the code_outline */}
 
-            {/* VIP Member Status */}
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="bg-gradient-to-r from-emerald-400 to-teal-500 rounded-3xl p-6 border-4 border-white shadow-2xl"
-            >
-              <div className="flex items-center gap-3">
-                <Crown className="w-8 h-8 text-white" />
-                <span className="text-2xl md:text-3xl font-black text-white">🎉 You're VIP Lifetime Member #4!</span>
-              </div>
-            </motion.div>
-
-            {/* Countdown Badges */}
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-lg px-8 py-3 rounded-2xl shadow-xl animate-pulse">
-                🔥 LIMITED TIME OFFER
-              </Badge>
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg px-8 py-3 rounded-2xl shadow-xl">
-                <Clock className="w-5 h-5 mr-2" />
-                ENDING SOON
-              </Badge>
-            </div>
-
-            {/* Spots Counter */}
-            <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-3xl py-4 px-8 border-4 border-white shadow-2xl">
-              <p className="text-3xl font-black text-white text-center">14 SPOTS LEFT!</p>
-            </div>
-
-            {/* Main Headline */}
-            <div className="text-center py-6">
-              <h2 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg mb-4">
-                🎊 First 20 Users Get LIFETIME
-              </h2>
-              <h2 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg">
-                Unlimited Access!
-              </h2>
-              <p className="text-xl md:text-2xl text-white font-bold mt-6">
-                You already have lifetime access! Share this offer with friends before spots run out.
-              </p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="bg-gradient-to-br from-yellow-200 to-orange-200 rounded-3xl p-8 border-4 border-yellow-300 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Users className="w-6 h-6 text-slate-700" />
-                  <span className="text-xl font-bold text-slate-900">VIP Spots Claimed</span>
-                </div>
-                <span className="text-5xl font-black text-slate-900">6/20</span>
-              </div>
-              
-              <div className="w-full bg-white/50 rounded-full h-8 mb-4 overflow-hidden border-2 border-slate-300">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: '30%' }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="bg-gradient-to-r from-emerald-400 to-teal-500 h-full rounded-full"
-                />
-              </div>
-
-              <div className="flex justify-between text-slate-700 font-bold">
-                <span>⚡ 6 claimed</span>
-                <span>14 remaining</span>
-              </div>
-            </div>
-
-            {/* Final Warning */}
-            <div className="bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl p-6 border-4 border-white shadow-2xl">
-              <p className="text-xl md:text-2xl font-black text-white text-center">
-                ⏰ Only 14 lifetime spots remaining! Once claimed, this offer disappears forever!
-              </p>
-            </div>
-
-            {/* Get Started Button */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                onClick={() => setShowVipPromo(false)}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-2xl py-8 rounded-3xl shadow-2xl font-black"
-              >
-                <Trophy className="w-8 h-8 mr-3" />
-                START ANALYZING MATCHES
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Main Content - Only show when VIP promo is dismissed */}
-      {!showVipPromo && (
+      {/* Main Content - No longer conditional on showVipPromo */}
         <div className="max-w-7xl mx-auto px-6 py-12">
           {/* Today's Best Bets Section */}
           <div className="mb-12">
@@ -462,7 +369,6 @@ FORMAT: Return valid JSON matching the schema exactly. No placeholder data.`,
             </>
           )}
         </div>
-      )}
 
       {/* Footer Disclaimer */}
       <div className="max-w-7xl mx-auto px-6 pb-12">

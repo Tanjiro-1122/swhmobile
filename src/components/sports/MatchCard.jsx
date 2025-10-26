@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
 import PlayerStatsCard from "./PlayerStatsCard";
@@ -40,7 +40,7 @@ export default function MatchCard({ match, onDelete, index }) {
     >
       <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBfiWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyIDUuMzczIDEyIDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
           
           <div className="relative flex justify-between items-start mb-4">
             <div className="space-y-2">
@@ -88,6 +88,47 @@ export default function MatchCard({ match, onDelete, index }) {
             awayProb={match.away_win_probability || 0}
             drawProb={match.draw_probability || 0}
           />
+
+          {/* NEW: Match Prediction Section */}
+          {match.prediction && (
+            <div className="p-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl border-2 border-emerald-400 shadow-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-6 h-6 text-white" />
+                <span className="font-black text-white text-xl">AI Prediction</span>
+                {match.prediction.confidence && (
+                  <Badge className="bg-white/20 text-white border-white/30 ml-auto">
+                    {match.prediction.confidence} Confidence
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="space-y-3">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="text-white/80 text-sm mb-1">Predicted Winner</div>
+                  <div className="text-white font-black text-2xl">{match.prediction.winner}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="text-white/80 text-xs mb-1">Predicted Score</div>
+                    <div className="text-white font-bold text-lg">{match.prediction.predicted_score}</div>
+                  </div>
+                  {match.prediction.win_margin && (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="text-white/80 text-xs mb-1">Win Margin</div>
+                      <div className="text-white font-bold text-lg">{match.prediction.win_margin}</div>
+                    </div>
+                  )}
+                </div>
+
+                {match.prediction.reasoning && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <div className="text-white/90 text-sm leading-relaxed">{match.prediction.reasoning}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {match.analysis_summary && (
             <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">

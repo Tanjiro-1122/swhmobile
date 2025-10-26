@@ -9,7 +9,7 @@ import {
   Activity, 
   Award, 
   AlertCircle,
-  Calendar,
+  Calendar, // Still used for formatDate logic, but not as the main icon for next game section
   Zap,
   ThumbsUp,
   ThumbsDown,
@@ -220,34 +220,55 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             <PlayerRecentGames recentForm={player.recent_form} />
           )}
 
+          {/* NEW: Next Game Prediction Section */}
           {player.next_game && (
-            <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <CardHeader>
+            <Card className="border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  Next Game
+                  <Zap className="w-5 h-5" />
+                  Next Game Performance Prediction
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="text-xl font-bold text-blue-900">
-                    vs {player.next_game.opponent}
-                  </div>
-                  {player.next_game.date && formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
-                    <div className="text-sm text-gray-600">
-                      {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm")}
-                    </div>
-                  )}
-                  {player.next_game.location && (
-                    <div className="text-sm text-gray-600">{player.next_game.location}</div>
-                  )}
-                  {player.next_game.predicted_performance && (
-                    <div className="mt-3 p-3 bg-white rounded border border-blue-200">
-                      <div className="text-sm font-semibold text-blue-900 mb-1">
-                        <Zap className="w-4 h-4 inline mr-1" />
-                        Predicted Performance
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-emerald-900">
+                        vs {player.next_game.opponent}
                       </div>
-                      <div className="text-sm text-gray-700">{player.next_game.predicted_performance}</div>
+                      {player.next_game.date && formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
+                        <div className="text-sm text-gray-600">
+                          {formatDate(player.next_game.date, "EEEE, MMM d 'at' HH:mm")}
+                        </div>
+                      )}
+                      {player.next_game.location && (
+                        <div className="text-sm text-gray-600">{player.next_game.location}</div>
+                      )}
+                    </div>
+                    {player.next_game.confidence && (
+                      <Badge className="bg-emerald-600 text-white text-lg px-4 py-2">
+                        {player.next_game.confidence} Confidence
+                      </Badge>
+                    )}
+                  </div>
+
+                  {player.next_game.predicted_performance && (
+                    <div className="p-5 bg-white rounded-xl border-2 border-emerald-200">
+                      <div className="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                        <Target className="w-5 h-5" />
+                        Predicted Stats
+                      </div>
+                      <div className="text-3xl font-black text-emerald-600 mb-3">
+                        {player.next_game.predicted_performance}
+                      </div>
+                      {player.next_game.reasoning && (
+                        <div className="pt-3 border-t border-emerald-200">
+                          <div className="text-sm font-semibold text-gray-700 mb-1">Why This Prediction:</div>
+                          <div className="text-sm text-gray-600 leading-relaxed">
+                            {player.next_game.reasoning}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

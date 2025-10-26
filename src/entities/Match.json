@@ -35,6 +35,32 @@
       "type": "number",
       "description": "Probability of a draw (0-100)"
     },
+    "prediction": {
+      "type": "object",
+      "properties": {
+        "winner": {
+          "type": "string",
+          "description": "Predicted winner team name"
+        },
+        "predicted_score": {
+          "type": "string",
+          "description": "Predicted final score"
+        },
+        "win_margin": {
+          "type": "string",
+          "description": "Predicted win margin"
+        },
+        "confidence": {
+          "type": "string",
+          "description": "Prediction confidence level"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Explanation for the prediction"
+        }
+      },
+      "description": "Match outcome prediction"
+    },
     "key_factors": {
       "type": "array",
       "items": {
@@ -81,6 +107,12 @@
           "predicted_goals": {
             "type": "number"
           },
+          "predicted_passing_yards": {
+            "type": "number"
+          },
+          "predicted_rushing_yards": {
+            "type": "number"
+          },
           "probability_to_score": {
             "type": "number"
           },
@@ -88,6 +120,9 @@
             "type": "string"
           },
           "injury_status": {
+            "type": "string"
+          },
+          "predicted_performance": {
             "type": "string"
           }
         }
@@ -152,6 +187,7 @@
     "home_team",
     "away_team",
     "home_win_probability",
-    "away_win_probability"
+    "away_win_probability",
+    "prediction"
   ]
 }

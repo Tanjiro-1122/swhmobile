@@ -13,44 +13,68 @@ export default function PlayerStatsCard({ players, sport }) {
       points: Target,
       goals: Target,
       assists: Activity,
-      rebounds: TrendingUp
+      rebounds: TrendingUp,
+      passing: Activity,
+      rushing: Activity
     };
     return icons[stat] || Target;
   };
 
   const getPlayerStats = (player) => {
     const stats = [];
+    const sportLower = sport?.toLowerCase() || '';
     
-    // Calculate combined stat for basketball
-    let combinedStat = null;
-    const points = player.predicted_points || 0;
-    const rebounds = player.predicted_rebounds || 0;
-    const assists = player.predicted_assists || 0;
-    
-    // Only add combined stat if at least one component exists and it's for basketball
-    // The current implementation applies this if any component exists, regardless of 'sport' prop.
-    // If 'sport' prop is to be explicitly checked, it would be added here: `if (sport === 'basketball' && (points || rebounds || assists))`
-    if (points || rebounds || assists) {
-      combinedStat = points + rebounds + assists;
+    // Basketball stats
+    if (sportLower.includes('basketball') || sportLower.includes('nba')) {
+      if (player.predicted_points) {
+        stats.push({ label: "Points", value: player.predicted_points, icon: "points" });
+      }
+      if (player.predicted_assists) {
+        stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
+      }
+      if (player.predicted_rebounds) {
+        stats.push({ label: "Rebounds", value: player.predicted_rebounds, icon: "rebounds" });
+      }
+      
+      // Combined stat for basketball
+      const points = player.predicted_points || 0;
+      const rebounds = player.predicted_rebounds || 0;
+      const assists = player.predicted_assists || 0;
+      if (points || rebounds || assists) {
+        const combined = points + rebounds + assists;
+        stats.push({ label: "PTS+REB+AST", value: combined.toFixed(1), icon: "points", highlight: true });
+      }
     }
     
-    if (player.predicted_points) {
-      stats.push({ label: "Points", value: player.predicted_points, icon: "points" });
+    // Soccer stats
+    else if (sportLower.includes('soccer') || (sportLower.includes('football') && !sportLower.includes('american'))) {
+      if (player.predicted_goals) {
+        stats.push({ label: "Goals", value: player.predicted_goals, icon: "goals" });
+      }
+      if (player.predicted_assists) {
+        stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
+      }
+      if (player.probability_to_score) {
+        stats.push({ label: "Score Chance", value: `${player.probability_to_score}%`, icon: "goals" });
+      }
     }
-    if (player.predicted_goals) {
-      stats.push({ label: "Goals", value: player.predicted_goals, icon: "goals" });
+    
+    // American Football stats
+    else if (sportLower.includes('nfl') || sportLower.includes('american football')) {
+      if (player.predicted_passing_yards) {
+        stats.push({ label: "Pass Yards", value: player.predicted_passing_yards, icon: "passing" });
+      }
+      if (player.predicted_rushing_yards) {
+        stats.push({ label: "Rush Yards", value: player.predicted_rushing_yards, icon: "rushing" });
+      }
+      if (player.predicted_points) { // Assuming 'predicted_points' for TDs in NFL context
+        stats.push({ label: "TDs", value: player.predicted_points, icon: "points" });
+      }
     }
-    if (player.predicted_assists) {
-      stats.push({ label: "Assists", value: player.predicted_assists, icon: "assists" });
-    }
-    if (player.predicted_rebounds) {
-      stats.push({ label: "Rebounds", value: player.predicted_rebounds, icon: "rebounds" });
-    }
-    if (combinedStat !== null) { // Check against null to handle cases where sum might be 0 but still relevant
-      stats.push({ label: "PTS+REB+AST", value: combinedStat.toFixed(1), icon: "points", highlight: true });
-    }
-    if (player.probability_to_score) {
-      stats.push({ label: "Score Chance", value: `${player.probability_to_score}%`, icon: "points" });
+    
+    // Fallback - show predicted performance as text
+    else if (player.predicted_performance) {
+      stats.push({ label: "Prediction", value: player.predicted_performance, icon: "points", fullWidth: true });
     }
     
     return stats;
@@ -111,31 +135,35 @@ export default function PlayerStatsCard({ players, sport }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                {stats.map((stat, idx) => {
-                  const Icon = getStatIcon(stat.icon);
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`flex items-center gap-2 rounded p-2 ${
-                        stat.highlight 
-                          ? 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2' 
-                          : 'bg-gray-50'
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 ${stat.highlight ? 'text-orange-600' : 'text-purple-600'}`} />
-                      <div>
-                        <div className={`text-xs ${stat.highlight ? 'font-bold text-orange-900' : 'text-gray-600'}`}>
-                          {stat.label}
-                        </div>
-                        <div className={`font-bold ${stat.highlight ? 'text-xl text-orange-600' : 'text-gray-900'}`}>
-                          {stat.value}
+              {stats.length > 0 && (
+                <div className={`grid ${stats.some(s => s.fullWidth || s.highlight) ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
+                  {stats.map((stat, idx) => {
+                    const Icon = getStatIcon(stat.icon);
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`flex items-center gap-2 rounded p-2 ${
+                          stat.highlight 
+                            ? 'bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 col-span-2' 
+                            : stat.fullWidth
+                            ? 'bg-emerald-50 col-span-2'
+                            : 'bg-gray-50'
+                        }`}
+                      >
+                        <Icon className={`w-4 h-4 ${stat.highlight ? 'text-orange-600' : 'text-purple-600'}`} />
+                        <div className="flex-1">
+                          <div className={`text-xs ${stat.highlight ? 'font-bold text-orange-900' : 'text-gray-600'}`}>
+                            {stat.label}
+                          </div>
+                          <div className={`font-bold ${stat.highlight ? 'text-xl text-orange-600' : 'text-gray-900'}`}>
+                            {stat.value}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </motion.div>
           );
         })}

@@ -65,71 +65,81 @@ PLAYER SEARCH: "${query}"
 TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 SEASON: ${new Date().getFullYear()}-${new Date().getFullYear() + 1}
 
-CRITICAL: You have internet access. You MUST search these sources:
-1. StatMuse.com - Primary source for all statistics
-2. Basketball-Reference.com (for NBA players)
-3. Pro-Football-Reference.com (for NFL players)
-4. ESPN.com player pages
-5. Official league websites (NBA.com, NFL.com, etc.)
-6. Team official websites for injury reports
+CRITICAL INSTRUCTIONS:
+1. You have internet access - search StatMuse.com, Basketball-Reference.com, ESPN.com
+2. Search for "${query} stats ${new Date().getFullYear()}"
+3. Get SPORT-SPECIFIC statistics only
+4. DO NOT MIX stats from different sports
 
-STEP-BY-STEP PROCESS:
-1. Identify the player's full name, current team, and sport
-2. Search StatMuse for "${query} stats ${new Date().getFullYear()}"
-3. Get season averages from StatMuse or Basketball-Reference
-4. Get last 5-10 game logs with specific dates and stats
-5. Check official injury report for current status
-6. Find next scheduled game for player's team
+STEP-BY-STEP:
+1. Identify player's sport, team, position
+2. Get season averages from StatMuse
+3. Get last 5-10 game logs with dates
+4. Check injury report
+5. Find next scheduled game
+6. Make PERFORMANCE PREDICTION for next game
 
-REQUIRED DATA TO EXTRACT:
+REQUIRED DATA:
 
-1. PLAYER INFO (verify from official team roster):
-   - Full legal name (e.g., "Stephen Wardell Curry II" for Steph Curry)
-   - Current team (verify from team website)
-   - Position
-   - Sport and league
+1. PLAYER INFO:
+   - Full name, current team, position, sport, league
 
-2. SEASON AVERAGES (from StatMuse ${new Date().getFullYear()} season):
-   For Basketball: PPG, APG, RPG, FG%, 3P%, FT%, SPG, BPG, MPG
-   For Soccer: Goals/90min, Assists/90min, Shots, Passes, Tackles
-   For Football: Completions, Yards, TDs, INTs (QB) or Carries, Yards, TDs (RB)
+2. SEASON AVERAGES (SPORT-SPECIFIC STATS ONLY):
+   
+   FOR BASKETBALL:
+   - PPG, APG, RPG, FG%, 3P%, FT%, SPG, BPG, MPG
+   - DO NOT include goals, shots_per_game, tackles
+   
+   FOR SOCCER:
+   - Goals/90min, Assists/90min, Shots/game, Passes/game, Tackles/game
+   - DO NOT include rebounds, blocks, 3P%
+   
+   FOR FOOTBALL (NFL):
+   - Passing yards, Completions, TDs, INTs (QB)
+   - Rushing yards, Carries, TDs (RB)
+   - Receptions, Receiving yards, TDs (WR)
+   - DO NOT include rebounds or assists
 
-3. RECENT GAMES (last 5-10 games with ACTUAL data from game logs):
-   For EACH game provide:
+3. RECENT GAMES (last 5-10 with ACTUAL data):
    - Exact date (MM/DD/YYYY)
-   - Opponent team name
-   - Player's actual stats (points, rebounds, assists for basketball)
-   - Performance rating: "Excellent" (>season avg), "Good" (near avg), "Below" (<avg)
-
-4. INJURY STATUS (check TODAY'S injury report):
-   - Search "[player name] injury report [today's date]"
-   - Status: "Healthy", "Day-to-Day", "Out", "Questionable", "Probable"
-   - If injured, specify injury and timeline
-
-5. NEXT GAME (search team schedule):
    - Opponent
-   - Date and time
-   - Home or away
-   - Predicted performance based on season average ± 20%
+   - Sport-specific stats
+   - Performance rating
+
+4. INJURY STATUS:
+   - Search "[player name] injury report ${new Date().toLocaleDateString()}"
+   - Status: Healthy/Day-to-Day/Out/Questionable
+
+5. NEXT GAME PREDICTION (NEW - REQUIRED):
+   - Opponent
+   - Date
+   - Predicted Performance (sport-specific numbers):
+     * Basketball: "32 PTS, 9 REB, 7 AST" 
+     * Soccer: "2 goals, 1 assist, 5 shots"
+     * Football: "285 passing yards, 2 TDs"
+   - Confidence: High/Medium/Low
+   - Reasoning: Why these numbers based on:
+     * Opponent's defensive stats
+     * Player's history vs this opponent
+     * Recent form trend
+     * Home/away advantage
 
 6. BETTING INSIGHTS:
-   - Over/Under line: Season PPG ± 2-3 points
-   - Probability to score: Based on games played percentage
+   - Over/Under line (sport-appropriate)
+   - Probability to score/perform
    - Hot streak: true if last 3 games > season average
-   - Consistency: "High" if stdev <5, "Medium" 5-8, "Low" >8
 
 7. ANALYSIS:
-   - Strengths: 3-5 statistical strengths (e.g., "Elite 3-point shooter at 42%")
-   - Weaknesses: 2-3 areas (e.g., "Below average free throw percentage")
-   - Career highlights: Major awards, records, achievements
+   - Strengths (3-5 statistical strengths)
+   - Weaknesses (2-3 areas for improvement)
 
 VALIDATION:
-- All stats must be from ${new Date().getFullYear()} season
-- Recent games must have actual dates and scores
-- If player is injured/not playing, reflect in injury_status
-- If you can't find the player, say so in the response
+- Stats MUST match the sport
+- No mixing sports stats
+- Predictions MUST be specific numbers
+- All from ${new Date().getFullYear()} season
 
-FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
+Return valid JSON with sport-appropriate stats only.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -154,6 +164,9 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
                 shots_per_game: { type: "number" },
                 passes_per_game: { type: "number" },
                 tackles_per_game: { type: "number" },
+                passing_yards_per_game: { type: "number" },
+                rushing_yards_per_game: { type: "number" },
+                receptions_per_game: { type: "number" },
                 minutes_per_game: { type: "number" }
               }
             },
@@ -168,6 +181,8 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
                   assists: { type: "number" },
                   rebounds: { type: "number" },
                   goals: { type: "number" },
+                  passing_yards: { type: "number" },
+                  rushing_yards: { type: "number" },
                   performance_rating: { type: "string" }
                 }
               }
@@ -179,8 +194,11 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
                 opponent: { type: "string" },
                 date: { type: "string" },
                 location: { type: "string" },
-                predicted_performance: { type: "string" }
-              }
+                predicted_performance: { type: "string" },
+                confidence: { type: "string" },
+                reasoning: { type: "string" }
+              },
+              required: ["opponent", "predicted_performance", "confidence", "reasoning"]
             },
             career_highlights: {
               type: "array",
@@ -204,14 +222,14 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
               items: { type: "string" }
             }
           },
-          required: ["player_name", "sport", "team"]
+          required: ["player_name", "sport", "team", "next_game"]
         }
       });
 
       console.log("✅ Player Stats Result:", result);
 
-      if (!result || !result.player_name || !result.sport || !result.team) {
-        throw new Error("Invalid response - missing required player data");
+      if (!result || !result.player_name || !result.sport || !result.team || !result.next_game) {
+        throw new Error("Invalid response - missing required player data, including next_game prediction.");
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -220,15 +238,7 @@ FORMAT: Return valid JSON with ALL fields populated. No placeholders.`,
       
     } catch (err) {
       console.error("❌ Player Stats Error:", err);
-      let errorMessage = "Failed to fetch player statistics. ";
-      
-      if (err.message?.includes("Invalid response")) {
-        errorMessage += "Couldn't find that player. Try:\n• Using the player's full name (e.g., 'LeBron James')\n• Including the sport (e.g., 'Steph Curry NBA')\n• Checking the spelling";
-      } else {
-        errorMessage += "Please try:\n• Full name (e.g., 'Cristiano Ronaldo')\n• Adding sport/league (e.g., 'Tom Brady NFL')\n• Current active players only";
-      }
-      
-      setError(errorMessage);
+      setError("Failed to fetch player statistics. Please try using the player's full name and current team.");
     }
 
     setIsSearching(false);
