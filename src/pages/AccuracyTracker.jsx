@@ -46,7 +46,7 @@ export default function AccuracyTracker() {
     try {
       await createTestPrediction.mutateAsync();
       alert("✅ Test prediction created successfully! Check the stats below.");
-    } catch (error: any) {
+    } catch (error) { // Removed : any type annotation
       alert("❌ Error creating test prediction: " + error.message);
     }
     setTestingTracking(false);
@@ -156,7 +156,7 @@ Get the official final score from ESPN or StatMuse. Return game_status and was_c
         setManualCheckMessage(`⏭️ 5/5: Skipped. Game status: ${verificationResult.game_status}. No accuracy record created.`);
       }
 
-    } catch (error: any) {
+    } catch (error) { // Removed : any type annotation
       console.error("Manual check error:", error);
       if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
         setManualCheckMessage("🚫 Rate limit reached. Please wait 1 hour before trying again.");
@@ -426,7 +426,7 @@ Get the official final score from ESPN or StatMuse. Return game_status and was_c
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {predictions.slice(0, 10).map((pred: any, idx: number) => (
+                    {predictions.slice(0, 10).map((pred, idx) => (
                       <div key={idx} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 flex items-start gap-4">
                         <div className="flex-shrink-0">
                           {pred.was_correct ? (
