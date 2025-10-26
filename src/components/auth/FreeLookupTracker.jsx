@@ -2,20 +2,33 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap } from "lucide-react";
+import { Lock, UserPlus, Sparkles, Zap, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userTier, setUserTier] = useState('free');
 
   useEffect(() => {
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
       
-      if (!authenticated) {
+      if (authenticated) {
+        try {
+          const user = await base44.auth.me();
+          setUserTier(user.subscription_type || 'free');
+          
+          // VIP Lifetime and Premium users have unlimited searches
+          if (user.subscription_type === 'vip_lifetime' || user.subscription_type === 'premium_monthly') {
+            setLookupsRemaining(999); // Unlimited
+          }
+        } catch (error) {
+          console.error('Error fetching user:', error);
+        }
+      } else {
         const used = parseInt(localStorage.getItem('freeLookups') || '0');
         setLookupsRemaining(Math.max(0, 5 - used));
       }
@@ -25,23 +38,37 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    if (isAuthenticated) return true;
+    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
+      return true; // Unlimited for VIP/Premium
+    }
     
-    const used = parseInt(localStorage.getItem('freeLookups') || '0');
-    if (used >= 5) return false;
+    if (!isAuthenticated) {
+      const used = parseInt(localStorage.getItem('freeLookups') || '0');
+      if (used >= 5) return false;
+      
+      localStorage.setItem('freeLookups', (used + 1).toString());
+      setLookupsRemaining(Math.max(0, 5 - (used + 1)));
+      return true;
+    }
     
-    localStorage.setItem('freeLookups', (used + 1).toString());
-    setLookupsRemaining(Math.max(0, 5 - (used + 1)));
+    // For authenticated free users, still track lookups
     return true;
   };
 
   const canLookup = () => {
-    if (isAuthenticated) return true;
-    const used = parseInt(localStorage.getItem('freeLookups') || '0');
-    return used < 5;
+    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
+      return true; // Unlimited
+    }
+    
+    if (!isAuthenticated) {
+      const used = parseInt(localStorage.getItem('freeLookups') || '0');
+      return used < 5;
+    }
+    
+    return true; // Authenticated free users can search
   };
 
-  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup };
+  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
@@ -74,7 +101,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
                 <div>
                   <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Sign up for unlimited access</p>
+                  <p className="text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
                 </div>
               </div>
             </CardHeader>
@@ -87,11 +114,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                   </div>
                 </div>
                 <p className="text-xl text-gray-700 font-semibold">
-                  You've used all your free lookups!
+                  You've used all 5 free lookups!
                 </p>
-                <p className="text-gray-600 mt-2">
-                  Create a free account to get <span className="font-bold text-emerald-600">unlimited access</span> to all features
-                </p>
+                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
+                  <div className="flex items-center gap-2 justify-center text-xl font-bold text-orange-800">
+                    <Crown className="w-6 h-6" />
+                    First 20 Users Get LIFETIME VIP Access!
+                  </div>
+                  <p className="text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
+                </div>
               </div>
 
               <div className="space-y-3 mb-8">
@@ -108,8 +139,8 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                   <span className="text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Save All Your Results</span>
+                  <Crown className="w-6 h-6 text-yellow-600 flex-shrink-0" />
+                  <span className="text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
                 </div>
               </div>
 
@@ -118,7 +149,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
               >
                 <UserPlus className="w-6 h-6 mr-3" />
-                Sign Up Free - No Credit Card Required
+                Sign Up Free - Claim VIP Lifetime Spot
               </Button>
 
               <p className="text-center text-sm text-gray-500 mt-6">
@@ -132,7 +163,38 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
   );
 }
 
-export function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) {
+export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
+  if (userTier === 'vip_lifetime') {
+    return (
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Crown className="w-6 h-6 text-white" />
+            <span className="text-white font-bold text-lg">
+              ⭐ VIP LIFETIME MEMBER - Unlimited Access Forever! ⭐
+            </span>
+            <Crown className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (userTier === 'premium_monthly') {
+    return (
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 border-b-4 border-purple-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Sparkles className="w-6 h-6 text-white" />
+            <span className="text-white font-bold text-lg">
+              💎 Premium Member - Unlimited Access! 💎
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isAuthenticated || lookupsRemaining === 5) return null;
 
   const handleSignup = () => {
@@ -187,8 +249,9 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) {
                   ? "You've used all free lookups!" 
                   : `${lookupsRemaining} free ${lookupsRemaining === 1 ? 'search' : 'searches'} remaining`}
               </p>
-              <p className="text-sm opacity-90">
-                Sign up now for unlimited match, player & team analysis!
+              <p className="text-sm opacity-90 flex items-center gap-1">
+                <Crown className="w-4 h-4" />
+                Sign up now - First 20 get LIFETIME VIP access!
               </p>
             </div>
           </div>
@@ -197,8 +260,8 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) {
             size="lg"
             className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
-            <UserPlus className="w-5 h-5 mr-2" />
-            Sign Up FREE Now
+            <Crown className="w-5 h-5 mr-2" />
+            Claim VIP Lifetime Spot
           </Button>
         </div>
       </div>

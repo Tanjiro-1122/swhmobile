@@ -25,7 +25,7 @@ export default function Layout({ children, currentPageName }) {
   const getUserInitial = () => {
     if (currentUser?.full_name) return currentUser.full_name[0].toUpperCase();
     if (currentUser?.email) return currentUser.email[0].toUpperCase();
-    return "J"; // Updated fallback from "U" to "J" as per outline
+    return "J";
   };
 
   const menuItems = [
@@ -34,6 +34,11 @@ export default function Layout({ children, currentPageName }) {
     { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
     { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
   ];
+
+  // Add Admin Panel for admin users
+  if (currentUser?.role === 'admin') {
+    menuItems.push({ label: "Admin Panel", url: createPageUrl("AdminPanel"), icon: "👑" });
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">

@@ -2,6 +2,7 @@ import Dashboard from './pages/Dashboard';
 import PlayerStats from './pages/PlayerStats';
 import TeamStats from './pages/TeamStats';
 import SavedResults from './pages/SavedResults';
+import AdminPanel from './pages/AdminPanel';
 import Layout from './Layout.jsx';
 
 
@@ -10,6 +11,7 @@ export const PAGES = {
     "PlayerStats": PlayerStats,
     "TeamStats": TeamStats,
     "SavedResults": SavedResults,
+    "AdminPanel": AdminPanel,
 }
 
 export const pagesConfig = {
