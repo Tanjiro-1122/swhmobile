@@ -1,169 +1,157 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  Home,
+  User,
+  TrendingUp,
+  Calculator,
+  DollarSign,
+  Wallet,
+  BookOpen,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Shield,
+  BarChart3,
+  Bell,
+  MessageSquare,
+  Trophy
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Layout({ children, currentPageName }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch {
-        return null;
-      }
-    },
+    queryFn: () => base44.auth.me(),
   });
 
-  const getUserInitial = () => {
-    if (currentUser?.full_name) return currentUser.full_name[0].toUpperCase();
-    if (currentUser?.email) return currentUser.email[0].toUpperCase();
-    return "J";
-  };
+  const isVIP = currentUser?.is_vip === true;
+  const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = () => {
     base44.auth.logout();
   };
 
   const menuItems = [
-    { label: "Match Analysis", url: createPageUrl("Dashboard"), icon: "🏆" },
-    { label: "Player Stats", url: createPageUrl("PlayerStats"), icon: "👤" },
-    { label: "Team Stats", url: createPageUrl("TeamStats"), icon: "🛡️" },
-    { label: "Betting Calculator", url: createPageUrl("BettingCalculator"), icon: "🧮" },
-    { label: "ROI Tracker", url: createPageUrl("ROITracker"), icon: "📊" },
-    { label: "Parlay Builder", url: createPageUrl("ParlayBuilder"), icon: "🎰" },
-    { label: "Learning Center", url: createPageUrl("LearningCenter"), icon: "📚" },
-    { label: "Bankroll Manager", url: createPageUrl("BankrollManager"), icon: "💼" },
-    { label: "Saved Results", url: createPageUrl("SavedResults"), icon: "🔖" },
+    { name: "Dashboard", icon: Home, page: "Dashboard" },
+    { name: "Player Stats", icon: User, page: "PlayerStats" },
+    { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
+    { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
+    { name: "AI Performance", icon: Trophy, page: "AIPerformance" },
+    { name: "Alerts", icon: Bell, page: "Alerts" },
+    { name: "Parlay Builder", icon: Shield, page: "ParlayBuilder" },
+    { name: "Betting Calculator", icon: Calculator, page: "BettingCalculator" },
+    { name: "ROI Tracker", icon: DollarSign, page: "ROITracker" },
+    { name: "Bankroll Manager", icon: Wallet, page: "BankrollManager" },
+    { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
+    { name: "Community", icon: MessageSquare, page: "Community" },
+    { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
   ];
 
-  // Add Admin Panel for admin users
-  if (currentUser?.role === 'admin') {
-    menuItems.push({ label: "Admin Panel", url: createPageUrl("AdminPanel"), icon: "👑" });
+  if (isAdmin) {
+    menuItems.push({ name: "Admin Panel", icon: Settings, page: "AdminPanel" });
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo */}
-          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/b28834497_IMG_2146.jpeg"
-              alt="Sports Wager Saver"
-              className="w-14 h-14 rounded-xl object-cover shadow-lg"
-            />
-            <div className="hidden sm:block">
-              <div className="text-white font-bold text-base leading-tight">Sports Wager Saver</div>
-            </div>
-          </Link>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            {/* User Avatar */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl border-2 border-white shadow-lg">
-              {getUserInitial()}
-            </div>
-
-            {/* Hamburger Menu */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-12 h-12 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition-colors"
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden text-white"
             >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </Button>
+            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Sports Wager Helper
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {isVIP && (
+              <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
+                <Shield className="w-4 h-4 text-white" />
+                <span className="text-sm font-bold text-white">VIP LIFETIME</span>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
+                  {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden md:block text-right">
+                <div className="text-sm font-semibold text-white">{currentUser?.full_name || 'User'}</div>
+                <div className="text-xs text-gray-400">{currentUser?.email}</div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="text-gray-400 hover:text-white"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-[73px] right-4 z-50 w-64 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 overflow-hidden"
-          >
-            <div className="py-2">
-              {/* User Info Section */}
-              {currentUser && (
-                <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
-                  <div className="font-bold text-slate-900">{currentUser.full_name || 'User'}</div>
-                  <div className="text-sm text-slate-600">{currentUser.email}</div>
-                  {currentUser.subscription_type === 'vip_lifetime' && (
-                    <div className="mt-2 flex items-center gap-1">
-                      <span className="text-yellow-600">👑</span>
-                      <span className="text-xs font-bold text-yellow-700">VIP Lifetime #{currentUser.vip_member_number}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Menu Items */}
-              {menuItems.map((item, index) => (
+      <div className="flex pt-20">
+        <aside
+          className={`fixed left-0 top-20 bottom-0 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
+        >
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPageName === item.page;
+              return (
                 <Link
-                  key={index}
-                  to={item.url}
-                  onClick={() => setMenuOpen(false)}
-                  className={`flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors ${
-                    location.pathname === item.url ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                  key={item.page}
+                  to={createPageUrl(item.page)}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50'
+                      : 'text-gray-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="font-semibold text-slate-900">{item.label}</span>
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
                 </Link>
-              ))}
+              );
+            })}
+          </nav>
+        </aside>
 
-              {/* Logout Button */}
-              {currentUser && (
-                <div className="border-t border-slate-200 mt-2">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-6 py-4 hover:bg-red-50 transition-colors text-red-600"
-                  >
-                    <span className="text-2xl">🚪</span>
-                    <span className="font-semibold">Logout</span>
-                  </button>
-                </div>
-              )}
+        <main className="flex-1 lg:ml-64 p-6">
+          {children}
+        </main>
+      </div>
 
-              {/* Login Button for non-authenticated users */}
-              {!currentUser && (
-                <div className="border-t border-slate-200 mt-2">
-                  <button
-                    onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-                    className="w-full flex items-center gap-3 px-6 py-4 hover:bg-emerald-50 transition-colors text-emerald-600"
-                  >
-                    <span className="text-2xl">🔐</span>
-                    <span className="font-semibold">Sign In</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Click outside to close menu */}
-      {menuOpen && (
+      {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40"
-          onClick={() => setMenuOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
-
-      {/* Main Content */}
-      <main>
-        {children}
-      </main>
     </div>
   );
 }
