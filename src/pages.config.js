@@ -15,6 +15,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import AIPerformance from './pages/AIPerformance';
 import MatchResults from './pages/MatchResults';
+import Settings from './pages/Settings';
 import Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "AIPerformance": AIPerformance,
     "MatchResults": MatchResults,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {

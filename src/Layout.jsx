@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -26,6 +27,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import InstallPrompt from "./components/mobile/InstallPrompt";
+import ThemeProvider from "./components/mobile/ThemeProvider";
+import ThemeToggle from "./components/mobile/ThemeToggle";
+import ServiceWorkerSetup from "./components/mobile/ServiceWorkerSetup";
+import OfflineIndicator from "./components/mobile/OfflineIndicator";
+import OfflineCache from "./components/mobile/OfflineCache";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -157,6 +163,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
     { name: "Community", icon: MessageSquare, page: "Community" },
     { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
+    { name: "Settings", icon: Settings, page: "Settings" },
   ];
 
   if (isAdmin) {
@@ -165,82 +172,89 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Mobile-optimized header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 safe-top">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-white flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
-            >
-              {sidebarOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
-            </Button>
-            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                alt="SWH Logo"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0"
-              />
-              <span className="text-base sm:text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate hidden sm:inline">
-                Sports Wager Helper
-              </span>
-              <span className="text-base font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent sm:hidden">
-                SWH
-              </span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            {isAuthenticated && currentUser ? (
-              <>
-                {isVIP && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 sm:px-4 py-2 rounded-full">
-                    <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                    <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">VIP LIFETIME</span>
-                  </div>
-                )}
-                <div className="hidden sm:flex items-center gap-2 sm:gap-3">
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                      {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block text-right">
-                    <div className="text-sm font-semibold text-white truncate max-w-[120px]">{currentUser?.full_name || currentUser?.email || 'User'}</div>
-                    <div className="text-xs text-gray-400 truncate max-w-[120px]">{currentUser?.email}</div>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-white h-9 w-9 sm:h-10 sm:w-10"
-                  title="Log out"
-                >
-                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-              </>
-            ) : (
+    <ThemeProvider>
+      <ServiceWorkerSetup />
+      <OfflineCache />
+      <OfflineIndicator />
+      
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-300">
+        {/* Mobile-optimized header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-700 dark:border-slate-800 safe-top transition-colors duration-300">
+          <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
               <Button
-                onClick={handleLogin}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-3 sm:px-6 py-2 shadow-lg text-xs sm:text-base whitespace-nowrap"
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden text-white flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
               >
-                <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Sign In / Sign Up</span>
-                <span className="sm:hidden">Sign In</span>
+                {sidebarOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
               </Button>
-            )}
+              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                  alt="SWH Logo"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0"
+                />
+                <span className="text-base sm:text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate hidden sm:inline">
+                  Sports Wager Helper
+                </span>
+                <span className="text-base font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent sm:hidden">
+                  SWH
+                </span>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
+              {isAuthenticated && currentUser ? (
+                <>
+                  {isVIP && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 sm:px-4 py-2 rounded-full">
+                      <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                      <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">VIP LIFETIME</span>
+                    </div>
+                  )}
+                  <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                        {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block text-right">
+                      <div className="text-sm font-semibold text-white truncate max-w-[120px]">{currentUser?.full_name || currentUser?.email || 'User'}</div>
+                      <div className="text-xs text-gray-400 truncate max-w-[120px]">{currentUser?.email}</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-gray-400 hover:text-white h-9 w-9 sm:h-10 sm:w-10"
+                    title="Log out"
+                  >
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleLogin}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-3 sm:px-6 py-2 shadow-lg text-xs sm:text-base whitespace-nowrap"
+                >
+                  <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Sign In / Sign Up</span>
+                  <span className="sm:hidden">Sign In</span>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex pt-16 sm:pt-20">
         {/* Mobile-optimized sidebar */}
         <aside
-          className={`fixed left-0 top-16 sm:top-20 bottom-0 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
+          className={`fixed left-0 top-16 sm:top-20 bottom-0 w-64 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl border-r border-slate-700 dark:border-slate-800 overflow-y-auto transition-transform duration-300 z-40 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -264,7 +278,7 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               );
             })}
-            <div className="pt-3 sm:pt-4 border-t border-slate-700 mt-3 sm:mt-4">
+            <div className="pt-3 sm:pt-4 border-t border-slate-700 dark:border-slate-800 mt-3 sm:mt-4">
               <Link
                 to={createPageUrl("PrivacyPolicy")}
                 onClick={() => setSidebarOpen(false)}
@@ -299,6 +313,6 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Install prompt */}
       <InstallPrompt />
-    </div>
+    </ThemeProvider>
   );
 }
