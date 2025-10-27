@@ -62,23 +62,47 @@ export default function PlayerStats() {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a professional sports data analyst. Find CURRENT statistics for: "${query}"
 
-CRITICAL: You MUST return valid data. Use these sources in order:
+CRITICAL: ACCEPT NICKNAMES AND PARTIAL NAMES!
 
+COMMON NAME VARIATIONS TO RECOGNIZE:
+- "Stephen Curry" OR "Steph Curry" = Wardell Stephen Curry II
+- "Kevin Durant" OR "KD" = Kevin Wayne Durant
+- "LeBron James" OR "LeBron" OR "King James" = LeBron Raymone James Sr.
+- "Giannis" = Giannis Antetokounmpo
+- "Luka" OR "Luka Doncic" = Luka Dončić
+- "Nikola Jokic" = Nikola Jokić
+- "Joel Embiid" = Joel Hans Embiid
+- "Jayson Tatum" OR "JT" = Jayson Christopher Tatum Sr.
+- "Damian Lillard" OR "Dame" = Damian Lamonte Ollie Lillard Sr.
+- "Anthony Davis" OR "AD" = Anthony Marshon Davis Jr.
+- "Patrick Mahomes" = Patrick Lavon Mahomes II
+- "Travis Kelce" = Travis Michael Kelce
+- "Tyreek Hill" = Tyreek Hill
+- "Lamar Jackson" = Lamar Demeatrice Jackson Jr.
+- "Josh Allen" = Joshua Patrick Allen
+- "Cristiano Ronaldo" OR "Ronaldo" OR "CR7" = Cristiano Ronaldo dos Santos Aveiro
+- "Lionel Messi" OR "Messi" = Lionel Andrés Messi
+- "Kylian Mbappe" = Kylian Mbappé
+- "Erling Haaland" = Erling Braut Haaland
+
+SEARCH STRATEGY:
+1. If user searches "Stephen Curry", search for: "Stephen Curry stats 2024" OR "Steph Curry Warriors"
+2. Accept ANY common variation of the name
+3. Map to full legal name ONLY in the final result
+4. Do NOT reject searches if exact legal name not provided
+
+MANDATORY DATA SOURCES:
 1. StatMuse.com - Search: "${query} stats 2024" or "${query} stats 2025"
 2. Basketball-Reference.com - Search: "${query} basketball reference 2024-25"
 3. ESPN.com - Search: "${query} espn stats"
 4. Official NBA/NFL/team websites
 
-SEARCH EXAMPLES:
-- "LeBron James stats 2024-25 season"
-- "Stephen Curry Warriors basketball reference"
-- "Patrick Mahomes Chiefs stats 2024"
-
 TODAY: ${new Date().toLocaleDateString()}
 
-STEP 1: IDENTIFY PLAYER
-Find their:
-- Full legal name (e.g., "LeBron Raymone James Sr.")
+STEP 1: IDENTIFY PLAYER (Accept Nicknames!)
+- Search using the EXACT query provided: "${query}"
+- Accept shortened names, nicknames, common names
+- Find their FULL LEGAL NAME for the response (but search with any variation)
 - Current team (e.g., "Los Angeles Lakers")
 - Position (e.g., "SF" or "Small Forward")
 - Sport (Basketball, Football, Soccer, Baseball, Hockey)
@@ -90,6 +114,14 @@ Find their:
   * Basketball: If minutes per game > 28, likely Starter. If 20-28, could be Sixth Man. If < 20, likely Bench
   * Football: Check team depth chart - is player listed as starter (1st string) or backup?
   * Soccer: Check starting XI lineup - regular starter or substitute?
+
+EXAMPLE SEARCHES THAT MUST WORK:
+- "Stephen Curry" → Find Wardell Stephen Curry II, return as "Stephen Curry (Wardell Stephen Curry II)"
+- "Steph Curry" → Same result
+- "KD" → Find Kevin Durant, return as "Kevin Durant (Kevin Wayne Durant)"
+- "LeBron" → Find LeBron James, return as "LeBron James (LeBron Raymone James Sr.)"
+- "Giannis" → Find Giannis Antetokounmpo
+- "Messi" → Find Lionel Messi
 
 STEP 2: CURRENT SEASON STATS (2024-25 for basketball, 2024 for football)
 
@@ -148,7 +180,7 @@ Return ONE of these exact strings:
 If no injury found, return "Healthy"
 
 STEP 5: NEXT GAME
-Search: "[team name] schedule" (e.g., "Lakers schedule")
+Search: "[team name] schedule" (e.g., "Lakers schedule" or "Warriors schedule")
 Find next upcoming game:
 - Opponent (e.g., "vs Boston Celtics")
 - Date (e.g., "12/20/2024 7:30 PM ET")
@@ -192,28 +224,34 @@ List 5-10 major achievements:
 
 IMPORTANT ERROR HANDLING:
 If you CANNOT find ANY data for this player:
-1. Check if name is misspelled - try variations
-2. Check if player is retired - search "[name] retired"
-3. Check if player exists - search "[name] basketball player"
+1. Try common nickname variations (Steph, KD, LeBron, etc.)
+2. Try adding team name: "${query} Lakers" or "${query} Warriors"
+3. Check if player is retired
+4. Check if player exists
 
 If player truly doesn't exist or is retired:
-- Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Please verify the player name and team."
+- Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Try: 'Stephen Curry Warriors' or 'LeBron James Lakers'"
 - Set all numeric stats to 0 or null
 - Set injury_status to "Unknown"
 - Set role to "Unknown"
 - Set team to "Unknown"
 
-OTHERWISE: You MUST return complete, realistic data. Use your knowledge of typical player stats if exact numbers aren't available.
+OTHERWISE: You MUST return complete, realistic data.
+
+PLAYER NAME IN RESPONSE:
+- Use the COMMON/POPULAR name in player_name field
+- Examples: "Stephen Curry" (not Wardell Stephen Curry II), "Kevin Durant" (not Kevin Wayne Durant)
+- Use the name people actually call them
 
 VALIDATION:
 Before returning, verify:
-✓ player_name is not empty
+✓ player_name uses common name (Stephen Curry, not Wardell)
 ✓ sport is one of: Basketball, Football, Soccer, Baseball, Hockey
 ✓ team is not "Unknown" (unless player not found)
 ✓ role is one of: Starter, Bench, Sixth Man, Rotation, Unknown
 ✓ At least ONE stat in season_averages has a non-zero value
-✓ next_game.predicted_performance contains specific numbers (not generic text)
-✓ injury_status is a simple string (not an object)
+✓ next_game.predicted_performance contains specific numbers
+✓ injury_status is a simple string
 ✓ At least 3 career_highlights listed
 ✓ At least 3 strengths and 3 weaknesses
 
@@ -332,12 +370,12 @@ Return complete JSON with ALL required fields populated.`,
 
 Please try:
 • "${query}" with full name
-• Adding current team: "LeBron James Lakers"
-• Adding sport: "Stephen Curry basketball"
+• Adding current team: "Stephen Curry Warriors" or "LeBron James Lakers"
+• Using nicknames: "Steph Curry", "KD", "King James"
 
 Common issues:
 • Player recently retired or traded
-• Name spelling (try "LeBron" not "Lebron")
+• Name spelling (try "Stephen" not "Steven")
 • Include current 2024-25 team`);
       }
 

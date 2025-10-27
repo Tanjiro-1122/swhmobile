@@ -15,11 +15,11 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
   };
 
   const popularPlayers = [
-    "LeBron James",
     "Stephen Curry",
+    "LeBron James",
     "Kevin Durant",
-    "Patrick Mahomes",
-    "Lionel Messi"
+    "Giannis",
+    "Patrick Mahomes"
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for any player: 'LeBron James', 'Stephen Curry', 'Patrick Mahomes'..."
+            placeholder="Try: 'Stephen Curry', 'Steph Curry', 'KD', 'LeBron', 'Giannis'..."
             className="pl-12 pr-32 h-14 text-lg border-2 focus:border-purple-500 transition-all"
             disabled={isSearching}
           />
@@ -76,12 +76,13 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
 
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          <strong className="font-bold">💡 PRO TIPS:</strong> For best results, search with:
+          <strong className="font-bold">💡 NICKNAME-FRIENDLY:</strong> Search using any name variation!
         </p>
         <ul className="text-sm text-blue-700 mt-2 space-y-1 ml-4">
-          <li>• Full name: "LeBron James" (not just "LeBron")</li>
-          <li>• Add team: "Stephen Curry Warriors"</li>
-          <li>• Add sport: "Cristiano Ronaldo soccer"</li>
+          <li>• <strong>Nicknames:</strong> "Steph Curry", "KD", "King James", "Giannis"</li>
+          <li>• <strong>Short names:</strong> "LeBron", "Dame", "AD", "Luka"</li>
+          <li>• <strong>Full names:</strong> "Stephen Curry", "Kevin Durant"</li>
+          <li>• <strong>With team:</strong> "LeBron Lakers", "Mahomes Chiefs"</li>
         </ul>
       </div>
     </div>
