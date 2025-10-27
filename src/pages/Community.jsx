@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, ThumbsUp, MessageCircle, Plus, TrendingUp, Trophy, Filter } from "lucide-react";
@@ -13,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
-export default function Community() {
+function CommunityContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterSport, setFilterSport] = useState("all");
   const [filterType, setFilterType] = useState("all");
@@ -60,7 +62,7 @@ export default function Community() {
   });
 
   const upvotePostMutation = useMutation({
-    mutationFn: ({ id, currentUpvotes }) => 
+    mutationFn: ({ id, currentUpvotes }) =>
       base44.entities.CommunityPost.update(id, { upvotes: currentUpvotes + 1 }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityPosts'] });
@@ -97,7 +99,7 @@ export default function Community() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -365,5 +367,13 @@ export default function Community() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Community() {
+  return (
+    <RequireAuth pageName="Community">
+      <CommunityContent />
+    </RequireAuth>
   );
 }

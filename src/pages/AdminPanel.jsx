@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Crown, Users, DollarSign, Search, CheckCircle, XCircle } from "lucide-react";
@@ -9,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { motion } from "framer-motion";
 
-export default function AdminPanel() {
+function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
@@ -284,5 +286,13 @@ export default function AdminPanel() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminPanel() {
+  return (
+    <RequireAuth pageName="Admin Panel">
+      <AdminPanelContent />
+    </RequireAuth>
   );
 }

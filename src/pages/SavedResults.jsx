@@ -1,7 +1,9 @@
+
 import React, { useState } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trophy, User, Shield, Trash2, Filter } from "lucide-react";
+import { Bookmark, Trophy, User, Shield, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +13,7 @@ import MatchCard from "../components/sports/MatchCard";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 
-export default function SavedResults() {
+function SavedResultsContent() {
   const [activeTab, setActiveTab] = useState("matches");
   const queryClient = useQueryClient();
 
@@ -111,7 +113,7 @@ export default function SavedResults() {
   const totalSaved = (matches?.length || 0) + (players?.length || 0) + (teams?.length || 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-12">
@@ -317,5 +319,13 @@ export default function SavedResults() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+export default function SavedResults() {
+  return (
+    <RequireAuth pageName="Saved Results">
+      <SavedResultsContent />
+    </RequireAuth>
   );
 }

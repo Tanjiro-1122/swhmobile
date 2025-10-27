@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Plus, Trash2, AlertCircle, CheckCircle } from "lucide-react";
@@ -12,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 
-export default function Alerts() {
+function AlertsContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newAlert, setNewAlert] = useState({
     alert_type: "odds_change",
@@ -93,7 +95,7 @@ export default function Alerts() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
         <Card className="max-w-md">
           <CardContent className="p-12 text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-indigo-600" />
@@ -114,7 +116,7 @@ export default function Alerts() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-6">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -306,5 +308,13 @@ export default function Alerts() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function Alerts() {
+  return (
+    <RequireAuth pageName="Alerts">
+      <AlertsContent />
+    </RequireAuth>
   );
 }

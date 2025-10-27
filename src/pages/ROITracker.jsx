@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, DollarSign, Plus, Calendar, Trophy, AlertCircle } from "lucide-react";
@@ -12,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
-export default function ROITracker() {
+function ROITrackerContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newBet, setNewBet] = useState({
     bet_type: "spread",
@@ -73,6 +75,8 @@ export default function ROITracker() {
     const stakeNum = parseFloat(stake);
     const oddsNum = parseFloat(odds);
     
+    if (isNaN(stakeNum) || isNaN(oddsNum) || stakeNum <= 0) return 0;
+
     if (oddsNum >= 0) {
       return stakeNum + (stakeNum * oddsNum) / 100;
     } else {
@@ -163,7 +167,7 @@ export default function ROITracker() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -280,7 +284,7 @@ export default function ROITracker() {
                   <Button
                     onClick={handleAddBet}
                     className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
-                    disabled={!newBet.match_description || !newBet.odds || !newBet.stake_amount}
+                    disabled={!newBet.match_description || !newBet.odds || !newBet.stake_amount || isNaN(parseFloat(newBet.stake_amount)) || isNaN(parseFloat(newBet.odds))}
                   >
                     Add Bet
                   </Button>
@@ -415,9 +419,10 @@ export default function ROITracker() {
                             </div>
                             {bet.result !== 'pending' && (
                               <div className={`text-sm font-semibold mt-2 ${
-                                bet.result === 'won' ? 'text-green-600' : 'text-red-600'
+                                bet.actual_payout > bet.stake_amount ? 'text-green-600' : 
+                                bet.actual_payout < bet.stake_amount ? 'text-red-600' : 'text-gray-600'
                               }`}>
-                                {bet.result === 'won' ? '+' : '-'}${Math.abs(bet.actual_payout - bet.stake_amount).toFixed(2)}
+                                {bet.actual_payout > bet.stake_amount ? '+' : ''}{bet.actual_payout !== bet.stake_amount ? (bet.actual_payout - bet.stake_amount).toFixed(2) : '0.00'}
                               </div>
                             )}
                           </div>
@@ -465,5 +470,13 @@ export default function ROITracker() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ROITracker() {
+  return (
+    <RequireAuth pageName="ROI Tracker">
+      <ROITrackerContent />
+    </RequireAuth>
   );
 }

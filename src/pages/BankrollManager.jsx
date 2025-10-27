@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from "react";
+import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Calendar, AlertCircle } from "lucide-react";
@@ -8,10 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge"; // Ensure Badge is imported if used
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
-export default function BankrollManager() {
+function BankrollManagerContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEntry, setNewEntry] = useState({
     entry_type: "deposit",
@@ -78,13 +81,16 @@ export default function BankrollManager() {
 
   const handleAddEntry = () => {
     const amount = parseFloat(newEntry.amount);
-    const newBankroll = currentBankroll + 
+    // Calculate new bankroll based on current bankroll BEFORE the new entry is added
+    // This is then passed to the new entry, and the next calculateBankroll will use entries with this new value
+    const newBankrollAfterThisEntry = currentBankroll +
       (newEntry.entry_type === 'deposit' || newEntry.entry_type === 'win' ? amount : -amount);
+
 
     createEntryMutation.mutate({
       ...newEntry,
       amount: amount,
-      current_bankroll: newBankroll,
+      current_bankroll: newBankrollAfterThisEntry, // Store the bankroll *after* this transaction
       date: new Date(newEntry.date).toISOString()
     });
   };
@@ -119,28 +125,6 @@ export default function BankrollManager() {
       default: return '💵';
     }
   };
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-6">
-        <Card className="max-w-md">
-          <CardContent className="p-12 text-center">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-emerald-600" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
-            <p className="text-gray-600 mb-6">
-              Sign in to track your bankroll and manage your betting funds
-            </p>
-            <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
@@ -360,8 +344,8 @@ export default function BankrollManager() {
 
                           <div className="text-right">
                             <div className={`text-3xl font-bold ${
-                              entry.entry_type === 'deposit' || entry.entry_type === 'win' 
-                                ? 'text-green-600' 
+                              entry.entry_type === 'deposit' || entry.entry_type === 'win'
+                                ? 'text-green-600'
                                 : 'text-red-600'
                             }`}>
                               {entry.entry_type === 'deposit' || entry.entry_type === 'win' ? '+' : '-'}
@@ -431,5 +415,13 @@ export default function BankrollManager() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function BankrollManager() {
+  return (
+    <RequireAuth pageName="Bankroll Manager">
+      <BankrollManagerContent />
+    </RequireAuth>
   );
 }

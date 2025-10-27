@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
+import RequireAuth from "../components/auth/RequireAuth";
 
-export default function ParlayBuilder() {
+function ParlayBuilderContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentParlay, setCurrentParlay] = useState({
     parlay_name: "",
@@ -94,24 +96,34 @@ export default function ParlayBuilder() {
     legs.forEach(leg => {
       if (!leg.odds) return;
       const num = parseFloat(leg.odds);
+      // Convert American odds to decimal odds
+      // Positive odds (e.g., +150) => 1 + (odds / 100)
+      // Negative odds (e.g., -110) => 1 + (100 / |odds|)
       const decimal = num >= 0 ? (num / 100) + 1 : (100 / Math.abs(num)) + 1;
       combinedDecimal *= decimal;
     });
     
-    if (combinedDecimal >= 2) {
+    // Convert combined decimal odds back to American odds
+    if (combinedDecimal >= 2) { // Positive American odds
       return `+${Math.round((combinedDecimal - 1) * 100)}`;
-    } else {
+    } else { // Negative American odds
       return `-${Math.round(100 / (combinedDecimal - 1))}`;
     }
   };
 
   const calculatePayout = (stake, odds) => {
     const stakeNum = parseFloat(stake);
-    const oddsNum = parseFloat(odds.replace('+', ''));
+    if (isNaN(stakeNum) || stakeNum <= 0) return 0;
+
+    // Remove any sign for parsing, then convert to number
+    const oddsStr = String(odds).replace('+', '');
+    const oddsNum = parseFloat(oddsStr);
+
+    if (isNaN(oddsNum)) return 0;
     
-    if (oddsNum >= 0) {
+    if (oddsNum >= 0) { // Positive odds (+150)
       return stakeNum + (stakeNum * oddsNum) / 100;
-    } else {
+    } else { // Negative odds (-110)
       return stakeNum + (stakeNum * 100) / Math.abs(oddsNum);
     }
   };
@@ -140,7 +152,10 @@ export default function ParlayBuilder() {
       total_odds: totalOdds,
       stake_amount: parseFloat(currentParlay.stake_amount),
       potential_payout: potentialPayout,
-      legs_total: validLegs.length
+      legs_total: validLegs.length,
+      created_by: currentUser?.email, // Ensure created_by is set
+      result: 'pending', // Initialize result
+      legs_won: 0, // Initialize legs_won
     });
   };
 
@@ -168,33 +183,11 @@ export default function ParlayBuilder() {
     });
   };
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-6">
-        <Card className="max-w-md">
-          <CardContent className="p-12 text-center">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-purple-600" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
-            <p className="text-gray-600 mb-6">
-              Sign in to build and track your parlays
-            </p>
-            <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const currentOdds = calculateParlayOdds(currentParlay.legs);
   const estimatedPayout = currentParlay.stake_amount ? calculatePayout(currentParlay.stake_amount, currentOdds) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -491,5 +484,13 @@ export default function ParlayBuilder() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ParlayBuilder() {
+  return (
+    <RequireAuth pageName="Parlay Builder">
+      <ParlayBuilderContent />
+    </RequireAuth>
   );
 }
