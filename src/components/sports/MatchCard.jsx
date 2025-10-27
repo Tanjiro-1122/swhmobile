@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Trophy, Home, Plane } from "lucide-react";
 import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
 import PlayerStatsCard from "./PlayerStatsCard";
@@ -60,6 +60,12 @@ export default function MatchCard({ match, onDelete, index }) {
                   {formattedDate}
                 </div>
               )}
+              {match.venue && (
+                <div className="flex items-center gap-2 text-sm text-white/80">
+                  <Home className="w-4 h-4" />
+                  {match.venue}
+                </div>
+              )}
             </div>
             <div className="flex gap-2">
               {match.confidence_level && (
@@ -76,6 +82,48 @@ export default function MatchCard({ match, onDelete, index }) {
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
+            </div>
+          </div>
+
+          {/* NEW: Clear Home vs Away Display */}
+          <div className="relative bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+            <div className="grid grid-cols-3 gap-4 items-center">
+              {/* Home Team */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Home className="w-5 h-5 text-green-400" />
+                  <Badge className="bg-green-500/20 text-green-300 border-green-400/30 font-bold">
+                    HOME
+                  </Badge>
+                </div>
+                <div className="text-2xl font-black text-white mb-1">
+                  {match.home_team}
+                </div>
+                <div className="text-3xl font-black text-green-400">
+                  {match.home_win_probability?.toFixed(0)}%
+                </div>
+              </div>
+
+              {/* VS */}
+              <div className="text-center">
+                <div className="text-4xl font-black text-white/50">VS</div>
+              </div>
+
+              {/* Away Team */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Plane className="w-5 h-5 text-blue-400" />
+                  <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/30 font-bold">
+                    AWAY
+                  </Badge>
+                </div>
+                <div className="text-2xl font-black text-white mb-1">
+                  {match.away_team}
+                </div>
+                <div className="text-3xl font-black text-blue-400">
+                  {match.away_win_probability?.toFixed(0)}%
+                </div>
+              </div>
             </div>
           </div>
         </div>
