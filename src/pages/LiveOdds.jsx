@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, RefreshCw, DollarSign, Home, Plane } from "lucide-react";
@@ -7,10 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import RequireAuth from "../components/auth/RequireAuth";
+import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
-export default function LiveOdds() {
+function LiveOddsContent() {
   const [selectedSport, setSelectedSport] = useState("basketball_nba");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
   // Sport mapping for The Odds API
   const sportKeys = {
@@ -22,6 +28,12 @@ export default function LiveOdds() {
   };
 
   const fetchLiveOdds = async (sportKey) => {
+    // Check if user can lookup before fetching
+    if (!canLookup() && !hasLoadedOnce) {
+      setShowLimitModal(true);
+      return null;
+    }
+
     setIsRefreshing(true);
     try {
       // Fetch from The Odds API
@@ -35,6 +47,12 @@ export default function LiveOdds() {
       }
 
       const data = await response.json();
+
+      // Record lookup only on first load
+      if (!hasLoadedOnce) {
+        recordLookup();
+        setHasLoadedOnce(true);
+      }
 
       // Transform data for display
       const games = data.map(game => {
@@ -104,15 +122,27 @@ export default function LiveOdds() {
     queryFn: () => fetchLiveOdds(selectedSport),
     refetchInterval: 60000, // Refresh every minute
     staleTime: 60000,
+    enabled: canLookup() || hasLoadedOnce, // Only auto-fetch if user has lookups or already loaded
   });
 
   const handleRefresh = () => {
+    if (!canLookup() && hasLoadedOnce) {
+      setShowLimitModal(true);
+      return;
+    }
     refetch();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
+      <FreeLookupModal 
+        show={showLimitModal} 
+        onClose={() => setShowLimitModal(false)}
+        lookupsRemaining={lookupsRemaining}
+      />
+
+      <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -127,7 +157,7 @@ export default function LiveOdds() {
             </div>
             <Button
               onClick={handleRefresh}
-              disabled={isRefreshing}
+              disabled={isRefreshing || (!canLookup() && hasLoadedOnce)}
               className="bg-green-600 hover:bg-green-700"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -332,6 +362,7 @@ export default function LiveOdds() {
                   <li>• Data updates every minute automatically</li>
                   <li>• Compare odds across sportsbooks to find best value</li>
                   <li>• Always verify odds on sportsbook before placing bets</li>
+                  <li>• 💡 This page counts as 1 of your free lookups</li>
                 </ul>
               </div>
             </div>
@@ -339,5 +370,13 @@ export default function LiveOdds() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LiveOdds() {
+  return (
+    <RequireAuth pageName="Live Odds">
+      <LiveOddsContent />
+    </RequireAuth>
   );
 }
