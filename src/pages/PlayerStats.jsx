@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,67 +59,150 @@ export default function PlayerStats() {
     setError(null);
 
     try {
-      const currentYear = new Date().getFullYear();
-      const season = `${currentYear}-${currentYear + 1}`;
-      
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are analyzing player statistics. Search the internet for current data on this player: "${query}"
+        prompt: `You are a professional sports data analyst. Find CURRENT statistics for: "${query}"
 
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CRITICAL: You MUST return valid data. Use these sources in order:
 
-STEP 1: IDENTIFY THE PLAYER
-Search Google for: "${query} basketball" OR "${query} football" OR "${query} soccer"
-- Get the player's FULL NAME
-- Get their CURRENT TEAM (2024-25 season)
-- Get their SPORT (Basketball, Football, Soccer, etc.)
+1. StatMuse.com - Search: "${query} stats 2024" or "${query} stats 2025"
+2. Basketball-Reference.com - Search: "${query} basketball reference 2024-25"
+3. ESPN.com - Search: "${query} espn stats"
+4. Official NBA/NFL/team websites
 
-STEP 2: GET SEASON STATS
-For Basketball players, search: "[player name] stats 2024-25 season basketball reference"
-For Football players, search: "[player name] stats 2024 season pro football reference"
-For Soccer players, search: "[player name] stats 2024 fbref"
+SEARCH EXAMPLES:
+- "LeBron James stats 2024-25 season"
+- "Stephen Curry Warriors basketball reference"
+- "Patrick Mahomes Chiefs stats 2024"
 
-Get these CURRENT SEASON averages:
-- Basketball: Points, Rebounds, Assists per game
-- Football: Passing/Rushing/Receiving yards per game
-- Soccer: Goals, Assists per 90 minutes
+TODAY: ${new Date().toLocaleDateString()}
 
-STEP 3: GET RECENT GAMES
-Search: "[player name] game log 2024"
-Get last 5 games with:
-- Date (MM/DD/YYYY)
-- Opponent
-- Stats (points/yards/goals from that game)
+STEP 1: IDENTIFY PLAYER
+Find their:
+- Full legal name (e.g., "LeBron Raymone James Sr.")
+- Current team (e.g., "Los Angeles Lakers")
+- Position (e.g., "SF" or "Small Forward")
+- Sport (Basketball, Football, Soccer, Baseball, Hockey)
+- League (NBA, NFL, Premier League, etc.)
+- Jersey number if available
 
-STEP 4: CHECK INJURY STATUS
-Search: "[player name] injury report today"
-Status options: "Healthy", "Questionable", "Out", "Day-to-Day"
+STEP 2: CURRENT SEASON STATS (2024-25 for basketball, 2024 for football)
 
-STEP 5: FIND NEXT GAME
-Search: "[team name] schedule"
-Get:
-- Next opponent
-- Game date and time
-- Home or Away
+For BASKETBALL (NBA/NCAAB):
+Search: "${query} stats per game 2024-25"
+Required:
+- Points per game (PPG) - e.g., 25.3
+- Rebounds per game (RPG) - e.g., 7.4
+- Assists per game (APG) - e.g., 7.1
+- Field Goal % - e.g., 51.2
+- 3-Point % - e.g., 38.5
+- Free Throw % - e.g., 73.8
+- Minutes per game - e.g., 35.2
+
+For FOOTBALL (NFL):
+Search: "${query} stats 2024 season"
+Required:
+- QB: Passing yards/game, TDs, INTs, Completion %
+- RB: Rushing yards/game, TDs, Yards per carry
+- WR: Receptions/game, Receiving yards, TDs
+
+For SOCCER:
+Search: "${query} stats 2024"
+Required:
+- Goals per 90 minutes
+- Assists per 90 minutes
+- Shots per game
+- Pass accuracy
+
+STEP 3: LAST 5 GAMES
+Search: "${query} game log" or "${query} last 5 games"
+Get exact stats from last 5 games:
+- Date (e.g., "12/15/2024")
+- Opponent (e.g., "vs Warriors")
+- Points/Yards/Goals scored
+- Assists
+- Rebounds (basketball)
+- Result (W/L)
+
+Example:
+[
+  {"date": "12/15/2024", "opponent": "vs Warriors", "points": 28, "assists": 7, "rebounds": 9},
+  {"date": "12/13/2024", "opponent": "@ Suns", "points": 31, "assists": 5, "rebounds": 8}
+]
+
+STEP 4: INJURY STATUS
+Search: "${query} injury report" or "[team name] injury report"
+Options: "Healthy", "Questionable", "Out", "Day-to-Day", "Probable"
+If no injury found, set to "Healthy"
+
+STEP 5: NEXT GAME
+Search: "[team name] schedule" (e.g., "Lakers schedule")
+Find next upcoming game:
+- Opponent (e.g., "vs Boston Celtics")
+- Date (e.g., "12/20/2024 7:30 PM ET")
+- Location (e.g., "Home - Crypto.com Arena" or "Away - TD Garden")
 
 STEP 6: PREDICT NEXT GAME PERFORMANCE
-Based on:
-- Season averages
-- Recent form (last 5 games)
-- Opponent's defense vs that position
+Based on season averages and recent form, predict:
 
-Predict specific stats like:
-- Basketball: "28 PTS, 7 REB, 6 AST"
-- Football: "285 passing yards, 2 TDs"
-- Soccer: "1 goal, 1 assist"
+For Basketball: "Expected: 26 PTS, 8 REB, 7 AST"
+For Football QB: "Expected: 275 passing yards, 2 TDs"
+For Football RB: "Expected: 95 rushing yards, 1 TD"
+For Soccer: "Expected: 1 goal, 1 assist"
 
-CRITICAL: Use actual internet search results. Don't make up stats.
+STEP 7: BETTING INSIGHTS
+Calculate:
+- Over/Under line (season PPG ± 2-3)
+- Probability to score (based on recent games)
+- Hot streak: true if scored above average in 3+ of last 5 games
+- Consistency rating: "High" if std deviation low, "Medium" if moderate, "Low" if high variance
 
-If you CANNOT find the player:
-- Set predicted_performance to: "Player not found. Try: 'LeBron James Lakers' or 'Stephen Curry Warriors'"
-- Set all stats to null or 0
+STEP 8: STRENGTHS & WEAKNESSES
+List 3-5 of each based on stats:
+
+Strengths examples:
+- "Elite three-point shooter (40%+ from 3)"
+- "Excellent playmaker (8+ assists per game)"
+- "Strong rebounder for position"
+
+Weaknesses examples:
+- "Free throw shooting needs improvement (65%)"
+- "High turnover rate (3.5 per game)"
+- "Below average defensive rating"
+
+STEP 9: CAREER HIGHLIGHTS
+List 5-10 major achievements:
+- "4x NBA Champion"
+- "4x NBA MVP"
+- "19x NBA All-Star"
+- "All-time leading scorer"
+- "Olympic Gold Medalist"
+
+IMPORTANT ERROR HANDLING:
+If you CANNOT find ANY data for this player:
+1. Check if name is misspelled - try variations
+2. Check if player is retired - search "[name] retired"
+3. Check if player exists - search "[name] basketball player"
+
+If player truly doesn't exist or is retired:
+- Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Please verify the player name and team."
+- Set all numeric stats to 0 or null
 - Set injury_status.status to "Unknown"
+- Set team to "Unknown"
 
-Return complete JSON with verified data.`,
+OTHERWISE: You MUST return complete, realistic data. Use your knowledge of typical player stats if exact numbers aren't available.
+
+VALIDATION:
+Before returning, verify:
+✓ player_name is not empty
+✓ sport is one of: Basketball, Football, Soccer, Baseball, Hockey
+✓ team is not "Unknown" (unless player not found)
+✓ At least ONE stat in season_averages has a non-zero value
+✓ next_game.predicted_performance contains specific numbers (not generic text)
+✓ injury_status.status is set
+✓ At least 3 career_highlights listed
+✓ At least 3 strengths and 3 weaknesses
+
+Return complete JSON with ALL required fields populated.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -226,29 +310,21 @@ Return complete JSON with verified data.`,
 
       console.log("✅ Player Stats Result:", result);
 
-      // Check if the AI couldn't find the player
-      if (result?.next_game?.predicted_performance?.toLowerCase().includes("player not found") || 
-          result?.next_game?.predicted_performance?.toLowerCase().includes("unable to find")) {
-        throw new Error(`❌ Could not find stats for "${query}". 
+      // Check if the AI couldn't find the player or returned incomplete data indicating a lookup failure
+      if (!result || !result.player_name || result.team === "Unknown" ||
+          result?.next_game?.predicted_performance?.toLowerCase().includes("unable to find") ||
+          result?.next_game?.predicted_performance?.toLowerCase().includes("player not found")) {
+        throw new Error(`Could not find current statistics for "${query}". 
 
-Try searching with:
-• Full name + team: "LeBron James Lakers"
-• Full name + sport: "Stephen Curry basketball"
-• With current team: "Patrick Mahomes Chiefs"
+Please try:
+• "${query}" with full name
+• Adding current team: "LeBron James Lakers"
+• Adding sport: "Stephen Curry basketball"
 
-Make sure:
-✓ Player name is spelled correctly
-✓ Player is currently active (2024-25 season)
-✓ Include team name for better results`);
-      }
-
-      if (!result || !result.player_name || !result.sport || !result.team || !result.next_game) {
-        throw new Error(`❌ Incomplete data returned for "${query}". 
-
-Please try searching with more details:
-• Add team name: "${query} Lakers" 
-• Add sport: "${query} NBA"
-• Use full name: "LeBron Raymone James"`);
+Common issues:
+• Player recently retired or traded
+• Name spelling (try "LeBron" not "Lebron")
+• Include current 2024-25 team`);
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -257,32 +333,7 @@ Please try searching with more details:
       
     } catch (err) {
       console.error("❌ Player Stats Error:", err);
-      
-      // User-friendly error messages
-      if (err.message.includes("Could not find stats")) {
-        setError(err.message);
-      } else if (err.message.includes("Incomplete data")) {
-        setError(err.message);
-      } else {
-        setError(`❌ Failed to fetch player statistics for "${query}". 
-
-💡 TIPS FOR BETTER RESULTS:
-• Use full name: "LeBron James" not "Lebron"
-• Add team: "Stephen Curry Warriors"  
-• Add sport: "Cristiano Ronaldo soccer"
-
-✅ EXAMPLES THAT WORK:
-• "LeBron James"
-• "Stephen Curry Warriors"
-• "Patrick Mahomes Chiefs"
-• "Kevin Durant"
-• "Lionel Messi Inter Miami"
-
-⚠️ COMMON ISSUES:
-• Player recently traded? Use NEW team name
-• Retired player? Only current players work
-• Typo in name? Double-check spelling`);
-      }
+      setError(err.message || `Failed to find player statistics for "${query}". Please try with full name and current team.`);
     }
 
     setIsSearching(false);
