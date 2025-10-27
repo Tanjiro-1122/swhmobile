@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, RefreshCw, DollarSign, Home, Plane } from "lucide-react";
+import { TrendingUp, RefreshCw, DollarSign, Home, Plane, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ function LiveOddsContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [selectedBookmaker, setSelectedBookmaker] = useState("all");
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
@@ -122,7 +123,7 @@ function LiveOddsContent() {
     queryFn: () => fetchLiveOdds(selectedSport),
     refetchInterval: 60000, // Refresh every minute
     staleTime: 60000,
-    enabled: canLookup() || hasLoadedOnce, // Only auto-fetch if user has lookups or already loaded
+    enabled: canLookup() || hasLoadedOnce,
   });
 
   const handleRefresh = () => {
@@ -131,6 +132,54 @@ function LiveOddsContent() {
       return;
     }
     refetch();
+  };
+
+  // Render single bookmaker for mobile
+  const renderMobileBookmaker = (game, bookmaker, name, color) => {
+    if (!bookmaker) return null;
+
+    return (
+      <div className={`bg-${color}-50 rounded-lg p-3 border-2 border-${color}-200`}>
+        <div className={`font-bold text-${color}-800 mb-3 flex items-center gap-2 text-sm`}>
+          <DollarSign className="w-4 h-4" />
+          {name}
+        </div>
+        <div className="space-y-2 text-xs">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Moneyline:</span>
+            <div className="text-right">
+              <div className="font-bold">
+                {bookmaker.moneyline_home > 0 ? '+' : ''}{bookmaker.moneyline_home}
+              </div>
+              <div className="font-bold">
+                {bookmaker.moneyline_away > 0 ? '+' : ''}{bookmaker.moneyline_away}
+              </div>
+            </div>
+          </div>
+          {bookmaker.spread_home && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Spread:</span>
+              <div className="text-right">
+                <div className="font-bold">
+                  {bookmaker.spread_home > 0 ? '+' : ''}{bookmaker.spread_home} ({bookmaker.spread_odds_home > 0 ? '+' : ''}{bookmaker.spread_odds_home})
+                </div>
+                <div className="font-bold">
+                  {bookmaker.spread_away > 0 ? '+' : ''}{bookmaker.spread_away} ({bookmaker.spread_odds_away > 0 ? '+' : ''}{bookmaker.spread_odds_away})
+                </div>
+              </div>
+            </div>
+          )}
+          {bookmaker.total && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total:</span>
+              <span className="font-bold">
+                {bookmaker.total} (O: {bookmaker.over > 0 ? '+' : ''}{bookmaker.over}, U: {bookmaker.under > 0 ? '+' : ''}{bookmaker.under})
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -142,23 +191,23 @@ function LiveOddsContent() {
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900">Live Odds</h1>
-                <p className="text-gray-600">Real-time odds from top sportsbooks</p>
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Live Odds</h1>
+                <p className="text-sm sm:text-base text-gray-600">Real-time odds from top sportsbooks</p>
               </div>
             </div>
             <Button
               onClick={handleRefresh}
               disabled={isRefreshing || (!canLookup() && hasLoadedOnce)}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh Odds
@@ -168,21 +217,21 @@ function LiveOddsContent() {
           {oddsData?.last_updated && (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <div className="text-sm text-gray-500">
+              <div className="text-xs sm:text-sm text-gray-500">
                 Live • Last updated: {new Date(oddsData.last_updated).toLocaleTimeString()}
               </div>
             </div>
           )}
         </div>
 
-        {/* Sport Tabs */}
-        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-8">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="basketball_nba">🏀 NBA</TabsTrigger>
-            <TabsTrigger value="americanfootball_nfl">🏈 NFL</TabsTrigger>
-            <TabsTrigger value="baseball_mlb">⚾ MLB</TabsTrigger>
-            <TabsTrigger value="icehockey_nhl">🏒 NHL</TabsTrigger>
-            <TabsTrigger value="soccer_epl">⚽ EPL</TabsTrigger>
+        {/* Sport Tabs - Mobile Optimized */}
+        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-6 sm:mb-8">
+          <TabsList className="grid w-full grid-cols-5 h-auto">
+            <TabsTrigger value="basketball_nba" className="text-xs sm:text-sm py-2">🏀 NBA</TabsTrigger>
+            <TabsTrigger value="americanfootball_nfl" className="text-xs sm:text-sm py-2">🏈 NFL</TabsTrigger>
+            <TabsTrigger value="baseball_mlb" className="text-xs sm:text-sm py-2">⚾ MLB</TabsTrigger>
+            <TabsTrigger value="icehockey_nhl" className="text-xs sm:text-sm py-2">🏒 NHL</TabsTrigger>
+            <TabsTrigger value="soccer_epl" className="text-xs sm:text-sm py-2">⚽ EPL</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -190,13 +239,13 @@ function LiveOddsContent() {
         {isRefreshing && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4" />
-            <p className="text-gray-600">Fetching live odds...</p>
+            <p className="text-gray-600 text-sm sm:text-base">Fetching live odds...</p>
           </div>
         )}
 
-        {/* Odds Display */}
+        {/* Odds Display - Mobile Optimized */}
         {!isRefreshing && oddsData?.games && oddsData.games.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {oddsData.games.map((game, index) => (
               <motion.div
                 key={game.game_id || index}
@@ -205,130 +254,63 @@ function LiveOddsContent() {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="border-2 border-green-200">
-                  <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-100">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-4 mb-2">
-                          <div className="flex items-center gap-2">
-                            <Home className="w-5 h-5 text-green-600" />
-                            <span className="text-2xl font-bold text-gray-900">{game.home_team}</span>
-                          </div>
-                          <span className="text-gray-400 font-bold">vs</span>
-                          <div className="flex items-center gap-2">
-                            <Plane className="w-5 h-5 text-blue-600" />
-                            <span className="text-2xl font-bold text-gray-900">{game.away_team}</span>
-                          </div>
+                  <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-100 p-4 sm:p-6">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Home className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                          <span className="text-base sm:text-2xl font-bold text-gray-900 truncate">{game.home_team}</span>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {new Date(game.start_time).toLocaleString()}
+                        <span className="text-gray-400 font-bold text-sm sm:text-base self-start sm:self-center">vs</span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Plane className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                          <span className="text-base sm:text-2xl font-bold text-gray-900 truncate">{game.away_team}</span>
                         </div>
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-600">
+                        {new Date(game.start_time).toLocaleString()}
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    {/* Odds Comparison */}
-                    <div className="grid md:grid-cols-3 gap-4">
-                      {/* DraftKings */}
-                      {game.odds.draftkings && (
-                        <div className="bg-orange-50 rounded-lg p-4 border-2 border-orange-200">
-                          <div className="font-bold text-orange-800 mb-3 flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            DraftKings
-                          </div>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Moneyline:</span>
-                              <span className="font-bold">
-                                {game.odds.draftkings.moneyline_home > 0 ? '+' : ''}{game.odds.draftkings.moneyline_home} / {game.odds.draftkings.moneyline_away > 0 ? '+' : ''}{game.odds.draftkings.moneyline_away}
-                              </span>
-                            </div>
-                            {game.odds.draftkings.spread_home && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Spread:</span>
-                                <span className="font-bold">
-                                  {game.odds.draftkings.spread_home > 0 ? '+' : ''}{game.odds.draftkings.spread_home} ({game.odds.draftkings.spread_odds_home > 0 ? '+' : ''}{game.odds.draftkings.spread_odds_home})
-                                </span>
-                              </div>
-                            )}
-                            {game.odds.draftkings.total && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Total:</span>
-                                <span className="font-bold">
-                                  {game.odds.draftkings.total} (O: {game.odds.draftkings.over > 0 ? '+' : ''}{game.odds.draftkings.over}, U: {game.odds.draftkings.under > 0 ? '+' : ''}{game.odds.draftkings.under})
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                  <CardContent className="p-4 sm:p-6">
+                    {/* Desktop View - 3 columns */}
+                    <div className="hidden md:grid md:grid-cols-3 gap-4">
+                      {game.odds.draftkings && renderMobileBookmaker(game, game.odds.draftkings, "DraftKings", "orange")}
+                      {game.odds.fanduel && renderMobileBookmaker(game, game.odds.fanduel, "FanDuel", "blue")}
+                      {game.odds.betmgm && renderMobileBookmaker(game, game.odds.betmgm, "BetMGM", "yellow")}
+                    </div>
 
-                      {/* FanDuel */}
-                      {game.odds.fanduel && (
-                        <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
-                          <div className="font-bold text-blue-800 mb-3 flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            FanDuel
-                          </div>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Moneyline:</span>
-                              <span className="font-bold">
-                                {game.odds.fanduel.moneyline_home > 0 ? '+' : ''}{game.odds.fanduel.moneyline_home} / {game.odds.fanduel.moneyline_away > 0 ? '+' : ''}{game.odds.fanduel.moneyline_away}
-                              </span>
-                            </div>
-                            {game.odds.fanduel.spread_home && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Spread:</span>
-                                <span className="font-bold">
-                                  {game.odds.fanduel.spread_home > 0 ? '+' : ''}{game.odds.fanduel.spread_home} ({game.odds.fanduel.spread_odds_home > 0 ? '+' : ''}{game.odds.fanduel.spread_odds_home})
-                                </span>
-                              </div>
-                            )}
-                            {game.odds.fanduel.total && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Total:</span>
-                                <span className="font-bold">
-                                  {game.odds.fanduel.total} (O: {game.odds.fanduel.over > 0 ? '+' : ''}{game.odds.fanduel.over}, U: {game.odds.fanduel.under > 0 ? '+' : ''}{game.odds.fanduel.under})
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* BetMGM */}
-                      {game.odds.betmgm && (
-                        <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
-                          <div className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            BetMGM
-                          </div>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Moneyline:</span>
-                              <span className="font-bold">
-                                {game.odds.betmgm.moneyline_home > 0 ? '+' : ''}{game.odds.betmgm.moneyline_home} / {game.odds.betmgm.moneyline_away > 0 ? '+' : ''}{game.odds.betmgm.moneyline_away}
-                              </span>
-                            </div>
-                            {game.odds.betmgm.spread_home && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Spread:</span>
-                                <span className="font-bold">
-                                  {game.odds.betmgm.spread_home > 0 ? '+' : ''}{game.odds.betmgm.spread_home} ({game.odds.betmgm.spread_odds_home > 0 ? '+' : ''}{game.odds.betmgm.spread_odds_home})
-                                </span>
-                              </div>
-                            )}
-                            {game.odds.betmgm.total && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Total:</span>
-                                <span className="font-bold">
-                                  {game.odds.betmgm.total} (O: {game.odds.betmgm.over > 0 ? '+' : ''}{game.odds.betmgm.over}, U: {game.odds.betmgm.under > 0 ? '+' : ''}{game.odds.betmgm.under})
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                    {/* Mobile View - Swipeable/Tabs */}
+                    <div className="md:hidden">
+                      <Tabs defaultValue="draftkings" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                          {game.odds.draftkings && (
+                            <TabsTrigger value="draftkings" className="text-xs">DK</TabsTrigger>
+                          )}
+                          {game.odds.fanduel && (
+                            <TabsTrigger value="fanduel" className="text-xs">FD</TabsTrigger>
+                          )}
+                          {game.odds.betmgm && (
+                            <TabsTrigger value="betmgm" className="text-xs">MGM</TabsTrigger>
+                          )}
+                        </TabsList>
+                        
+                        {game.odds.draftkings && (
+                          <TabsContent value="draftkings">
+                            {renderMobileBookmaker(game, game.odds.draftkings, "DraftKings", "orange")}
+                          </TabsContent>
+                        )}
+                        {game.odds.fanduel && (
+                          <TabsContent value="fanduel">
+                            {renderMobileBookmaker(game, game.odds.fanduel, "FanDuel", "blue")}
+                          </TabsContent>
+                        )}
+                        {game.odds.betmgm && (
+                          <TabsContent value="betmgm">
+                            {renderMobileBookmaker(game, game.odds.betmgm, "BetMGM", "yellow")}
+                          </TabsContent>
+                        )}
+                      </Tabs>
                     </div>
                   </CardContent>
                 </Card>
@@ -341,9 +323,9 @@ function LiveOddsContent() {
         {!isRefreshing && (!oddsData?.games || oddsData.games.length === 0) && (
           <Card>
             <CardContent className="py-12 text-center">
-              <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Live Games</h3>
-              <p className="text-gray-600">
+              <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No Live Games</h3>
+              <p className="text-sm sm:text-base text-gray-600">
                 No upcoming {selectedSport} games found. Try refreshing or select another sport.
               </p>
             </CardContent>
@@ -351,13 +333,13 @@ function LiveOddsContent() {
         )}
 
         {/* Info Banner */}
-        <Card className="mt-8 border-2 border-blue-200 bg-blue-50">
-          <CardContent className="p-6">
+        <Card className="mt-6 sm:mt-8 border-2 border-blue-200 bg-blue-50">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-start gap-3">
-              <div className="text-3xl">ℹ️</div>
+              <div className="text-2xl sm:text-3xl">ℹ️</div>
               <div>
-                <h4 className="font-bold text-blue-900 mb-2">Live Data Powered by The Odds API</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+                <h4 className="font-bold text-blue-900 mb-2 text-sm sm:text-base">Live Data Powered by The Odds API</h4>
+                <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                   <li>• Real-time odds from DraftKings, FanDuel, and BetMGM</li>
                   <li>• Data updates every minute automatically</li>
                   <li>• Compare odds across sportsbooks to find best value</li>

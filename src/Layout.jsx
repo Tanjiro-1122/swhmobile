@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -22,10 +21,11 @@ import {
   MessageSquare,
   Trophy,
   LogIn,
-  Calendar // Added Calendar icon
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import InstallPrompt from "./components/mobile/InstallPrompt";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,8 +45,10 @@ export default function Layout({ children, currentPageName }) {
     if (!viewport) {
       const meta = document.createElement('meta');
       meta.name = 'viewport';
-      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
       document.head.appendChild(meta);
+    } else {
+      viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
     }
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
@@ -55,6 +57,23 @@ export default function Layout({ children, currentPageName }) {
       meta.name = 'theme-color';
       meta.content = '#1e293b';
       document.head.appendChild(meta);
+    }
+
+    // Apple mobile web app capable
+    let appleWebApp = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+    if (!appleWebApp) {
+      appleWebApp = document.createElement('meta');
+      appleWebApp.name = 'apple-mobile-web-app-capable';
+      appleWebApp.content = 'yes';
+      document.head.appendChild(appleWebApp);
+    }
+
+    let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStatusBar) {
+      appleStatusBar = document.createElement('meta');
+      appleStatusBar.name = 'apple-mobile-web-app-status-bar-style';
+      appleStatusBar.content = 'black-translucent';
+      document.head.appendChild(appleStatusBar);
     }
 
     // Load web2application.com scripts for mobile app conversion
@@ -76,16 +95,29 @@ export default function Layout({ children, currentPageName }) {
     };
     document.head.appendChild(web2appScript);
 
-    const manifestLink = document.createElement("link");
+    const manifestLink = document.querySelector('link[rel="manifest"]') || document.createElement("link");
     manifestLink.rel = "manifest";
     manifestLink.href = "/manifest.json";
-    document.head.appendChild(manifestLink);
+    if (!document.querySelector('link[rel="manifest"]')) {
+      document.head.appendChild(manifestLink);
+    }
+
+    // Add apple touch icon
+    let appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!appleTouchIcon) {
+      appleTouchIcon = document.createElement("link");
+      appleTouchIcon.rel = "apple-touch-icon";
+      appleTouchIcon.href = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
+      document.head.appendChild(appleTouchIcon);
+    }
+
+    // Prevent pull-to-refresh on mobile
+    document.body.style.overscrollBehavior = 'none';
 
     return () => {
       document.head.removeChild(jqueryScript);
       document.head.removeChild(firebaseScript);
       document.head.removeChild(web2appScript);
-      document.head.removeChild(manifestLink);
     };
   }, []);
 
@@ -107,11 +139,9 @@ export default function Layout({ children, currentPageName }) {
     try {
       await base44.auth.logout();
       setIsAuthenticated(false);
-      // Redirect to Dashboard after logout
       window.location.href = createPageUrl("Dashboard");
     } catch (error) {
       console.error("Logout error:", error);
-      // Force redirect even if there's an error
       window.location.href = createPageUrl("Dashboard");
     }
   };
@@ -138,84 +168,90 @@ export default function Layout({ children, currentPageName }) {
 
   if (isAdmin) {
     menuItems.push({ name: "Admin Panel", icon: Settings, page: "AdminPanel" });
-    menuItems.push({ name: "Match Results", icon: Calendar, page: "MatchResults" }); // Added Match Results for admins
+    menuItems.push({ name: "Match Results", icon: Calendar, page: "MatchResults" });
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
+      {/* Mobile-optimized header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700 safe-top">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-white"
+              className="lg:hidden text-white flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
             >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {sidebarOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </Button>
-            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
+            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
                 alt="SWH Logo"
-                className="w-10 h-10 rounded-xl object-cover"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover flex-shrink-0"
               />
-              <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="text-base sm:text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate hidden sm:inline">
                 Sports Wager Helper
+              </span>
+              <span className="text-base font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent sm:hidden">
+                SWH
               </span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {isAuthenticated && currentUser ? (
               <>
                 {isVIP && (
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
-                    <Shield className="w-4 h-4 text-white" />
-                    <span className="text-sm font-bold text-white">VIP LIFETIME</span>
+                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 sm:px-4 py-2 rounded-full">
+                    <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">VIP LIFETIME</span>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
+                <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                       {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-right">
-                    <div className="text-sm font-semibold text-white">{currentUser?.full_name || currentUser?.email || 'User'}</div>
-                    <div className="text-xs text-gray-400">{currentUser?.email}</div>
+                    <div className="text-sm font-semibold text-white truncate max-w-[120px]">{currentUser?.full_name || currentUser?.email || 'User'}</div>
+                    <div className="text-xs text-gray-400 truncate max-w-[120px]">{currentUser?.email}</div>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white h-9 w-9 sm:h-10 sm:w-10"
                   title="Log out"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </>
             ) : (
               <Button
                 onClick={handleLogin}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-2 shadow-lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-3 sm:px-6 py-2 shadow-lg text-xs sm:text-base whitespace-nowrap"
               >
-                <LogIn className="w-5 h-5 mr-2" />
-                Sign In / Sign Up
+                <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Sign In / Sign Up</span>
+                <span className="sm:hidden">Sign In</span>
               </Button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex pt-20">
+      <div className="flex pt-16 sm:pt-20">
+        {/* Mobile-optimized sidebar */}
         <aside
-          className={`fixed left-0 top-20 bottom-0 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
+          className={`fixed left-0 top-16 sm:top-20 bottom-0 w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
-          <nav className="p-4 space-y-2">
+          <nav className="p-3 sm:p-4 space-y-1 sm:space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPageName === item.page;
@@ -224,27 +260,29 @@ export default function Layout({ children, currentPageName }) {
                   key={item.page}
                   to={createPageUrl(item.page)}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all text-sm sm:text-base ${
                     isActive
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50'
-                      : 'text-gray-400 hover:text-white hover:bg-slate-800'
+                      : 'text-gray-400 hover:text-white hover:bg-slate-800 active:bg-slate-700'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="font-medium truncate">{item.name}</span>
                 </Link>
               );
             })}
-            <div className="pt-4 border-t border-slate-700 mt-4">
+            <div className="pt-3 sm:pt-4 border-t border-slate-700 mt-3 sm:mt-4">
               <Link
                 to={createPageUrl("PrivacyPolicy")}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-300"
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-300 active:text-gray-400"
               >
                 Privacy Policy
               </Link>
               <Link
                 to={createPageUrl("TermsOfService")}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-300"
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-300 active:text-gray-400"
               >
                 Terms of Service
               </Link>
@@ -252,17 +290,22 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </aside>
 
-        <main className="flex-1 lg:ml-64 p-6">
+        {/* Main content */}
+        <main className="flex-1 lg:ml-64 p-4 sm:p-6 pb-20 sm:pb-6">
           {children}
         </main>
       </div>
 
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Install prompt */}
+      <InstallPrompt />
     </div>
   );
 }

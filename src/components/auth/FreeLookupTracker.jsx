@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,67 +93,68 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-lg"
         >
-          <Card className="max-w-lg w-full border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <Lock className="w-8 h-8" />
+          <Card className="border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-6 sm:p-8">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                  <Lock className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
-                <div>
-                  <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">🔒 Free Lookups Used!</CardTitle>
+                  <p className="text-base sm:text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
+            <CardContent className="p-6 sm:p-8">
+              <div className="text-center mb-6 sm:mb-8">
                 <div className="relative inline-block mb-4">
-                  <div className="text-8xl font-black text-gray-200">0/5</div>
+                  <div className="text-6xl sm:text-8xl font-black text-gray-200">0/5</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap className="w-16 h-16 text-emerald-500 animate-pulse" />
+                    <Zap className="w-12 h-12 sm:w-16 sm:h-16 text-emerald-500 animate-pulse" />
                   </div>
                 </div>
-                <p className="text-xl text-gray-700 font-semibold">
+                <p className="text-lg sm:text-xl text-gray-700 font-semibold px-4">
                   You've used all 5 free lookups!
                 </p>
-                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
-                  <div className="flex items-center gap-2 justify-center text-xl font-bold text-orange-800">
-                    <Crown className="w-6 h-6" />
-                    First 20 Users Get LIFETIME VIP Access!
+                <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
+                  <div className="flex flex-wrap items-center justify-center gap-2 text-base sm:text-xl font-bold text-orange-800">
+                    <Crown className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+                    <span>First 20 Users Get LIFETIME VIP Access!</span>
                   </div>
-                  <p className="text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
+                  <p className="text-sm sm:text-base text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
                 </div>
               </div>
 
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
+              <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Player Stats</span>
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Player Stats</span>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Crown className="w-6 h-6 text-yellow-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 flex-shrink-0" />
+                  <span className="text-sm sm:text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
                 </div>
               </div>
 
               <Button
                 onClick={handleSignup}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-base sm:text-xl py-6 sm:py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
               >
-                <UserPlus className="w-6 h-6 mr-3" />
+                <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
                 Sign Up Free - Claim VIP Lifetime Spot
               </Button>
 
-              <p className="text-center text-sm text-gray-500 mt-6">
+              <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6 px-4">
                 Already have an account? Click above to sign in
               </p>
             </CardContent>
