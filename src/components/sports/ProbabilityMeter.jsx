@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Home, Plane } from "lucide-react";
 
 export default function ProbabilityMeter({ homeTeam, awayTeam, homeProb, awayProb, drawProb }) {
   const total = homeProb + awayProb + (drawProb || 0);
@@ -11,6 +12,10 @@ export default function ProbabilityMeter({ homeTeam, awayTeam, homeProb, awayPro
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="text-center flex-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Home className="w-5 h-5 text-blue-400" />
+            <span className="text-xs font-bold text-blue-400">HOME</span>
+          </div>
           <div className="text-4xl font-black bg-gradient-to-br from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
             {homeProb.toFixed(1)}%
           </div>
@@ -23,6 +28,10 @@ export default function ProbabilityMeter({ homeTeam, awayTeam, homeProb, awayPro
           </div>
         )}
         <div className="text-center flex-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Plane className="w-5 h-5 text-purple-400" />
+            <span className="text-xs font-bold text-purple-400">AWAY</span>
+          </div>
           <div className="text-4xl font-black bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
             {awayProb.toFixed(1)}%
           </div>
