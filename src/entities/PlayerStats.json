@@ -18,6 +18,17 @@
       "type": "string",
       "description": "Playing position"
     },
+    "role": {
+      "type": "string",
+      "enum": [
+        "Starter",
+        "Bench",
+        "Sixth Man",
+        "Rotation",
+        "Unknown"
+      ],
+      "description": "Player's role on team (Starter, Bench, etc.)"
+    },
     "league": {
       "type": "string",
       "description": "League or competition"

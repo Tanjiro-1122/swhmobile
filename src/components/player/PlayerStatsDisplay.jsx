@@ -52,6 +52,17 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
     return Activity;
   };
 
+  const getRoleBadgeColor = (role) => {
+    const colors = {
+      "Starter": "bg-green-100 text-green-800 border-green-300",
+      "Bench": "bg-gray-100 text-gray-800 border-gray-300",
+      "Sixth Man": "bg-blue-100 text-blue-800 border-blue-300",
+      "Rotation": "bg-purple-100 text-purple-800 border-purple-300",
+      "Unknown": "bg-gray-100 text-gray-600 border-gray-300"
+    };
+    return colors[role] || colors["Unknown"];
+  };
+
   const renderSeasonAverages = () => {
     if (!player.season_averages) return null;
     
@@ -108,6 +119,11 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 {player.position && (
                   <Badge className="bg-white/20 text-white border-white/30">
                     {player.position}
+                  </Badge>
+                )}
+                {player.role && player.role !== "Unknown" && (
+                  <Badge className={`${getRoleBadgeColor(player.role)} border font-bold`}>
+                    {player.role === "Sixth Man" ? "🔥 6th Man" : player.role}
                   </Badge>
                 )}
                 <Badge className="bg-white/20 text-white border-white/30">

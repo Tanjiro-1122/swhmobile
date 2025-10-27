@@ -84,6 +84,12 @@ Find their:
 - Sport (Basketball, Football, Soccer, Baseball, Hockey)
 - League (NBA, NFL, Premier League, etc.)
 - Jersey number if available
+- ROLE: Is player a STARTER or BENCH player?
+  * Search: "${query} starting lineup" or "${query} depth chart 2024"
+  * Options: "Starter", "Bench", "Sixth Man", "Rotation", "Unknown"
+  * Basketball: If minutes per game > 28, likely Starter. If 20-28, could be Sixth Man. If < 20, likely Bench
+  * Football: Check team depth chart - is player listed as starter (1st string) or backup?
+  * Soccer: Check starting XI lineup - regular starter or substitute?
 
 STEP 2: CURRENT SEASON STATS (2024-25 for basketball, 2024 for football)
 
@@ -194,6 +200,7 @@ If player truly doesn't exist or is retired:
 - Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Please verify the player name and team."
 - Set all numeric stats to 0 or null
 - Set injury_status to "Unknown"
+- Set role to "Unknown"
 - Set team to "Unknown"
 
 OTHERWISE: You MUST return complete, realistic data. Use your knowledge of typical player stats if exact numbers aren't available.
@@ -203,6 +210,7 @@ Before returning, verify:
 ✓ player_name is not empty
 ✓ sport is one of: Basketball, Football, Soccer, Baseball, Hockey
 ✓ team is not "Unknown" (unless player not found)
+✓ role is one of: Starter, Bench, Sixth Man, Rotation, Unknown
 ✓ At least ONE stat in season_averages has a non-zero value
 ✓ next_game.predicted_performance contains specific numbers (not generic text)
 ✓ injury_status is a simple string (not an object)
@@ -218,6 +226,11 @@ Return complete JSON with ALL required fields populated.`,
             sport: { type: "string" },
             team: { type: "string" },
             position: { type: "string" },
+            role: { 
+              type: "string",
+              enum: ["Starter", "Bench", "Sixth Man", "Rotation", "Unknown"],
+              description: "Player's role on team"
+            },
             league: { type: "string" },
             jersey_number: { type: ["string", "null"] },
             season_averages: {
@@ -305,7 +318,7 @@ Return complete JSON with ALL required fields populated.`,
               }
             }
           },
-          required: ["player_name", "sport", "team", "position", "league", "injury_status", "next_game", "career_highlights", "betting_insights", "strengths", "weaknesses"]
+          required: ["player_name", "sport", "team", "position", "role", "league", "injury_status", "next_game", "career_highlights", "betting_insights", "strengths", "weaknesses"]
         }
       });
 
