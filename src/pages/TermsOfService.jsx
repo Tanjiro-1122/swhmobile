@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
@@ -100,7 +99,7 @@ export default function TermsOfService() {
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>VIP Lifetime:</strong> 14-day money-back guarantee from purchase date (no questions asked)</li>
                   <li><strong>Premium Monthly:</strong> No refunds for partial months. Cancel before next billing cycle to avoid charges</li>
-                  <li><strong>Technical Issues:</strong> If our app has significant downtime (more than 24 hours), contact us for pro-rated refund</li>
+                  <li><strong>Technical Issues:</strong> If our app has significant downtime (>24 hours), contact us for pro-rated refund</li>
                 </ul>
               </section>
 
@@ -217,7 +216,7 @@ export default function TermsOfService() {
                   <li>Abuse the system (e.g., creating multiple free accounts)</li>
                   <li>Engage in fraudulent activity</li>
                   <li>Post harmful content in community forums</li>
-                  </ul>
+                </ul>
                 <p className="mt-2">
                   Terminated accounts may not be eligible for refunds (except where required by law).
                 </p>
