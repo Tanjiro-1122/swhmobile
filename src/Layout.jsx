@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
@@ -28,12 +27,62 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    // Add mobile optimization meta tags directly to document head
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (!viewport) {
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      document.head.appendChild(meta);
+    }
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (!themeColor) {
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = '#1e293b';
+      document.head.appendChild(meta);
+    }
+
+    // Load web2application.com scripts for mobile app conversion
+    const jqueryScript = document.createElement("script");
+    jqueryScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
+    jqueryScript.async = true;
+    document.head.appendChild(jqueryScript);
+
+    const firebaseScript = document.createElement("script");
+    firebaseScript.src = "https://www.gstatic.com/firebasejs/7.11.0/firebase.js";
+    firebaseScript.async = true;
+    document.head.appendChild(firebaseScript);
+
+    const web2appScript = document.createElement("script");
+    web2appScript.src = "https://web2application.com/w2a/webapps/36296/web2app1.js";
+    web2appScript.async = true;
+    web2appScript.onload = () => {
+      console.log("✅ web2application.com integration loaded successfully!");
+    };
+    document.head.appendChild(web2appScript);
+
+    const manifestLink = document.createElement("link");
+    manifestLink.rel = "manifest";
+    manifestLink.href = "/manifest.json";
+    document.head.appendChild(manifestLink);
+
+    return () => {
+      document.head.removeChild(jqueryScript);
+      document.head.removeChild(firebaseScript);
+      document.head.removeChild(web2appScript);
+      document.head.removeChild(manifestLink);
+    };
+  }, []);
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const isVIP = currentUser?.is_vip === true;
+  const isVIP = currentUser?.subscription_type === 'vip_lifetime';
   const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = () => {
@@ -74,9 +123,11 @@ export default function Layout({ children, currentPageName }) {
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </Button>
             <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                alt="SWH Logo"
+                className="w-10 h-10 rounded-xl object-cover"
+              />
               <span className="text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Sports Wager Helper
               </span>
@@ -139,6 +190,20 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               );
             })}
+            <div className="pt-4 border-t border-slate-700 mt-4">
+              <Link
+                to={createPageUrl("PrivacyPolicy")}
+                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-300"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                to={createPageUrl("TermsOfService")}
+                className="flex items-center gap-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-300"
+              >
+                Terms of Service
+              </Link>
+            </div>
           </nav>
         </aside>
 
