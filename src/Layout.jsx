@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Add mobile optimization meta tags directly to document head
@@ -85,8 +86,16 @@ export default function Layout({ children, currentPageName }) {
   const isVIP = currentUser?.subscription_type === 'vip_lifetime';
   const isAdmin = currentUser?.role === 'admin';
 
-  const handleLogout = () => {
-    base44.auth.logout();
+  const handleLogout = async () => {
+    try {
+      await base44.auth.logout();
+      // Redirect to Dashboard after logout
+      window.location.href = createPageUrl("Dashboard");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force redirect even if there's an error
+      window.location.href = createPageUrl("Dashboard");
+    }
   };
 
   const menuItems = [
@@ -157,6 +166,7 @@ export default function Layout({ children, currentPageName }) {
               size="icon"
               onClick={handleLogout}
               className="text-gray-400 hover:text-white"
+              title="Log out"
             >
               <LogOut className="w-5 h-5" />
             </Button>
