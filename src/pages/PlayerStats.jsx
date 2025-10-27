@@ -129,10 +129,17 @@ Example:
   {"date": "12/13/2024", "opponent": "@ Suns", "points": 31, "assists": 5, "rebounds": 8}
 ]
 
-STEP 4: INJURY STATUS
+STEP 4: INJURY STATUS (IMPORTANT: Return as simple string)
 Search: "${query} injury report" or "[team name] injury report"
-Options: "Healthy", "Questionable", "Out", "Day-to-Day", "Probable"
-If no injury found, set to "Healthy"
+Return ONE of these exact strings:
+- "Healthy" (if no injury)
+- "Questionable" (if status uncertain)
+- "Out" (if definitely not playing)
+- "Day-to-Day" (if minor injury)
+- "Probable" (if likely to play)
+- "Doubtful" (if unlikely to play)
+
+If no injury found, return "Healthy"
 
 STEP 5: NEXT GAME
 Search: "[team name] schedule" (e.g., "Lakers schedule")
@@ -186,7 +193,7 @@ If you CANNOT find ANY data for this player:
 If player truly doesn't exist or is retired:
 - Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Please verify the player name and team."
 - Set all numeric stats to 0 or null
-- Set injury_status.status to "Unknown"
+- Set injury_status to "Unknown"
 - Set team to "Unknown"
 
 OTHERWISE: You MUST return complete, realistic data. Use your knowledge of typical player stats if exact numbers aren't available.
@@ -198,7 +205,7 @@ Before returning, verify:
 ✓ team is not "Unknown" (unless player not found)
 ✓ At least ONE stat in season_averages has a non-zero value
 ✓ next_game.predicted_performance contains specific numbers (not generic text)
-✓ injury_status.status is set
+✓ injury_status is a simple string (not an object)
 ✓ At least 3 career_highlights listed
 ✓ At least 3 strengths and 3 weaknesses
 
@@ -253,14 +260,8 @@ Return complete JSON with ALL required fields populated.`,
               }
             },
             injury_status: {
-              type: "object",
-              properties: {
-                status: { type: "string" },
-                specific_injury: { type: ["string", "null"] },
-                games_missed: { type: ["number", "null"] },
-                expected_return: { type: ["string", "null"] }
-              },
-              required: ["status"]
+              type: "string",
+              description: "Must be one of: Healthy, Questionable, Out, Day-to-Day, Probable, Doubtful, Unknown"
             },
             next_game: {
               type: "object",

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +87,9 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
 
   const seasonStats = renderSeasonAverages();
 
+  // Normalize injury status to handle null, undefined, or empty string gracefully
+  const cleanedInjuryStatus = player.injury_status ? String(player.injury_status).trim() : "";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -126,12 +130,12 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
         </div>
 
         <CardContent className="p-6 space-y-6">
-          {player.injury_status && player.injury_status !== "Healthy" && (
+          {cleanedInjuryStatus && cleanedInjuryStatus !== "Healthy" && (
             <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
               <div>
                 <div className="font-semibold text-amber-900">Injury Status</div>
-                <div className="text-sm text-amber-800">{player.injury_status}</div>
+                <div className="text-sm text-amber-800">{cleanedInjuryStatus}</div>
               </div>
             </div>
           )}
@@ -160,7 +164,7 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                           {stat.label}
                         </span>
                       </div>
-                      <div className={`text-2xl font-bold ${stat.highlight ? 'text-orange-600' : 'text-purple-900'}`}>
+                      <div className="text-2xl font-bold {stat.highlight ? 'text-orange-600' : 'text-purple-900'}">
                         {stat.value}
                       </div>
                     </div>
