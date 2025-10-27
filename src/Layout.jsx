@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -20,7 +21,8 @@ import {
   Bell,
   MessageSquare,
   Trophy,
-  LogIn
+  LogIn,
+  Calendar // Added Calendar icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -136,6 +138,7 @@ export default function Layout({ children, currentPageName }) {
 
   if (isAdmin) {
     menuItems.push({ name: "Admin Panel", icon: Settings, page: "AdminPanel" });
+    menuItems.push({ name: "Match Results", icon: Calendar, page: "MatchResults" }); // Added Match Results for admins
   }
 
   return (
