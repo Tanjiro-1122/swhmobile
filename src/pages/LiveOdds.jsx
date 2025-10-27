@@ -1,406 +1,398 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
+import { TrendingUp, RefreshCw, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, DollarSign, Search, Zap, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LiveOdds() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [oddsData, setOddsData] = useState(null);
-  const [selectedSport, setSelectedSport] = useState("all");
+  const [selectedSport, setSelectedSport] = useState("NBA");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    setIsSearching(true);
+  const fetchLiveOdds = async (sport) => {
+    setIsRefreshing(true);
     try {
+      // Using AI to fetch odds from multiple sportsbooks
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports odds analyst with INTERNET ACCESS. Fetch CURRENT LIVE ODDS from the web.
+        prompt: `Fetch CURRENT, LIVE betting odds for upcoming ${sport} games TODAY (${new Date().toLocaleDateString()}).
 
-SEARCH QUERY: "${searchQuery}"
-TODAY: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+MANDATORY SOURCES - USE THESE EXACT WEBSITES:
+1. DraftKings.com - Search: "${sport} odds today"
+2. FanDuel.com - Search: "${sport} betting lines"  
+3. BetMGM.com - Search: "${sport} spreads"
+4. ESPN.com - Verify game schedules
 
-CRITICAL: You have internet access. Search these sources:
-1. Odds Shark (oddsshark.com)
-2. The Action Network (actionnetwork.com)
-3. ESPN betting section
-4. DraftKings or FanDuel odds pages
+REQUIREMENTS:
+- Get odds for NEXT 5 UPCOMING GAMES only
+- Must be games in the next 24-48 hours
+- Include EXACT game start time
+- Fetch from at least 2 different sportsbooks for comparison
 
-TASK: Find CURRENT BETTING ODDS for this match or sport.
+For EACH game return:
+- Home Team (official name)
+- Away Team (official name)
+- Game Start Time (exact date/time in EST)
+- Venue
 
-Return odds from 3-5 major sportsbooks:
-- DraftKings
-- FanDuel
-- BetMGM
-- Caesars
-- PointsBet
+ODDS (from DraftKings, FanDuel, BetMGM):
+- Moneyline: Home (-150) vs Away (+130)
+- Spread: Home -5.5 (-110) vs Away +5.5 (-110)
+- Over/Under: Total 225.5 (Over -110, Under -110)
 
-For EACH sportsbook provide:
-1. Moneyline odds (Home / Away)
-2. Spread (e.g., "-5.5 (-110)")
-3. Over/Under total (e.g., "225.5")
-4. Opening odds (if available)
-5. Line movement: "up" or "down" or "stable"
-
-Also provide:
-- Best available odds (highest value for each bet type)
-- Line movement summary
-- Which way public is betting
+BEST BETS ANALYSIS:
+For each game, analyze:
+- Which sportsbook has best value
+- Line movement (if odds changed recently)
+- Public betting percentage
 - Sharp money indicators
+- Recommended bet with reasoning
 
-Return valid JSON with current odds data.`,
+Return LIVE, VERIFIED odds from actual sportsbooks. Do NOT make up odds.
+If you cannot find current odds, state: "No live odds available for [sport] today"`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
-            match_description: { type: "string" },
             sport: { type: "string" },
-            game_time: { type: "string" },
-            sportsbooks: {
+            last_updated: { type: "string" },
+            games: {
               type: "array",
               items: {
                 type: "object",
                 properties: {
-                  name: { type: "string" },
-                  moneyline_home: { type: "string" },
-                  moneyline_away: { type: "string" },
-                  spread_home: { type: "string" },
-                  spread_away: { type: "string" },
-                  total: { type: "string" },
-                  total_over: { type: "string" },
-                  total_under: { type: "string" },
-                  line_movement: { type: "string" }
-                }
+                  game_id: { type: "string" },
+                  home_team: { type: "string" },
+                  away_team: { type: "string" },
+                  start_time: { type: "string" },
+                  venue: { type: "string" },
+                  odds: {
+                    type: "object",
+                    properties: {
+                      draftkings: {
+                        type: "object",
+                        properties: {
+                          moneyline_home: { type: "string" },
+                          moneyline_away: { type: "string" },
+                          spread_home: { type: "string" },
+                          spread_away: { type: "string" },
+                          total: { type: "string" },
+                          over: { type: "string" },
+                          under: { type: "string" }
+                        }
+                      },
+                      fanduel: {
+                        type: "object",
+                        properties: {
+                          moneyline_home: { type: "string" },
+                          moneyline_away: { type: "string" },
+                          spread_home: { type: "string" },
+                          spread_away: { type: "string" },
+                          total: { type: "string" },
+                          over: { type: "string" },
+                          under: { type: "string" }
+                        }
+                      },
+                      betmgm: {
+                        type: "object",
+                        properties: {
+                          moneyline_home: { type: "string" },
+                          moneyline_away: { type: "string" },
+                          spread_home: { type: "string" },
+                          spread_away: { type: "string" },
+                          total: { type: "string" },
+                          over: { type: "string" },
+                          under: { type: "string" }
+                        }
+                      }
+                    }
+                  },
+                  best_bets: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        bet_type: { type: "string" },
+                        recommendation: { type: "string" },
+                        sportsbook: { type: "string" },
+                        odds: { type: "string" },
+                        reasoning: { type: "string" },
+                        confidence: { type: "string" }
+                      }
+                    }
+                  }
+                },
+                required: ["home_team", "away_team", "start_time", "odds"]
               }
-            },
-            best_odds: {
-              type: "object",
-              properties: {
-                moneyline_home: { type: "object" },
-                moneyline_away: { type: "object" },
-                spread_home: { type: "object" },
-                spread_away: { type: "object" },
-                total_over: { type: "object" },
-                total_under: { type: "object" }
-              }
-            },
-            line_movement_summary: { type: "string" },
-            public_betting: { type: "string" },
-            sharp_money: { type: "string" }
-          }
+            }
+          },
+          required: ["sport", "last_updated", "games"]
         }
       });
 
-      setOddsData(result);
+      return result;
     } catch (error) {
       console.error("Error fetching odds:", error);
+      return null;
+    } finally {
+      setIsRefreshing(false);
     }
-    setIsSearching(false);
+  };
+
+  const { data: oddsData, refetch } = useQuery({
+    queryKey: ['liveOdds', selectedSport],
+    queryFn: () => fetchLiveOdds(selectedSport),
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handleRefresh = () => {
+    refetch();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <DollarSign className="w-7 h-7 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900">Live Odds</h1>
+                <p className="text-gray-600">Real-time odds from top sportsbooks</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">Live Odds Comparison</h1>
-              <p className="text-gray-600">Compare odds across multiple sportsbooks in real-time</p>
-            </div>
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh Odds
+            </Button>
           </div>
+
+          {oddsData?.last_updated && (
+            <div className="text-sm text-gray-500">
+              Last updated: {new Date(oddsData.last_updated).toLocaleString()}
+            </div>
+          )}
         </div>
 
-        {/* Search */}
-        <Card className="mb-8 border-2 border-indigo-200">
-          <CardContent className="p-6">
-            <div className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Search for any game (e.g., 'Lakers vs Celtics odds')"
-                  className="pl-12 h-14 text-lg"
-                />
-              </div>
-              <Button
-                onClick={handleSearch}
-                disabled={isSearching}
-                className="h-14 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+        {/* Sport Tabs */}
+        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-8">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="NBA">🏀 NBA</TabsTrigger>
+            <TabsTrigger value="NFL">🏈 NFL</TabsTrigger>
+            <TabsTrigger value="MLB">⚾ MLB</TabsTrigger>
+            <TabsTrigger value="NHL">🏒 NHL</TabsTrigger>
+            <TabsTrigger value="Soccer">⚽ Soccer</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Loading State */}
+        {isRefreshing && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4" />
+            <p className="text-gray-600">Fetching live odds from sportsbooks...</p>
+          </div>
+        )}
+
+        {/* Odds Display */}
+        {!isRefreshing && oddsData?.games && oddsData.games.length > 0 && (
+          <div className="space-y-6">
+            {oddsData.games.map((game, index) => (
+              <motion.div
+                key={game.game_id || index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                {isSearching ? (
-                  <>
-                    <Clock className="w-5 h-5 mr-2 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-5 h-5 mr-2" />
-                    Get Live Odds
-                  </>
-                )}
-              </Button>
+                <Card className="border-2 border-green-200">
+                  <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-100">
+                    <CardTitle className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {game.away_team} @ {game.home_team}
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          {new Date(game.start_time).toLocaleString()} • {game.venue}
+                        </div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {/* Odds Comparison */}
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                      {/* DraftKings */}
+                      {game.odds.draftkings && (
+                        <div className="bg-orange-50 rounded-lg p-4 border-2 border-orange-200">
+                          <div className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            DraftKings
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Moneyline:</span>
+                              <span className="font-bold">
+                                {game.odds.draftkings.moneyline_home} / {game.odds.draftkings.moneyline_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Spread:</span>
+                              <span className="font-bold">
+                                {game.odds.draftkings.spread_home} / {game.odds.draftkings.spread_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total:</span>
+                              <span className="font-bold">
+                                {game.odds.draftkings.total} (O: {game.odds.draftkings.over} U: {game.odds.draftkings.under})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* FanDuel */}
+                      {game.odds.fanduel && (
+                        <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+                          <div className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            FanDuel
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Moneyline:</span>
+                              <span className="font-bold">
+                                {game.odds.fanduel.moneyline_home} / {game.odds.fanduel.moneyline_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Spread:</span>
+                              <span className="font-bold">
+                                {game.odds.fanduel.spread_home} / {game.odds.fanduel.spread_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total:</span>
+                              <span className="font-bold">
+                                {game.odds.fanduel.total} (O: {game.odds.fanduel.over} U: {game.odds.fanduel.under})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* BetMGM */}
+                      {game.odds.betmgm && (
+                        <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
+                          <div className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            BetMGM
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Moneyline:</span>
+                              <span className="font-bold">
+                                {game.odds.betmgm.moneyline_home} / {game.odds.betmgm.moneyline_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Spread:</span>
+                              <span className="font-bold">
+                                {game.odds.betmgm.spread_home} / {game.odds.betmgm.spread_away}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total:</span>
+                              <span className="font-bold">
+                                {game.odds.betmgm.total} (O: {game.odds.betmgm.over} U: {game.odds.betmgm.under})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Best Bets */}
+                    {game.best_bets && game.best_bets.length > 0 && (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200">
+                        <div className="font-bold text-green-800 mb-3 flex items-center gap-2">
+                          💎 Best Bets
+                        </div>
+                        <div className="space-y-3">
+                          {game.best_bets.map((bet, idx) => (
+                            <div key={idx} className="bg-white rounded-lg p-3 border border-green-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <Badge className="bg-green-600 text-white">
+                                  {bet.bet_type}
+                                </Badge>
+                                <Badge variant="outline" className="font-bold">
+                                  {bet.sportsbook} {bet.odds}
+                                </Badge>
+                                <Badge className={
+                                  bet.confidence === 'High' ? 'bg-green-100 text-green-800' :
+                                  bet.confidence === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }>
+                                  {bet.confidence} Confidence
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-gray-700 mb-1 font-semibold">
+                                {bet.recommendation}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {bet.reasoning}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* No Games State */}
+        {!isRefreshing && (!oddsData?.games || oddsData.games.length === 0) && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Live Games</h3>
+              <p className="text-gray-600">
+                No upcoming {selectedSport} games found. Try refreshing or select another sport.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Info Banner */}
+        <Card className="mt-8 border-2 border-blue-200 bg-blue-50">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              <div className="text-3xl">ℹ️</div>
+              <div>
+                <h4 className="font-bold text-blue-900 mb-2">How This Works</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Odds are fetched in real-time from DraftKings, FanDuel, and BetMGM</li>
+                  <li>• Data updates every 5 minutes automatically</li>
+                  <li>• Compare odds across sportsbooks to find best value</li>
+                  <li>• "Best Bets" analyzes line movement and sharp money</li>
+                  <li>• Always verify odds on sportsbook before placing bets</li>
+                </ul>
+              </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* Odds Display */}
-        {oddsData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Match Header */}
-            <Card className="border-2 border-indigo-200">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{oddsData.match_description}</h2>
-                    <div className="flex items-center gap-3">
-                      <Badge className="bg-indigo-100 text-indigo-800">{oddsData.sport}</Badge>
-                      {oddsData.game_time && (
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {oddsData.game_time}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Line Movement Summary */}
-                {oddsData.line_movement_summary && (
-                  <div className="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-5 h-5 text-indigo-600" />
-                      <span className="font-bold text-gray-900">Line Movement</span>
-                    </div>
-                    <p className="text-sm text-gray-700">{oddsData.line_movement_summary}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Odds Comparison Table */}
-            <Card className="border-2 border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">Odds Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="moneyline" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="moneyline">Moneyline</TabsTrigger>
-                    <TabsTrigger value="spread">Spread</TabsTrigger>
-                    <TabsTrigger value="total">Over/Under</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="moneyline">
-                    <div className="space-y-3">
-                      {oddsData.sportsbooks?.map((book, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors"
-                        >
-                          <div className="font-bold text-gray-900 w-32">{book.name}</div>
-                          <div className="flex gap-8">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Home</div>
-                              <div className="text-lg font-bold text-indigo-600">{book.moneyline_home}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Away</div>
-                              <div className="text-lg font-bold text-purple-600">{book.moneyline_away}</div>
-                            </div>
-                          </div>
-                          {book.line_movement && (
-                            <Badge className={
-                              book.line_movement === 'up' ? 'bg-green-100 text-green-800' :
-                              book.line_movement === 'down' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }>
-                              {book.line_movement === 'up' && <ArrowUpRight className="w-3 h-3 mr-1" />}
-                              {book.line_movement === 'down' && <ArrowDownRight className="w-3 h-3 mr-1" />}
-                              {book.line_movement}
-                            </Badge>
-                          )}
-                        </motion.div>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="spread">
-                    <div className="space-y-3">
-                      {oddsData.sportsbooks?.map((book, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors"
-                        >
-                          <div className="font-bold text-gray-900 w-32">{book.name}</div>
-                          <div className="flex gap-8">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Home</div>
-                              <div className="text-lg font-bold text-indigo-600">{book.spread_home}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Away</div>
-                              <div className="text-lg font-bold text-purple-600">{book.spread_away}</div>
-                            </div>
-                          </div>
-                          {book.line_movement && (
-                            <Badge className={
-                              book.line_movement === 'up' ? 'bg-green-100 text-green-800' :
-                              book.line_movement === 'down' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }>
-                              {book.line_movement}
-                            </Badge>
-                          )}
-                        </motion.div>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="total">
-                    <div className="space-y-3">
-                      {oddsData.sportsbooks?.map((book, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors"
-                        >
-                          <div className="font-bold text-gray-900 w-32">{book.name}</div>
-                          <div className="flex gap-8">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Total</div>
-                              <div className="text-lg font-bold text-gray-900">{book.total}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Over</div>
-                              <div className="text-lg font-bold text-green-600">{book.total_over}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 mb-1">Under</div>
-                              <div className="text-lg font-bold text-red-600">{book.total_under}</div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-
-            {/* Best Odds Summary */}
-            {oddsData.best_odds && (
-              <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-800">
-                    <Zap className="w-6 h-6" />
-                    Best Available Odds
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {oddsData.best_odds.moneyline_home && (
-                      <div className="p-4 bg-white rounded-lg border-2 border-green-300">
-                        <div className="text-sm text-gray-600 mb-1">Best Home Moneyline</div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {oddsData.best_odds.moneyline_home.odds}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          at {oddsData.best_odds.moneyline_home.book}
-                        </div>
-                      </div>
-                    )}
-                    {oddsData.best_odds.spread_home && (
-                      <div className="p-4 bg-white rounded-lg border-2 border-green-300">
-                        <div className="text-sm text-gray-600 mb-1">Best Home Spread</div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {oddsData.best_odds.spread_home.line}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          at {oddsData.best_odds.spread_home.book}
-                        </div>
-                      </div>
-                    )}
-                    {oddsData.best_odds.total_over && (
-                      <div className="p-4 bg-white rounded-lg border-2 border-green-300">
-                        <div className="text-sm text-gray-600 mb-1">Best Over</div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {oddsData.best_odds.total_over.total}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          at {oddsData.best_odds.total_over.book}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Market Insights */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {oddsData.public_betting && (
-                <Card className="border-2 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
-                      Public Betting
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{oddsData.public_betting}</p>
-                  </CardContent>
-                </Card>
-              )}
-              {oddsData.sharp_money && (
-                <Card className="border-2 border-purple-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-purple-600" />
-                      Sharp Money
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{oddsData.sharp_money}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {!oddsData && !isSearching && (
-          <div className="text-center py-20">
-            <DollarSign className="w-20 h-20 mx-auto mb-6 text-gray-300" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Find the Best Odds</h3>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Search for any game to compare live odds across major sportsbooks and find the best value for your bets
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
