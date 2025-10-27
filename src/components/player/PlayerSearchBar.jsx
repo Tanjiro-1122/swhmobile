@@ -10,16 +10,16 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
-      onSearch(query);
+      onSearch(query.trim());
     }
   };
 
   const popularPlayers = [
     "LeBron James",
     "Stephen Curry",
-    "Cristiano Ronaldo",
-    "Lionel Messi",
-    "Kevin Durant"
+    "Kevin Durant",
+    "Patrick Mahomes",
+    "Lionel Messi"
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for any player (e.g., 'LeBron James', 'Cristiano Ronaldo')"
+            placeholder="Search for any player: 'LeBron James', 'Stephen Curry', 'Patrick Mahomes'..."
             className="pl-12 pr-32 h-14 text-lg border-2 focus:border-purple-500 transition-all"
             disabled={isSearching}
           />
@@ -42,7 +42,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
             {isSearching ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Analyzing...
+                Searching...
               </>
             ) : (
               <>
@@ -56,7 +56,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
 
       <div className="flex items-center gap-2 flex-wrap">
         <TrendingUp className="w-4 h-4 text-gray-500" />
-        <span className="text-sm text-gray-500">Popular players:</span>
+        <span className="text-sm text-gray-500 font-medium">Try these popular players:</span>
         {popularPlayers.map((player, index) => (
           <motion.button
             key={index}
@@ -66,11 +66,23 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
               setQuery(player);
               onSearch(player);
             }}
-            className="text-sm px-3 py-1 bg-purple-100 hover:bg-purple-200 rounded-full text-purple-700 transition-colors"
+            disabled={isSearching}
+            className="text-sm px-4 py-2 bg-purple-100 hover:bg-purple-200 rounded-full text-purple-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {player}
           </motion.button>
         ))}
+      </div>
+
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+        <p className="text-sm text-blue-800">
+          <strong className="font-bold">💡 PRO TIPS:</strong> For best results, search with:
+        </p>
+        <ul className="text-sm text-blue-700 mt-2 space-y-1 ml-4">
+          <li>• Full name: "LeBron James" (not just "LeBron")</li>
+          <li>• Add team: "Stephen Curry Warriors"</li>
+          <li>• Add sport: "Cristiano Ronaldo soccer"</li>
+        </ul>
       </div>
     </div>
   );

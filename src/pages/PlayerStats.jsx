@@ -59,199 +59,66 @@ export default function PlayerStats() {
 
     try {
       const currentYear = new Date().getFullYear();
-      const nextYear = currentYear + 1;
-      const currentDateString = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
+      const season = `${currentYear}-${currentYear + 1}`;
+      
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports statistics analyst with REAL-TIME INTERNET ACCESS. Fetch LIVE, VERIFIED data ONLY.
+        prompt: `You are analyzing player statistics. Search the internet for current data on this player: "${query}"
 
-MANDATORY DATA SOURCES - USE THESE IN ORDER:
-1. StatMuse.com - PRIMARY source for all player statistics
-2. Basketball-Reference.com (NBA/NCAAB) - search: "[player name] basketball reference"
-3. Pro-Football-Reference.com (NFL) - search: "[player name] pro football reference"
-4. FBref.com (Soccer/Football) - search: "[player name] fbref"
-5. ESPN.com player pages - search: "[player name] espn"
-6. Official team websites for injury reports
-7. WhoScored.com (Soccer) - search: "[player name] whoscored"
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
-PLAYER SEARCH: "${query}"
-TODAY: ${currentDateString}
-CURRENT SEASON: ${currentYear}-${nextYear} (Basketball/Hockey)
-CURRENT SEASON: ${currentYear} (Soccer/Football/Baseball)
+STEP 1: IDENTIFY THE PLAYER
+Search Google for: "${query} basketball" OR "${query} football" OR "${query} soccer"
+- Get the player's FULL NAME
+- Get their CURRENT TEAM (2024-25 season)
+- Get their SPORT (Basketball, Football, Soccer, etc.)
 
-CRITICAL: If you cannot find this player or get current stats, you MUST:
-1. Return predicted_performance in next_game as: "Unable to find current statistics for this player. Please try: [Player Full Name] [Current Team] (e.g., 'LeBron James Lakers' or 'Lionel Messi Inter Miami')"
-2. Still populate other required fields with reasonable defaults or "Unknown"
-3. Set injury_status.status to "Unknown"
+STEP 2: GET SEASON STATS
+For Basketball players, search: "[player name] stats 2024-25 season basketball reference"
+For Football players, search: "[player name] stats 2024 season pro football reference"
+For Soccer players, search: "[player name] stats 2024 fbref"
 
-STEP-BY-STEP VERIFICATION PROCESS:
-1. Search StatMuse: "${query} stats ${currentYear}"
-2. If not found, try variations: "[First name] [Last name] ${currentYear}", "[Last name] stats"
-3. Identify sport, current team, position from search results
-4. Get CURRENT season averages (verify it's ${currentYear} or ${currentYear}-${nextYear} season)
-5. Pull last 5-10 game logs with EXACT dates and stats
-6. Check official injury report: "[player name] injury" or "[team] injury report"
-7. Find next scheduled game: "[team name] schedule"
-8. Research opponent's defensive stats against player's position
+Get these CURRENT SEASON averages:
+- Basketball: Points, Rebounds, Assists per game
+- Football: Passing/Rushing/Receiving yards per game
+- Soccer: Goals, Assists per 90 minutes
 
-REQUIRED DATA - ALL FIELDS MUST BE FILLED:
+STEP 3: GET RECENT GAMES
+Search: "[player name] game log 2024"
+Get last 5 games with:
+- Date (MM/DD/YYYY)
+- Opponent
+- Stats (points/yards/goals from that game)
 
-1. PLAYER IDENTIFICATION (from official roster):
-   - Full official name (first + last) - from StatMuse or official roster
-   - Current team (official team name) - verify from current season data
-   - Position (PG, SG, SF, PF, C for basketball; QB, RB, WR, etc for football; Forward, Midfielder, etc for soccer)
-   - Sport (Basketball, Soccer, Football, Baseball, Hockey)
-   - League (NBA, NFL, Premier League, La Liga, etc.)
-   - Jersey number (if available, otherwise null)
+STEP 4: CHECK INJURY STATUS
+Search: "[player name] injury report today"
+Status options: "Healthy", "Questionable", "Out", "Day-to-Day"
 
-2. CURRENT SEASON AVERAGES - SPORT-SPECIFIC ONLY:
-   
-   FOR BASKETBALL (NBA, NCAAB):
-   Search: "${query} ${currentYear} stats" on Basketball-Reference or StatMuse
-   - Points Per Game (PPG): current season average (number)
-   - Rebounds Per Game (RPG): total rebounds (number)
-   - Assists Per Game (APG): (number)
-   - Steals Per Game (SPG): (number)
-   - Blocks Per Game (BPG): (number)
-   - Field Goal % (FG%): decimal (e.g., 0.485 for 48.5%)
-   - Three-Point % (3P%): decimal
-   - Free Throw % (FT%): decimal
-   - Minutes Per Game (MPG): (number)
-   
-   DO NOT INCLUDE: goals, shots per game, passes, tackles
-   Set soccer/football stats to null
-   
-   FOR SOCCER/FOOTBALL:
-   Search: "${query} ${currentYear} stats" on FBref.com or WhoScored
-   - Goals per 90 minutes: decimal
-   - Assists per 90 minutes: decimal
-   - Shots per game: number
-   - Shot accuracy %: decimal
-   - Passes per game: number
-   - Pass completion %: decimal
-   - Tackles per game: number
-   - Dribbles completed per game: number
-   
-   DO NOT INCLUDE: rebounds, field goal %, three-pointers, steals, blocks
-   Set basketball stats to null
-   
-   FOR AMERICAN FOOTBALL (NFL):
-   Search: "${query} ${currentYear} stats" on Pro-Football-Reference
-   - Passing Yards Per Game (if QB): number
-   - Completion % (if QB): decimal
-   - Touchdowns (passing/rushing/receiving): number
-   - Interceptions (if QB): number
-   - Rushing Yards Per Game (if RB/QB): number
-   - Yards Per Carry (if RB): decimal
-   - Receptions Per Game (if WR/TE/RB): number
-   - Receiving Yards Per Game (if WR/TE): number
-   
-   DO NOT INCLUDE: rebounds, assists, three-pointers, goals
-   Set basketball/soccer stats to null
+STEP 5: FIND NEXT GAME
+Search: "[team name] schedule"
+Get:
+- Next opponent
+- Game date and time
+- Home or Away
 
-3. RECENT FORM - LAST 5-10 GAMES (with EXACT data):
-   Search: "${query} game log ${currentYear}" on Basketball-Reference or equivalent
-   
-   For EACH of last 5-10 games provide:
-   - Exact date (MM/DD/YYYY format) - from actual game logs
-   - Opponent (full team name) - from game logs
-   - SPORT-SPECIFIC stats from that specific game:
-     * Basketball: Points, Rebounds, Assists (numbers) - set goals, passing_yards, rushing_yards to null
-     * Soccer: Goals, Assists (numbers) - set points, rebounds, passing_yards, rushing_yards to null
-     * Football: Passing/Rushing/Receiving yards (numbers) - set points, rebounds, goals to null
-   - Performance rating: "Excellent" (significantly above season avg), "Good" (near or above avg), "Below Average" (below avg), "Poor" (well below avg)
-   
-   Calculate trend: "Trending up" if last 3 games above season avg, "Trending down" if last 3 below season avg, "Consistent" otherwise
+STEP 6: PREDICT NEXT GAME PERFORMANCE
+Based on:
+- Season averages
+- Recent form (last 5 games)
+- Opponent's defense vs that position
 
-4. INJURY STATUS (from official source):
-   Search: "${query} injury report" OR "[team name] injury report ${new Date().toLocaleDateString()}"
-   
-   - status: "Healthy", "Questionable", "Doubtful", "Out", "Day-to-Day", or "Unknown" (REQUIRED - never leave blank)
-   - specific_injury: specific injury description if injured, otherwise null
-   - games_missed: number of consecutive games missed, otherwise 0 or null
-   - expected_return: "MM/DD/YYYY" date or "unknown" or null
+Predict specific stats like:
+- Basketball: "28 PTS, 7 REB, 6 AST"
+- Football: "285 passing yards, 2 TDs"
+- Soccer: "1 goal, 1 assist"
 
-5. NEXT GAME PREDICTION (CRITICAL - REQUIRED):
-   Search: "[team name] schedule" to find NEXT upcoming game
-   
-   - opponent: "[Team Name]" (exact official name from schedule)
-   - date: "MM/DD/YYYY HH:MM" (exact from schedule with time)
-   - location: "Home" or "Away" or "Neutral"
-   
-   - predicted_performance: (MUST be specific numbers for the sport, STRING format)
-     * Basketball: "32 PTS, 9 REB, 7 AST, 2 STL" (specific predicted stat line)
-     * Soccer: "2 goals, 1 assist, 6 shots, 4 shots on target"
-     * Football (QB): "285 passing yards, 2 passing TDs, 1 INT, 45 rushing yards"
-     * Football (RB): "95 rushing yards, 1 rushing TD, 3 receptions, 25 receiving yards"
-     * Football (WR): "7 receptions, 95 receiving yards, 1 TD"
-     
-     IF YOU CANNOT FIND PLAYER DATA: "Unable to find current statistics for this player. Please try: [Player Full Name] [Current Team] (e.g., 'LeBron James Lakers' or 'Cristiano Ronaldo Al Nassr'). Make sure the player is currently active."
-   
-   - confidence: "High" (player hot, favorable matchup), "Medium" (neutral), "Low" (cold streak or tough matchup), or "Unknown" if no data
-   
-   - reasoning: (3-4 detailed sentences with STATS, or explanation of why data unavailable)
-     Example for basketball: "LeBron averaging 32 PPG over last 5 games (career-high pace). Opponent allows 28 PPG to opposing small forwards (ranked 25th in league). Lakers playing at home where LeBron averages 4 more PPG than road games. Last time vs this opponent (2 weeks ago), LeBron had 35 PTS, 10 REB, 8 AST."
-     
-     IF NO DATA: "Unable to locate current statistics for this player. This could mean: 1) Player name spelling is incorrect, 2) Player recently changed teams, 3) Player is retired or not currently active, 4) Need more specific search (include team name). Try searching with full name and current team."
-     
-     Base prediction on (if data available):
-     * Player's recent form (last 5-10 games)
-     * Opponent's defensive stats vs player's position
-     * Home vs Away splits
-     * Head-to-head history vs this opponent
-     * Any relevant injuries or rest
+CRITICAL: Use actual internet search results. Don't make up stats.
 
-6. BETTING INSIGHTS (for betting context):
-   - over_under_line: prop bet line if available (string like "28.5 points"), otherwise null
-   - probability_to_score: % chance based on season data (number 0-100), or null
-   - hot_streak: true if last 3 games > season average, false otherwise, or null
-   - consistency_rating: "Very Consistent", "Consistent", "Inconsistent", "Very Inconsistent", or "Unknown"
-   - best_bet: "Over on points" or "Under on rebounds" etc, or "Insufficient data" if unknown
-
-7. CAREER HIGHLIGHTS (recent achievements):
-   - Array of strings describing awards, all-star selections, records
-   - If no data available: ["No career highlights data available"]
-
-8. STRENGTHS (3-5 statistical strengths):
-   Example: "Elite three-point shooter (42% from 3, top 5 in league)"
-   Example: "Exceptional passer with 9 APG (league leader)"
-   If no data: ["Unable to determine strengths - need more player data"]
-
-9. WEAKNESSES (2-3 areas for improvement):
-   Example: "Free throw shooting needs work (68%, below league avg)"
-   Example: "Turnover prone (3.5 TO per game)"
-   If no data: ["Unable to determine weaknesses - need more player data"]
-
-10. DATA SOURCES (track where data came from):
-    - stats_source: "StatMuse.com" or "Basketball-Reference" etc.
-    - injury_source: website used for injury data
-    - schedule_source: website used for schedule
-
-VALIDATION - VERIFY BEFORE RETURNING:
-✓ All season averages are from ${currentYear} or ${currentYear}-${nextYear} season
-✓ Stats match the player's sport (no mixing basketball and soccer stats)
-✓ Recent games have actual dates and scores (not made up)
-✓ Next game exists on official schedule OR error message explains why not
-✓ Prediction is specific numbers OR helpful error message
-✓ Injury status is one of: "Healthy", "Questionable", "Doubtful", "Out", "Day-to-Day", "Unknown"
-✓ All percentages and averages are realistic
-✓ No null values in required fields - use "Unknown" or appropriate default
-
-FAILURE CONDITIONS - HANDLE GRACEFULLY:
-If player not found OR stats unavailable:
-- Set predicted_performance to helpful error message explaining the issue
+If you CANNOT find the player:
+- Set predicted_performance to: "Player not found. Try: 'LeBron James Lakers' or 'Stephen Curry Warriors'"
+- Set all stats to null or 0
 - Set injury_status.status to "Unknown"
-- Set player_name to the search query used
-- Set team to "Unknown"
-- Set position to "Unknown"
-- Set sport to best guess based on search context
-- Set league to "Unknown"
-- Populate arrays with ["No data available"] messages
-- Still return valid JSON matching the schema
 
-CRITICAL: Return only stats that match the sport. Basketball players should NEVER have "goals per game" or "tackles". Soccer players should NEVER have "rebounds" or "three-point percentage". Use null for stats that don't apply to the sport.
-
-Return complete JSON with ALL required fields using LIVE VERIFIED DATA from ${currentYear} season, OR helpful error messages if data cannot be found.`,
+Return complete JSON with verified data.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -330,11 +197,10 @@ Return complete JSON with ALL required fields using LIVE VERIFIED DATA from ${cu
             betting_insights: {
               type: "object",
               properties: {
-                over_under_line: { type: ["string", "null"] },
+                over_under_points: { type: ["number", "null"] },
                 probability_to_score: { type: ["number", "null"] },
                 hot_streak: { type: ["boolean", "null"] },
-                consistency_rating: { type: ["string", "null"] },
-                best_bet: { type: ["string", "null"] }
+                consistency_rating: { type: ["string", "null"] }
               }
             },
             strengths: {
@@ -361,12 +227,28 @@ Return complete JSON with ALL required fields using LIVE VERIFIED DATA from ${cu
       console.log("✅ Player Stats Result:", result);
 
       // Check if the AI couldn't find the player
-      if (result?.next_game?.predicted_performance?.toLowerCase().includes("unable to find")) {
-        throw new Error(result.next_game.predicted_performance);
+      if (result?.next_game?.predicted_performance?.toLowerCase().includes("player not found") || 
+          result?.next_game?.predicted_performance?.toLowerCase().includes("unable to find")) {
+        throw new Error(`❌ Could not find stats for "${query}". 
+
+Try searching with:
+• Full name + team: "LeBron James Lakers"
+• Full name + sport: "Stephen Curry basketball"
+• With current team: "Patrick Mahomes Chiefs"
+
+Make sure:
+✓ Player name is spelled correctly
+✓ Player is currently active (2024-25 season)
+✓ Include team name for better results`);
       }
 
       if (!result || !result.player_name || !result.sport || !result.team || !result.next_game) {
-        throw new Error("Invalid response - missing required player data. Please try searching with the player's full name and current team (e.g., 'LeBron James Lakers').");
+        throw new Error(`❌ Incomplete data returned for "${query}". 
+
+Please try searching with more details:
+• Add team name: "${query} Lakers" 
+• Add sport: "${query} NBA"
+• Use full name: "LeBron Raymone James"`);
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -376,26 +258,30 @@ Return complete JSON with ALL required fields using LIVE VERIFIED DATA from ${cu
     } catch (err) {
       console.error("❌ Player Stats Error:", err);
       
-      // More helpful error messages
-      let errorMessage = err.message;
-      
-      if (errorMessage.includes("Unable to find") || errorMessage.includes("Unable to locate")) {
-        setError(errorMessage);
+      // User-friendly error messages
+      if (err.message.includes("Could not find stats")) {
+        setError(err.message);
+      } else if (err.message.includes("Incomplete data")) {
+        setError(err.message);
       } else {
-        setError(`Failed to fetch player statistics for "${query}". 
+        setError(`❌ Failed to fetch player statistics for "${query}". 
 
-Try these tips:
-✓ Use the player's full name: "LeBron James" not just "LeBron"
-✓ Add the team name: "LeBron James Lakers"
-✓ Check spelling carefully
-✓ Make sure the player is currently active
-✓ For soccer, try: "Lionel Messi Inter Miami" or "Cristiano Ronaldo Al Nassr"
+💡 TIPS FOR BETTER RESULTS:
+• Use full name: "LeBron James" not "Lebron"
+• Add team: "Stephen Curry Warriors"  
+• Add sport: "Cristiano Ronaldo soccer"
 
-Examples that work:
+✅ EXAMPLES THAT WORK:
+• "LeBron James"
 • "Stephen Curry Warriors"
 • "Patrick Mahomes Chiefs"
+• "Kevin Durant"
 • "Lionel Messi Inter Miami"
-• "Luka Doncic Mavericks"`);
+
+⚠️ COMMON ISSUES:
+• Player recently traded? Use NEW team name
+• Retired player? Only current players work
+• Typo in name? Double-check spelling`);
       }
     }
 
@@ -460,9 +346,9 @@ Examples that work:
               </div>
               <div className="flex items-center gap-2 text-gray-600 justify-center">
                 <Sparkles className="w-5 h-5 text-purple-600" />
-                <span className="font-medium">Fetching player statistics...</span>
+                <span className="font-medium">Searching internet for player statistics...</span>
               </div>
-              <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds</p>
+              <p className="text-sm text-gray-500 mt-2">This may take 10-20 seconds</p>
             </div>
           </div>
         ) : (
