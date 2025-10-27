@@ -23,10 +23,6 @@
       "format": "date-time",
       "description": "Date and time of the match"
     },
-    "venue": {
-      "type": "string",
-      "description": "Match venue or stadium"
-    },
     "home_win_probability": {
       "type": "number",
       "description": "Probability of home team winning (0-100)"
@@ -64,17 +60,6 @@
         }
       },
       "description": "Match outcome prediction"
-    },
-    "prediction_result": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "won",
-        "lost",
-        "push"
-      ],
-      "default": "pending",
-      "description": "Actual outcome of the prediction"
     },
     "key_factors": {
       "type": "array",
@@ -148,17 +133,6 @@
             }
           }
         },
-        "spread": {
-          "type": "object",
-          "properties": {
-            "line": {
-              "type": "string"
-            },
-            "cover_probability": {
-              "type": "number"
-            }
-          }
-        },
         "both_teams_score": {
           "type": "object",
           "properties": {
@@ -167,6 +141,17 @@
             },
             "no_probability": {
               "type": "number"
+            }
+          }
+        },
+        "total_goals_range": {
+          "type": "object",
+          "properties": {
+            "predicted_total": {
+              "type": "number"
+            },
+            "range": {
+              "type": "string"
             }
           }
         },
@@ -202,9 +187,6 @@
           },
           "impact": {
             "type": "string"
-          },
-          "games_missed": {
-            "type": "number"
           }
         }
       },
@@ -222,9 +204,6 @@
         "wind_speed": {
           "type": "string"
         },
-        "precipitation": {
-          "type": "string"
-        },
         "impact_rating": {
           "type": "string"
         },
@@ -233,48 +212,6 @@
         }
       },
       "description": "Weather conditions and impact on game"
-    },
-    "head_to_head": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "result": {
-            "type": "string"
-          },
-          "score": {
-            "type": "string"
-          }
-        }
-      },
-      "description": "Head-to-head history"
-    },
-    "data_sources": {
-      "type": "object",
-      "properties": {
-        "stats_source": {
-          "type": "string"
-        },
-        "schedule_source": {
-          "type": "string"
-        },
-        "injury_source": {
-          "type": "string"
-        },
-        "weather_source": {
-          "type": "string"
-        },
-        "head_to_head_source": {
-          "type": "string"
-        },
-        "betting_market_source": {
-          "type": "string"
-        }
-      },
-      "description": "Data sources used for analysis"
     }
   },
   "required": [
