@@ -11,6 +11,8 @@ import Alerts from './pages/Alerts';
 import Community from './pages/Community';
 import LearningCenter from './pages/LearningCenter';
 import BankrollManager from './pages/BankrollManager';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import Layout from './Layout.jsx';
 
 
@@ -28,6 +30,8 @@ export const PAGES = {
     "Community": Community,
     "LearningCenter": LearningCenter,
     "BankrollManager": BankrollManager,
+    "PrivacyPolicy": PrivacyPolicy,
+    "TermsOfService": TermsOfService,
 }
 
 export const pagesConfig = {
