@@ -19,16 +19,25 @@ import {
   BarChart3,
   Bell,
   MessageSquare,
-  Trophy
+  Trophy,
+  LogIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check authentication status
+    const checkAuth = async () => {
+      const authenticated = await base44.auth.isAuthenticated();
+      setIsAuthenticated(authenticated);
+    };
+    checkAuth();
+
     // Add mobile optimization meta tags directly to document head
     const viewport = document.querySelector('meta[name="viewport"]');
     if (!viewport) {
@@ -80,7 +89,13 @@ export default function Layout({ children, currentPageName }) {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        return null;
+      }
+    },
   });
 
   const isVIP = currentUser?.subscription_type === 'vip_lifetime';
@@ -89,6 +104,7 @@ export default function Layout({ children, currentPageName }) {
   const handleLogout = async () => {
     try {
       await base44.auth.logout();
+      setIsAuthenticated(false);
       // Redirect to Dashboard after logout
       window.location.href = createPageUrl("Dashboard");
     } catch (error) {
@@ -96,6 +112,10 @@ export default function Layout({ children, currentPageName }) {
       // Force redirect even if there's an error
       window.location.href = createPageUrl("Dashboard");
     }
+  };
+
+  const handleLogin = () => {
+    base44.auth.redirectToLogin(window.location.pathname);
   };
 
   const menuItems = [
@@ -144,32 +164,44 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
-            {isVIP && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
-                <Shield className="w-4 h-4 text-white" />
-                <span className="text-sm font-bold text-white">VIP LIFETIME</span>
-              </div>
+            {isAuthenticated && currentUser ? (
+              <>
+                {isVIP && (
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
+                    <Shield className="w-4 h-4 text-white" />
+                    <span className="text-sm font-bold text-white">VIP LIFETIME</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
+                      {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block text-right">
+                    <div className="text-sm font-semibold text-white">{currentUser?.full_name || currentUser?.email || 'User'}</div>
+                    <div className="text-xs text-gray-400">{currentUser?.email}</div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-white"
+                  title="Log out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={handleLogin}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-2 shadow-lg"
+              >
+                <LogIn className="w-5 h-5 mr-2" />
+                Sign In / Sign Up
+              </Button>
             )}
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold">
-                  {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden md:block text-right">
-                <div className="text-sm font-semibold text-white">{currentUser?.full_name || 'User'}</div>
-                <div className="text-xs text-gray-400">{currentUser?.email}</div>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="text-gray-400 hover:text-white"
-              title="Log out"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
           </div>
         </div>
       </div>
