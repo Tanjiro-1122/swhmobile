@@ -76,6 +76,18 @@ export default function Layout({ children, currentPageName }) {
       document.head.appendChild(appleStatusBar);
     }
 
+    // Add apple touch icon
+    let appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!appleTouchIcon) {
+      appleTouchIcon = document.createElement("link");
+      appleTouchIcon.rel = "apple-touch-icon";
+      appleTouchIcon.href = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
+      document.head.appendChild(appleTouchIcon);
+    }
+
+    // Prevent pull-to-refresh on mobile
+    document.body.style.overscrollBehavior = 'none';
+
     // Load web2application.com scripts for mobile app conversion
     const jqueryScript = document.createElement("script");
     jqueryScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
@@ -94,25 +106,6 @@ export default function Layout({ children, currentPageName }) {
       console.log("✅ web2application.com integration loaded successfully!");
     };
     document.head.appendChild(web2appScript);
-
-    const manifestLink = document.querySelector('link[rel="manifest"]') || document.createElement("link");
-    manifestLink.rel = "manifest";
-    manifestLink.href = "/manifest.json";
-    if (!document.querySelector('link[rel="manifest"]')) {
-      document.head.appendChild(manifestLink);
-    }
-
-    // Add apple touch icon
-    let appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
-    if (!appleTouchIcon) {
-      appleTouchIcon = document.createElement("link");
-      appleTouchIcon.rel = "apple-touch-icon";
-      appleTouchIcon.href = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
-      document.head.appendChild(appleTouchIcon);
-    }
-
-    // Prevent pull-to-refresh on mobile
-    document.body.style.overscrollBehavior = 'none';
 
     return () => {
       document.head.removeChild(jqueryScript);
