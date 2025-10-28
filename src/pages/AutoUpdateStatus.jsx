@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,16 +30,32 @@ export default function AutoUpdateStatus() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Match.update(id, data),
-    onSuccess: () => {
+    mutationFn: async ({ id, data }) => {
+      console.log("🔄 Attempting to update match:", { id, data });
+      try {
+        const result = await base44.entities.Match.update(id, data);
+        console.log("✅ Update successful:", result);
+        return result;
+      } catch (error) {
+        console.error("❌ Update failed:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          response: error.response
+        });
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log("✅ Mutation succeeded, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
       setSelectedMatchId(null);
       setManualScore({ winner: "", final_score: "" });
       alert("✅ Match result updated successfully!");
     },
     onError: (error) => {
-      console.error("Update error:", error);
-      alert("❌ Failed to update match. Please try again.");
+      console.error("❌ Mutation error:", error);
+      alert(`❌ Failed to update: ${error.message || 'Unknown error. Check console for details.'}`);
     }
   });
 
@@ -76,7 +93,9 @@ export default function AutoUpdateStatus() {
   });
 
   const handleManualUpdate = (match) => {
-    console.log("Opening manual update for match:", match);
+    console.log("📝 Opening manual update for match:", match);
+    console.log("   Match ID:", match.id);
+    console.log("   Teams:", match.home_team, "vs", match.away_team);
     setSelectedMatchId(match.id);
     setManualScore({
       winner: match.actual_result?.winner || "",
@@ -86,7 +105,11 @@ export default function AutoUpdateStatus() {
 
   const submitManualUpdate = (e) => {
     e.preventDefault();
-    console.log("Submitting update:", { selectedMatchId, manualScore });
+    
+    console.log("📤 Submitting manual update:");
+    console.log("   Match ID:", selectedMatchId);
+    console.log("   Winner:", manualScore.winner);
+    console.log("   Score:", manualScore.final_score);
     
     if (!manualScore.winner || !manualScore.final_score) {
       alert("⚠️ Please fill in both winner and final score");
@@ -98,17 +121,21 @@ export default function AutoUpdateStatus() {
       return;
     }
 
+    const updateData = {
+      actual_result: {
+        winner: manualScore.winner.trim(),
+        final_score: manualScore.final_score.trim(),
+        completed: true,
+        last_checked: new Date().toISOString(),
+        source: "Manual Entry"
+      }
+    };
+
+    console.log("📦 Update payload:", updateData);
+
     updateMutation.mutate({
       id: selectedMatchId,
-      data: {
-        actual_result: {
-          winner: manualScore.winner,
-          final_score: manualScore.final_score,
-          completed: true,
-          last_checked: new Date().toISOString(),
-          source: "Manual Entry"
-        }
-      }
+      data: updateData
     });
   };
 
@@ -240,6 +267,9 @@ export default function AutoUpdateStatus() {
                               Last checked: {format(new Date(match.actual_result.last_checked), "MMM d, HH:mm")}
                             </div>
                           )}
+                          <div className="text-xs text-slate-600 mt-1">
+                            ID: {match.id}
+                          </div>
                         </div>
                         <Button
                           onClick={() => handleManualUpdate(match)}
@@ -268,7 +298,7 @@ export default function AutoUpdateStatus() {
                               <Input
                                 value={manualScore.winner}
                                 onChange={(e) => setManualScore({...manualScore, winner: e.target.value})}
-                                placeholder="e.g., Los Angeles Chargers"
+                                placeholder="e.g., Milwaukee Bucks"
                                 className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
                                 required
                               />
@@ -279,7 +309,7 @@ export default function AutoUpdateStatus() {
                               <Input
                                 value={manualScore.final_score}
                                 onChange={(e) => setManualScore({...manualScore, final_score: e.target.value})}
-                                placeholder="e.g., 37-10"
+                                placeholder="e.g., 122-116"
                                 className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
                                 required
                               />
@@ -305,7 +335,11 @@ export default function AutoUpdateStatus() {
                               </Button>
                               <Button
                                 type="button"
-                                onClick={() => setSelectedMatchId(null)}
+                                onClick={() => {
+                                  console.log("❌ Cancelled update");
+                                  setSelectedMatchId(null);
+                                  setManualScore({ winner: "", final_score: "" });
+                                }}
                                 variant="outline"
                                 className="border-slate-600"
                               >
