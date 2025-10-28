@@ -5,44 +5,49 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Crown, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import confetti from "canvas-confetti";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Confetti celebration
-    const duration = 3 * 1000;
-    const animationEnd = Date.now() + duration;
-
-    const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-    const interval = setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      confetti({
-        particleCount: 3,
-        angle: randomInRange(55, 125),
-        spread: randomInRange(50, 70),
-        origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 },
-        colors: ['#FFD700', '#FFA500', '#FF6347', '#9370DB'],
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
+    // Simple celebration effect without canvas-confetti
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Animated background particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+            initial={{
+              x: Math.random() * window.innerWidth,
+              y: -20,
+              scale: Math.random() * 0.5 + 0.5,
+            }}
+            animate={{
+              y: window.innerHeight + 20,
+              x: Math.random() * window.innerWidth,
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-2xl relative z-10"
       >
         <Card className="border-4 border-green-400 bg-white shadow-2xl">
           <CardContent className="p-8 sm:p-12 text-center">

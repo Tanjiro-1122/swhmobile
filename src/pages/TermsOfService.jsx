@@ -1,26 +1,27 @@
+
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, CreditCard, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
-        <Card className="border-2 border-purple-200">
-          <CardContent className="p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <FileText className="w-8 h-8 text-purple-600" />
-              <h1 className="text-4xl font-bold text-gray-900">Terms of Service</h1>
-            </div>
-            
-            <p className="text-sm text-gray-600 mb-8">
-              Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
+        <Card className="border-2 border-slate-700 bg-slate-800/90 backdrop-blur-xl">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <CardTitle className="text-3xl font-bold flex items-center gap-3">
+              <FileText className="w-8 h-8" />
+              Terms of Service
+            </CardTitle>
+            <p className="text-blue-100 mt-2">Last Updated: January 2025</p>
+          </CardHeader>
 
-            <div className="space-y-6 text-gray-700">
-              <section className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
+          <CardContent className="p-6 sm:p-8 space-y-8 text-slate-300">
+            <div className="space-y-6 text-gray-700"> {/* This div was originally for space-y-6, adjusting to new design */}
+              <section className="bg-red-50 p-6 rounded-lg border-2 border-red-200 text-red-800">
                 <h2 className="text-2xl font-bold text-red-900 mb-3">⚠️ IMPORTANT DISCLAIMERS</h2>
-                <ul className="list-disc pl-6 space-y-2 text-red-800">
+                <ul className="list-disc pl-6 space-y-2">
                   <li><strong>NOT A LICENSED BETTING ADVISOR:</strong> We are NOT a licensed gambling advisor, bookmaker, or financial advisor</li>
                   <li><strong>EDUCATIONAL PURPOSES:</strong> All predictions and analyses are for informational and educational purposes ONLY</li>
                   <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports betting involves risk</li>
@@ -30,7 +31,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">1. Agreement to Terms</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">1. Agreement to Terms</h2>
                 <p>
                   By accessing and using Sports Wager Helper ("the App"), you agree to be bound by these Terms of Service ("Terms"). 
                   If you disagree with any part of these terms, you may not use our app.
@@ -41,7 +42,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">2. Service Description</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">2. Service Description</h2>
                 <p>Sports Wager Helper provides:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>AI-Powered Analysis:</strong> Match predictions, player statistics, and team performance data</li>
@@ -53,58 +54,59 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">3. User Eligibility</h2>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">3.1 Age Requirements</h3>
+                <h2 className="text-2xl font-bold text-white mb-3">3. User Eligibility</h2>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2">3.1 Age Requirements</h3>
                 <p>
                   You must be at least <strong>18 years old</strong> (or <strong>21 years old</strong> in jurisdictions where that is the legal gambling age) 
                   to use this app. By using our services, you confirm that you meet this age requirement.
                 </p>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">3.2 Legal Compliance</h3>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2 mt-4">3.2 Legal Compliance</h3>
                 <p>
                   You are responsible for ensuring that your use of the app complies with all applicable laws in your jurisdiction. 
                   Sports betting is illegal in some regions - it is YOUR responsibility to know and follow local laws.
                 </p>
               </section>
-
+              
+              {/* The following section replaces the original "4. Subscription Plans" and "5. Refund Policy" */}
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">4. Subscription Plans</h2>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">4.1 Free Tier</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>5 free match/player/team lookups</li>
-                  <li>Limited access to premium features</li>
-                  <li>No subscription required</li>
-                </ul>
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  <CreditCard className="w-6 h-6 text-green-400" />
+                  4. Payments & Refunds
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Pricing Plans</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Free Tier:</strong> 5 free lookups, limited features</li>
+                      <li><strong>VIP Lifetime:</strong> $149.99 one-time payment (limited to first 20 users)</li>
+                      <li><strong>Premium Monthly:</strong> $29.99/month recurring subscription</li>
+                    </ul>
+                  </div>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">4.2 VIP Lifetime</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>One-time payment</strong> for lifetime access</li>
-                  <li>Unlimited searches and analysis</li>
-                  <li>First 20 users only (limited offer)</li>
-                  <li>All premium features forever</li>
-                  <li><strong>Non-refundable</strong> after 14-day money-back guarantee period</li>
-                </ul>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Payment Processing</h3>
+                    <p>All payments processed securely through Stripe. We do not store credit card information.</p>
+                  </div>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">4.3 Premium Monthly</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Monthly recurring subscription</li>
-                  <li>Unlimited searches and analysis</li>
-                  <li>Cancel anytime (no prorated refunds for partial months)</li>
-                  <li>Auto-renews unless cancelled 24 hours before renewal date</li>
-                </ul>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Refund Policy</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>VIP Lifetime:</strong> 14-day money-back guarantee from purchase date (no questions asked)</li>
+                      <li><strong>Premium Monthly:</strong> No refunds for partial months. Cancel before next billing cycle to avoid charges</li>
+                      <li><strong>Technical Issues:</strong> If our app has significant downtime (greater than 24 hours), contact us for pro-rated refund</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Cancellation</h3>
+                    <p>Premium Monthly can be cancelled anytime via Settings &rarr; Billing. Access continues until end of billing period.</p>
+                  </div>
+                </div>
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">5. Refund Policy</h2>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>VIP Lifetime:</strong> 14-day money-back guarantee from purchase date (no questions asked)</li>
-                  <li><strong>Premium Monthly:</strong> No refunds for partial months. Cancel before next billing cycle to avoid charges</li>
-                  <li><strong>Technical Issues:</strong> If our app has significant downtime (>24 hours), contact us for pro-rated refund</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">6. Prohibited Uses</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">5. Prohibited Uses</h2>
                 <p>You agree NOT to:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>❌ Use the app if you're under the legal gambling age</li>
@@ -119,14 +121,14 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">7. Intellectual Property</h2>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">7.1 Our Content</h3>
+                <h2 className="text-2xl font-bold text-white mb-3">6. Intellectual Property</h2>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2">6.1 Our Content</h3>
                 <p>
                   All app content (AI algorithms, designs, logos, text, graphics) is owned by Sports Wager Helper and protected by copyright laws. 
                   You may NOT copy, reproduce, or distribute our content without written permission.
                 </p>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">7.2 Your Content</h3>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2 mt-4">6.2 Your Content</h3>
                 <p>
                   When you post in community forums or share bets, you grant us a license to display and distribute that content within the app. 
                   You retain ownership of your posts.
@@ -134,26 +136,26 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">8. Disclaimers and Limitations of Liability</h2>
-                <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
+                <h2 className="text-2xl font-bold text-white mb-3">7. Disclaimers and Limitations of Liability</h2>
+                <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200 text-yellow-800">
                   <h3 className="text-xl font-bold text-yellow-900 mb-3">🚨 READ CAREFULLY 🚨</h3>
                   
-                  <h4 className="font-bold text-yellow-800 mb-2">8.1 No Warranty</h4>
-                  <p className="text-yellow-800 mb-4">
+                  <h4 className="font-bold text-yellow-800 mb-2">7.1 No Warranty</h4>
+                  <p className="mb-4">
                     THE APP IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES. We do not guarantee that:
                   </p>
-                  <ul className="list-disc pl-6 space-y-1 text-yellow-800">
+                  <ul className="list-disc pl-6 space-y-1">
                     <li>Our predictions will be accurate</li>
                     <li>You will win money using our analysis</li>
                     <li>The app will be error-free or uninterrupted</li>
                     <li>Third-party odds data will always be available or accurate</li>
                   </ul>
 
-                  <h4 className="font-bold text-yellow-800 mb-2 mt-4">8.2 Limitation of Liability</h4>
-                  <p className="text-yellow-800">
+                  <h4 className="font-bold text-yellow-800 mb-2 mt-4">7.2 Limitation of Liability</h4>
+                  <p>
                     <strong>WE ARE NOT LIABLE FOR:</strong>
                   </p>
-                  <ul className="list-disc pl-6 space-y-1 text-yellow-800">
+                  <ul className="list-disc pl-6 space-y-1">
                     <li>Any financial losses from bets placed based on our analysis</li>
                     <li>Incorrect predictions or data errors</li>
                     <li>Technical issues, downtime, or data loss</li>
@@ -161,14 +163,14 @@ export default function TermsOfService() {
                     <li>Gambling addiction or related harm</li>
                   </ul>
                   
-                  <p className="text-yellow-800 font-bold mt-4">
+                  <p className="font-bold mt-4">
                     MAXIMUM LIABILITY: Our total liability is limited to the amount you paid for your subscription (if any) in the last 12 months.
                   </p>
                 </div>
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">9. Data Accuracy</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">8. Data Accuracy</h2>
                 <p>
                   We strive for accuracy but cannot guarantee that:
                 </p>
@@ -184,30 +186,30 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">10. Responsible Gambling</h2>
-                <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
-                  <p className="text-red-800 font-bold mb-3">
+                <h2 className="text-2xl font-bold text-white mb-3">9. Responsible Gambling</h2>
+                <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200 text-red-800">
+                  <p className="font-bold mb-3">
                     We are committed to promoting responsible gambling. If you or someone you know has a gambling problem:
                   </p>
-                  <ul className="list-none space-y-2 text-red-800">
+                  <ul className="list-none space-y-2">
                     <li>🇺🇸 <strong>National Gambling Helpline:</strong> 1-800-522-4700</li>
                     <li>🌐 <strong>Gamblers Anonymous:</strong> www.gamblersanonymous.org</li>
                     <li>💬 <strong>Crisis Text Line:</strong> Text "HELP" to 741741</li>
                   </ul>
-                  <p className="text-red-800 mt-4">
+                  <p className="mt-4">
                     <strong>Warning Signs:</strong> Chasing losses, betting more than you can afford, hiding betting from family, feeling anxious about betting
                   </p>
                 </div>
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">11. Account Termination</h2>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">11.1 By You</h3>
+                <h2 className="text-2xl font-bold text-white mb-3">10. Account Termination</h2>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2">10.1 By You</h3>
                 <p>
                   You may delete your account anytime through app settings. Your data will be permanently deleted within 30 days.
                 </p>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">11.2 By Us</h3>
+                <h3 className="text-xl font-semibold text-gray-200 mb-2 mt-4">10.2 By Us</h3>
                 <p>
                   We reserve the right to suspend or terminate accounts that:
                 </p>
@@ -223,7 +225,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">12. Changes to Terms</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">11. Changes to Terms</h2>
                 <p>
                   We may modify these Terms at any time. Material changes will be communicated via:
                 </p>
@@ -238,7 +240,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">13. Governing Law</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">12. Governing Law</h2>
                 <p>
                   These Terms are governed by the laws of [Your State/Country]. 
                   Any disputes will be resolved in the courts of [Your Jurisdiction].
@@ -246,7 +248,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">14. Contact Us</h2>
+                <h2 className="text-2xl font-bold text-white mb-3">13. Contact Us</h2>
                 <p>Questions about these Terms? Contact us:</p>
                 <ul className="list-none space-y-2 mt-4">
                   <li><strong>Email:</strong> support@sportswagerhelper.com</li>
@@ -255,9 +257,9 @@ export default function TermsOfService() {
                 </ul>
               </section>
 
-              <section className="bg-green-50 p-6 rounded-lg border-2 border-green-200 mt-8">
+              <section className="bg-green-50 p-6 rounded-lg border-2 border-green-200 mt-8 text-green-800">
                 <h2 className="text-xl font-bold text-green-900 mb-3">✅ By Using This App, You Agree That:</h2>
-                <ul className="list-disc pl-6 space-y-2 text-green-800">
+                <ul className="list-disc pl-6 space-y-2">
                   <li>You are of legal gambling age in your jurisdiction</li>
                   <li>You understand that sports betting involves financial risk</li>
                   <li>Our predictions are educational, not guaranteed to be accurate</li>
@@ -268,6 +270,17 @@ export default function TermsOfService() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-6 text-center">
+          <Button
+            onClick={() => window.history.back()}
+            variant="outline"
+            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
       </div>
     </div>
   );
