@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -5,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, CheckCircle, Clock, Zap, Activity, TrendingUp, AlertCircle, Search } from "lucide-react";
+import { RefreshCw, CheckCircle, Clock, Zap, Activity, TrendingUp, AlertCircle, Search, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -87,6 +88,12 @@ export default function AutoUpdateStatus() {
             result = await searchForResult(match, 5);
           }
           
+          // STRATEGY 6: Google search on official sites
+          if (!result || !result.completed) {
+            setSearchAttempt(6);
+            result = await searchForResult(match, 6);
+          }
+          
           if (result && result.completed) {
             // Update the match with the result
             await base44.entities.Match.update(match.id, {
@@ -144,6 +151,13 @@ export default function AutoUpdateStatus() {
         const homeCity = match.home_team.split(' ')[0];
         const awayCity = match.away_team.split(' ')[0];
         searchQuery = `${homeCity} vs ${awayCity} final score ${matchDate}`;
+        break;
+      case 6: // Google search on official sites
+        const sportSite = match.sport === 'Basketball' ? 'nba.com' : 
+                         match.sport === 'Football' ? 'nfl.com' :
+                         match.sport === 'Soccer' ? 'espnfc.com' :
+                         match.sport === 'Baseball' ? 'mlb.com' : 'espn.com';
+        searchQuery = `site:espn.com OR site:${sportSite} ${match.home_team} ${match.away_team} final ${matchDate}`;
         break;
       default:
         return null;
@@ -287,12 +301,13 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
                       <span className="font-semibold">Checking: {checkingMatch.home_team} vs {checkingMatch.away_team}</span>
                     </div>
                     <div className="text-xs text-blue-100">
-                      Search Strategy {searchAttempt}/5: {
+                      Search Strategy {searchAttempt}/6: {
                         searchAttempt === 1 ? 'Primary search' :
                         searchAttempt === 2 ? 'League-specific search' :
                         searchAttempt === 3 ? 'Official source search' :
                         searchAttempt === 4 ? 'Latest scores search' :
-                        searchAttempt === 5 ? 'Alternate team names' : ''
+                        searchAttempt === 5 ? 'Alternate team names' :
+                        searchAttempt === 6 ? 'Google search on official sites' : ''
                       }
                     </div>
                   </div>
@@ -331,7 +346,7 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
           <CardContent>
             <div className="space-y-3">
               <p className="text-slate-300 text-sm mb-4">
-                Our enhanced system uses 5 different search strategies to ensure maximum reliability:
+                Our enhanced system uses 6 different search strategies to ensure maximum reliability:
               </p>
               <div className="space-y-2">
                 {[
@@ -339,7 +354,8 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
                   { step: 2, name: "League-Specific", desc: "League + teams + game result + date" },
                   { step: 3, name: "Official Source", desc: "Teams + date + ESPN final score" },
                   { step: 4, name: "Latest Scores", desc: "Latest sport scores + date, then filter" },
-                  { step: 5, name: "Alternate Names", desc: "City names + abbreviations" }
+                  { step: 5, name: "Alternate Names", desc: "City names + abbreviations" },
+                  { step: 6, name: "Google Search", desc: "Direct Google search on official sports sites (ESPN, NBA.com, NFL.com, MLB.com, etc.)" }
                 ].map((strategy) => (
                   <div key={strategy.step} className="flex items-start gap-3 p-3 bg-slate-700/30 rounded-lg">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
