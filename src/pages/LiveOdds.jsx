@@ -3,14 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp, RefreshCw, AlertCircle, Trophy, DollarSign } from "lucide-react";
+import { TrendingUp, RefreshCw, AlertCircle, Trophy, DollarSign, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
-const ODDS_API_KEY = "4961807ff18b92da83549a2e55ab8f64"; // Your API key
+const ODDS_API_KEY = "4961807ff18b92da83549a2e55ab8f64";
 
 export default function LiveOdds() {
-  const [selectedSport, setSelectedSport] = useState("basketball_nba");
-  const [odds, setOdds] = useState([]);
+  const [allOdds, setAllOdds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -24,27 +23,40 @@ export default function LiveOdds() {
     { key: "soccer_usa_mls", name: "MLS", icon: "⚽" },
   ];
 
-  const fetchOdds = async () => {
+  const fetchAllOdds = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `https://api.the-odds-api.com/v4/sports/${selectedSport}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
-      );
+      const allGames = [];
+      
+      // Fetch odds from all sports
+      for (const sport of sports) {
+        try {
+          const response = await fetch(
+            `https://api.the-odds-api.com/v4/sports/${sport.key}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
+          );
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Add sport metadata to each game
+            data.forEach(game => {
+              game.sport_name = sport.name;
+              game.sport_icon = sport.icon;
+            });
+            allGames.push(...data);
+          }
+        } catch (err) {
+          console.error(`Failed to fetch ${sport.name} odds:`, err);
+        }
       }
 
-      const data = await response.json();
-      setOdds(data);
-      setLastUpdated(new Date());
+      // Sort by game time (earliest first)
+      allGames.sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time));
       
-      // Show remaining requests in console
-      const remaining = response.headers.get('x-requests-remaining');
-      const used = response.headers.get('x-requests-used');
-      console.log(`📊 API Usage: ${used} used, ${remaining} remaining`);
+      setAllOdds(allGames);
+      setLastUpdated(new Date());
+      console.log(`📊 Loaded ${allGames.length} games from all sports`);
       
     } catch (err) {
       console.error("Failed to fetch odds:", err);
@@ -55,8 +67,8 @@ export default function LiveOdds() {
   };
 
   useEffect(() => {
-    fetchOdds();
-  }, [selectedSport]);
+    fetchAllOdds();
+  }, []);
 
   const getBestOdds = (bookmakers, market) => {
     if (!bookmakers || bookmakers.length === 0) return null;
@@ -92,6 +104,14 @@ export default function LiveOdds() {
     return odds > 0 ? `+${odds}` : odds;
   };
 
+  const isToday = (dateString) => {
+    const gameDate = new Date(dateString);
+    const today = new Date();
+    return gameDate.toDateString() === today.toDateString();
+  };
+
+  const todaysGames = allOdds.filter(game => isToday(game.commence_time));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -102,40 +122,28 @@ export default function LiveOdds() {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-white" />
+              <Calendar className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Live Odds</h1>
-              <p className="text-slate-400">Real-time betting odds from top sportsbooks</p>
+              <h1 className="text-3xl font-bold text-white">Today's Live Odds</h1>
+              <p className="text-slate-400">Real-time betting odds from all sports today</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Sport Selector */}
-        <div className="mb-6 flex gap-2 flex-wrap">
-          {sports.map((sport) => (
-            <Button
-              key={sport.key}
-              onClick={() => setSelectedSport(sport.key)}
-              variant={selectedSport === sport.key ? "default" : "outline"}
-              className={selectedSport === sport.key 
-                ? "bg-gradient-to-r from-blue-500 to-purple-600" 
-                : "border-slate-600 text-slate-300 hover:bg-slate-800"
-              }
-            >
-              <span className="mr-2">{sport.icon}</span>
-              {sport.name}
-            </Button>
-          ))}
-        </div>
-
         {/* Refresh Button */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between bg-slate-800/50 p-4 rounded-lg border border-slate-700">
           <div className="text-sm text-slate-400">
-            {lastUpdated && `Last updated: ${lastUpdated.toLocaleTimeString()}`}
+            {lastUpdated ? (
+              <>
+                <span className="font-semibold text-white">{todaysGames.length}</span> games today • Last updated: {lastUpdated.toLocaleTimeString()}
+              </>
+            ) : (
+              "Loading odds..."
+            )}
           </div>
           <Button
-            onClick={fetchOdds}
+            onClick={fetchAllOdds}
             disabled={isLoading}
             className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
           >
@@ -147,7 +155,7 @@ export default function LiveOdds() {
             ) : (
               <>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh Odds
+                Refresh
               </>
             )}
           </Button>
@@ -161,24 +169,25 @@ export default function LiveOdds() {
         )}
 
         {/* Odds Display */}
-        {isLoading && odds.length === 0 ? (
+        {isLoading && allOdds.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4" />
-              <p className="text-slate-400">Loading live odds...</p>
+              <p className="text-slate-400">Loading today's odds from all sports...</p>
+              <p className="text-xs text-slate-500 mt-2">This may take a moment...</p>
             </div>
           </div>
-        ) : odds.length === 0 ? (
+        ) : todaysGames.length === 0 && !isLoading ? (
           <Card className="bg-slate-800/90 border-slate-700">
             <CardContent className="p-12 text-center">
               <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <h3 className="text-xl font-bold text-white mb-2">No Games Available</h3>
-              <p className="text-slate-400">There are no upcoming games for this sport right now.</p>
+              <h3 className="text-xl font-bold text-white mb-2">No Games Today</h3>
+              <p className="text-slate-400">There are no scheduled games across all sports today.</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-6">
-            {odds.map((game, index) => {
+            {todaysGames.map((game, index) => {
               const moneylineBest = getBestOdds(game.bookmakers, 'h2h');
               const spreadBest = getBestOdds(game.bookmakers, 'spreads');
               const totalsBest = getBestOdds(game.bookmakers, 'totals');
@@ -194,16 +203,27 @@ export default function LiveOdds() {
                     <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700">
                       <div className="flex justify-between items-start">
                         <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">{game.sport_icon}</span>
+                            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                              {game.sport_name}
+                            </Badge>
+                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                              Live
+                            </Badge>
+                          </div>
                           <CardTitle className="text-white text-xl mb-2">
                             {game.home_team} vs {game.away_team}
                           </CardTitle>
-                          <div className="text-sm text-slate-400">
-                            {new Date(game.commence_time).toLocaleString()}
+                          <div className="text-sm text-slate-400 flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(game.commence_time).toLocaleTimeString([], { 
+                              hour: 'numeric', 
+                              minute: '2-digit',
+                              hour12: true 
+                            })}
                           </div>
                         </div>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          Live Odds
-                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -327,7 +347,7 @@ export default function LiveOdds() {
         {/* API Info Footer */}
         <div className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
           <p className="text-xs text-slate-400 text-center">
-            📊 Live odds provided by The Odds API • Updates every minute • Compare odds across multiple sportsbooks
+            📊 Live odds provided by The Odds API • Updates every minute • Showing all sports scheduled for today
           </p>
         </div>
       </div>
