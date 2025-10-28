@@ -16,6 +16,10 @@ import TermsOfService from './pages/TermsOfService';
 import AIPerformance from './pages/AIPerformance';
 import MatchResults from './pages/MatchResults';
 import Settings from './pages/Settings';
+import Pricing from './pages/Pricing';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancelled from './pages/PaymentCancelled';
+import Billing from './pages/Billing';
 import Layout from './Layout.jsx';
 
 
@@ -38,6 +42,10 @@ export const PAGES = {
     "AIPerformance": AIPerformance,
     "MatchResults": MatchResults,
     "Settings": Settings,
+    "Pricing": Pricing,
+    "PaymentSuccess": PaymentSuccess,
+    "PaymentCancelled": PaymentCancelled,
+    "Billing": Billing,
 }
 
 export const pagesConfig = {
