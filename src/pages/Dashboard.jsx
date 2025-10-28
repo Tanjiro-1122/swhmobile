@@ -12,6 +12,7 @@ import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import WelcomeTutorial from "../components/onboarding/WelcomeTutorial";
+import VIPDiscordCard from "../components/community/VIPDiscordCard";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -40,6 +41,8 @@ export default function Dashboard() {
       }
     },
   });
+
+  const isVIPorLegacy = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
 
   const { data: matches, isLoading, error: loadError } = useQuery({
     queryKey: ['matches', currentUser?.email],
@@ -408,6 +411,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       />
 
         <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* VIP Discord Card - Show for VIP/Legacy only */}
+          {isVIPorLegacy && (
+            <div className="mb-12">
+              <VIPDiscordCard />
+            </div>
+          )}
+
           {/* Today's Best Bets Section */}
           <div className="mb-12">
             <TodaysBestBets 

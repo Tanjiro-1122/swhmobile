@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import VIPDiscordCard from "../components/community/VIPDiscordCard"; // Added import
 
 function CommunityContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -34,8 +35,19 @@ function CommunityContent() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        // Return null if user is not authenticated or an error occurs
+        // The RequireAuth component handles actual redirection, but this prevents
+        // currentUser from being undefined if an error happens when logged out.
+        return null;
+      }
+    },
   });
+
+  const isVIPorLegacy = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['communityPosts'],
@@ -100,9 +112,13 @@ function CommunityContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto"> {/* Changed max-w-6xl to max-w-7xl */}
         {/* Header */}
-        <div className="mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
@@ -233,7 +249,14 @@ function CommunityContent() {
               </Dialog>
             )}
           </div>
-        </div>
+        </motion.div>
+
+        {/* VIP Discord Section - Show prominently for VIP/Legacy */}
+        {isVIPorLegacy && (
+          <div className="mb-8">
+            <VIPDiscordCard />
+          </div>
+        )}
 
         {/* Filters */}
         <Card className="mb-6 border-2 border-orange-200">

@@ -78,7 +78,7 @@ export default function Pricing() {
       "🏆 Sharp vs Public Money indicators",
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
-      "🏆 Exclusive Discord channel",
+      "🏆 Exclusive VIP Discord channel", // Updated text for Discord channel
       "🏆 Lifetime feature updates"
     ]
   };
