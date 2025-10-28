@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, AlertCircle, Shield, CheckCircle } from "lucide-react";
+import { Clock, AlertCircle, Shield, CheckCircle, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 export default function AutoUpdateStatus() {
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [manualScore, setManualScore] = useState({ winner: "", final_score: "" });
+  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
   const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -97,6 +99,20 @@ export default function AutoUpdateStatus() {
     });
   };
 
+  // Handle Google search
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      window.open(googleSearchUrl, '_blank');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -121,12 +137,44 @@ export default function AutoUpdateStatus() {
           </Badge>
         </motion.div>
 
-        <Alert className="mb-6 bg-blue-500/10 border-blue-500/50">
-          <AlertCircle className="w-4 h-4 text-blue-400" />
-          <AlertDescription className="text-blue-300">
-            <strong>💡 Tip:</strong> Use the Google Search tool in the AI Performance tab to quickly find match results, then manually update them here.
-          </AlertDescription>
-        </Alert>
+        {/* Google Search Tool */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <Card className="bg-slate-800/90 border-slate-700">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Quick Google Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-slate-300 mb-4">Search for match results, scores, and sports news directly on Google</p>
+              <div className="flex gap-2">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="e.g., Lakers vs Celtics final score October 23 2025"
+                  className="flex-1 bg-slate-900 border-slate-600 text-white"
+                />
+                <Button
+                  onClick={handleSearch}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Search Google
+                </Button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                💡 Tip: Include team names, date, and "final score" for best results
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

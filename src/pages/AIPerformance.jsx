@@ -1,16 +1,22 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Trophy, TrendingUp, CheckCircle, XCircle, Clock, BarChart3, Target, Shield, Search } from "lucide-react";
+// Input is no longer needed in this file after removing Google Search Tool
+// import { Input } from "@/components/ui/input"; 
+// Button is no longer needed in this file after removing Google Search Tool
+// import { Button } from "@/components/ui/button"; 
+import { Trophy, TrendingUp, CheckCircle, XCircle, Clock, BarChart3, Target, Shield } from "lucide-react";
+// Search icon is no longer needed in this file after removing Google Search Tool
+// import { Search } from "lucide-react"; 
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 export default function AIPerformance() {
-  const [searchQuery, setSearchQuery] = useState("");
+  // Removed searchQuery state as the Google Search Tool is being moved
+  // const [searchQuery, setSearchQuery] = useState("");
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -89,19 +95,19 @@ export default function AIPerformance() {
       }).length / byConfidence.low.length) * 100).toFixed(1) : 0
   };
 
-  // Handle Google search
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-      window.open(googleSearchUrl, '_blank');
-    }
-  };
+  // Removed handleSearch and handleKeyPress functions as the Google Search Tool is being moved
+  // const handleSearch = () => {
+  //   if (searchQuery.trim()) {
+  //     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+  //     window.open(googleSearchUrl, '_blank');
+  //   }
+  // };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
+  // const handleKeyPress = (e) => {
+  //   if (e.key === 'Enter') {
+  //     handleSearch();
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
@@ -127,7 +133,8 @@ export default function AIPerformance() {
           </Badge>
         </motion.div>
 
-        {/* Google Search Tool */}
+        {/* Google Search Tool - REMOVED */}
+        {/*
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -165,6 +172,7 @@ export default function AIPerformance() {
             </CardContent>
           </Card>
         </motion.div>
+        */}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
