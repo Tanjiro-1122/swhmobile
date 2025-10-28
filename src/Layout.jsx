@@ -23,7 +23,8 @@ import {
   Trophy,
   LogIn,
   Crown, // Added Crown icon for Pricing page and VIP Annual
-  Sparkles // Added Sparkles icon for Premium Monthly
+  Sparkles, // Added Sparkles icon for Premium Monthly
+  Zap // Added Zap icon for Power User page
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -154,10 +155,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "AI Performance", icon: Trophy, page: "AIPerformance" },
     { name: "Pricing", icon: Crown, page: "Pricing" }, // Added Pricing page
     { name: "Alerts", icon: Bell, page: "Alerts" },
-    { name: "Parlay Builder", icon: Shield, page: "ParlayBuilder" },
-    { name: "Betting Calculator", icon: Calculator, page: "BettingCalculator" },
-    { name: "ROI Tracker", icon: DollarSign, page: "ROITracker" },
-    { name: "Bankroll Manager", icon: Wallet, page: "BankrollManager" },
+    { name: "Power User", icon: Zap, page: "PowerUser" }, // Added Power User page
     { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
     { name: "Community", icon: MessageSquare, page: "Community" },
     { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },

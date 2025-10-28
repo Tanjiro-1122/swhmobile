@@ -24,7 +24,7 @@ const tutorialSteps = [
     color: "from-green-500 to-emerald-500"
   },
   {
-    title: "Betting Tools 🧮",
+    title: "Power User Tools 🧮",
     description: "Use our Parlay Builder, Betting Calculator, ROI Tracker, and Bankroll Manager to bet like a pro.",
     icon: Calculator,
     color: "from-orange-500 to-red-500"
@@ -38,7 +38,7 @@ export default function WelcomeTutorial() {
   useEffect(() => {
     // Check if user has seen the tutorial
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
-    if (!hasSeenTutorial) {
+    if (!hasSeenTutorial || hasSeenTutorial !== 'true') {
       setShowTutorial(true);
     }
   }, []);
