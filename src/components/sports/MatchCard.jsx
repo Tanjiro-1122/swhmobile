@@ -4,11 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Trophy, Home, Plane } from "lucide-react";
+import { Calendar, TrendingUp, Trash2, Shield, ChevronDown, ChevronUp, Trophy, Home, Plane, Database, Info } from "lucide-react";
 import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
 import PlayerStatsCard from "./PlayerStatsCard";
 import BettingMarketsCard from "./BettingMarketsCard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const confidenceColors = {
   low: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
@@ -18,6 +24,7 @@ const confidenceColors = {
 
 export default function MatchCard({ match, onDelete, index }) {
   const [expanded, setExpanded] = useState(false);
+  const [showDataSources, setShowDataSources] = useState(false);
 
   const formatMatchDate = (dateString) => {
     if (!dateString) return null;
@@ -40,7 +47,7 @@ export default function MatchCard({ match, onDelete, index }) {
     >
       <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyLDUuMzczIDEyLDEyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb2g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgNi42MjctNS4zNzMgMTItMTIgMTJzLTEyLTUuMzczLTEyLTEyIDUuMzczLTEyIDEyLTEyIDEyLDUuMzczIDEyLDEyIi8+PC9nPjwvZz48L3N2Z24=')] opacity-30" />
           
           <div className="relative flex justify-between items-start mb-4">
             <div className="space-y-2">
@@ -69,10 +76,23 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
             <div className="flex gap-2">
               {match.confidence_level && (
-                <Badge className={`${confidenceColors[match.confidence_level]} border backdrop-blur-sm flex items-center gap-1 font-bold`}>
-                  <Shield className="w-3 h-3" />
-                  {match.confidence_level.toUpperCase()}
-                </Badge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge className={`${confidenceColors[match.confidence_level]} border backdrop-blur-sm flex items-center gap-1 font-bold cursor-help`}>
+                        <Shield className="w-3 h-3" />
+                        {match.confidence_level.toUpperCase()}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        {match.confidence_level === 'high' && 'High confidence: 80%+ prediction accuracy based on strong data signals'}
+                        {match.confidence_level === 'medium' && 'Medium confidence: 65-79% prediction accuracy with good data support'}
+                        {match.confidence_level === 'low' && 'Low confidence: <65% prediction accuracy, limited reliable data'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
               <Button
                 variant="ghost"
@@ -85,7 +105,7 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
           </div>
 
-          {/* NEW: Clear Home vs Away Display */}
+          {/* Home vs Away Display */}
           <div className="relative bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
             <div className="grid grid-cols-3 gap-4 items-center">
               {/* Home Team */}
@@ -147,6 +167,20 @@ export default function MatchCard({ match, onDelete, index }) {
                     {match.prediction.confidence} Confidence
                   </Badge>
                 )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white">
+                        <Info className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm max-w-xs">
+                        AI analyzes real-time data from StatMuse, ESPN, injury reports, weather, and historical matchups to generate this prediction.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               
               <div className="space-y-3">
@@ -177,7 +211,66 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
           )}
 
-          {/* NEW: Injury Report */}
+          {/* Data Sources Transparency */}
+          {match.data_sources && (
+            <div className="border-t border-slate-700 pt-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDataSources(!showDataSources)}
+                className="text-slate-400 hover:text-white flex items-center gap-2"
+              >
+                <Database className="w-4 h-4" />
+                {showDataSources ? 'Hide' : 'Show'} Data Sources
+                <ChevronDown className={`w-4 h-4 transition-transform ${showDataSources ? 'rotate-180' : ''}`} />
+              </Button>
+              
+              <AnimatePresence>
+                {showDataSources && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-3 bg-slate-800/50 rounded-lg p-4 space-y-2 text-sm"
+                  >
+                    <div className="text-slate-300 font-semibold mb-2">🔍 AI analyzed data from:</div>
+                    {match.data_sources.stats_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-slate-400">Statistics: {match.data_sources.stats_source}</span>
+                      </div>
+                    )}
+                    {match.data_sources.schedule_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-slate-400">Schedule: {match.data_sources.schedule_source}</span>
+                      </div>
+                    )}
+                    {match.data_sources.injury_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-slate-400">Injuries: {match.data_sources.injury_source}</span>
+                      </div>
+                    )}
+                    {match.data_sources.weather_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-slate-400">Weather: {match.data_sources.weather_source}</span>
+                      </div>
+                    )}
+                    {match.data_sources.head_to_head_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-slate-400">H2H History: {match.data_sources.head_to_head_source}</span>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
           {match.injuries && match.injuries.length > 0 && (
             <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/30">
               <div className="flex items-center gap-2 mb-3">
@@ -209,7 +302,6 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
           )}
 
-          {/* NEW: Weather Impact */}
           {match.weather_impact && match.weather_impact.conditions && (
             <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/30">
               <div className="flex items-center gap-2 mb-3">

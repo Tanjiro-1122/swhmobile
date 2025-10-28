@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import WelcomeTutorial from "../components/onboarding/WelcomeTutorial";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -397,6 +399,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
+      <WelcomeTutorial />
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 

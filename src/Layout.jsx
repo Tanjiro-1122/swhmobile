@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -28,6 +29,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +39,13 @@ export default function Layout({ children, currentPageName }) {
       setIsAuthenticated(authenticated);
     };
     checkAuth();
+
+    // Load dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark');
+    }
 
     // Add mobile optimization meta tags directly to document head
     const viewport = document.querySelector('meta[name="viewport"]');
@@ -86,6 +95,17 @@ export default function Layout({ children, currentPageName }) {
       document.head.removeChild(manifestLink);
     };
   }, []);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -140,6 +160,48 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <style>{`
+        :root {
+          --primary: 222.2 47.4% 11.2%;
+          --primary-foreground: 210 40% 98%;
+          --secondary: 217.2 32.6% 17.5%;
+          --secondary-foreground: 210 40% 98%;
+          --muted: 217.2 32.6% 17.5%;
+          --muted-foreground: 215 20.2% 65.1%;
+          --accent: 217.2 32.6% 17.5%;
+          --accent-foreground: 210 40% 98%;
+          --destructive: 0 62.8% 30.6%;
+          --destructive-foreground: 210 40% 98%;
+          --border: 217.2 32.6% 17.5%;
+          --input: 217.2 32.6% 17.5%;
+          --ring: 212.7 26.8% 83.9%;
+          --popover: 222.2 84% 4.9%;
+          --popover-foreground: 210 40% 98%;
+          --card: 222.2 84% 4.9%;
+          --card-foreground: 210 40% 98%;
+        }
+        
+        .dark {
+          --primary: 210 40% 98%;
+          --primary-foreground: 222.2 47.4% 11.2%;
+          --secondary: 217.2 32.6% 17.5%;
+          --secondary-foreground: 210 40% 98%;
+          --muted: 217.2 32.6% 17.5%;
+          --muted-foreground: 215 20.2% 65.1%;
+          --accent: 217.2 32.6% 17.5%;
+          --accent-foreground: 210 40% 98%;
+          --destructive: 0 62.8% 30.6%;
+          --destructive-foreground: 210 40% 98%;
+          --border: 217.2 32.6% 17.5%;
+          --input: 217.2 32.6% 17.5%;
+          --ring: 212.7 26.8% 83.9%;
+          --popover: 222.2 84% 4.9%;
+          --popover-foreground: 210 40% 98%;
+          --card: 222.2 84% 4.9%;
+          --card-foreground: 210 40% 98%;
+        }
+      `}</style>
+      
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
@@ -164,6 +226,25 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Dark Mode Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              className="text-gray-400 hover:text-white"
+              title={darkMode ? "Light mode" : "Dark mode"}
+            >
+              {darkMode ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </Button>
+
             {isAuthenticated && currentUser ? (
               <>
                 {isVIP && (
