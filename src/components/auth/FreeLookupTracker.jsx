@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -101,7 +102,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
                 <div>
                   <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
+                  <p className="text-lg text-emerald-100">Sign up to continue analyzing</p>
                 </div>
               </div>
             </CardHeader>
@@ -116,13 +117,6 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 <p className="text-xl text-gray-700 font-semibold">
                   You've used all 5 free lookups!
                 </p>
-                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
-                  <div className="flex items-center gap-2 justify-center text-xl font-bold text-orange-800">
-                    <Crown className="w-6 h-6" />
-                    First 20 Users Get LIFETIME VIP Access!
-                  </div>
-                  <p className="text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
-                </div>
               </div>
 
               <div className="space-y-3 mb-8">
@@ -140,7 +134,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
                   <Crown className="w-6 h-6 text-yellow-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
+                  <span className="text-base font-semibold text-gray-800">Premium Member Badge</span>
                 </div>
               </div>
 
@@ -149,7 +143,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
               >
                 <UserPlus className="w-6 h-6 mr-3" />
-                Sign Up Free - Claim VIP Lifetime Spot
+                Sign Up Free - Get Premium Access
               </Button>
 
               <p className="text-center text-sm text-gray-500 mt-6">
@@ -171,7 +165,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
           <div className="flex items-center justify-center gap-3">
             <Crown className="w-6 h-6 text-white" />
             <span className="text-white font-bold text-lg">
-              ⭐ VIP LIFETIME MEMBER - Unlimited Access Forever! ⭐
+              ⭐ LEGACY MEMBER - Unlimited Access Forever! ⭐
             </span>
             <Crown className="w-6 h-6 text-white" />
           </div>
@@ -251,7 +245,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
               </p>
               <p className="text-sm opacity-90 flex items-center gap-1">
                 <Crown className="w-4 h-4" />
-                Sign up now - First 20 get LIFETIME VIP access!
+                Sign up now for unlimited access!
               </p>
             </div>
           </div>
@@ -261,7 +255,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
             className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Claim VIP Lifetime Spot
+            Get Premium Access
           </Button>
         </div>
       </div>

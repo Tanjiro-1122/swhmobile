@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -82,11 +83,11 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-300">
-                  <Crown className="w-6 h-6 text-orange-600 flex-shrink-0" />
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300">
+                  <Crown className="w-6 h-6 text-emerald-600 flex-shrink-0" />
                   <div>
-                    <div className="font-bold text-gray-900">VIP Lifetime Offer</div>
-                    <div className="text-sm text-gray-600">First 20 users get unlimited access forever!</div>
+                    <div className="font-bold text-gray-900">Upgrade to Premium</div>
+                    <div className="text-sm text-gray-600">Unlimited access & advanced features</div>
                   </div>
                 </div>
               </div>

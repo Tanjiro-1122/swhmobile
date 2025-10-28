@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -113,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
     },
   });
 
-  const isVIP = currentUser?.subscription_type === 'vip_lifetime';
+  const isLegacy = currentUser?.subscription_type === 'vip_lifetime';
   const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = async () => {
@@ -249,10 +250,10 @@ export default function Layout({ children, currentPageName }) {
 
             {isAuthenticated && currentUser ? (
               <>
-                {isVIP && (
+                {isLegacy && (
                   <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
                     <Shield className="w-4 h-4 text-white" />
-                    <span className="text-sm font-bold text-white">VIP LIFETIME</span>
+                    <span className="text-sm font-bold text-white">LEGACY MEMBER</span>
                   </div>
                 )}
                 <div className="flex items-center gap-3">
