@@ -22,7 +22,8 @@ import {
   MessageSquare,
   Trophy,
   LogIn,
-  Crown // Added Crown icon for Pricing page
+  Crown, // Added Crown icon for Pricing page and VIP Annual
+  Sparkles // Added Sparkles icon for Premium Monthly
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -115,7 +116,9 @@ export default function Layout({ children, currentPageName }) {
     },
   });
 
-  const isLegacy = currentUser?.subscription_type === 'vip_lifetime';
+  const isLegacy = currentUser?.subscription_type === 'legacy';
+  const isVIP = currentUser?.subscription_type === 'vip_annual';
+  const isPremium = currentUser?.subscription_type === 'premium_monthly';
   const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = async () => {
@@ -256,6 +259,18 @@ export default function Layout({ children, currentPageName }) {
                   <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-2 rounded-full">
                     <Shield className="w-4 h-4 text-white" />
                     <span className="text-sm font-bold text-white">LEGACY MEMBER</span>
+                  </div>
+                )}
+                {isVIP && (
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 rounded-full">
+                    <Crown className="w-4 h-4 text-white" />
+                    <span className="text-sm font-bold text-white">VIP ANNUAL</span>
+                  </div>
+                )}
+                {isPremium && (
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full">
+                    <Sparkles className="w-4 h-4 text-white" />
+                    <span className="text-sm font-bold text-white">PREMIUM</span>
                   </div>
                 )}
                 <div className="flex items-center gap-3">

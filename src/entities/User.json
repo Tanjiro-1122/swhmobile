@@ -3,20 +3,34 @@
     "type": "string",
     "enum": [
       "free",
-      "vip_lifetime",
+      "legacy",
+      "vip_annual",
       "premium_monthly"
     ],
     "default": "free",
-    "description": "User's subscription tier"
+    "description": "User's subscription tier - Legacy (grandfathered lifetime), VIP Annual ($149.99/year), Premium Monthly ($19.99/month), Free (5 lookups)"
   },
-  "vip_member_number": {
+  "legacy_member_number": {
     "type": "number",
-    "description": "VIP lifetime member number (1-20)"
+    "description": "Legacy member number (original first 20 members)"
   },
   "search_count": {
     "type": "number",
     "default": 0,
     "description": "Total number of searches performed"
   },
-  "name": "User"
+  "subscription_start_date": {
+    "type": "string",
+    "format": "date-time",
+    "description": "When subscription started"
+  },
+  "subscription_end_date": {
+    "type": "string",
+    "format": "date-time",
+    "description": "When subscription expires (for VIP Annual)"
+  },
+  "name": "User",
+  "type": "object",
+  "properties": {},
+  "required": []
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3 } from "lucide-react";
+import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ export default function Pricing() {
     }
 
     // Redirect to Stripe checkout
-    if (plan === 'legacy') {
+    if (plan === 'vip') {
       window.location.href = 'https://buy.stripe.com/7sY14p9g14HS43Q2hE8N207';
     } else if (plan === 'premium') {
       window.location.href = 'https://buy.stripe.com/bJe14p1Nza2ceIu2hE8N208';
@@ -59,7 +59,7 @@ export default function Pricing() {
       "✅ Unlimited match predictions",
       "✅ Unlimited player stats",
       "✅ Unlimited team analysis",
-      "✅ Live odds comparison (3 sportsbooks)",
+      "✅ Live odds comparison",
       "✅ Today's Best Bets (AI picks)",
       "✅ Parlay builder",
       "✅ ROI tracker",
@@ -68,15 +68,15 @@ export default function Pricing() {
       "✅ Save & track results",
       "✅ Priority support"
     ],
-    legacy: [
+    vip: [
       "🏆 Everything in Premium",
       "🏆 Annual billing ($149.99/year)",
       "🏆 Save $90/year vs monthly",
-      "🏆 LEGACY MEMBER badge",
+      "🏆 VIP MEMBER badge",
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
       "🏆 Exclusive Discord channel",
-      "🏆 Lifetime feature updates"
+      "🏆 Priority customer support"
     ]
   };
 
@@ -98,6 +98,29 @@ export default function Pricing() {
           </p>
         </div>
 
+        {/* Legacy Member Notice */}
+        {currentPlan === 'legacy' && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <Card className="border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <Crown className="w-12 h-12 text-yellow-600" />
+                  <div>
+                    <h3 className="text-2xl font-black text-gray-900">You're a Legacy Member! 👑</h3>
+                    <p className="text-gray-700">
+                      You have lifetime unlimited access as one of our original supporters. Thank you for being with us from the start!
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {/* Free Plan */}
@@ -111,7 +134,7 @@ export default function Pricing() {
                 <Sparkles className="w-12 h-12 mx-auto mb-4 text-blue-500" />
                 <CardTitle className="text-3xl font-black mb-2">Free</CardTitle>
                 <div className="text-5xl font-black text-gray-900 mb-2">$0</div>
-                <div className="text-sm text-gray-600">Forever</div>
+                <div className="text-sm text-gray-600">5 Free Lookups</div>
               </CardHeader>
               <CardContent className="p-8">
                 <ul className="space-y-3 mb-8">
@@ -135,6 +158,9 @@ export default function Pricing() {
                     Already Upgraded
                   </Button>
                 )}
+                <p className="text-xs text-gray-500 mt-3 text-center">
+                  ⚠️ Account locks after 5 free lookups
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -152,7 +178,7 @@ export default function Pricing() {
                 </Badge>
               </div>
               <CardHeader className="text-center p-8 bg-gradient-to-br from-purple-50 to-pink-50">
-                <Crown className="w-12 h-12 mx-auto mb-4 text-purple-600" />
+                <Star className="w-12 h-12 mx-auto mb-4 text-purple-600" />
                 <CardTitle className="text-3xl font-black mb-2">Premium Monthly</CardTitle>
                 <div className="text-5xl font-black text-gray-900 mb-2">$19.99</div>
                 <div className="text-sm text-gray-600">/month • Cancel anytime</div>
@@ -182,23 +208,23 @@ export default function Pricing() {
             </Card>
           </motion.div>
 
-          {/* Legacy Annual */}
+          {/* VIP Annual */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className={`border-2 ${currentPlan === 'vip_lifetime' ? 'border-yellow-500 shadow-2xl' : 'border-yellow-200'} relative`}>
+            <Card className={`border-2 ${currentPlan === 'vip_annual' ? 'border-yellow-500 shadow-2xl' : 'border-yellow-200'} relative`}>
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2 text-sm font-bold shadow-lg animate-pulse">
                   💎 BEST VALUE
                 </Badge>
               </div>
               <CardHeader className="text-center p-8 bg-gradient-to-br from-yellow-50 to-orange-50">
-                <Shield className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
-                <CardTitle className="text-3xl font-black mb-2">Legacy Annual</CardTitle>
+                <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
+                <CardTitle className="text-3xl font-black mb-2">VIP Annual</CardTitle>
                 <div className="text-5xl font-black text-gray-900 mb-2">$149.99</div>
-                <div className="text-sm text-gray-600">/year • Save $90/year</div>
+                <div className="text-sm text-gray-600">/year • Billed annually</div>
                 <div className="mt-3">
                   <Badge className="bg-green-100 text-green-800 border-green-300">
                     Save 37% vs Monthly
@@ -207,23 +233,23 @@ export default function Pricing() {
               </CardHeader>
               <CardContent className="p-8">
                 <ul className="space-y-3 mb-8">
-                  {features.legacy.map((feature, idx) => (
+                  {features.vip.map((feature, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
                       <Check className="w-4 h-4 text-yellow-600 flex-shrink-0" />
                       <span className="font-semibold">{feature}</span>
                     </li>
                   ))}
                 </ul>
-                {currentPlan === 'vip_lifetime' ? (
+                {currentPlan === 'vip_annual' ? (
                   <Button disabled className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-6 cursor-not-allowed opacity-75">
-                    ⭐ You're a Legacy Member!
+                    ⭐ You're a VIP Member!
                   </Button>
                 ) : (
                   <Button 
-                    onClick={() => handleSubscribe('legacy')}
+                    onClick={() => handleSubscribe('vip')}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-lg shadow-lg"
                   >
-                    {isAuthenticated ? 'Upgrade to Legacy' : 'Sign Up & Get Legacy'}
+                    {isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'}
                   </Button>
                 )}
               </CardContent>
@@ -244,7 +270,7 @@ export default function Pricing() {
                     <th className="text-left py-4 px-4 font-bold text-gray-900">Feature</th>
                     <th className="text-center py-4 px-4 font-bold text-gray-900">Free</th>
                     <th className="text-center py-4 px-4 font-bold text-purple-600">Premium</th>
-                    <th className="text-center py-4 px-4 font-bold text-yellow-600">Legacy</th>
+                    <th className="text-center py-4 px-4 font-bold text-yellow-600">VIP Annual</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -255,7 +281,7 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Player Stats</td>
+                    <td className="py-4 px-4">Player & Team Stats</td>
                     <td className="text-center py-4 px-4">5 free</td>
                     <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
@@ -273,7 +299,7 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Parlay Builder</td>
+                    <td className="py-4 px-4">Parlay Builder & Tools</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
@@ -285,16 +311,16 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Legacy Member Badge</td>
+                    <td className="py-4 px-4">VIP Member Badge</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Priority AI Processing</td>
-                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="py-4 px-4">Priority Support</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
+                    <td className="text-center py-4 px-4">✅✅</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4">Annual Cost</td>
@@ -316,8 +342,16 @@ export default function Pricing() {
           <CardContent className="p-8">
             <div className="space-y-6">
               <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">What happens after I use my 5 free lookups?</h3>
+                <p className="text-gray-600">Your account will be locked and you'll need to subscribe to Premium or VIP to continue using the app. Don't worry - you can upgrade anytime!</p>
+              </div>
+              <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Can I cancel anytime?</h3>
-                <p className="text-gray-600">Yes! Premium Monthly can be cancelled anytime. Legacy Annual is billed yearly but you can still cancel before the next renewal.</p>
+                <p className="text-gray-600">Yes! Premium Monthly can be cancelled anytime. VIP Annual is billed yearly but you can still cancel before the next renewal.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">What's the difference between Premium and VIP?</h3>
+                <p className="text-gray-600">Both have unlimited access to all features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, plus you get a VIP badge and priority support.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
@@ -328,12 +362,8 @@ export default function Pricing() {
                 <p className="text-gray-600">Yes! We offer a 14-day money-back guarantee on all subscriptions. If you're not satisfied, contact support for a full refund.</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">How accurate are the AI predictions?</h3>
-                <p className="text-gray-600">Our AI analyzes data from StatMuse, ESPN, and official league sources. Historical accuracy varies by sport but averages 65-75%. Check our AI Performance page for live stats.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Can I upgrade from Premium to Legacy?</h3>
-                <p className="text-gray-600">Absolutely! Contact support and we'll pro-rate your existing subscription and apply it to the Legacy plan.</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">What is a Legacy Member?</h3>
+                <p className="text-gray-600">Legacy Members are our original supporters who received lifetime unlimited access. This tier is no longer available for new users.</p>
               </div>
             </div>
           </CardContent>

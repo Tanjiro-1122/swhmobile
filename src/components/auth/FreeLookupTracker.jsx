@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, Crown, Check } from "lucide-react"; // Added Check import
+import { Lock, UserPlus, Sparkles, Zap, Crown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -22,9 +21,13 @@ export function useFreeLookupTracker() {
           const user = await base44.auth.me();
           setUserTier(user.subscription_type || 'free');
           
-          // VIP Lifetime and Premium users have unlimited searches
-          if (user.subscription_type === 'vip_lifetime' || user.subscription_type === 'premium_monthly') {
+          // Legacy, VIP Annual, and Premium Monthly users have unlimited searches
+          if (user.subscription_type === 'legacy' || user.subscription_type === 'vip_annual' || user.subscription_type === 'premium_monthly') {
             setLookupsRemaining(999); // Unlimited
+          } else {
+            // Free users - check their usage
+            const used = parseInt(localStorage.getItem('freeLookups') || '0');
+            setLookupsRemaining(Math.max(0, 5 - used));
           }
         } catch (error) {
           console.error('Error fetching user:', error);
@@ -39,34 +42,29 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
-      return true; // Unlimited for VIP/Premium
-    }
-    
-    if (!isAuthenticated) {
-      const used = parseInt(localStorage.getItem('freeLookups') || '0');
-      if (used >= 5) return false;
-      
-      localStorage.setItem('freeLookups', (used + 1).toString());
-      setLookupsRemaining(Math.max(0, 5 - (used + 1)));
+    // Unlimited for paid tiers
+    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
       return true;
     }
     
-    // For authenticated free users, still track lookups
+    // For free users (authenticated or not)
+    const used = parseInt(localStorage.getItem('freeLookups') || '0');
+    if (used >= 5) return false;
+    
+    localStorage.setItem('freeLookups', (used + 1).toString());
+    setLookupsRemaining(Math.max(0, 5 - (used + 1)));
     return true;
   };
 
   const canLookup = () => {
-    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
-      return true; // Unlimited
+    // Unlimited for paid tiers
+    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
+      return true;
     }
     
-    if (!isAuthenticated) {
-      const used = parseInt(localStorage.getItem('freeLookups') || '0');
-      return used < 5;
-    }
-    
-    return true; // Authenticated free users can search
+    // Check free lookups
+    const used = parseInt(localStorage.getItem('freeLookups') || '0');
+    return used < 5;
   };
 
   return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier };
@@ -98,15 +96,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <Card className="max-w-lg w-full border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
+          <Card className="max-w-lg w-full border-2 border-red-500 shadow-2xl shadow-red-500/20">
+            <CardHeader className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white p-8">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                   <Lock className="w-8 h-8" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Upgrade to continue analyzing</p>
+                  <CardTitle className="text-3xl font-black mb-2">🔒 Account Locked</CardTitle>
+                  <p className="text-lg text-red-100">Subscribe to continue using the app</p>
                 </div>
               </div>
             </CardHeader>
@@ -115,55 +113,59 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 <div className="relative inline-block mb-4">
                   <div className="text-8xl font-black text-gray-200">0/5</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap className="w-16 h-16 text-emerald-500 animate-pulse" />
+                    <Lock className="w-16 h-16 text-red-500 animate-pulse" />
                   </div>
                 </div>
-                <p className="text-xl text-gray-700 font-semibold">
+                <p className="text-xl text-gray-900 font-bold mb-2">
                   You've used all 5 free lookups!
+                </p>
+                <p className="text-gray-600">
+                  Subscribe now to unlock unlimited access to all features
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 text-center">
                   <div className="text-3xl font-black text-purple-600 mb-1">$19.99</div>
-                  <div className="text-sm font-semibold text-gray-700">Premium Monthly</div>
+                  <div className="text-sm font-semibold text-gray-900">Premium Monthly</div>
                   <div className="text-xs text-gray-500 mt-1">Cancel anytime</div>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-300 text-center relative">
                   <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    SAVE $90
+                    SAVE 37%
                   </div>
                   <div className="text-3xl font-black text-yellow-600 mb-1">$149.99</div>
-                  <div className="text-sm font-semibold text-gray-700">Legacy Annual</div>
+                  <div className="text-sm font-semibold text-gray-900">VIP Annual</div>
                   <div className="text-xs text-gray-500 mt-1">Billed yearly</div>
                 </div>
               </div>
 
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-6 bg-gray-50 rounded-lg p-4">
+                <div className="font-bold text-gray-900 mb-2">With Premium or VIP:</div>
                 <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
                   <span>Unlimited match predictions</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span>Unlimited player & team stats</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
                   <span>Live odds comparison</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span>Today's Best Bets AI picks</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span>Parlay Builder & ROI Tracker</span>
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span>AI betting insights & alerts</span>
                 </div>
               </div>
 
               <Button
                 onClick={handleViewPricing}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 mb-3"
+                className="w-full bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 hover:from-red-700 hover:via-orange-700 hover:to-yellow-700 text-white text-xl py-8 font-bold shadow-lg shadow-red-500/30 transition-all hover:shadow-xl hover:shadow-red-500/40 mb-3"
               >
                 <Crown className="w-6 h-6 mr-3" />
-                View Pricing & Subscribe
+                View Plans & Subscribe
               </Button>
 
               <p className="text-center text-sm text-gray-500">
@@ -178,14 +180,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
 }
 
 export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
-  if (userTier === 'vip_lifetime') {
+  // Legacy members - original lifetime VIP
+  if (userTier === 'legacy') {
     return (
-      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
+      <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 border-b-4 border-yellow-300 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-center gap-3">
             <Crown className="w-6 h-6 text-white" />
             <span className="text-white font-bold text-lg">
-              ⭐ LEGACY MEMBER - Unlimited Access Forever! ⭐
+              👑 LEGACY MEMBER - Lifetime Unlimited Access! 👑
             </span>
             <Crown className="w-6 h-6 text-white" />
           </div>
@@ -194,6 +197,23 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
     );
   }
 
+  // VIP Annual members
+  if (userTier === 'vip_annual') {
+    return (
+      <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 border-b-4 border-indigo-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Crown className="w-6 h-6 text-white" />
+            <span className="text-white font-bold text-lg">
+              💎 VIP ANNUAL MEMBER - Unlimited Access! 💎
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Premium Monthly members
   if (userTier === 'premium_monthly') {
     return (
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 border-b-4 border-purple-300 shadow-lg">
@@ -201,7 +221,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
           <div className="flex items-center justify-center gap-3">
             <Sparkles className="w-6 h-6 text-white" />
             <span className="text-white font-bold text-lg">
-              💎 Premium Member - Unlimited Access! 💎
+              ⭐ Premium Member - Unlimited Access! ⭐
             </span>
           </div>
         </div>
@@ -209,7 +229,8 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
     );
   }
 
-  if (isAuthenticated || lookupsRemaining === 5) return null;
+  // Don't show banner if user has all lookups
+  if (lookupsRemaining === 5) return null;
 
   const handleSignup = () => {
     base44.auth.redirectToLogin(window.location.pathname);
@@ -248,34 +269,34 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Badge className={`${colors.badge} ${colors.text} text-xl font-black px-6 py-3 shadow-lg animate-pulse`}>
+              <Badge className={`${colors.badge} ${colors.text} text-xl font-black px-6 py-3 shadow-lg ${lookupsRemaining <= 2 ? 'animate-pulse' : ''}`}>
                 {lookupsRemaining} FREE {lookupsRemaining === 1 ? 'LOOKUP' : 'LOOKUPS'} LEFT!
               </Badge>
-              {lookupsRemaining <= 2 && (
-                <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
-                  HURRY!
+              {lookupsRemaining === 0 && (
+                <div className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-1 rounded-full animate-bounce">
+                  LOCKED
                 </div>
               )}
             </div>
             <div className={colors.text}>
               <p className="text-lg font-bold">
                 {lookupsRemaining === 0 
-                  ? "You've used all free lookups!" 
-                  : `${lookupsRemaining} free ${lookupsRemaining === 1 ? 'search' : 'searches'} remaining`}
+                  ? "Account locked! Subscribe to continue" 
+                  : `${lookupsRemaining} free ${lookupsRemaining === 1 ? 'lookup' : 'lookups'} remaining`}
               </p>
               <p className="text-sm opacity-90 flex items-center gap-1">
                 <Crown className="w-4 h-4" />
-                Sign up now for unlimited access!
+                {lookupsRemaining === 0 ? 'Choose a plan to unlock all features' : 'Subscribe for unlimited access'}
               </p>
             </div>
           </div>
           <Button
             onClick={handleSignup}
             size="lg"
-            className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
+            className="bg-white hover:bg-gray-100 text-gray-900 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Get Premium Access
+            {lookupsRemaining === 0 ? 'Subscribe Now' : 'Upgrade to Premium'}
           </Button>
         </div>
       </div>
