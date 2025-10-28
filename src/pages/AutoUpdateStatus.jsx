@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Added AlertTitle
 import { RefreshCw, CheckCircle, Clock, Zap, Activity, TrendingUp, AlertCircle, Search, XCircle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -13,8 +13,9 @@ import { format } from "date-fns";
 export default function AutoUpdateStatus() {
   const [isRunning, setIsRunning] = useState(false);
   const [checkingMatch, setCheckingMatch] = useState(null);
-  const [searchAttempt, setSearchAttempt] = useState(0);
+  const [searchAttemptCount, setSearchAttemptCount] = useState(0); // Renamed to avoid confusion with searchAttempt in outline
   const [lastCheckTime, setLastCheckTime] = useState(null);
+  const [error, setError] = useState(null); // Added for error messages
   const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -76,6 +77,7 @@ export default function AutoUpdateStatus() {
 
   const runManualCheck = async () => {
     setIsRunning(true);
+    setError(null); // Clear previous errors
     setLastCheckTime(new Date());
     let updatedCount = 0;
     let failedCount = 0;
@@ -86,161 +88,133 @@ export default function AutoUpdateStatus() {
       
       for (const match of matchesToCheck) {
         setCheckingMatch(match);
-        setSearchAttempt(0);
+        setSearchAttemptCount(0); // Reset for each new match
+
+        const matchDate = new Date(match.match_date);
+        const dateStr = matchDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         
-        try {
-          // STRATEGY 1: Primary search
-          setSearchAttempt(1);
-          let result = await searchForResult(match, 1);
-          
-          // STRATEGY 2: League-specific search
-          if (!result || !result.completed) {
-            setSearchAttempt(2);
-            result = await searchForResult(match, 2);
+        // Simplified search queries as per outline
+        const searches = [
+          `${match.home_team} vs ${match.away_team} final score ${dateStr}`,
+          `${match.home_team} ${match.away_team} ${match.league || match.sport} final score ${dateStr}`,
+          `${match.home_team} ${match.away_team} score ${dateStr}`,
+          `ESPN ${match.home_team} ${match.away_team} ${dateStr} final score`
+        ];
+
+        let result = null;
+        let foundFinalResult = false;
+        
+        for (let i = 0; i < searches.length; i++) {
+          const searchQuery = searches[i];
+          setSearchAttemptCount(i + 1); // Update current search attempt
+          console.log(`🔍 Search attempt ${i + 1} for ${match.home_team} vs ${match.away_team}: "${searchQuery}"`);
+
+          try {
+            const searchResult = await base44.integrations.Core.InvokeLLM({
+              prompt: `Search for: "${searchQuery}"
+
+You MUST find the FINAL SCORE for this completed game.
+
+Look on ESPN.com, CBS Sports, NFL.com, NBA.com, or official league websites.
+
+The game was: ${match.home_team} vs ${match.away_team} on ${dateStr}
+
+CRITICAL: You must see the word "FINAL" or "F" confirming the game is over.
+
+Extract:
+1. Final score (e.g., "37-10")
+2. Which team won
+3. Confirm the game status is FINAL (not live, not scheduled)
+
+If you cannot find definitive final score with "FINAL" status, return null for everything.
+
+Return the data in JSON format.`,
+              add_context_from_internet: true,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  game_status: { 
+                    type: "string",
+                    enum: ["final", "completed", "not_found", "postponed", "in_progress"],
+                    description: "Status of the game"
+                  },
+                  winner: { 
+                    type: ["string", "null"], // Can be null if game_status is not final/completed
+                    description: "Name of winning team (null if not found or not finished)"
+                  },
+                  home_score: { 
+                    type: ["number", "null"],
+                    description: "Home team final score"
+                  },
+                  away_score: { 
+                    type: ["number", "null"],
+                    description: "Away team final score"
+                  },
+                  source: {
+                    type: ["string", "null"],
+                    description: "Where the score was found (ESPN, CBS, etc.)"
+                  },
+                  confidence: {
+                    type: "string",
+                    enum: ["high", "medium", "low"],
+                    description: "Confidence in the result"
+                  }
+                },
+                required: ["game_status"]
+              }
+            });
+
+            console.log(`✅ Search result for attempt ${i + 1}:`, searchResult);
+
+            if ((searchResult.game_status === "final" || searchResult.game_status === "completed") && 
+                searchResult.winner && 
+                searchResult.home_score !== null && 
+                searchResult.away_score !== null) 
+            {
+              result = searchResult;
+              foundFinalResult = true;
+              break; // Found it! Stop trying more searches for this match.
+            }
+          } catch (searchError) {
+            console.error(`❌ Search attempt ${i + 1} for ${match.home_team} vs ${match.away_team} failed:`, searchError);
+            // Continue to the next search strategy
           }
-          
-          // STRATEGY 3: Official source search
-          if (!result || !result.completed) {
-            setSearchAttempt(3);
-            result = await searchForResult(match, 3);
-          }
-          
-          // STRATEGY 4: Latest scores search
-          if (!result || !result.completed) {
-            setSearchAttempt(4);
-            result = await searchForResult(match, 4);
-          }
-          
-          // STRATEGY 5: Alternate team names
-          if (!result || !result.completed) {
-            setSearchAttempt(5);
-            result = await searchForResult(match, 5);
-          }
-          
-          // STRATEGY 6: Google search on official sites
-          if (!result || !result.completed) {
-            setSearchAttempt(6);
-            result = await searchForResult(match, 6);
-          }
-          
-          if (result && result.completed) {
+        } // End of searches loop for a single match
+
+        if (foundFinalResult) {
             // Update the match with the result
             await base44.entities.Match.update(match.id, {
               actual_result: {
                 winner: result.winner,
-                final_score: result.final_score,
+                final_score: `${result.home_score}-${result.away_score}`,
                 completed: true,
-                last_checked: new Date().toISOString()
+                last_checked: new Date().toISOString(),
+                source: result.source || "LLM Search",
+                confidence: result.confidence || "medium"
               }
             });
             updatedCount++;
-          } else {
+        } else {
+            // No result or game still in progress after all search attempts
             failedCount++;
-          }
-        } catch (err) {
-          console.error(`Failed to check match ${match.id}:`, err);
-          failedCount++;
+            console.warn(`Could not find definitive final score for ${match.home_team} vs ${match.away_team}. Game status: ${result?.game_status || 'not_found'}`);
         }
-      }
+      } // End of matchesToCheck loop
       
       // Refetch both lists
-      await refetchPending();
-      await refetchRecent();
+      await queryClient.invalidateQueries({ queryKey: ['pendingMatches'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentlyUpdatedMatches'] });
       
       alert(`✅ Check Complete!\n\n✓ Updated: ${updatedCount} matches\n✗ Not found: ${failedCount} matches\n\n${failedCount > 0 ? 'Failed matches will be retried in the next hourly check.' : ''}`);
       
     } catch (err) {
       console.error("Manual check error:", err);
-      alert(`❌ Error during check: ${err.message}`);
+      setError(err.message || "An unexpected error occurred during the manual check.");
     }
     
     setIsRunning(false);
     setCheckingMatch(null);
-    setSearchAttempt(0);
-  };
-
-  const searchForResult = async (match, strategy) => {
-    const matchDate = match.match_date ? format(new Date(match.match_date), 'MMMM d, yyyy') : '';
-    let searchQuery = '';
-    
-    switch (strategy) {
-      case 1: // Primary search
-        searchQuery = `${match.home_team} vs ${match.away_team} final score ${matchDate}`;
-        break;
-      case 2: // League-specific
-        searchQuery = `${match.league || match.sport} ${match.home_team} ${match.away_team} game result ${matchDate}`;
-        break;
-      case 3: // Official source
-        searchQuery = `${match.home_team} ${match.away_team} ${matchDate} ESPN final score`;
-        break;
-      case 4: // Latest scores
-        searchQuery = `Latest ${match.sport} scores ${matchDate} ${match.home_team} ${match.away_team}`;
-        break;
-      case 5: // Alternate names
-        const homeCity = match.home_team.split(' ')[0];
-        const awayCity = match.away_team.split(' ')[0];
-        searchQuery = `${homeCity} vs ${awayCity} final score ${matchDate}`;
-        break;
-      case 6: // Google search on official sites
-        const sportSite = match.sport === 'Basketball' ? 'nba.com' : 
-                         match.sport === 'Football' ? 'nfl.com' :
-                         match.sport === 'Soccer' ? 'espnfc.com' :
-                         match.sport === 'Baseball' ? 'mlb.com' : 'espn.com';
-        searchQuery = `site:espn.com OR site:${sportSite} ${match.home_team} ${match.away_team} final ${matchDate}`;
-        break;
-      default:
-        return null;
-    }
-    
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for the FINAL SCORE of this game:
-
-${searchQuery}
-
-CRITICAL VERIFICATION:
-- Game status MUST say: FINAL, COMPLETED, FINISHED, or RESULT
-- DO NOT return results if game says: "Live", "In Progress", "Scheduled", "Upcoming"
-- DO NOT return results if game was postponed or cancelled
-- Verify the date matches: ${matchDate}
-- Get scores from official sources (ESPN, league website, etc.)
-
-If you find the final score, return it.
-If you CANNOT confidently verify the game is finished, return completed: false`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            completed: { 
-              type: "boolean",
-              description: "True ONLY if game is definitively finished (status shows FINAL/COMPLETED)"
-            },
-            winner: { 
-              type: ["string", "null"],
-              description: "Name of winning team, null if not completed"
-            },
-            final_score: { 
-              type: ["string", "null"],
-              description: "Format: home_score-away_score (e.g. 115-108), null if not completed"
-            },
-            game_status: {
-              type: "string",
-              description: "Actual game status found (e.g., FINAL, In Progress, Scheduled, Postponed)"
-            },
-            source: {
-              type: "string",
-              description: "Where the result was found (e.g., ESPN, NBA.com)"
-            }
-          },
-          required: ["completed", "game_status"]
-        }
-      });
-      
-      return result;
-    } catch (err) {
-      console.error(`Search strategy ${strategy} failed:`, err);
-      return null;
-    }
+    setSearchAttemptCount(0);
   };
 
   // Calculate next scheduled run (top of next hour)
@@ -329,7 +303,7 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-white mb-2">Manual Check</h3>
                 <p className="text-blue-100">
-                  Force an immediate check for game results (checks up to 5 games)
+                  Force an immediate check for game results (checks up to 5 games from the "ready to check" list).
                 </p>
                 {checkingMatch && (
                   <div className="mt-3 bg-white/10 rounded-lg p-3">
@@ -338,16 +312,21 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
                       <span className="font-semibold">Checking: {checkingMatch.home_team} vs {checkingMatch.away_team}</span>
                     </div>
                     <div className="text-xs text-blue-100">
-                      Search Strategy {searchAttempt}/6: {
-                        searchAttempt === 1 ? 'Primary search' :
-                        searchAttempt === 2 ? 'League-specific search' :
-                        searchAttempt === 3 ? 'Official source search' :
-                        searchAttempt === 4 ? 'Latest scores search' :
-                        searchAttempt === 5 ? 'Alternate team names' :
-                        searchAttempt === 6 ? 'Google search on official sites' : ''
+                      Search Strategy {searchAttemptCount}/4: {
+                        searchAttemptCount === 1 ? 'Team vs Team + final score + date' :
+                        searchAttemptCount === 2 ? 'Teams + League/Sport + final score + date' :
+                        searchAttemptCount === 3 ? 'Teams + score + date' :
+                        searchAttemptCount === 4 ? 'ESPN + Teams + date + final score' : ''
                       }
                     </div>
                   </div>
+                )}
+                {error && (
+                  <Alert variant="destructive" className="mt-4 bg-red-500/10 border-red-500/30">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
               </div>
               <Button
@@ -377,22 +356,20 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-400" />
-              Multi-Strategy Search System
+              Improved Multi-Strategy Search System
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <p className="text-slate-300 text-sm mb-4">
-                Our enhanced system uses 6 different search strategies to ensure maximum reliability:
+                Our enhanced system uses a refined set of search strategies leveraging advanced LLM capabilities:
               </p>
               <div className="space-y-2">
                 {[
-                  { step: 1, name: "Primary Search", desc: "Team vs Team + final score + date" },
-                  { step: 2, name: "League-Specific", desc: "League + teams + game result + date" },
-                  { step: 3, name: "Official Source", desc: "Teams + date + ESPN final score" },
-                  { step: 4, name: "Latest Scores", desc: "Latest sport scores + date, then filter" },
-                  { step: 5, name: "Alternate Names", desc: "City names + abbreviations" },
-                  { step: 6, name: "Google Search", desc: "Direct Google search on official sports sites (ESPN, NBA.com, NFL.com, MLB.com, etc.)" }
+                  { step: 1, name: "Primary Search", desc: "Team vs Team + final score + full date" },
+                  { step: 2, name: "Contextual Search", desc: "Teams + League/Sport + final score + full date" },
+                  { step: 3, name: "Concise Search", desc: "Teams + score + full date (broader terms)" },
+                  { step: 4, name: "Official Source Focus", desc: "ESPN + Teams + full date + final score (targeting reliable sources)" }
                 ].map((strategy) => (
                   <div key={strategy.step} className="flex items-start gap-3 p-3 bg-slate-700/30 rounded-lg">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -408,7 +385,7 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
               <Alert className="mt-4 bg-blue-500/10 border-blue-500/30">
                 <CheckCircle className="w-4 h-4 text-blue-400" />
                 <AlertDescription className="text-blue-200 text-sm ml-2">
-                  Each search verifies game status with keywords: FINAL, COMPLETED, FINISHED, RESULT before updating
+                  Each search uses LLM to strictly verify 'FINAL' status and extract scores from official sports sites like ESPN, CBS Sports, league websites, etc.
                 </AlertDescription>
               </Alert>
             </div>
@@ -441,6 +418,7 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
                         <Clock className="w-3 h-3 mr-1" />
                         Pending
                       </Badge>
+                      {/* Individual check button removed as the main button checks up to 5 */}
                     </div>
                   </div>
                 ))}
