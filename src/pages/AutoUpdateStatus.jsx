@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,19 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, CheckCircle, XCircle, Clock, AlertCircle, Shield, Trophy, TrendingUp } from "lucide-react";
+import { Clock, AlertCircle, Shield, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 export default function AutoUpdateStatus() {
-  const [isChecking, setIsChecking] = useState(false);
-  const [checkResults, setCheckResults] = useState(null);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [manualScore, setManualScore] = useState({ winner: "", final_score: "" });
-  const [availableSports, setAvailableSports] = useState([]);
   const queryClient = useQueryClient();
 
-  // Call ALL hooks before any conditional returns
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -41,7 +36,6 @@ export default function AutoUpdateStatus() {
     },
   });
 
-  // NOW we can do conditional rendering AFTER all hooks are called
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -64,7 +58,6 @@ export default function AutoUpdateStatus() {
     );
   }
 
-  // Get pending matches (games that should have finished but haven't been updated)
   const pendingMatches = allMatches.filter(match => {
     if (!match.match_date) return false;
     if (match.actual_result?.completed === true) return false;
@@ -75,298 +68,6 @@ export default function AutoUpdateStatus() {
     
     return matchDate < fourHoursAgo;
   });
-
-  // Fetch available sports from The Odds API
-  const checkAvailableSports = async (apiKey) => {
-    try {
-      const response = await fetch(
-        `https://api.the-odds-api.com/v4/sports/?apiKey=${apiKey}`,
-        { headers: { 'Accept': 'application/json' } }
-      );
-
-      if (response.ok) {
-        const sports = await response.json();
-        setAvailableSports(sports);
-        console.log("✅ Available sports from The Odds API:", sports);
-        return sports;
-      }
-    } catch (error) {
-      console.error("Failed to fetch available sports:", error);
-    }
-    return [];
-  };
-
-  const handleManualCheck = async () => {
-    setIsChecking(true);
-    setCheckResults(null);
-
-    try {
-      // Get API key from localStorage
-      const apiKey = localStorage.getItem('odds_api_key');
-      
-      if (!apiKey) {
-        alert("⚠️ Please set your Odds API key in Settings first!");
-        setIsChecking(false);
-        return;
-      }
-
-      // First, check what sports are available
-      const available = await checkAvailableSports(apiKey);
-
-      const results = {
-        checked: 0,
-        updated: 0,
-        notFound: 0,
-        errors: [],
-        details: []
-      };
-
-      // FIXED: Enhanced sport mapping with better fallback matching
-      const sportMapping = {
-        // Exact league name matches
-        'NBA': ['basketball_nba'],
-        'NFL': ['americanfootball_nfl'],
-        'Premier League': ['soccer_epl', 'soccer_england_epl'],
-        'MLB': ['baseball_mlb'],
-        'NHL': ['icehockey_nhl'],
-        'MLS': ['soccer_usa_mls'],
-        'Champions League': ['soccer_uefa_champs_league'],
-        'La Liga': ['soccer_spain_la_liga'],
-        'Bundesliga': ['soccer_germany_bundesliga'],
-        'Serie A': ['soccer_italy_serie_a'],
-        'Ligue 1': ['soccer_france_ligue_one'],
-        'College Football': ['americanfootball_ncaaf'],
-        'College Basketball': ['basketball_ncaab'],
-        
-        // IMPORTANT: Generic sport name fallbacks
-        'Basketball': ['basketball_nba', 'basketball_ncaab'],
-        'Football': ['americanfootball_nfl', 'americanfootball_ncaaf'],
-        'Soccer': ['soccer_epl', 'soccer_usa_mls', 'soccer_spain_la_liga', 'soccer_germany_bundesliga', 'soccer_italy_serie_a', 'soccer_france_ligue_one', 'soccer_uefa_champs_league'],
-        'Hockey': ['icehockey_nhl'],
-        'Baseball': ['baseball_mlb'],
-        'Ice Hockey': ['icehockey_nhl']
-      };
-
-      // Helper function to find the correct sport key
-      const findSportKey = (sportName) => {
-        console.log(`🔍 Finding sport key for: "${sportName}"`);
-        
-        // Try exact match first (case-insensitive)
-        for (const [key, values] of Object.entries(sportMapping)) {
-          if (key.toLowerCase() === sportName.toLowerCase()) {
-            console.log(`   ✅ Exact match found in mapping for "${key}"`);
-            // Return the first available and active one
-            for (const sportKey of values) {
-              const found = available.find(s => s.key === sportKey && s.active);
-              if (found) {
-                console.log(`   ✅ Found active sport: ${found.key} (${found.title})`);
-                return found.key;
-              }
-            }
-          }
-        }
-        
-        // Try partial match (contains)
-        for (const [key, values] of Object.entries(sportMapping)) {
-          if (sportName.toLowerCase().includes(key.toLowerCase()) || 
-              key.toLowerCase().includes(sportName.toLowerCase())) {
-            console.log(`   ⚠️ Partial match found in mapping for "${key}"`);
-            for (const sportKey of values) {
-              const found = available.find(s => s.key === sportKey && s.active);
-              if (found) {
-                console.log(`   ✅ Found active sport: ${found.key} (${found.title})`);
-                return found.key;
-              }
-            }
-          }
-        }
-        
-        // Last resort: try to construct a key from the sport name and check if it's active
-        const fallbackKey = sportName.toLowerCase().replace(/\s+/g, '_');
-        console.log(`   ⚠️ No mapping found, trying fallback constructed key: "${fallbackKey}"`);
-        const found = available.find(s => s.key === fallbackKey && s.active);
-        if (found) {
-          console.log(`   ✅ Fallback worked: ${found.key} (${found.title})`);
-          return found.key;
-        }
-        
-        console.log(`   ❌ No active API sport key found for "${sportName}"`);
-        return null;
-      };
-
-      // Process each pending match
-      for (const match of pendingMatches.slice(0, 10)) { // Limit to 10 to save API quota
-        results.checked++;
-        
-        try {
-          const sportKey = findSportKey(match.sport);
-          
-          if (!sportKey) {
-            results.errors.push(`${match.home_team} vs ${match.away_team}: Cannot map sport "${match.sport}" to API key.`);
-            results.notFound++;
-            results.details.push({
-              match: `${match.home_team} vs ${match.away_team}`,
-              status: 'sport_mapping_failed',
-              error: `Cannot map "${match.sport}"`
-            });
-            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay even for failed mappings
-            continue;
-          }
-          
-          console.log(`🔍 Checking match: ${match.home_team} vs ${match.away_team}`);
-          console.log(`   Sport: "${match.sport}" → API Key: "${sportKey}"`);
-
-          // FIXED: Try scores endpoint with correct parameters
-          // The Odds API scores endpoint: /v4/sports/{sport}/scores
-          // Parameters: apiKey (required), daysFrom (optional, default 3, max 3 for free tier)
-          const scoresUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/scores?apiKey=${apiKey}&daysFrom=3`; // Changed daysFrom to 3
-          
-          console.log(`   Fetching: ${scoresUrl.replace(apiKey, 'XXX')}`); // Log URL with masked API key
-          
-          const response = await fetch(scoresUrl, {
-            headers: { 'Accept': 'application/json' }
-          });
-
-          // Better error handling
-          if (!response.ok) {
-            const errorText = await response.text(); // Get error text
-            console.error(`   ❌ API Error ${response.status}:`, errorText);
-            
-            if (response.status === 401) {
-              alert("❌ Invalid API key. Please check your Odds API key in Settings.");
-              break; // Stop processing all matches
-            } else if (response.status === 422) { // Specific handling for 422
-              console.error(`   ❌ 422 Error: Sport "${sportKey}" may not support scores endpoint or games are too old`);
-              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport "${sportKey}" doesn't support score lookups or game is too old (>3 days)`);
-              results.notFound++;
-              results.details.push({
-                match: `${match.home_team} vs ${match.away_team}`,
-                status: 'scores_not_supported',
-                error: `API doesn't support historical scores for ${sportKey}`
-              });
-              await new Promise(resolve => setTimeout(resolve, 500));
-              continue; // Move to next match
-            } else if (response.status === 404) { // Specific handling for 404
-              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport "${sportKey}" not found`);
-              results.notFound++;
-              results.details.push({
-                match: `${match.home_team} vs ${match.away_team}`,
-                status: 'sport_not_found',
-                error: `Sport key "${sportKey}" not found`
-              });
-              await new Promise(resolve => setTimeout(resolve, 500));
-              continue; // Move to next match
-            } else if (response.status === 429) { // Specific handling for 429 rate limit
-              alert("❌ API rate limit exceeded. You've used all your monthly requests. Please wait or upgrade your API plan.");
-              break; // Stop processing all matches
-            }
-            
-            throw new Error(`API error: ${response.status} - ${errorText}`); // Throw generic error for others
-          }
-
-          const scores = await response.json();
-          console.log(`   Found ${scores.length} games for ${sportKey}`); // Updated log message
-          
-          // Log API quota usage
-          const remaining = response.headers.get('x-requests-remaining');
-          const used = response.headers.get('x-requests-used');
-          if (remaining) {
-            console.log(`   📊 API Quota: ${used} used, ${remaining} remaining`);
-          }
-          
-          // Find matching game with flexible matching
-          const matchingGame = scores.find(game => {
-            if (!game.completed) return false;
-            
-            // Normalize team names for better matching
-            const normalizeTeam = (name) => name.toLowerCase()
-              .replace(/\s+(fc|united|city|town|athletic|club)\s*$/i, '')
-              .replace(/\s+(ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|commanders|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|49ers|seahawks|buccaneers|falcons|panthers|vikings|lions)\s*$/i, '')
-              .replace(/\s+(bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks|nets|clippers|timberwolves|nuggets|cavaliers|pacers)\s*$/i, '')
-              .replace(/\s+(avalanche|hurricanes|bruins|penguins|blackhawks|red wings|maple leafs|canadiens|lightning|panthers|rangers|islanders|devils|flyers|capitals|blue jackets|predators|blues|wild|jets|flames|oilers|canucks|golden knights|kraken|sharks|ducks|kings|coyotes|stars)\s*$/i, '')
-              .replace(/[\W_]+/g, '')
-              .trim();
-            
-            const homeNorm = normalizeTeam(match.home_team);
-            const awayNorm = normalizeTeam(match.away_team);
-            const gameHomeNorm = normalizeTeam(game.home_team);
-            const gameAwayNorm = normalizeTeam(game.away_team);
-            
-            // Basic inclusion checks
-            const homeMatch = gameHomeNorm.includes(homeNorm) || homeNorm.includes(gameHomeNorm);
-            const awayMatch = gameAwayNorm.includes(awayNorm) || awayNorm.includes(gameAwayNorm);
-            
-            // Outline removes `reversedMatch` logic, so simplified to:
-            return homeMatch && awayMatch;
-          });
-
-          if (matchingGame && matchingGame.scores) {
-            // Extract scores
-            const homeScore = matchingGame.scores.find(s => s.name === matchingGame.home_team)?.score;
-            const awayScore = matchingGame.scores.find(s => s.name === matchingGame.away_team)?.score;
-            
-            if (homeScore !== undefined && awayScore !== undefined) {
-              // Determine winner
-              const winner = homeScore > awayScore ? matchingGame.home_team : matchingGame.away_team;
-              
-              console.log(`   ✅ Found result: ${homeScore}-${awayScore}, Winner: ${winner}`);
-              
-              // Update match
-              await base44.entities.Match.update(match.id, {
-                actual_result: {
-                  winner: winner,
-                  final_score: `${homeScore}-${awayScore}`,
-                  completed: true,
-                  last_checked: new Date().toISOString(),
-                  source: "The Odds API",
-                  api_sport_key: sportKey
-                }
-              });
-
-              results.updated++;
-              results.details.push({
-                match: `${match.home_team} vs ${match.away_team}`,
-                status: 'updated',
-                score: `${homeScore}-${awayScore}`,
-                winner: winner
-              });
-            } else {
-              console.log(`   ❌ Incomplete score data`); // Simplified log message
-              results.notFound++;
-              results.details.push({
-                match: `${match.home_team} vs ${match.away_team}`,
-                status: 'incomplete_score_data'
-              });
-            }
-          } else {
-            console.log(`   ❌ No matching completed game found in ${scores.length} results`); // Updated log message
-            results.notFound++;
-            results.details.push({
-              match: `${match.home_team} vs ${match.away_team}`,
-              status: 'not_found_in_results',
-              info: `Checked ${scores.length} games, none matched or completed` // Added info field
-            });
-          }
-
-          // Small delay to respect rate limits
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-        } catch (error) {
-          console.error(`Error checking match ${match.id}:`, error);
-          results.errors.push(`${match.home_team} vs ${match.away_team}: ${error.message}`);
-        }
-      }
-
-      setCheckResults(results);
-      queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
-
-    } catch (error) {
-      console.error("Manual check failed:", error);
-      alert(`Failed to check matches: ${error.message}`);
-    }
-
-    setIsChecking(false);
-  };
 
   const handleManualUpdate = (match) => {
     setSelectedMatchId(match.id);
@@ -399,7 +100,6 @@ export default function AutoUpdateStatus() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -407,158 +107,27 @@ export default function AutoUpdateStatus() {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 text-white" />
+              <Clock className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Auto-Update Status</h1>
-              <p className="text-slate-400">Monitor and manage automated match result updates</p>
+              <h1 className="text-3xl font-bold text-white">Pending Match Updates</h1>
+              <p className="text-slate-400">Manually update match results that need attention</p>
             </div>
           </div>
 
-          {/* Admin Badge */}
           <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
             <Shield className="w-4 h-4 mr-2" />
             Admin Only
           </Badge>
         </motion.div>
 
-        {/* API Key Warning */}
-        {!localStorage.getItem('odds_api_key') && (
-          <Alert className="mb-6 bg-amber-500/10 border-amber-500/50">
-            <AlertCircle className="w-4 h-4 text-amber-400" />
-            <AlertDescription className="text-amber-300">
-              <strong>API Key Required:</strong> Please set your Odds API key in{" "}
-              <a href="/Settings" className="underline hover:text-amber-200">Settings</a> to use automatic updates.
-            </AlertDescription>
-          </Alert>
-        )}
+        <Alert className="mb-6 bg-blue-500/10 border-blue-500/50">
+          <AlertCircle className="w-4 h-4 text-blue-400" />
+          <AlertDescription className="text-blue-300">
+            <strong>💡 Tip:</strong> Use the Google Search tool in the AI Performance tab to quickly find match results, then manually update them here.
+          </AlertDescription>
+        </Alert>
 
-        {/* Available Sports Info */}
-        {availableSports.length > 0 && (
-          <Alert className="mb-6 bg-blue-500/10 border-blue-500/50">
-            <AlertCircle className="w-4 h-4 text-blue-400" />
-            <AlertDescription className="text-blue-300">
-              <strong>Currently Active Sports on API:</strong>{" "}
-              {availableSports.filter(s => s.active).map(s => s.title).join(', ') || 'None (off-season for many leagues or API issues)'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Manual Check Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="mb-6 bg-slate-800/90 border-slate-700">
-            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-              <CardTitle className="flex items-center gap-3">
-                <Trophy className="w-6 h-6" />
-                Manual Result Check (Using The Odds API)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <p className="text-slate-300 mb-2">
-                    Check pending matches for final scores using The Odds API
-                  </p>
-                  <p className="text-sm text-slate-400">
-                    {pendingMatches.length} pending {pendingMatches.length === 1 ? 'match' : 'matches'} (will check up to 10)
-                  </p>
-                </div>
-                <Button
-                  onClick={handleManualCheck}
-                  disabled={isChecking || pendingMatches.length === 0 || !localStorage.getItem('odds_api_key')}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                >
-                  {isChecking ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="mr-2"
-                      >
-                        <RefreshCw className="w-5 h-5" />
-                      </motion.div>
-                      Checking...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-5 h-5 mr-2" />
-                      Run Manual Check
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Check Results */}
-              {checkResults && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
-                >
-                  <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-green-400" />
-                    Check Results
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
-                      <div className="text-sm text-slate-400 mb-1">Checked</div>
-                      <div className="text-2xl font-bold text-white">{checkResults.checked}</div>
-                    </div>
-                    <div className="bg-green-500/10 rounded-lg p-3 border border-green-500/30">
-                      <div className="text-sm text-green-400 mb-1">Updated</div>
-                      <div className="text-2xl font-bold text-green-400">{checkResults.updated}</div>
-                    </div>
-                    <div className="bg-yellow-500/10 rounded-lg p-3 border border-yellow-500/30">
-                      <div className="text-sm text-yellow-400 mb-1">Not Found</div>
-                      <div className="text-2xl font-bold text-yellow-400">{checkResults.notFound}</div>
-                    </div>
-                  </div>
-
-                  {checkResults.details.length > 0 && (
-                    <div className="space-y-2">
-                      {checkResults.details.map((detail, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-slate-800/50 rounded p-2 text-sm">
-                          <span className="text-slate-300">{detail.match}</span>
-                          {detail.status === 'updated' ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-green-400 font-semibold">{detail.score}</span>
-                              <CheckCircle className="w-4 h-4 text-green-400" />
-                            </div>
-                          ) : (
-                            <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
-                              {detail.status === 'sport_mapping_failed' ? 'Mapping Failed' :
-                               detail.status === 'sport_not_available' ? 'Sport Unavailable' :
-                               detail.status === 'scores_not_supported' ? 'Scores API Failed' : // New status
-                               detail.status === 'sport_not_found' ? 'Sport Not Found' : // New status
-                               detail.status === 'incomplete_score_data' ? 'Incomplete Score' :
-                               'Not Found'}
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {checkResults.errors.length > 0 && (
-                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded">
-                      <div className="text-red-400 font-semibold mb-2">Errors:</div>
-                      {checkResults.errors.map((error, idx) => (
-                        <div key={idx} className="text-sm text-red-300">{error}</div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Pending Matches List */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -622,7 +191,6 @@ export default function AutoUpdateStatus() {
                         </Button>
                       </div>
 
-                      {/* Manual Update Form */}
                       {selectedMatchId === match.id && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
