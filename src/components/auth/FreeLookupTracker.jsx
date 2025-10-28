@@ -96,9 +96,10 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0, y: 50 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          exit={{ scale: 0.8, opacity: 0, y: 50 }}
+          transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-lg"
         >
@@ -153,13 +154,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
               </div>
 
-              <Button
-                onClick={handleSignup}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-base sm:text-xl py-6 sm:py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
-              >
-                <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
-                Sign Up Free - Get VIP Lifetime Access
-              </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={handleSignup}
+                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-base sm:text-xl py-6 sm:py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
+                >
+                  <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  Sign Up Free - Get VIP Lifetime Access
+                </Button>
+              </motion.div>
 
               <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6 px-4">
                 Already have an account? Click above to sign in

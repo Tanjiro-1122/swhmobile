@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +37,7 @@ export default function MatchCard({ match, onDelete, index }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
+      whileHover={{ y: -4 }}
     >
       <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 border-2 border-slate-700 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4 sm:p-6 overflow-hidden">
@@ -44,13 +46,25 @@ export default function MatchCard({ match, onDelete, index }) {
           <div className="relative flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
             <div className="space-y-2 w-full sm:w-auto">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-xs sm:text-sm">
-                  {match.sport}
-                </Badge>
-                {match.league && (
-                  <Badge className="bg-white/10 text-white border-white/20 backdrop-blur-sm text-xs sm:text-sm">
-                    {match.league}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                >
+                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-xs sm:text-sm">
+                    {match.sport}
                   </Badge>
+                </motion.div>
+                {match.league && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                  >
+                    <Badge className="bg-white/10 text-white border-white/20 backdrop-blur-sm text-xs sm:text-sm">
+                      {match.league}
+                    </Badge>
+                  </motion.div>
                 )}
               </div>
               {formattedDate && (
@@ -68,19 +82,27 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
             <div className="flex gap-2 w-full sm:w-auto justify-end">
               {match.confidence_level && (
-                <Badge className={`${confidenceColors[match.confidence_level]} border backdrop-blur-sm flex items-center gap-1 font-bold text-xs sm:text-sm`}>
-                  <Shield className="w-3 h-3" />
-                  {match.confidence_level.toUpperCase()}
-                </Badge>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                >
+                  <Badge className={`${confidenceColors[match.confidence_level]} border backdrop-blur-sm flex items-center gap-1 font-bold text-xs sm:text-sm`}>
+                    <Shield className="w-3 h-3" />
+                    {match.confidence_level.toUpperCase()}
+                  </Badge>
+                </motion.div>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(match.id)}
-                className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm h-8 w-8 sm:h-10 sm:w-10"
-              >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(match.id)}
+                  className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm h-8 w-8 sm:h-10 sm:w-10"
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
+              </motion.div>
             </div>
           </div>
 
@@ -281,23 +303,25 @@ export default function MatchCard({ match, onDelete, index }) {
           )}
 
           {(match.key_players?.length > 0 || match.betting_markets) && (
-            <Button
-              variant="outline"
-              onClick={() => setExpanded(!expanded)}
-              className="w-full mt-4 flex items-center justify-center gap-2 text-sm sm:text-base"
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp className="w-4 h-4" />
-                  Hide Detailed Stats
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" />
-                  Show Player Stats & More Markets
-                </>
-              )}
-            </Button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="outline"
+                onClick={() => setExpanded(!expanded)}
+                className="w-full mt-4 flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    Hide Detailed Stats
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    Show Player Stats & More Markets
+                  </>
+                )}
+              </Button>
+            </motion.div>
           )}
 
           <AnimatePresence>

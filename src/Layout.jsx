@@ -34,6 +34,7 @@ import ThemeToggle from "./components/mobile/ThemeToggle";
 import ServiceWorkerSetup from "./components/mobile/ServiceWorkerSetup";
 import OfflineIndicator from "./components/mobile/OfflineIndicator";
 import OfflineCache from "./components/mobile/OfflineCache";
+import FeedbackButton from "./components/feedback/FeedbackButton";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -321,6 +322,9 @@ export default function Layout({ children, currentPageName }) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Feedback Button */}
+      <FeedbackButton />
 
       {/* Install prompt */}
       <InstallPrompt />

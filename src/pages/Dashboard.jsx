@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Sparkles, Zap, Target } from "lucide-react";
+import { Trophy, Sparkles, Zap, Target, MessageSquare } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import MatchCard from "../components/sports/MatchCard";
 import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
@@ -404,18 +406,44 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto px-6 py-12 relative">
+          <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="absolute top-6 right-6 lg:right-12 z-10"
+          >
+              <Button 
+                  variant="outline" 
+                  className="text-white bg-white/20 hover:bg-white/30 border-white/50 transition-all duration-300 flex items-center gap-2"
+                  onClick={() => alert("Thank you for your feedback! This feature is coming soon!")}
+              >
+                  <MessageSquare className="w-4 h-4" />
+                  Feedback
+              </Button>
+          </motion.div>
+
           {/* Today's Best Bets Section */}
-          <div className="mb-12">
+          <motion.div 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <TodaysBestBets 
               onLookupUsed={recordLookup}
               canLookup={canLookup}
               onLimitReached={() => setShowLimitModal(true)}
             />
-          </div>
+          </motion.div>
 
           {/* Search Section */}
-          <div className="mb-12">
+          <motion.div 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <div className="bg-white/90 backdrop-blur-xl border-4 border-white rounded-3xl p-8 shadow-2xl">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
@@ -428,12 +456,18 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
               </div>
               <SearchBar onSearch={handleSearch} isSearching={isSearching} />
             </div>
-          </div>
+          </motion.div>
 
           {error && (
-            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-              <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
-            </Alert>
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+            >
+                <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
+                    <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
+                </Alert>
+            </motion.div>
           )}
 
           {isSearching && (
@@ -461,40 +495,62 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             <>
               {matches.length > 0 ? (
                 <>
-                  <div className="flex items-center justify-between mb-8">
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.6 }}
+                      className="flex items-center justify-between mb-8"
+                  >
                     <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                       <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
                       Your Match Predictions
                       <span className="text-white/70">({matches.length})</span>
                     </h2>
-                  </div>
+                  </motion.div>
                   <div className="grid lg:grid-cols-2 gap-8">
                     {matches.map((match, index) => (
-                      <MatchCard
+                      <motion.div
                         key={match.id}
-                        match={match}
-                        onDelete={deleteMutation.mutate}
-                        index={index}
-                      />
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 * index + 0.8 }}
+                      >
+                        <MatchCard
+                          match={match}
+                          onDelete={deleteMutation.mutate}
+                          index={index}
+                        />
+                      </motion.div>
                     ))}
                   </div>
                 </>
               ) : (
-                <EmptyState />
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                >
+                    <EmptyState />
+                </motion.div>
               )}
             </>
           )}
         </div>
 
       {/* Footer Disclaimer */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
+      <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1 }}
+          className="max-w-7xl mx-auto px-6 pb-12"
+      >
         <div className="bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-6">
           <p className="text-sm text-white">
             <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
             Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
