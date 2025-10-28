@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, Crown } from "lucide-react";
+import { Lock, UserPlus, Sparkles, Zap, Crown, Check } from "lucide-react"; // Added Check import
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -79,6 +79,10 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
+  const handleViewPricing = () => {
+    window.location.href = '/Pricing';
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -102,7 +106,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
                 <div>
                   <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-lg text-emerald-100">Sign up to continue analyzing</p>
+                  <p className="text-lg text-emerald-100">Upgrade to continue analyzing</p>
                 </div>
               </div>
             </CardHeader>
@@ -119,35 +123,51 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </p>
               </div>
 
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 text-center">
+                  <div className="text-3xl font-black text-purple-600 mb-1">$19.99</div>
+                  <div className="text-sm font-semibold text-gray-700">Premium Monthly</div>
+                  <div className="text-xs text-gray-500 mt-1">Cancel anytime</div>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Player Stats</span>
+                <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-300 text-center relative">
+                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    SAVE $90
+                  </div>
+                  <div className="text-3xl font-black text-yellow-600 mb-1">$149.99</div>
+                  <div className="text-sm font-semibold text-gray-700">Legacy Annual</div>
+                  <div className="text-xs text-gray-500 mt-1">Billed yearly</div>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
+              </div>
+
+              <div className="space-y-2 mb-6">
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>Unlimited match predictions</span>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Crown className="w-6 h-6 text-yellow-600 flex-shrink-0" />
-                  <span className="text-base font-semibold text-gray-800">Premium Member Badge</span>
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>Live odds comparison</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>Today's Best Bets AI picks</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>Parlay Builder & ROI Tracker</span>
                 </div>
               </div>
 
               <Button
-                onClick={handleSignup}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
+                onClick={handleViewPricing}
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 mb-3"
               >
-                <UserPlus className="w-6 h-6 mr-3" />
-                Sign Up Free - Get Premium Access
+                <Crown className="w-6 h-6 mr-3" />
+                View Pricing & Subscribe
               </Button>
 
-              <p className="text-center text-sm text-gray-500 mt-6">
-                Already have an account? Click above to sign in
+              <p className="text-center text-sm text-gray-500">
+                ✅ 14-day money-back guarantee • Cancel anytime
               </p>
             </CardContent>
           </Card>

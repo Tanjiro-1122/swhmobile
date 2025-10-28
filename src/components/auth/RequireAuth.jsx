@@ -28,6 +28,10 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
+  const handleViewPricing = () => {
+    window.location.href = '/Pricing';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
@@ -83,24 +87,34 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-300">
-                  <Crown className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-300">
+                  <Crown className="w-6 h-6 text-orange-600 flex-shrink-0" />
                   <div>
                     <div className="font-bold text-gray-900">Upgrade to Premium</div>
-                    <div className="text-sm text-gray-600">Unlimited access & advanced features</div>
+                    <div className="text-sm text-gray-600">$19.99/month or $149.99/year</div>
                   </div>
                 </div>
               </div>
 
-              <Button
-                onClick={handleLogin}
-                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg py-6 font-bold shadow-lg"
-              >
-                Sign In / Sign Up Free
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={handleLogin}
+                  className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg py-6 font-bold shadow-lg"
+                >
+                  Sign In / Sign Up Free
+                </Button>
+
+                <Button
+                  onClick={handleViewPricing}
+                  variant="outline"
+                  className="w-full border-2 border-purple-300 text-purple-700 hover:bg-purple-50 text-base py-5 font-semibold"
+                >
+                  View Pricing Plans
+                </Button>
+              </div>
 
               <p className="text-center text-sm text-gray-500 mt-6">
-                🔒 Secure authentication • No credit card required
+                🔒 Secure authentication • No credit card required for free tier
               </p>
             </CardContent>
           </Card>

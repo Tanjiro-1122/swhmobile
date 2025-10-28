@@ -21,7 +21,8 @@ import {
   Bell,
   MessageSquare,
   Trophy,
-  LogIn
+  LogIn,
+  Crown // Added Crown icon for Pricing page
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -148,6 +149,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
     { name: "AI Performance", icon: Trophy, page: "AIPerformance" },
+    { name: "Pricing", icon: Crown, page: "Pricing" }, // Added Pricing page
     { name: "Alerts", icon: Bell, page: "Alerts" },
     { name: "Parlay Builder", icon: Shield, page: "ParlayBuilder" },
     { name: "Betting Calculator", icon: Calculator, page: "BettingCalculator" },
