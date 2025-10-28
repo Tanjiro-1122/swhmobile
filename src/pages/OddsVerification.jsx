@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, XCircle, AlertTriangle, Search, Shield } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Search, Shield, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ODDS_API_KEY = "4961807ff18b92da83549a2e55ab8f64";
@@ -45,7 +46,7 @@ export default function OddsVerification() {
 
 CURRENT DATE/TIME: ${new Date().toLocaleString()}
 
-I have odds from The Odds API. Please verify these against ACTUAL current odds from DraftKings, FanDuel, and BetMGM websites.
+I have odds from The Odds API. Please verify these against ACTUAL current odds from DraftKings.com, FanDuel.com, and BetMGM.com websites.
 
 GAMES TO VERIFY:
 ${gamesToVerify.map((game, idx) => `
