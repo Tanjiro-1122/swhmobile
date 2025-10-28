@@ -15,6 +15,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
         const authenticated = await base44.auth.isAuthenticated();
         setIsAuthenticated(authenticated);
       } catch (error) {
+        console.error("Auth check error:", error);
         setIsAuthenticated(false);
       }
       setIsLoading(false);
@@ -28,13 +29,13 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 relative">
             <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-pulse" />
             <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
           </div>
-          <p className="text-gray-600">Checking authentication...</p>
+          <p className="text-gray-700 font-semibold text-lg">Checking authentication...</p>
         </div>
       </div>
     );

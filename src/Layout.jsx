@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -33,21 +32,18 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check authentication status
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
     };
     checkAuth();
 
-    // Load dark mode preference
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     setDarkMode(savedDarkMode);
     if (savedDarkMode) {
       document.documentElement.classList.add('dark');
     }
 
-    // Add mobile optimization meta tags directly to document head
     const viewport = document.querySelector('meta[name="viewport"]');
     if (!viewport) {
       const meta = document.createElement('meta');
@@ -64,7 +60,6 @@ export default function Layout({ children, currentPageName }) {
       document.head.appendChild(meta);
     }
 
-    // Load web2application.com scripts for mobile app conversion
     const jqueryScript = document.createElement("script");
     jqueryScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
     jqueryScript.async = true;
@@ -123,13 +118,21 @@ export default function Layout({ children, currentPageName }) {
 
   const handleLogout = async () => {
     try {
+      // Clear all local storage
+      localStorage.clear();
+      
+      // Call logout API
       await base44.auth.logout();
+      
+      // Update state
       setIsAuthenticated(false);
-      // Redirect to Dashboard after logout
+      
+      // Force reload to Dashboard
       window.location.href = createPageUrl("Dashboard");
     } catch (error) {
       console.error("Logout error:", error);
       // Force redirect even if there's an error
+      localStorage.clear();
       window.location.href = createPageUrl("Dashboard");
     }
   };
@@ -226,7 +229,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Dark Mode Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -268,7 +270,7 @@ export default function Layout({ children, currentPageName }) {
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10"
                   title="Log out"
                 >
                   <LogOut className="w-5 h-5" />
