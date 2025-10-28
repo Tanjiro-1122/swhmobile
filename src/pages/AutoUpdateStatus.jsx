@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, AlertCircle, Shield, CheckCircle, Search, Save, X } from "lucide-react";
+import { Clock, AlertCircle, Shield, CheckCircle, Search, Save, X, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -16,6 +15,7 @@ export default function AutoUpdateStatus() {
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [manualScore, setManualScore] = useState({ winner: "", final_score: "" });
   const [searchQuery, setSearchQuery] = useState("");
+  const [debugInfo, setDebugInfo] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -31,31 +31,36 @@ export default function AutoUpdateStatus() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      console.log("🔄 Attempting to update match:", { id, data });
+      setDebugInfo({ step: 'Starting update...', data: data });
+      
       try {
+        setDebugInfo({ step: 'Calling API...', matchId: id, data: data });
         const result = await base44.entities.Match.update(id, data);
-        console.log("✅ Update successful:", result);
+        setDebugInfo({ step: 'Success!', result: result });
         return result;
       } catch (error) {
-        console.error("❌ Update failed:", error);
-        console.error("Error details:", {
-          message: error.message,
-          stack: error.stack,
-          response: error.response
+        setDebugInfo({ 
+          step: 'ERROR', 
+          error: error.message,
+          errorType: error.constructor.name,
+          fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
         });
         throw error;
       }
     },
-    onSuccess: (data) => {
-      console.log("✅ Mutation succeeded, invalidating queries");
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
       setSelectedMatchId(null);
       setManualScore({ winner: "", final_score: "" });
-      alert("✅ Match result updated successfully!");
+      setDebugInfo({ step: 'Complete!', message: 'Match updated successfully' });
+      
+      setTimeout(() => {
+        alert("✅ Match result updated successfully!");
+        setDebugInfo(null);
+      }, 1000);
     },
     onError: (error) => {
-      console.error("❌ Mutation error:", error);
-      alert(`❌ Failed to update: ${error.message || 'Unknown error. Check console for details.'}`);
+      // Error already shown in debugInfo
     }
   });
 
@@ -93,10 +98,8 @@ export default function AutoUpdateStatus() {
   });
 
   const handleManualUpdate = (match) => {
-    console.log("📝 Opening manual update for match:", match);
-    console.log("   Match ID:", match.id);
-    console.log("   Teams:", match.home_team, "vs", match.away_team);
     setSelectedMatchId(match.id);
+    setDebugInfo(null);
     setManualScore({
       winner: match.actual_result?.winner || "",
       final_score: match.actual_result?.final_score || ""
@@ -105,19 +108,15 @@ export default function AutoUpdateStatus() {
 
   const submitManualUpdate = (e) => {
     e.preventDefault();
-    
-    console.log("📤 Submitting manual update:");
-    console.log("   Match ID:", selectedMatchId);
-    console.log("   Winner:", manualScore.winner);
-    console.log("   Score:", manualScore.final_score);
+    setDebugInfo({ step: 'Validating...', winner: manualScore.winner, score: manualScore.final_score });
     
     if (!manualScore.winner || !manualScore.final_score) {
-      alert("⚠️ Please fill in both winner and final score");
+      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Please fill in both fields' });
       return;
     }
 
     if (!manualScore.final_score.includes('-')) {
-      alert("⚠️ Please use format like '37-10' for the score");
+      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Score must be in format: 122-116' });
       return;
     }
 
@@ -130,8 +129,6 @@ export default function AutoUpdateStatus() {
         source: "Manual Entry"
       }
     };
-
-    console.log("📦 Update payload:", updateData);
 
     updateMutation.mutate({
       id: selectedMatchId,
@@ -176,6 +173,25 @@ export default function AutoUpdateStatus() {
           </Badge>
         </motion.div>
 
+        {/* Debug Info Display */}
+        {debugInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <Alert className={debugInfo.step === 'ERROR' || debugInfo.step === 'VALIDATION ERROR' ? 'bg-red-500/10 border-red-500/50' : 'bg-blue-500/10 border-blue-500/50'}>
+              <AlertTriangle className="w-4 h-4" />
+              <AlertDescription>
+                <div className="font-bold mb-2">{debugInfo.step}</div>
+                <pre className="text-xs bg-slate-900 p-2 rounded overflow-auto max-h-64">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+
         {/* Google Search Tool */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -205,7 +221,7 @@ export default function AutoUpdateStatus() {
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
                   <Search className="w-4 h-4 mr-2" />
-                  Search Google
+                  Search
                 </Button>
               </div>
               <p className="text-xs text-slate-500 mt-2">
@@ -215,6 +231,7 @@ export default function AutoUpdateStatus() {
           </Card>
         </motion.div>
 
+        {/* Pending Matches */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,9 +264,9 @@ export default function AutoUpdateStatus() {
                       transition={{ delay: index * 0.05 }}
                       className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
                     >
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex flex-col gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant="secondary">{match.sport}</Badge>
                             {match.league && <Badge variant="outline">{match.league}</Badge>}
                           </div>
@@ -262,20 +279,12 @@ export default function AutoUpdateStatus() {
                               {format(new Date(match.match_date), "MMM d, yyyy 'at' HH:mm")}
                             </div>
                           )}
-                          {match.actual_result?.last_checked && (
-                            <div className="text-xs text-slate-500 mt-1">
-                              Last checked: {format(new Date(match.actual_result.last_checked), "MMM d, HH:mm")}
-                            </div>
-                          )}
-                          <div className="text-xs text-slate-600 mt-1">
-                            ID: {match.id}
-                          </div>
                         </div>
                         <Button
                           onClick={() => handleManualUpdate(match)}
                           variant="outline"
                           size="sm"
-                          className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                          className="border-slate-600 text-slate-300 hover:bg-slate-700 w-full"
                         >
                           Manual Update
                         </Button>
@@ -302,7 +311,6 @@ export default function AutoUpdateStatus() {
                                 className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
                                 required
                               />
-                              <p className="text-xs text-slate-500 mt-1">💡 Use the exact team name from the match</p>
                             </div>
                             <div>
                               <Label className="text-slate-300 mb-2 block">Final Score</Label>
@@ -313,7 +321,6 @@ export default function AutoUpdateStatus() {
                                 className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
                                 required
                               />
-                              <p className="text-xs text-slate-500 mt-1">💡 Format: [winner score]-[loser score]</p>
                             </div>
                             <div className="flex gap-2">
                               <Button
@@ -329,16 +336,16 @@ export default function AutoUpdateStatus() {
                                 ) : (
                                   <>
                                     <Save className="w-4 h-4 mr-2" />
-                                    Save Result
+                                    Save
                                   </>
                                 )}
                               </Button>
                               <Button
                                 type="button"
                                 onClick={() => {
-                                  console.log("❌ Cancelled update");
                                   setSelectedMatchId(null);
                                   setManualScore({ winner: "", final_score: "" });
+                                  setDebugInfo(null);
                                 }}
                                 variant="outline"
                                 className="border-slate-600"
