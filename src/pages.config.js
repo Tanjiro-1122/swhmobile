@@ -13,7 +13,6 @@ import LearningCenter from './pages/LearningCenter';
 import BankrollManager from './pages/BankrollManager';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
-import AIPerformance from './pages/AIPerformance';
 import Pricing from './pages/Pricing';
 import PowerUser from './pages/PowerUser';
 import Layout from './Layout.jsx';
@@ -35,7 +34,6 @@ export const PAGES = {
     "BankrollManager": BankrollManager,
     "PrivacyPolicy": PrivacyPolicy,
     "TermsOfService": TermsOfService,
-    "AIPerformance": AIPerformance,
     "Pricing": Pricing,
     "PowerUser": PowerUser,
 }

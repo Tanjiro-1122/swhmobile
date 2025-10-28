@@ -152,10 +152,9 @@ export default function Layout({ children, currentPageName }) {
     { name: "Player Stats", icon: User, page: "PlayerStats" },
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
-    { name: "AI Performance", icon: Trophy, page: "AIPerformance" },
-    { name: "Pricing", icon: Crown, page: "Pricing" }, // Added Pricing page
+    { name: "Pricing", icon: Crown, page: "Pricing" },
     { name: "Alerts", icon: Bell, page: "Alerts" },
-    { name: "Power User", icon: Zap, page: "PowerUser" }, // Added Power User page
+    { name: "Power User", icon: Zap, page: "PowerUser" },
     { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
     { name: "Community", icon: MessageSquare, page: "Community" },
     { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
