@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -42,9 +43,11 @@ export default function Pricing() {
     }
 
     if (tier === 'vip_lifetime') {
-      window.location.href = 'https://buy.stripe.com/7sYcN72RD0rC1VI2hE8N202';
-    } else if (tier === 'premium_monthly') {
+      // VIP Lifetime - $149.99 one-time
       window.location.href = 'https://buy.stripe.com/8x2bJ3ak5a2caseaOa8N203';
+    } else if (tier === 'premium_monthly') {
+      // Premium Monthly - $29.99/month recurring
+      window.location.href = 'https://buy.stripe.com/4gM14p2RD6Q0dEqaOa8N204';
     }
   };
 

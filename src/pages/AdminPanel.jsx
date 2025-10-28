@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -12,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
+import StripeWebhookGuide from "../components/admin/StripeWebhookGuide";
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +63,7 @@ function AdminPanelContent() {
   // Check if current user is admin
   if (currentUser?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center p-6">
         <Alert variant="destructive" className="max-w-md">
           <AlertDescription>
             Access Denied. Admin privileges required.
@@ -146,12 +148,17 @@ function AdminPanelContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Admin Panel</h1>
           <p className="text-slate-400">Manage users, VIP memberships, and match results</p>
+        </div>
+
+        {/* Add Webhook Guide at the top */}
+        <div className="mb-8">
+          <StripeWebhookGuide />
         </div>
 
         {/* Stats Overview */}

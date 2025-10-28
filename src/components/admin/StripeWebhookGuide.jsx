@@ -1,153 +1,151 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle, Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CheckCircle, Copy, Webhook, AlertCircle, ExternalLink } from "lucide-react";
 
 export default function StripeWebhookGuide() {
-  const webhookURL = "YOUR_BASE44_WEBHOOK_URL"; // Replace with actual webhook URL when available
+  const [copied, setCopied] = useState(false);
+
+  const webhookUrl = `${window.location.origin}/api/stripe-webhook`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <Card className="border-2 border-blue-200 bg-blue-50">
-      <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <CardTitle className="flex items-center gap-2">
-          <AlertCircle className="w-6 h-6" />
-          Stripe Webhook Setup Required
+    <Card className="border-2 border-purple-300 bg-purple-50">
+      <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+        <CardTitle className="flex items-center gap-3">
+          <Webhook className="w-6 h-6" />
+          Stripe Webhook Setup (Required for Auto-Upgrades)
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         <Alert className="bg-yellow-50 border-yellow-300">
           <AlertCircle className="w-5 h-5 text-yellow-600" />
           <AlertDescription className="text-yellow-800 ml-2">
-            <strong>Important:</strong> To automatically upgrade users after payment, you must set up Stripe webhooks. 
-            Follow the steps below.
+            <strong>⚠️ Important:</strong> Without webhooks, users won't automatically get upgraded after payment. You'll have to upgrade them manually in the Admin Panel.
           </AlertDescription>
         </Alert>
 
-        <div>
-          <h3 className="font-bold text-gray-900 mb-3 text-lg">📋 Setup Instructions (5 minutes):</h3>
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-gray-900">Why You Need Webhooks:</h3>
+          <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <li>✅ Automatically upgrade users from Free → VIP/Premium after payment</li>
+            <li>✅ Handle failed payments and downgrade users</li>
+            <li>✅ Process refunds automatically</li>
+            <li>✅ Track subscription cancellations</li>
+          </ul>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+          <h3 className="font-bold text-gray-900 mb-3">📋 Setup Steps:</h3>
           
           <div className="space-y-4">
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-blue-500">Step 1</Badge>
-                <span className="font-bold text-gray-900">Go to Stripe Webhooks Page</span>
+                <Badge className="bg-purple-600 text-white">Step 1</Badge>
+                <span className="font-semibold text-gray-900">Go to Stripe Dashboard</span>
               </div>
-              <p className="text-gray-700 mb-2">
-                Visit: <a href="https://dashboard.stripe.com/webhooks" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                  https://dashboard.stripe.com/webhooks
-                </a>
-              </p>
-              <Button
-                onClick={() => window.open('https://dashboard.stripe.com/webhooks', '_blank')}
-                variant="outline"
-                size="sm"
+              <a
+                href="https://dashboard.stripe.com/webhooks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 underline"
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
                 Open Stripe Webhooks
-              </Button>
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-blue-500">Step 2</Badge>
-                <span className="font-bold text-gray-900">Click "Add Endpoint"</span>
+                <Badge className="bg-purple-600 text-white">Step 2</Badge>
+                <span className="font-semibold text-gray-900">Click "Add endpoint"</span>
               </div>
-              <p className="text-gray-700">
-                Click the blue "Add endpoint" button in the top right corner.
-              </p>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-blue-500">Step 3</Badge>
-                <span className="font-bold text-gray-900">Add Webhook URL</span>
+                <Badge className="bg-purple-600 text-white">Step 3</Badge>
+                <span className="font-semibold text-gray-900">Paste this webhook URL:</span>
               </div>
-              <p className="text-gray-700 mb-2">
-                In the "Endpoint URL" field, paste this URL:
-              </p>
-              <div className="bg-gray-100 p-3 rounded border border-gray-300 flex items-center justify-between">
-                <code className="text-sm text-gray-800">{webhookURL}</code>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-gray-100 px-3 py-2 rounded border border-gray-300 text-sm font-mono text-gray-800 break-all">
+                  {webhookUrl}
+                </code>
                 <Button
-                  onClick={() => copyToClipboard(webhookURL)}
-                  variant="ghost"
+                  onClick={() => copyToClipboard(webhookUrl)}
                   size="sm"
+                  variant="outline"
+                  className="flex-shrink-0"
                 >
-                  <Copy className="w-4 h-4" />
+                  {copied ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                 </Button>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                ⚠️ If you don't have this URL yet, contact base44 support to get your webhook endpoint
-              </p>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-blue-500">Step 4</Badge>
-                <span className="font-bold text-gray-900">Select Events to Listen</span>
+                <Badge className="bg-purple-600 text-white">Step 4</Badge>
+                <span className="font-semibold text-gray-900">Select these events:</span>
               </div>
-              <p className="text-gray-700 mb-2">
-                Click "Select events" and choose these two events:
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-                <li><code className="bg-gray-100 px-2 py-0.5 rounded text-sm">checkout.session.completed</code></li>
-                <li><code className="bg-gray-100 px-2 py-0.5 rounded text-sm">customer.subscription.deleted</code></li>
+              <ul className="list-none space-y-1 ml-4 text-sm text-gray-700">
+                <li>✓ <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">checkout.session.completed</code></li>
+                <li>✓ <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">customer.subscription.created</code></li>
+                <li>✓ <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">customer.subscription.updated</code></li>
+                <li>✓ <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">customer.subscription.deleted</code></li>
+                <li>✓ <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">invoice.payment_failed</code></li>
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-blue-500">Step 5</Badge>
-                <span className="font-bold text-gray-900">Save and Copy Signing Secret</span>
+                <Badge className="bg-purple-600 text-white">Step 5</Badge>
+                <span className="font-semibold text-gray-900">Click "Add endpoint"</span>
               </div>
-              <p className="text-gray-700 mb-2">
-                Click "Add endpoint". Then:
-              </p>
-              <ol className="list-decimal list-inside space-y-1 text-gray-700 ml-4">
-                <li>Click on your newly created webhook</li>
-                <li>Click "Reveal" next to "Signing secret"</li>
-                <li>Copy the secret (starts with <code>whsec_...</code>)</li>
-                <li>Send it to base44 support or add it to your environment variables</li>
-              </ol>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-green-500">Step 6</Badge>
-                <span className="font-bold text-gray-900">Test the Webhook</span>
+                <Badge className="bg-purple-600 text-white">Step 6</Badge>
+                <span className="font-semibold text-gray-900">Copy the "Signing secret"</span>
               </div>
-              <p className="text-gray-700 mb-2">
-                In Stripe webhook settings, click "Send test webhook" and select:
-              </p>
-              <code className="bg-gray-100 px-2 py-1 rounded text-sm">checkout.session.completed</code>
-              <p className="text-gray-700 mt-2">
-                If you see a green checkmark (200 response), it's working! ✅
+              <p className="text-sm text-gray-600 ml-4">
+                After creating the webhook, Stripe will show you a "Signing secret" (starts with <code className="bg-gray-100 px-1 rounded text-xs">whsec_...</code>). Copy this - you'll need it!
               </p>
             </div>
           </div>
         </div>
 
-        <Alert className="bg-green-50 border-green-300">
-          <CheckCircle className="w-5 h-5 text-green-600" />
-          <AlertDescription className="text-green-800 ml-2">
-            <strong>Once webhooks are set up:</strong> Users will be automatically upgraded to VIP/Premium immediately after payment. 
-            No manual work required!
+        <Alert className="bg-blue-50 border-blue-300">
+          <AlertDescription className="text-blue-800">
+            <strong>💡 Note:</strong> The base44 platform will handle the webhook endpoint automatically. You just need to configure it in Stripe and provide the signing secret to base44 support.
           </AlertDescription>
         </Alert>
 
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <h4 className="font-bold text-gray-900 mb-2">❓ Need Help?</h4>
-          <p className="text-gray-700 text-sm">
-            If you're stuck, contact base44 support or email support@sportswagerhelper.com. 
-            We can help you set up webhooks or provide your webhook endpoint URL.
-          </p>
+        <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200">
+          <h3 className="font-bold text-green-900 mb-2 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            After Setup:
+          </h3>
+          <ul className="list-disc list-inside space-y-1 text-green-800 text-sm">
+            <li>Users will automatically get upgraded after payment</li>
+            <li>You'll receive webhook confirmations in Stripe dashboard</li>
+            <li>Failed payments will automatically downgrade users</li>
+            <li>No manual work required!</li>
+          </ul>
         </div>
+
+        <Alert>
+          <AlertDescription>
+            <strong>Need Help?</strong> Contact base44 support with your webhook signing secret and they'll complete the integration for you.
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );
