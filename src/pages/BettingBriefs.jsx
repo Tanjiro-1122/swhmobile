@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -273,8 +274,17 @@ Format with clear headers and bullet points.`,
                     variant="outline"
                     className="border-2 border-purple-500 text-purple-700 hover:bg-purple-50"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Refresh Brief
+                    {isGenerating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-700 mr-2" />
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Refresh Brief
+                      </>
+                    )}
                   </Button>
                 </div>
 
@@ -427,7 +437,7 @@ Format with clear headers and bullet points.`,
           <TabsContent value="settings">
             <Card className="border-2 border-purple-200 bg-white">
               <CardHeader>
-                <CardTitle>Brief Preferences</CardTitle>
+                <CardTitle className="text-gray-900">Brief Preferences</CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 {/* Sports Selection */}
@@ -445,7 +455,7 @@ Format with clear headers and bullet points.`,
                         />
                         <label
                           htmlFor={sport}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          className="text-sm font-medium text-gray-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                         >
                           {sport}
                         </label>
@@ -469,7 +479,7 @@ Format with clear headers and bullet points.`,
                       >
                         Email Delivery
                       </label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-700">
                         Receive your daily betting brief via email every morning at 8 AM
                       </p>
                     </div>
@@ -477,7 +487,7 @@ Format with clear headers and bullet points.`,
                 </div>
 
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
+                  <p className="text-sm text-blue-900">
                     <strong>💡 Pro Tip:</strong> Your preferences are saved automatically. Changes will take effect for tomorrow's brief.
                   </p>
                 </div>
