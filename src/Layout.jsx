@@ -173,6 +173,7 @@ export default function Layout({ children, currentPageName }) {
     menuItems.push(
       { name: "AI Performance", icon: Trophy, page: "AIPerformance" },
       { name: "Auto-Update Status", icon: RefreshCw, page: "AutoUpdateStatus" },
+      { name: "Odds Verification", icon: Shield, page: "OddsVerification" },
       { name: "Admin Panel", icon: Settings, page: "AdminPanel" }
     );
   }

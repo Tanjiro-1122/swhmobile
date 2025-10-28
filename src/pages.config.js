@@ -20,6 +20,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancelled from './pages/PaymentCancelled';
 import Billing from './pages/Billing';
 import AutoUpdateStatus from './pages/AutoUpdateStatus';
+import OddsVerification from './pages/OddsVerification';
 import Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "PaymentCancelled": PaymentCancelled,
     "Billing": Billing,
     "AutoUpdateStatus": AutoUpdateStatus,
+    "OddsVerification": OddsVerification,
 }
 
 export const pagesConfig = {
