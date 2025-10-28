@@ -10,31 +10,45 @@ export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userTier, setUserTier] = useState('free');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      
-      if (authenticated) {
-        try {
-          const user = await base44.auth.me();
-          setUserTier(user.subscription_type || 'free');
-          
-          // Legacy, VIP Annual, and Premium Monthly users have unlimited searches
-          if (user.subscription_type === 'legacy' || user.subscription_type === 'vip_annual' || user.subscription_type === 'premium_monthly') {
-            setLookupsRemaining(999); // Unlimited
-          } else {
-            // Free users - check their usage
+      try {
+        const authenticated = await base44.auth.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        
+        if (authenticated) {
+          try {
+            const user = await base44.auth.me();
+            const tier = user.subscription_type || 'free';
+            setUserTier(tier);
+            
+            // Legacy, VIP Annual, and Premium Monthly users have UNLIMITED searches
+            if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
+              setLookupsRemaining(999); // Unlimited
+              // Clear any localStorage restrictions for paid users
+              localStorage.removeItem('freeLookups');
+            } else {
+              // Free users - check their usage
+              const used = parseInt(localStorage.getItem('freeLookups') || '0');
+              setLookupsRemaining(Math.max(0, 5 - used));
+            }
+          } catch (error) {
+            console.error('Error fetching user:', error);
+            // If error fetching user, treat as free
             const used = parseInt(localStorage.getItem('freeLookups') || '0');
             setLookupsRemaining(Math.max(0, 5 - used));
           }
-        } catch (error) {
-          console.error('Error fetching user:', error);
+        } else {
+          // Not authenticated - check localStorage
+          const used = parseInt(localStorage.getItem('freeLookups') || '0');
+          setLookupsRemaining(Math.max(0, 5 - used));
         }
-      } else {
-        const used = parseInt(localStorage.getItem('freeLookups') || '0');
-        setLookupsRemaining(Math.max(0, 5 - used));
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -42,12 +56,12 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    // Unlimited for paid tiers
+    // NEVER count lookups for paid tiers
     if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
       return true;
     }
     
-    // For free users (authenticated or not)
+    // For free users only
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     if (used >= 5) return false;
     
@@ -57,17 +71,17 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    // Unlimited for paid tiers
+    // ALWAYS allow paid tiers - this is the critical fix
     if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
       return true;
     }
     
-    // Check free lookups
+    // Check free lookups only for free users
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     return used < 5;
   };
 
-  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier };
+  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
