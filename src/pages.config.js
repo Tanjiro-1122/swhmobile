@@ -15,6 +15,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Pricing from './pages/Pricing';
 import PowerUser from './pages/PowerUser';
+import BettingBriefs from './pages/BettingBriefs';
 import Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "Pricing": Pricing,
     "PowerUser": PowerUser,
+    "BettingBriefs": BettingBriefs,
 }
 
 export const pagesConfig = {

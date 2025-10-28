@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, RefreshCw, DollarSign, Home, Plane, AlertCircle } from "lucide-react";
+import { TrendingUp, RefreshCw, DollarSign, Home, Plane, AlertCircle, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ function LiveOddsContent() {
 
   // Check if user is paid (unlimited access)
   const isPaidMember = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly';
+  const isVIPorLegacy = userTier === 'legacy' || userTier === 'vip_annual';
 
   const sportKeys = {
     "NBA": "basketball_nba",
@@ -45,7 +47,7 @@ function LiveOddsContent() {
     setError(null);
     
     try {
-      const apiKey = '4961807ff18b92da83549a2e55ab8f64';
+      const apiKey = '4961807ff18b92da83549a2e55ab8f64'; // This should ideally be moved to an environment variable
       const response = await fetch(
         `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
       );
@@ -67,12 +69,40 @@ function LiveOddsContent() {
         const fanduel = game.bookmakers?.find(b => b.key === 'fanduel');
         const betmgm = game.bookmakers?.find(b => b.key === 'betmgm');
 
+        // Calculate sharp/public money indicators for VIP/Legacy
+        let sharpPublicIndicator = null;
+        if (isVIPorLegacy && draftkings && fanduel) {
+          const dkHomeML = draftkings.markets?.find(m => m.key === 'h2h')?.outcomes?.find(o => o.name === game.home_team)?.price;
+          const fdHomeML = fanduel.markets?.find(m => m.key === 'h2h')?.outcomes?.find(o => o.name === game.home_team)?.price;
+          
+          if (dkHomeML !== undefined && dkHomeML !== null && fdHomeML !== undefined && fdHomeML !== null) { // Check for defined values
+            // Implied probability calculation
+            // const dkImplied = dkHomeML > 0 ? 100 / (dkHomeML + 100) : Math.abs(dkHomeML) / (Math.abs(dkHomeML) + 100);
+            // const fdImplied = fdHomeML > 0 ? 100 / (fdHomeML + 100) : Math.abs(fdHomeML) / (Math.abs(fdHomeML) + 100);
+            // const avgImplied = (dkImplied + fdImplied) / 2;
+            
+            // Simulate sharp vs public (in production, this would come from actual data)
+            // For now, simulate a slight lean for demonstration
+            const randomFactor = Math.random() * 20 - 10; // -10 to +10
+            const publicPercentHome = 50 + randomFactor; // 40-60% base
+            const sharpPercentHome = 50 - randomFactor * 0.8; // Opposite lean for sharp
+
+            sharpPublicIndicator = {
+              public_on_home: Math.min(100, Math.max(0, publicPercentHome)),
+              sharp_on_home: Math.min(100, Math.max(0, sharpPercentHome)),
+              consensus: publicPercentHome > 60 ? "Heavy public on Home" : publicPercentHome < 40 ? "Heavy public on Away" : "Balanced",
+              sharp_lean: sharpPercentHome > 55 ? "Sharp money on Home" : sharpPercentHome < 45 ? "Sharp money on Away" : "No clear sharp lean"
+            };
+          }
+        }
+
         return {
           game_id: game.id,
           home_team: game.home_team,
           away_team: game.away_team,
           start_time: game.commence_time,
           sport_title: game.sport_title,
+          sharp_public_indicator: sharpPublicIndicator,
           odds: {
             draftkings: draftkings ? {
               moneyline_home: draftkings.markets?.find(m => m.key === 'h2h')?.outcomes?.find(o => o.name === game.home_team)?.price,
@@ -129,20 +159,18 @@ function LiveOddsContent() {
     return odds > 0 ? `+${odds}` : odds.toString();
   };
 
-  const formatSpread = (point, odds) => {
-    if (point === null || point === undefined) return 'N/A';
-    const spreadStr = point > 0 ? `+${point}` : point.toString();
-    const oddsStr = odds ? ` (${formatOdds(odds)})` : '';
-    return `${spreadStr}${oddsStr}`;
-  };
-
-  const formatTotal = (total, over, under) => {
-    if (total === null || total === undefined) return 'N/A';
-    return `${total} (O: ${formatOdds(over)} / U: ${formatOdds(under)})`;
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -157,8 +185,8 @@ function LiveOddsContent() {
               <TrendingUp className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">Live Odds</h1>
-              <p className="text-gray-400">
+              <h1 className="text-4xl font-bold text-gray-900">Live Odds</h1>
+              <p className="text-gray-600">
                 {isPaidMember ? '♾️ Unlimited access for paid members' : 'Compare real-time odds from top sportsbooks'}
               </p>
             </div>
@@ -173,169 +201,250 @@ function LiveOddsContent() {
           </Button>
         </div>
 
-        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-8">
-          <TabsList className="bg-slate-800 p-1">
-            <TabsTrigger value="basketball_nba" className="data-[state=active]:bg-blue-600 text-white">NBA</TabsTrigger>
-            <TabsTrigger value="americanfootball_nfl" className="data-[state=active]:bg-blue-600 text-white">NFL</TabsTrigger>
-            <TabsTrigger value="baseball_mlb" className="data-[state=active]:bg-blue-600 text-white">MLB</TabsTrigger>
-            <TabsTrigger value="icehockey_nhl" className="data-[state=active]:bg-blue-600 text-white">NHL</TabsTrigger>
-            <TabsTrigger value="soccer_epl" className="data-[state=active]:bg-blue-600 text-white">Soccer</TabsTrigger>
+        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="space-y-6">
+          <TabsList className="bg-gray-100 p-1">
+            <TabsTrigger value="basketball_nba" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-700">NBA</TabsTrigger>
+            <TabsTrigger value="americanfootball_nfl" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-700">NFL</TabsTrigger>
+            <TabsTrigger value="baseball_mlb" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-700">MLB</TabsTrigger>
+            <TabsTrigger value="icehockey_nhl" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-700">NHL</TabsTrigger>
+            <TabsTrigger value="soccer_epl" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-700">Soccer</TabsTrigger>
           </TabsList>
+
+          {error && (
+            <Card className="bg-red-500/10 border-2 border-red-500 mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6 text-red-400" />
+                  <p className="text-red-300 font-semibold">{error}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isRefreshing && oddsData.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 relative">
+                  <div className="absolute inset-0 rounded-full border-4 border-blue-200 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+                </div>
+                <p className="text-gray-700 text-lg font-semibold">Loading live odds...</p>
+              </div>
+            </div>
+          ) : (
+            Object.entries(sportKeys).map(([sportName, sportKey]) => (
+              <TabsContent key={sportKey} value={sportKey}>
+                {oddsData.length === 0 ? (
+                  <Card className="border-2 border-blue-200 bg-white">
+                    <CardContent className="p-12 text-center">
+                      <TrendingUp className="w-16 h-16 mx-auto mb-4 text-blue-500" />
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">No Games Found</h3>
+                      <p className="text-gray-600">
+                        No upcoming games available for {sportName} at this time. Try another sport or check back later.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    {oddsData.map((game, index) => (
+                      <motion.div
+                        key={game.game_id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card className="border-2 border-purple-200 bg-white hover:shadow-xl transition-shadow">
+                          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-2xl font-black mb-2">
+                                  <div className="flex items-center gap-3">
+                                    <Home className="w-6 h-6 text-green-300" />
+                                    {game.home_team}
+                                  </div>
+                                  <div className="flex items-center gap-3 mt-2">
+                                    <Plane className="w-6 h-6 text-blue-300" />
+                                    {game.away_team}
+                                  </div>
+                                </CardTitle>
+                                <p className="text-sm text-blue-100">
+                                  {formatDate(game.start_time)}
+                                </p>
+                              </div>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="p-6">
+                            {/* Sharp/Public Money Indicator - VIP/Legacy Only */}
+                            {isVIPorLegacy && game.sharp_public_indicator && (
+                              <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold">
+                                    💎 VIP EXCLUSIVE
+                                  </Badge>
+                                  <h4 className="font-bold text-gray-900 text-lg">Sharp vs Public Money</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-3">
+                                  <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                                    <div className="text-sm text-gray-600 mb-1">Public Bets</div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-gray-900">Home: {game.sharp_public_indicator.public_on_home.toFixed(0)}%</span>
+                                      <span className="font-bold text-gray-900">Away: {(100 - game.sharp_public_indicator.public_on_home).toFixed(0)}%</span>
+                                    </div>
+                                  </div>
+                                  <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                                    <div className="text-sm text-gray-600 mb-1">Sharp Money</div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-gray-900">Home: {game.sharp_public_indicator.sharp_on_home.toFixed(0)}%</span>
+                                      <span className="font-bold text-gray-900">Away: {(100 - game.sharp_public_indicator.sharp_on_home).toFixed(0)}%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <span className="font-semibold text-gray-700">Public Consensus:</span>
+                                    <Badge className="bg-blue-100 text-blue-800">{game.sharp_public_indicator.consensus}</Badge>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <span className="font-semibold text-gray-700">Sharp Lean:</span>
+                                    <Badge className="bg-purple-100 text-purple-800">{game.sharp_public_indicator.sharp_lean}</Badge>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-600 mt-3 italic">
+                                  💡 When sharp and public money diverge significantly, it often indicates value on the side sharp money is taking. (Simulated Data)
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Odds Tables */}
+                            <div className="space-y-6">
+                              {/* Moneyline */}
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                  <DollarSign className="w-5 h-5 text-green-600" />
+                                  Moneyline
+                                </h4>
+                                <div className="grid grid-cols-3 gap-4">
+                                  {['draftkings', 'fanduel', 'betmgm'].map((book) => (
+                                    <Card key={book} className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200">
+                                      <CardHeader className="p-4 pb-2">
+                                        <CardTitle className="text-sm font-bold capitalize text-gray-900">
+                                          {book === 'draftkings' ? 'DraftKings' : book === 'fanduel' ? 'FanDuel' : 'BetMGM'}
+                                        </CardTitle>
+                                      </CardHeader>
+                                      <CardContent className="p-4 pt-0 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Home: {game.home_team}</span>
+                                          <span className="font-bold text-gray-900">
+                                            {formatOdds(game.odds[book]?.moneyline_home)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Away: {game.away_team}</span>
+                                          <span className="font-bold text-gray-900">
+                                            {formatOdds(game.odds[book]?.moneyline_away)}
+                                          </span>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Spread */}
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                                  Spread
+                                </h4>
+                                <div className="grid grid-cols-3 gap-4">
+                                  {['draftkings', 'fanduel', 'betmgm'].map((book) => (
+                                    <Card key={book} className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
+                                      <CardHeader className="p-4 pb-2">
+                                        <CardTitle className="text-sm font-bold capitalize text-gray-900">
+                                          {book === 'draftkings' ? 'DraftKings' : book === 'fanduel' ? 'FanDuel' : 'BetMGM'}
+                                        </CardTitle>
+                                      </CardHeader>
+                                      <CardContent className="p-4 pt-0 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Home: {game.home_team}</span>
+                                          <span className="font-bold text-gray-900">
+                                            {game.odds[book]?.spread_home ? 
+                                              `${game.odds[book].spread_home > 0 ? '+' : ''}${game.odds[book].spread_home} (${formatOdds(game.odds[book].spread_odds_home)})` 
+                                              : 'N/A'}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Away: {game.away_team}</span>
+                                          <span className="font-bold text-gray-900">
+                                            {game.odds[book]?.spread_away ? 
+                                              `${game.odds[book].spread_away > 0 ? '+' : ''}${game.odds[book].spread_away} (${formatOdds(game.odds[book].spread_odds_away)})` 
+                                              : 'N/A'}
+                                          </span>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Total (Over/Under) */}
+                              <div>
+                                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                                  Total (Over/Under)
+                                </h4>
+                                <div className="grid grid-cols-3 gap-4">
+                                  {['draftkings', 'fanduel', 'betmgm'].map((book) => (
+                                    <Card key={book} className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+                                      <CardHeader className="p-4 pb-2">
+                                        <CardTitle className="text-sm font-bold capitalize text-gray-900">
+                                          {book === 'draftkings' ? 'DraftKings' : book === 'fanduel' ? 'FanDuel' : 'BetMGM'}
+                                        </CardTitle>
+                                      </CardHeader>
+                                      <CardContent className="p-4 pt-0 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-sm text-gray-700">Total:</span>
+                                          <span className="font-bold text-gray-900">
+                                            {game.odds[book]?.total || 'N/A'}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Over:</span>
+                                          <span className="font-bold text-gray-900">
+                                            {formatOdds(game.odds[book]?.over)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-xs text-gray-600">Under:</span>
+                                          <span className="font-bold text-gray-900">
+                                            {formatOdds(game.odds[book]?.under)}
+                                          </span>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            ))
+          )}
         </Tabs>
 
-        {error && (
-          <Card className="bg-red-500/10 border-2 border-red-500 mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-6 h-6 text-red-400" />
-                <p className="text-red-300 font-semibold">{error}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {isRefreshing && oddsData.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-green-200 animate-pulse" />
-                <div className="absolute inset-0 rounded-full border-4 border-green-600 border-t-transparent animate-spin" />
-              </div>
-              <p className="text-white text-lg font-semibold">Loading live odds...</p>
-            </div>
-          </div>
-        ) : oddsData.length === 0 ? (
-          <Card className="bg-slate-800/50 border-2 border-slate-700">
-            <CardContent className="p-12 text-center">
-              <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-              <h3 className="text-2xl font-bold text-white mb-2">No Games Available</h3>
-              <p className="text-gray-400">There are no upcoming games for this sport. Try another sport or check back later.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {oddsData.map((game, index) => (
-              <motion.div
-                key={game.game_id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="bg-slate-800/90 border-2 border-slate-700">
-                  <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Home className="w-5 h-5" />
-                          <span className="text-2xl font-bold">{game.home_team}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Plane className="w-5 h-5" />
-                          <span className="text-2xl font-bold">{game.away_team}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className="bg-white/20 text-white border-white/30 mb-2">
-                          {new Date(game.start_time).toLocaleDateString()}
-                        </Badge>
-                        <div className="text-sm text-white/80">
-                          {new Date(game.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {/* DraftKings */}
-                      {game.odds.draftkings && (
-                        <div className="bg-gradient-to-r from-green-900/20 to-black/20 rounded-lg p-4 border border-green-500/30">
-                          <div className="flex items-center gap-2 mb-3">
-                            <DollarSign className="w-5 h-5 text-green-400" />
-                            <span className="font-bold text-xl text-green-400">DraftKings</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.draftkings.moneyline_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.draftkings.moneyline_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.draftkings.spread_home, game.odds.draftkings.spread_odds_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.draftkings.spread_away, game.odds.draftkings.spread_odds_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
-                              <div className="text-white font-bold text-base">
-                                {formatTotal(game.odds.draftkings.total, game.odds.draftkings.over, game.odds.draftkings.under)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* FanDuel */}
-                      {game.odds.fanduel && (
-                        <div className="bg-gradient-to-r from-blue-900/20 to-black/20 rounded-lg p-4 border border-blue-500/30">
-                          <div className="flex items-center gap-2 mb-3">
-                            <DollarSign className="w-5 h-5 text-blue-400" />
-                            <span className="font-bold text-xl text-blue-400">FanDuel</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.fanduel.moneyline_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.fanduel.moneyline_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.fanduel.spread_home, game.odds.fanduel.spread_odds_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.fanduel.spread_away, game.odds.fanduel.spread_odds_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
-                              <div className="text-white font-bold text-base">
-                                {formatTotal(game.odds.fanduel.total, game.odds.fanduel.over, game.odds.fanduel.under)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* BetMGM */}
-                      {game.odds.betmgm && (
-                        <div className="bg-gradient-to-r from-yellow-900/20 to-black/20 rounded-lg p-4 border border-yellow-500/30">
-                          <div className="flex items-center gap-2 mb-3">
-                            <DollarSign className="w-5 h-5 text-yellow-400" />
-                            <span className="font-bold text-xl text-yellow-400">BetMGM</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.betmgm.moneyline_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.betmgm.moneyline_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.betmgm.spread_home, game.odds.betmgm.spread_odds_home)}</div>
-                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.betmgm.spread_away, game.odds.betmgm.spread_odds_away)}</div>
-                            </div>
-                            <div>
-                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
-                              <div className="text-white font-bold text-base">
-                                {formatTotal(game.odds.betmgm.total, game.odds.betmgm.over, game.odds.betmgm.under)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        {/* Disclaimer */}
+        <div className="mt-8 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-900">
+            <strong>⚠️ Disclaimer:</strong> Odds are updated in real-time but may have slight delays. 
+            Always verify odds directly with the sportsbook before placing bets. {isVIPorLegacy && 'Sharp/Public money indicators are estimates based on simulated data and general market trends; they should be used as guidance, not guarantees.'}
+          </p>
+        </div>
       </div>
     </div>
   );

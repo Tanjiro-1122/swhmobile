@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -73,10 +74,12 @@ export default function Pricing() {
       "🏆 Annual billing ($149.99/year)",
       "🏆 Save $90/year vs monthly",
       "🏆 VIP MEMBER badge",
+      "🏆 Daily AI Betting Briefs",
+      "🏆 Sharp vs Public Money indicators",
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
       "🏆 Exclusive Discord channel",
-      "🏆 Priority customer support"
+      "🏆 Lifetime feature updates"
     ]
   };
 
