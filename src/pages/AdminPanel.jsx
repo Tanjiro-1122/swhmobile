@@ -1,24 +1,23 @@
-
 import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, CheckCircle, XCircle, Trophy, Edit, Calendar, BarChart3, Clock, CreditCard, TrendingUp, Info } from "lucide-react"; // Added new icons
+import { Crown, Users, DollarSign, Search, CheckCircle, XCircle, Trophy, Edit, Calendar, BarChart3, Clock, CreditCard, TrendingUp, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-// Removed Tabs, TabsContent, TabsList, TabsTrigger as they are replaced by custom buttons
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
 import StripeWebhookGuide from "../components/admin/StripeWebhookGuide";
-import { toast, Toaster } from 'react-hot-toast'; // Added toast and Toaster
+import PendingMatchesSection from "../components/admin/PendingMatchesSection";
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTab, setSelectedTab] = useState("overview"); // Renamed activeTab to selectedTab and default to 'overview'
+  const [selectedTab, setSelectedTab] = useState("overview");
   const [editingMatch, setEditingMatch] = useState(null);
   const [matchResults, setMatchResults] = useState({
     winner: "",
@@ -26,6 +25,7 @@ function AdminPanelContent() {
     completed: true
   });
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -40,7 +40,7 @@ function AdminPanelContent() {
 
   const { data: allMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['allMatches'],
-    queryFn: () => base44.entities.Match.list('-created_date', 500), // Sort by creation date descending
+    queryFn: () => base44.entities.Match.list('-created_date', 500),
     initialData: [],
   });
 
@@ -48,14 +48,20 @@ function AdminPanelContent() {
     mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-      toast.success('User updated successfully!');
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
     },
     onError: (error) => {
-      toast.error(`Failed to update user: ${error.message || 'Unknown error'}`);
+      toast({
+        title: "Error",
+        description: `Failed to update user: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      });
     }
   });
 
-  // Replaced updateMatchMutation with updateMatchResultMutation as per outline and consolidated logic
   const updateMatchResultMutation = useMutation({
     mutationFn: ({ id, result }) => base44.entities.Match.update(id, { actual_result: result }),
     onSuccess: () => {
@@ -63,10 +69,17 @@ function AdminPanelContent() {
       queryClient.invalidateQueries({ queryKey: ['aiPerformance'] });
       setEditingMatch(null);
       setMatchResults({ winner: "", final_score: "", completed: true });
-      toast.success('Match result updated successfully!');
+      toast({
+        title: "Success",
+        description: "Match result updated successfully",
+      });
     },
     onError: (error) => {
-      toast.error(`Failed to update match result: ${error.message || 'Unknown error'}`);
+      toast({
+        title: "Error",
+        description: `Failed to update match result: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      });
     }
   });
 
@@ -90,7 +103,6 @@ function AdminPanelContent() {
   const completedMatches = allMatches.filter(m => m.actual_result?.completed);
   const correctPredictions = completedMatches.filter(m => m.prediction?.winner === m.actual_result?.winner).length;
 
-  // Filter for overdue pending matches (where match_date is in the past and not yet completed)
   const overduePendingMatches = allMatches.filter(m =>
     !m.actual_result?.completed && m.match_date && new Date(m.match_date) < new Date()
   );
@@ -104,7 +116,11 @@ function AdminPanelContent() {
     const currentVIPCount = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
 
     if (currentVIPCount >= 20) {
-      toast.error('All 20 VIP Lifetime spots are taken!'); // Changed alert to toast
+      toast({
+        title: "VIP Spots Full",
+        description: "All 20 VIP Lifetime spots are taken!",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -112,7 +128,7 @@ function AdminPanelContent() {
       userId: user.id,
       data: {
         subscription_type: 'vip_lifetime',
-        vip_member_number: currentVIPCount + 1 // Assign next available VIP number
+        vip_member_number: currentVIPCount + 1
       }
     });
   };
@@ -139,11 +155,14 @@ function AdminPanelContent() {
 
   const handleUpdateMatchResult = async () => {
     if (!matchResults.winner || !matchResults.final_score) {
-      toast.error('Please fill in winner and final score'); // Changed alert to toast
+      toast({
+        title: "Missing Information",
+        description: "Please fill in winner and final score",
+        variant: "destructive",
+      });
       return;
     }
 
-    // Now uses the consolidated updateMatchResultMutation
     await updateMatchResultMutation.mutateAsync({
       id: editingMatch.id,
       result: matchResults
@@ -161,7 +180,6 @@ function AdminPanelContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 p-6">
-      <Toaster position="bottom-right" /> {/* Toaster component for notifications */}
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -169,7 +187,7 @@ function AdminPanelContent() {
           <p className="text-slate-400">Manage users, VIP memberships, and match results</p>
         </div>
 
-        {/* Tabs - Replaced old Tabs with custom buttons */}
+        {/* Tabs */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-slate-700">
           <Button
             variant={selectedTab === 'overview' ? 'default' : 'outline'}
@@ -186,7 +204,7 @@ function AdminPanelContent() {
           >
             <Clock className="w-4 h-4 mr-2" />
             Pending Results
-            {overduePendingMatches.length > 0 && ( // Use overduePendingMatches here
+            {overduePendingMatches.length > 0 && (
               <Badge className="ml-2 bg-red-500 text-white">
                 {overduePendingMatches.length}
               </Badge>
@@ -228,7 +246,6 @@ function AdminPanelContent() {
 
         {/* Tab Content */}
         {selectedTab === 'overview' && (
-          // Stats Overview (existing code moved here)
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
@@ -310,71 +327,14 @@ function AdminPanelContent() {
 
         {selectedTab === 'pending' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-2">
-              <Clock className="w-7 h-7 text-orange-400" /> Overdue Matches Awaiting Results
-            </h2>
-            <p className="text-slate-400 mb-6">These matches have passed their scheduled date and require result input.</p>
-
-            {matchesLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto" />
-                <p className="text-slate-400 mt-4">Loading matches...</p>
-              </div>
-            ) : overduePendingMatches.length === 0 ? (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="py-12 text-center">
-                  <Info className="w-10 h-10 text-slate-500 mx-auto mb-4" />
-                  <p className="text-slate-400 text-lg">No overdue matches currently waiting for results.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              overduePendingMatches.map((match, index) => (
-                <motion.div
-                  key={match.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className="bg-slate-800/50 border-orange-500/50 hover:border-orange-400 transition-colors">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="secondary">{match.sport}</Badge>
-                            {match.league && <Badge variant="outline">{match.league}</Badge>}
-                            <Badge className="bg-red-500 text-white">OVERDUE</Badge>
-                          </div>
-                          <div className="text-xl font-bold text-white mb-1">
-                            {match.home_team} vs {match.away_team}
-                          </div>
-                          <div className="text-sm text-slate-400">
-                            Predicted Winner: <span className="text-white font-semibold">{match.prediction?.winner || 'N/A'}</span>
-                            {match.prediction?.predicted_score && ` (${match.prediction.predicted_score})`}
-                          </div>
-                          {match.match_date && (
-                            <div className="text-xs text-slate-500 mt-1">
-                              Scheduled: {new Date(match.match_date).toLocaleString()}
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          onClick={() => openEditMatchDialog(match)}
-                          className="bg-orange-500 hover:bg-orange-600 text-white"
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Record Result
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
+            <PendingMatchesSection
+              matches={allMatches}
+              onUpdateResult={(id, result) => updateMatchResultMutation.mutate({ id, result })}
+            />
           </div>
         )}
 
         {selectedTab === 'users' && (
-          // Users Tab (existing code moved here)
           <div>
             <Card className="bg-slate-800/50 border-slate-700 mb-6">
               <CardContent className="pt-6">
@@ -489,7 +449,6 @@ function AdminPanelContent() {
         )}
 
         {selectedTab === 'matches' && (
-          // All Matches Tab - Lists all matches, sorted newest first
           <div>
             <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-2">
               <TrendingUp className="w-7 h-7 text-cyan-400" /> All Matches ({allMatches.length})
@@ -606,14 +565,13 @@ function AdminPanelContent() {
         )}
 
         {selectedTab === 'stripe' && (
-          // Stripe Webhook Guide (existing code moved here)
           <div className="mb-8">
             <StripeWebhookGuide />
           </div>
         )}
       </div>
 
-      {/* Edit Match Result Dialog (existing code, now using updateMatchResultMutation) */}
+      {/* Edit Match Result Dialog */}
       <Dialog open={!!editingMatch} onOpenChange={() => setEditingMatch(null)}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
