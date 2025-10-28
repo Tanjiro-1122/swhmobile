@@ -411,9 +411,24 @@ export default function Pricing() {
                 <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Betting Briefs, Sharp vs Public Money indicators, VIP Discord access, and a VIP badge.</p>
               </div>
               <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">What is the VIP Discord channel?</h3>
+                <p className="text-gray-600 mb-2">VIP Annual and Legacy members get exclusive access to our private Discord community where you can:</p>
+                <ul className="list-disc pl-6 space-y-1 text-gray-600">
+                  <li>Share advanced betting strategies with other serious bettors</li>
+                  <li>Get priority support from our team</li>
+                  <li>Receive exclusive picks and insights</li>
+                  <li>Network with experienced members</li>
+                  <li>Influence future feature development</li>
+                </ul>
+                <p className="text-gray-600 mt-2">
+                  <strong>Note:</strong> All users (Free, Premium, VIP) can join our public Reddit community at <a href="https://www.reddit.com/r/sportswagerhelper/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">r/sportswagerhelper</a> for general discussions and support.
+                </p>
+              </div>
+              <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-600">We accept all major credit cards (Visa, Mastercard, Amex, Discover) through Stripe's secure payment processing.</p>
               </div>
+              
               <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
                 <h3 className="text-lg font-bold text-amber-900 mb-2">⚠️ What is your refund policy?</h3>
                 <div className="text-amber-800 space-y-2">
