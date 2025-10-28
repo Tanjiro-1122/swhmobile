@@ -1,31 +1,43 @@
-
 import React, { useState } from "react";
-import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trophy, User, Shield, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { 
+  Calendar, 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  Trophy,
+  TrendingUp,
+  AlertCircle,
+  Filter,
+  Edit
+} from "lucide-react";
 import { motion } from "framer-motion";
-import MatchCard from "../components/sports/MatchCard";
-import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
-import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
+import { format } from "date-fns";
+import RequireAuth from "../components/auth/RequireAuth";
 
 function SavedResultsContent() {
-  const [activeTab, setActiveTab] = useState("matches");
+  const [filterStatus, setFilterStatus] = useState("all"); // all, completed, pending
+  const [filterSport, setFilterSport] = useState("all");
   const queryClient = useQueryClient();
 
-  // Get current user
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
   });
 
-  // Fetch user's saved matches
-  const { data: matches, isLoading: matchesLoading } = useQuery({
-    queryKey: ['savedMatches', currentUser?.email],
+  const { data: matches, isLoading } = useQuery({
+    queryKey: ['allMatches', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
       return await base44.entities.Match.filter(
@@ -37,294 +49,374 @@ function SavedResultsContent() {
     initialData: [],
   });
 
-  // Fetch user's saved players
-  const { data: players, isLoading: playersLoading } = useQuery({
-    queryKey: ['savedPlayers', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      return await base44.entities.PlayerStats.filter(
-        { created_by: currentUser.email },
-        '-created_date'
-      );
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-  });
-
-  // Fetch user's saved teams
-  const { data: teams, isLoading: teamsLoading } = useQuery({
-    queryKey: ['savedTeams', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      return await base44.entities.TeamStats.filter(
-        { created_by: currentUser.email },
-        '-created_date'
-      );
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-  });
-
-  const deleteMatchMutation = useMutation({
-    mutationFn: (id) => base44.entities.Match.delete(id),
+  const updateResultMutation = useMutation({
+    mutationFn: ({ id, result }) => base44.entities.Match.update(id, { actual_result: result }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedMatches'] });
+      queryClient.invalidateQueries({ queryKey: ['allMatches'] });
     },
   });
 
-  const deletePlayerMutation = useMutation({
-    mutationFn: (id) => base44.entities.PlayerStats.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedPlayers'] });
-    },
+  // Filter matches
+  const filteredMatches = matches.filter(match => {
+    const statusMatch = filterStatus === "all" || 
+      (filterStatus === "completed" && match.actual_result?.completed) ||
+      (filterStatus === "pending" && !match.actual_result?.completed);
+    
+    const sportMatch = filterSport === "all" || match.sport === filterSport;
+    
+    return statusMatch && sportMatch;
   });
 
-  const deleteTeamMutation = useMutation({
-    mutationFn: (id) => base44.entities.TeamStats.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedTeams'] });
-    },
-  });
+  // Get unique sports
+  const sports = [...new Set(matches.map(m => m.sport))].filter(Boolean);
 
-  const clearAllMatches = async () => {
-    if (window.confirm('Are you sure you want to delete all saved matches?')) {
-      for (const match of matches) {
-        await deleteMatchMutation.mutateAsync(match.id);
-      }
+  // Calculate accuracy
+  const completedMatches = matches.filter(m => m.actual_result?.completed);
+  const correctPredictions = completedMatches.filter(m => 
+    m.actual_result?.winner === m.prediction?.winner
+  ).length;
+  const accuracy = completedMatches.length > 0 
+    ? ((correctPredictions / completedMatches.length) * 100).toFixed(1)
+    : 0;
+
+  const isPastDate = (dateString) => {
+    if (!dateString) return false;
+    try {
+      return new Date(dateString) < new Date();
+    } catch {
+      return false;
     }
   };
-
-  const clearAllPlayers = async () => {
-    if (window.confirm('Are you sure you want to delete all saved players?')) {
-      for (const player of players) {
-        await deletePlayerMutation.mutateAsync(player.id);
-      }
-    }
-  };
-
-  const clearAllTeams = async () => {
-    if (window.confirm('Are you sure you want to delete all saved teams?')) {
-      for (const team of teams) {
-        await deleteTeamMutation.mutateAsync(team.id);
-      }
-    }
-  };
-
-  const totalSaved = (matches?.length || 0) + (players?.length || 0) + (teams?.length || 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Bookmark className="w-7 h-7" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-4xl font-bold">My Saved Results</h1>
-          </div>
-          <p className="text-indigo-100 text-lg max-w-2xl">
-            All your analyzed matches, players, and teams in one place. Only you can see these results.
-          </p>
-          <div className="mt-4 flex items-center gap-4">
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {totalSaved} Total Saved
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {matches?.length || 0} Matches
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {players?.length || 0} Players
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {teams?.length || 0} Teams
-            </Badge>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Match Results & Predictions</h1>
+              <p className="text-slate-400">Track AI accuracy and game outcomes</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger value="matches" className="flex items-center gap-2 py-3">
-              <Trophy className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Matches</div>
-                <div className="text-xs text-gray-500">{matches?.length || 0} saved</div>
+        {/* Stats Overview */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card className="border-2 border-slate-700 bg-slate-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400 text-sm">Total Predictions</span>
+                <Calendar className="w-5 h-5 text-blue-400" />
               </div>
-            </TabsTrigger>
-            <TabsTrigger value="players" className="flex items-center gap-2 py-3">
-              <User className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Players</div>
-                <div className="text-xs text-gray-500">{players?.length || 0} saved</div>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="teams" className="flex items-center gap-2 py-3">
-              <Shield className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Teams</div>
-                <div className="text-xs text-gray-500">{teams?.length || 0} saved</div>
-              </div>
-            </TabsTrigger>
-          </TabsList>
+              <div className="text-3xl font-bold text-white">{matches.length}</div>
+            </CardContent>
+          </Card>
 
-          {/* Matches Tab */}
-          <TabsContent value="matches" className="space-y-6">
-            {matches && matches.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Matches ({matches.length})
-                </h2>
+          <Card className="border-2 border-slate-700 bg-slate-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400 text-sm">Completed</span>
+                <CheckCircle className="w-5 h-5 text-green-400" />
+              </div>
+              <div className="text-3xl font-bold text-white">{completedMatches.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-slate-700 bg-slate-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400 text-sm">Pending</span>
+                <Clock className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div className="text-3xl font-bold text-white">
+                {matches.length - completedMatches.length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-slate-700 bg-slate-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400 text-sm">AI Accuracy</span>
+                <TrendingUp className="w-5 h-5 text-purple-400" />
+              </div>
+              <div className="text-3xl font-bold text-white">{accuracy}%</div>
+              <div className="text-xs text-slate-400 mt-1">
+                {correctPredictions}/{completedMatches.length} correct
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="border-2 border-slate-700 bg-slate-800/50 mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-slate-400" />
+                <span className="text-sm font-semibold text-white">Filters:</span>
+              </div>
+              
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  onClick={clearAllMatches}
-                  className="text-red-600 hover:bg-red-50"
+                  variant={filterStatus === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterStatus("all")}
+                  className={filterStatus === "all" ? "bg-blue-600" : ""}
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
+                  All
+                </Button>
+                <Button
+                  variant={filterStatus === "completed" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterStatus("completed")}
+                  className={filterStatus === "completed" ? "bg-green-600" : ""}
+                >
+                  Completed
+                </Button>
+                <Button
+                  variant={filterStatus === "pending" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterStatus("pending")}
+                  className={filterStatus === "pending" ? "bg-yellow-600" : ""}
+                >
+                  Pending
                 </Button>
               </div>
-            )}
 
-            {matchesLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved matches...</p>
-              </div>
-            ) : matches && matches.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
-                {matches.map((match, index) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    onDelete={deleteMatchMutation.mutate}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Matches</h3>
-                <p className="text-gray-600">
-                  Search for matches on the Match Analysis page to save them here
-                </p>
-              </motion.div>
-            )}
-          </TabsContent>
-
-          {/* Players Tab */}
-          <TabsContent value="players" className="space-y-6">
-            {players && players.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Players ({players.length})
-                </h2>
-                <Button
-                  variant="outline"
-                  onClick={clearAllPlayers}
-                  className="text-red-600 hover:bg-red-50"
+              {sports.length > 0 && (
+                <select
+                  value={filterSport}
+                  onChange={(e) => setFilterSport(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-slate-700 text-white text-sm border border-slate-600"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
+                  <option value="all">All Sports</option>
+                  {sports.map(sport => (
+                    <option key={sport} value={sport}>{sport}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-            {playersLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved players...</p>
-              </div>
-            ) : players && players.length > 0 ? (
-              <div className="space-y-6">
-                {players.map((player, index) => (
-                  <PlayerStatsDisplay
-                    key={player.id}
-                    player={player}
-                    onDelete={deletePlayerMutation.mutate}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <User className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Players</h3>
-                <p className="text-gray-600">
-                  Search for players on the Player Stats page to save them here
-                </p>
-              </motion.div>
-            )}
-          </TabsContent>
-
-          {/* Teams Tab */}
-          <TabsContent value="teams" className="space-y-6">
-            {teams && teams.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Teams ({teams.length})
-                </h2>
-                <Button
-                  variant="outline"
-                  onClick={clearAllTeams}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
-
-            {teamsLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved teams...</p>
-              </div>
-            ) : teams && teams.length > 0 ? (
-              <div className="space-y-6">
-                {teams.map((team, index) => (
-                  <TeamStatsDisplay
-                    key={team.id}
-                    team={team}
-                    onDelete={deleteTeamMutation.mutate}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Teams</h3>
-                <p className="text-gray-600">
-                  Search for teams on the Team Stats page to save them here
-                </p>
-              </motion.div>
-            )}
-          </TabsContent>
-        </Tabs>
+        {/* Matches List */}
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
+            <p className="text-slate-400">Loading matches...</p>
+          </div>
+        ) : filteredMatches.length === 0 ? (
+          <Card className="border-2 border-slate-700 bg-slate-800/50">
+            <CardContent className="p-12 text-center">
+              <Trophy className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">No Matches Found</h3>
+              <p className="text-slate-400">Try adjusting your filters or analyze some matches first.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredMatches.map((match, index) => (
+              <MatchResultCard
+                key={match.id}
+                match={match}
+                index={index}
+                onUpdateResult={(result) => 
+                  updateResultMutation.mutate({ id: match.id, result })
+                }
+                isPastDate={isPastDate(match.match_date)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+function MatchResultCard({ match, index, onUpdateResult, isPastDate }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [winner, setWinner] = useState(match.actual_result?.winner || "");
+  const [finalScore, setFinalScore] = useState(match.actual_result?.final_score || "");
+
+  const isCompleted = match.actual_result?.completed;
+  const predictionCorrect = isCompleted && match.actual_result?.winner === match.prediction?.winner;
+
+  const handleSaveResult = () => {
+    onUpdateResult({
+      winner,
+      final_score: finalScore,
+      completed: true
+    });
+    setIsEditing(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <Card className={`border-2 ${
+        isCompleted 
+          ? predictionCorrect 
+            ? 'border-green-500 bg-green-900/20' 
+            : 'border-red-500 bg-red-900/20'
+          : isPastDate
+            ? 'border-yellow-500 bg-yellow-900/20'
+            : 'border-slate-700 bg-slate-800/50'
+      }`}>
+        <CardHeader className="bg-slate-800/80">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className="text-xs">{match.sport}</Badge>
+                {match.league && <Badge variant="outline" className="text-xs">{match.league}</Badge>}
+                {isCompleted ? (
+                  predictionCorrect ? (
+                    <Badge className="bg-green-600 text-white">✅ Correct</Badge>
+                  ) : (
+                    <Badge className="bg-red-600 text-white">❌ Incorrect</Badge>
+                  )
+                ) : isPastDate ? (
+                  <Badge className="bg-yellow-600 text-white">⏰ Needs Update</Badge>
+                ) : (
+                  <Badge className="bg-slate-600 text-white">⏳ Upcoming</Badge>
+                )}
+              </div>
+              <CardTitle className="text-xl text-white">
+                {match.home_team} vs {match.away_team}
+              </CardTitle>
+              {match.match_date && (
+                <p className="text-sm text-slate-400 mt-1">
+                  {format(new Date(match.match_date), 'PPP')}
+                </p>
+              )}
+            </div>
+            {!isCompleted && isPastDate && (
+              <Button
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+                variant="outline"
+                className="border-yellow-500 text-yellow-500"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {isEditing ? 'Cancel' : 'Update Result'}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* AI Prediction */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <h3 className="font-bold text-white">AI Prediction</h3>
+              </div>
+              
+              <div className="bg-slate-900/50 rounded-lg p-4">
+                <div className="text-sm text-slate-400 mb-1">Predicted Winner</div>
+                <div className="text-lg font-bold text-white">{match.prediction?.winner}</div>
+              </div>
+
+              {match.prediction?.predicted_score && (
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-sm text-slate-400 mb-1">Predicted Score</div>
+                  <div className="text-lg font-bold text-white">{match.prediction.predicted_score}</div>
+                </div>
+              )}
+
+              {match.prediction?.confidence && (
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-sm text-slate-400 mb-1">Confidence</div>
+                  <div className="text-lg font-bold text-white">{match.prediction.confidence}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Actual Result */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                <h3 className="font-bold text-white">Actual Result</h3>
+              </div>
+
+              {isEditing ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-slate-400 mb-2 block">Winner</label>
+                    <select
+                      value={winner}
+                      onChange={(e) => setWinner(e.target.value)}
+                      className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600"
+                    >
+                      <option value="">Select winner...</option>
+                      <option value={match.home_team}>{match.home_team}</option>
+                      <option value={match.away_team}>{match.away_team}</option>
+                      <option value="Draw">Draw</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-400 mb-2 block">Final Score</label>
+                    <Input
+                      value={finalScore}
+                      onChange={(e) => setFinalScore(e.target.value)}
+                      placeholder="e.g., 115-108"
+                      className="bg-slate-700 text-white border-slate-600"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSaveResult}
+                    disabled={!winner || !finalScore}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Save Result
+                  </Button>
+                </div>
+              ) : isCompleted ? (
+                <>
+                  <div className="bg-slate-900/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">Winner</div>
+                    <div className="text-lg font-bold text-white">{match.actual_result?.winner}</div>
+                  </div>
+
+                  {match.actual_result?.final_score && (
+                    <div className="bg-slate-900/50 rounded-lg p-4">
+                      <div className="text-sm text-slate-400 mb-1">Final Score</div>
+                      <div className="text-lg font-bold text-white">{match.actual_result.final_score}</div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-slate-900/50 rounded-lg p-8">
+                  <div className="text-center">
+                    <Clock className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">
+                      {isPastDate ? 'Result pending - click "Update Result" to add' : 'Match not yet played'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
 export default function SavedResults() {
   return (
-    <RequireAuth pageName="Saved Results">
+    <RequireAuth pageName="SavedResults">
       <SavedResultsContent />
     </RequireAuth>
   );
