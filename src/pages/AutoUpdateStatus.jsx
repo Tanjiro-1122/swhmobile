@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -120,13 +121,14 @@ export default function AutoUpdateStatus() {
         details: []
       };
 
-      // Enhanced sport mapping with multiple possible keys
+      // FIXED: Enhanced sport mapping with better fallback matching
       const sportMapping = {
-        'NBA': ['basketball_nba', 'basketball_nba_preseason'],
-        'NFL': ['americanfootball_nfl', 'americanfootball_nfl_preseason', 'americanfootball_nfl_super_bowl'],
+        // Exact league name matches
+        'NBA': ['basketball_nba'],
+        'NFL': ['americanfootball_nfl'],
         'Premier League': ['soccer_epl', 'soccer_england_epl'],
-        'MLB': ['baseball_mlb', 'baseball_mlb_preseason', 'baseball_mlb_world_series'],
-        'NHL': ['icehockey_nhl', 'icehockey_nhl_championship'],
+        'MLB': ['baseball_mlb'],
+        'NHL': ['icehockey_nhl'],
         'MLS': ['soccer_usa_mls'],
         'Champions League': ['soccer_uefa_champs_league'],
         'La Liga': ['soccer_spain_la_liga'],
@@ -134,24 +136,62 @@ export default function AutoUpdateStatus() {
         'Serie A': ['soccer_italy_serie_a'],
         'Ligue 1': ['soccer_france_ligue_one'],
         'College Football': ['americanfootball_ncaaf'],
-        'College Basketball': ['basketball_ncaab']
+        'College Basketball': ['basketball_ncaab'],
+        
+        // IMPORTANT: Generic sport name fallbacks
+        'Basketball': ['basketball_nba', 'basketball_ncaab'],
+        'Football': ['americanfootball_nfl', 'americanfootball_ncaaf'],
+        'Soccer': ['soccer_epl', 'soccer_usa_mls', 'soccer_spain_la_liga', 'soccer_germany_bundesliga', 'soccer_italy_serie_a', 'soccer_france_ligue_one', 'soccer_uefa_champs_league'],
+        'Hockey': ['icehockey_nhl'],
+        'Baseball': ['baseball_mlb'],
+        'Ice Hockey': ['icehockey_nhl']
       };
 
       // Helper function to find the correct sport key
       const findSportKey = (sportName) => {
-        // Try direct match first
-        const possibleKeys = sportMapping[sportName] || [sportName.toLowerCase().replace(/\s+/g, '_')];
+        console.log(`🔍 Finding sport key for: "${sportName}"`);
         
-        // Check against available sports
-        for (const key of possibleKeys) {
-          const found = available.find(s => s.key === key && s.active);
-          if (found) {
-            return found.key;
+        // Try exact match first (case-insensitive)
+        for (const [key, values] of Object.entries(sportMapping)) {
+          if (key.toLowerCase() === sportName.toLowerCase()) {
+            console.log(`   ✅ Exact match found in mapping for "${key}"`);
+            // Return the first available and active one
+            for (const sportKey of values) {
+              const found = available.find(s => s.key === sportKey && s.active);
+              if (found) {
+                console.log(`   ✅ Found active sport: ${found.key} (${found.title})`);
+                return found.key;
+              }
+            }
           }
         }
         
-        // If no match found, return first possible key
-        return possibleKeys[0];
+        // Try partial match (contains)
+        for (const [key, values] of Object.entries(sportMapping)) {
+          if (sportName.toLowerCase().includes(key.toLowerCase()) || 
+              key.toLowerCase().includes(sportName.toLowerCase())) {
+            console.log(`   ⚠️ Partial match found in mapping for "${key}"`);
+            for (const sportKey of values) {
+              const found = available.find(s => s.key === sportKey && s.active);
+              if (found) {
+                console.log(`   ✅ Found active sport: ${found.key} (${found.title})`);
+                return found.key;
+              }
+            }
+          }
+        }
+        
+        // Last resort: try to construct a key from the sport name and check if it's active
+        const fallbackKey = sportName.toLowerCase().replace(/\s+/g, '_');
+        console.log(`   ⚠️ No mapping found, trying fallback constructed key: "${fallbackKey}"`);
+        const found = available.find(s => s.key === fallbackKey && s.active);
+        if (found) {
+          console.log(`   ✅ Fallback worked: ${found.key} (${found.title})`);
+          return found.key;
+        }
+        
+        console.log(`   ❌ No active API sport key found for "${sportName}"`);
+        return null;
       };
 
       // Process each pending match
@@ -161,8 +201,21 @@ export default function AutoUpdateStatus() {
         try {
           const sportKey = findSportKey(match.sport);
           
+          if (!sportKey) {
+            const activeSportTitles = available.filter(s => s.active).map(s => s.title).join(', ') || 'None';
+            results.errors.push(`${match.home_team} vs ${match.away_team}: Cannot map sport "${match.sport}" to an active API key. Active sports: ${activeSportTitles}`);
+            results.notFound++;
+            results.details.push({
+              match: `${match.home_team} vs ${match.away_team}`,
+              status: 'sport_mapping_failed',
+              error: `Cannot map "${match.sport}"`
+            });
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay even for failed mappings
+            continue;
+          }
+          
           console.log(`🔍 Checking match: ${match.home_team} vs ${match.away_team}`);
-          console.log(`   Sport: ${match.sport} → API Key: ${sportKey}`);
+          console.log(`   Sport: "${match.sport}" → API Key: "${sportKey}"`);
 
           // Fetch scores from The Odds API
           const response = await fetch(
@@ -175,13 +228,12 @@ export default function AutoUpdateStatus() {
               alert("❌ Invalid API key. Please check your Odds API key in Settings.");
               break;
             } else if (response.status === 404) {
-              const activeSportTitles = available.filter(s => s.active).map(s => s.title).join(', ') || 'None';
-              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport "${sportKey}" (${match.sport}) not found or not in season. Active sports: ${activeSportTitles}`);
+              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport key "${sportKey}" returned 404 (possibly no scores available for this sport recently).`);
               results.notFound++;
               results.details.push({
                 match: `${match.home_team} vs ${match.away_team}`,
                 status: 'sport_not_available',
-                error: `${match.sport} not currently available`
+                error: `${match.sport} (${sportKey}) not currently providing scores`
               });
               await new Promise(resolve => setTimeout(resolve, 500));
               continue;
@@ -198,7 +250,7 @@ export default function AutoUpdateStatus() {
             
             // Normalize team names for better matching
             const normalizeTeam = (name) => name.toLowerCase()
-              .replace(/\s+(fc|united|city|town|athletic|club|ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|redskins|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|niners|seahawks|bucs|falcons|panthers|vikings|lions|bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks)\s*$/i, '')
+              .replace(/\s+(fc|united|city|town|athletic|club|ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|redskins|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|niners|seahawks|bucs|falcons|panthers|vikings|lions|bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks|avalanche|hurricanes|bruins|penguins|blackhawks|red wings|maple leafs|canadiens|olympiques|dorados|united)\s*$/i, '') // Added more common suffixes
               .replace(/[\W_]+/g, '')
               .trim();
             
@@ -207,10 +259,13 @@ export default function AutoUpdateStatus() {
             const gameHomeNorm = normalizeTeam(game.home_team);
             const gameAwayNorm = normalizeTeam(game.away_team);
             
+            // Basic inclusion checks
             const homeMatch = gameHomeNorm.includes(homeNorm) || homeNorm.includes(gameHomeNorm);
             const awayMatch = gameAwayNorm.includes(awayNorm) || awayNorm.includes(gameAwayNorm);
             
-            const reversedMatch = gameHomeNorm.includes(awayNorm) && gameAwayNorm.includes(homeNorm);
+            // Check for reversed order in API (e.g., if our match has "Team A vs Team B" but API has "Team B vs Team A" and they are the same actual teams)
+            const reversedMatch = (gameHomeNorm.includes(awayNorm) || awayNorm.includes(gameHomeNorm)) && 
+                                  (gameAwayNorm.includes(homeNorm) || homeNorm.includes(gameAwayNorm));
 
             return (homeMatch && awayMatch) || reversedMatch;
           });
@@ -352,8 +407,8 @@ export default function AutoUpdateStatus() {
           <Alert className="mb-6 bg-blue-500/10 border-blue-500/50">
             <AlertCircle className="w-4 h-4 text-blue-400" />
             <AlertDescription className="text-blue-300">
-              <strong>Currently Active Sports:</strong>{" "}
-              {availableSports.filter(s => s.active).map(s => s.title).join(', ') || 'None (off-season for many leagues)'}
+              <strong>Currently Active Sports on API:</strong>{" "}
+              {availableSports.filter(s => s.active).map(s => s.title).join(', ') || 'None (off-season for many leagues or API issues)'}
             </AlertDescription>
           </Alert>
         )}
@@ -445,7 +500,10 @@ export default function AutoUpdateStatus() {
                             </div>
                           ) : (
                             <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
-                              {detail.status}
+                              {detail.status === 'sport_mapping_failed' ? 'Mapping Failed' :
+                               detail.status === 'sport_not_available' ? 'Sport Unavailable' :
+                               detail.status === 'incomplete_score_data' ? 'Incomplete Score' :
+                               'Not Found'}
                             </Badge>
                           )}
                         </div>
