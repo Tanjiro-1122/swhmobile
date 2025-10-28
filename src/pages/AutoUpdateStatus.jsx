@@ -17,6 +17,7 @@ export default function AutoUpdateStatus() {
   const [manualScore, setManualScore] = useState({ winner: "", final_score: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [debugInfo, setDebugInfo] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -65,6 +66,13 @@ export default function AutoUpdateStatus() {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Match.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
+    },
+  });
+
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -97,6 +105,57 @@ export default function AutoUpdateStatus() {
     
     return matchDate < fourHoursAgo;
   });
+
+  // Find matches without predictions
+  const matchesWithoutPredictions = pendingMatches.filter(match => !match.prediction);
+
+  const handleBulkDeleteIncomplete = async () => {
+    if (matchesWithoutPredictions.length === 0) {
+      alert("No incomplete matches to delete!");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `⚠️ Delete ${matchesWithoutPredictions.length} incomplete matches?\n\nThese matches are missing required data and cannot be updated.`
+    );
+    
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setDebugInfo({ step: 'Deleting incomplete matches...', count: matchesWithoutPredictions.length });
+
+    let deleted = 0;
+    let failed = 0;
+
+    for (const match of matchesWithoutPredictions) {
+      try {
+        await deleteMutation.mutateAsync(match.id);
+        deleted++;
+        setDebugInfo({ 
+          step: 'Deleting...', 
+          progress: `${deleted}/${matchesWithoutPredictions.length}`,
+          current: `${match.home_team} vs ${match.away_team}`
+        });
+      } catch (error) {
+        console.error(`Failed to delete match ${match.id}:`, error);
+        failed++;
+      }
+    }
+
+    setDebugInfo({ 
+      step: 'Complete!', 
+      deleted: deleted,
+      failed: failed,
+      message: `Deleted ${deleted} matches${failed > 0 ? `, ${failed} failed` : ''}`
+    });
+
+    setIsDeleting(false);
+    
+    setTimeout(() => {
+      alert(`✅ Deleted ${deleted} incomplete matches!${failed > 0 ? `\n⚠️ ${failed} failed to delete.` : ''}`);
+      setDebugInfo(null);
+    }, 1500);
+  };
 
   const handleManualUpdate = (match) => {
     setSelectedMatchId(match.id);
@@ -267,6 +326,44 @@ export default function AutoUpdateStatus() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Bulk Delete Warning */}
+        {matchesWithoutPredictions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-6"
+          >
+            <Alert className="bg-yellow-500/10 border-yellow-500/50">
+              <AlertTriangle className="w-5 h-5 text-yellow-400" />
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-yellow-300">
+                  <div className="font-bold mb-1">⚠️ {matchesWithoutPredictions.length} Incomplete Matches Found</div>
+                  <div className="text-sm">These matches are missing required data and cannot be updated.</div>
+                </div>
+                <Button
+                  onClick={handleBulkDeleteIncomplete}
+                  disabled={isDeleting}
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700 whitespace-nowrap"
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <X className="w-4 h-4 mr-2" />
+                      Delete All Incomplete
+                    </>
+                  )}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
         {/* Pending Matches */}
         <motion.div
