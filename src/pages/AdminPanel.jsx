@@ -1,289 +1,295 @@
-
 import React, { useState } from "react";
-import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, CheckCircle, XCircle } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, TrendingUp, DollarSign, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion } from "framer-motion";
+import RequireAuth from "../components/auth/RequireAuth";
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterTier, setFilterTier] = useState("all");
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        return null;
+      }
+    },
   });
 
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      return await base44.entities.User.list('-created_date', 1000);
+    },
     initialData: [],
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
+    mutationFn: async ({ userId, updates }) => {
+      return await base44.entities.User.update(userId, updates);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
     },
   });
 
-  // Check if current user is admin
-  if (currentUser?.role !== 'admin') {
+  const handleSubscriptionChange = async (userId, newTier) => {
+    await updateUserMutation.mutateAsync({
+      userId,
+      updates: { subscription_type: newTier }
+    });
+  };
+
+  if (!currentUser || currentUser.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertDescription>
-            Access Denied. Admin privileges required.
-          </AlertDescription>
-        </Alert>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+        <Card className="border-2 border-red-300">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600">You don't have admin permissions to view this page.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const vipLifetimeUsers = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
-  const premiumMonthlyUsers = allUsers.filter(u => u.subscription_type === 'premium_monthly').length;
-  const totalUsers = allUsers.length;
-
-  const filteredUsers = allUsers.filter(user => 
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const makeVIPLifetime = async (user) => {
-    const currentVIPCount = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
+  const filteredUsers = allUsers.filter(user => {
+    const matchesSearch = !searchQuery || 
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    if (currentVIPCount >= 20) {
-      alert('All 20 VIP Lifetime spots are taken!');
-      return;
+    const matchesTier = filterTier === 'all' || user.subscription_type === filterTier;
+    
+    return matchesSearch && matchesTier;
+  });
+
+  const tierCounts = {
+    free: allUsers.filter(u => !u.subscription_type || u.subscription_type === 'free').length,
+    premium_monthly: allUsers.filter(u => u.subscription_type === 'premium_monthly').length,
+    vip_annual: allUsers.filter(u => u.subscription_type === 'vip_annual').length,
+    legacy: allUsers.filter(u => u.subscription_type === 'legacy').length,
+  };
+
+  const totalRevenue = (tierCounts.premium_monthly * 19.99) + (tierCounts.vip_annual * 149.99);
+
+  const getTierBadge = (tier) => {
+    switch(tier) {
+      case 'legacy':
+        return <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">👑 LEGACY</Badge>;
+      case 'vip_annual':
+        return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">💎 VIP ANNUAL</Badge>;
+      case 'premium_monthly':
+        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">⭐ PREMIUM</Badge>;
+      default:
+        return <Badge variant="outline">Free</Badge>;
     }
-
-    const vipNumber = currentVIPCount + 1;
-    await updateUserMutation.mutateAsync({
-      userId: user.id,
-      data: {
-        subscription_type: 'vip_lifetime',
-        vip_member_number: vipNumber
-      }
-    });
   };
 
-  const makeFree = async (user) => {
-    await updateUserMutation.mutateAsync({
-      userId: user.id,
-      data: {
-        subscription_type: 'free',
-        vip_member_number: null
-      }
-    });
-  };
-
-  const makePremium = async (user) => {
-    await updateUserMutation.mutateAsync({
-      userId: user.id,
-      data: {
-        subscription_type: 'premium_monthly',
-        vip_member_number: null
-      }
-    });
+  const getTierIcon = (tier) => {
+    switch(tier) {
+      case 'legacy':
+        return <Star className="w-4 h-4 text-yellow-600" />;
+      case 'vip_annual':
+        return <Crown className="w-4 h-4 text-indigo-600" />;
+      case 'premium_monthly':
+        return <Sparkles className="w-4 h-4 text-purple-600" />;
+      default:
+        return <Users className="w-4 h-4 text-gray-600" />;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Admin Panel</h1>
-          <p className="text-slate-400">Manage user accounts and VIP memberships</p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <Shield className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">Admin Panel</h1>
+              <p className="text-gray-600">Manage users and subscriptions</p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Crown className="w-5 h-5" />
-                  VIP Lifetime Members
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {vipLifetimeUsers}/20
+        <div className="grid md:grid-cols-5 gap-6 mb-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-2 border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <Users className="w-8 h-8 text-gray-600" />
                 </div>
-                <p className="text-yellow-100 text-sm">
-                  {20 - vipLifetimeUsers} spots remaining
-                </p>
+                <div className="text-3xl font-black text-gray-900">{allUsers.length}</div>
+                <div className="text-sm text-gray-600">Total Users</div>
               </CardContent>
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="bg-gradient-to-br from-purple-500 to-indigo-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Premium Monthly
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {premiumMonthlyUsers}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="border-2 border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  {getTierIcon('free')}
                 </div>
-                <p className="text-purple-100 text-sm">
-                  Active subscriptions
-                </p>
+                <div className="text-3xl font-black text-gray-900">{tierCounts.free}</div>
+                <div className="text-sm text-gray-600">Free Users</div>
               </CardContent>
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Total Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {totalUsers}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  {getTierIcon('premium_monthly')}
                 </div>
-                <p className="text-emerald-100 text-sm">
-                  Registered accounts
-                </p>
+                <div className="text-3xl font-black text-purple-600">{tierCounts.premium_monthly}</div>
+                <div className="text-sm text-gray-600">Premium Monthly</div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="border-2 border-indigo-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  {getTierIcon('vip_annual')}
+                </div>
+                <div className="text-3xl font-black text-indigo-600">{tierCounts.vip_annual}</div>
+                <div className="text-sm text-gray-600">VIP Annual</div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <Card className="border-2 border-yellow-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  {getTierIcon('legacy')}
+                </div>
+                <div className="text-3xl font-black text-yellow-600">{tierCounts.legacy}</div>
+                <div className="text-sm text-gray-600">Legacy Members</div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Search Bar */}
-        <Card className="bg-slate-800/50 border-slate-700 mb-6">
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by email or name..."
-                className="pl-12 h-14 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 text-lg"
-              />
+        {/* Revenue Card */}
+        <Card className="border-2 border-green-200 mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <DollarSign className="w-12 h-12 text-green-600" />
+                <div>
+                  <div className="text-4xl font-black text-green-600">${totalRevenue.toFixed(2)}</div>
+                  <div className="text-sm text-gray-600">Estimated Monthly Revenue</div>
+                </div>
+              </div>
+              <div className="text-right text-sm text-gray-600">
+                <div>Premium: ${(tierCounts.premium_monthly * 19.99).toFixed(2)}/mo</div>
+                <div>VIP: ${(tierCounts.vip_annual * 149.99 / 12).toFixed(2)}/mo</div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Users List */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto" />
-              <p className="text-slate-400 mt-4">Loading users...</p>
+        {/* Filters */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={filterTier} onValueChange={setFilterTier}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Tiers</SelectItem>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="premium_monthly">Premium Monthly</SelectItem>
+                  <SelectItem value="vip_annual">VIP Annual</SelectItem>
+                  <SelectItem value="legacy">Legacy</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          ) : filteredUsers.length === 0 ? (
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardContent className="py-12 text-center">
-                <p className="text-slate-400">No users found</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredUsers.map((user, index) => (
-              <motion.div
-                key={user.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                      <div className="flex-1 min-w-[200px]">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="text-lg font-bold text-white">{user.email}</div>
-                          {user.subscription_type === 'vip_lifetime' && (
-                            <Badge className="bg-yellow-500 text-white">
-                              <Crown className="w-3 h-3 mr-1" />
-                              VIP #{user.vip_member_number}
-                            </Badge>
-                          )}
-                          {user.subscription_type === 'premium_monthly' && (
-                            <Badge className="bg-purple-500 text-white">
-                              Premium
-                            </Badge>
-                          )}
-                          {user.subscription_type === 'free' && (
-                            <Badge variant="outline" className="text-slate-400 border-slate-600">
-                              Free
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-slate-400">
-                          {user.full_name || 'No name'} • Joined {new Date(user.created_date).toLocaleDateString()}
-                        </div>
-                        {user.search_count > 0 && (
-                          <div className="text-xs text-slate-500 mt-1">
-                            {user.search_count} searches performed
-                          </div>
-                        )}
-                      </div>
 
-                      <div className="flex gap-2">
-                        {user.subscription_type !== 'vip_lifetime' && vipLifetimeUsers < 20 && (
-                          <Button
-                            onClick={() => makeVIPLifetime(user)}
-                            size="sm"
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                            disabled={updateUserMutation.isLoading}
+            {/* Users Table */}
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8 text-gray-600">Loading users...</div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-600">No users found</div>
+              ) : (
+                filteredUsers.map((user) => (
+                  <Card key={user.id} className="border">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-bold text-gray-900">{user.full_name || 'No name'}</div>
+                          <div className="text-sm text-gray-600">{user.email}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Joined: {new Date(user.created_date).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="min-w-32">
+                            {getTierBadge(user.subscription_type)}
+                          </div>
+                          <Select
+                            value={user.subscription_type || 'free'}
+                            onValueChange={(value) => handleSubscriptionChange(user.id, value)}
                           >
-                            <Crown className="w-4 h-4 mr-1" />
-                            Make VIP
-                          </Button>
-                        )}
-                        {user.subscription_type !== 'premium_monthly' && (
-                          <Button
-                            onClick={() => makePremium(user)}
-                            size="sm"
-                            className="bg-purple-500 hover:bg-purple-600 text-white"
-                            disabled={updateUserMutation.isLoading}
-                          >
-                            Make Premium
-                          </Button>
-                        )}
-                        {user.subscription_type !== 'free' && (
-                          <Button
-                            onClick={() => makeFree(user)}
-                            size="sm"
-                            variant="outline"
-                            className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                            disabled={updateUserMutation.isLoading}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Make Free
-                          </Button>
-                        )}
+                            <SelectTrigger className="w-48">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="premium_monthly">Premium Monthly ($19.99/mo)</SelectItem>
+                              <SelectItem value="vip_annual">VIP Annual ($149.99/yr)</SelectItem>
+                              <SelectItem value="legacy">Legacy (Lifetime)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
-          )}
-        </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
