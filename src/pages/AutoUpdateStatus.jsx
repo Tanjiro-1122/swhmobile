@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, AlertCircle, Shield, CheckCircle, Search } from "lucide-react";
+import { Clock, AlertCircle, Shield, CheckCircle, Search, Save, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 export default function AutoUpdateStatus() {
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [manualScore, setManualScore] = useState({ winner: "", final_score: "" });
-  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -35,7 +34,12 @@ export default function AutoUpdateStatus() {
       queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
       setSelectedMatchId(null);
       setManualScore({ winner: "", final_score: "" });
+      alert("✅ Match result updated successfully!");
     },
+    onError: (error) => {
+      console.error("Update error:", error);
+      alert("❌ Failed to update match. Please try again.");
+    }
   });
 
   if (userLoading) {
@@ -72,6 +76,7 @@ export default function AutoUpdateStatus() {
   });
 
   const handleManualUpdate = (match) => {
+    console.log("Opening manual update for match:", match);
     setSelectedMatchId(match.id);
     setManualScore({
       winner: match.actual_result?.winner || "",
@@ -79,9 +84,17 @@ export default function AutoUpdateStatus() {
     });
   };
 
-  const submitManualUpdate = () => {
+  const submitManualUpdate = (e) => {
+    e.preventDefault();
+    console.log("Submitting update:", { selectedMatchId, manualScore });
+    
     if (!manualScore.winner || !manualScore.final_score) {
-      alert("Please fill in both winner and final score");
+      alert("⚠️ Please fill in both winner and final score");
+      return;
+    }
+
+    if (!manualScore.final_score.includes('-')) {
+      alert("⚠️ Please use format like '37-10' for the score");
       return;
     }
 
@@ -99,7 +112,6 @@ export default function AutoUpdateStatus() {
     });
   };
 
-  // Handle Google search
   const handleSearch = () => {
     if (searchQuery.trim()) {
       const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
@@ -159,7 +171,7 @@ export default function AutoUpdateStatus() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="e.g., Lakers vs Celtics final score October 23 2025"
-                  className="flex-1 bg-slate-900 border-slate-600 text-white"
+                  className="flex-1 bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
                 />
                 <Button
                   onClick={handleSearch}
@@ -240,48 +252,69 @@ export default function AutoUpdateStatus() {
                       </div>
 
                       {selectedMatchId === match.id && (
-                        <motion.div
+                        <motion.form
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
+                          onSubmit={submitManualUpdate}
                           className="mt-4 p-4 bg-slate-800 rounded border border-slate-600"
                         >
-                          <h4 className="text-white font-semibold mb-3">Enter Final Result:</h4>
+                          <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                            <Save className="w-4 h-4" />
+                            Enter Final Result:
+                          </h4>
                           <div className="grid gap-4">
                             <div>
-                              <Label className="text-slate-300">Winner (Full Team Name)</Label>
+                              <Label className="text-slate-300 mb-2 block">Winner (Full Team Name)</Label>
                               <Input
                                 value={manualScore.winner}
                                 onChange={(e) => setManualScore({...manualScore, winner: e.target.value})}
                                 placeholder="e.g., Los Angeles Chargers"
-                                className="bg-slate-900 border-slate-600 text-white"
+                                className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
+                                required
                               />
+                              <p className="text-xs text-slate-500 mt-1">💡 Use the exact team name from the match</p>
                             </div>
                             <div>
-                              <Label className="text-slate-300">Final Score</Label>
+                              <Label className="text-slate-300 mb-2 block">Final Score</Label>
                               <Input
                                 value={manualScore.final_score}
                                 onChange={(e) => setManualScore({...manualScore, final_score: e.target.value})}
                                 placeholder="e.g., 37-10"
-                                className="bg-slate-900 border-slate-600 text-white"
+                                className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
+                                required
                               />
+                              <p className="text-xs text-slate-500 mt-1">💡 Format: [winner score]-[loser score]</p>
                             </div>
                             <div className="flex gap-2">
                               <Button
-                                onClick={submitManualUpdate}
-                                className="bg-green-600 hover:bg-green-700"
+                                type="submit"
+                                disabled={updateMutation.isLoading}
+                                className="bg-green-600 hover:bg-green-700 flex-1"
                               >
-                                Save Result
+                                {updateMutation.isLoading ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                                    Saving...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Save Result
+                                  </>
+                                )}
                               </Button>
                               <Button
+                                type="button"
                                 onClick={() => setSelectedMatchId(null)}
                                 variant="outline"
                                 className="border-slate-600"
                               >
+                                <X className="w-4 h-4 mr-2" />
                                 Cancel
                               </Button>
                             </div>
                           </div>
-                        </motion.div>
+                        </motion.form>
                       )}
                     </motion.div>
                   ))}
