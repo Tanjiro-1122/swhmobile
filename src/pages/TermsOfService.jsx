@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
@@ -96,10 +97,65 @@ export default function TermsOfService() {
 
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">5. Refund Policy</h2>
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mb-4">
+                  <h3 className="text-xl font-bold text-amber-900 mb-2">⚠️ IMPORTANT: Usage-Based Refund Policy</h3>
+                  <p className="text-amber-800 font-semibold">
+                    Refunds are ONLY available if you have used fewer than 20 searches (match predictions, player stats, or team stats combined).
+                  </p>
+                </div>
+
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">5.1 VIP Annual Subscription</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>VIP Lifetime:</strong> 14-day money-back guarantee from purchase date (no questions asked)</li>
-                  <li><strong>Premium Monthly:</strong> No refunds for partial months. Cancel before next billing cycle to avoid charges</li>
-                  <li><strong>Technical Issues:</strong> If our app has significant downtime (>24 hours), contact us for pro-rated refund</li>
+                  <li><strong>14-Day Refund Window:</strong> Request a refund within 14 days of purchase</li>
+                  <li><strong>Usage Limit:</strong> Refund is ONLY granted if you have performed fewer than 20 total searches (match predictions + player stats + team stats)</li>
+                  <li><strong>How to Check Your Usage:</strong> Your total search count is visible in your account settings</li>
+                  <li><strong>No Questions Asked:</strong> If you meet the criteria above (within 14 days + under 20 searches), we'll process your refund immediately</li>
+                  <li><strong>After 20 Searches:</strong> No refunds available, as you have significantly utilized the service</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">5.2 Premium Monthly Subscription</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>No Prorated Refunds:</strong> No refunds for partial months</li>
+                  <li><strong>Cancel Anytime:</strong> Cancel before next billing cycle to avoid future charges</li>
+                  <li><strong>Access Until End of Period:</strong> You retain access until the end of your current billing period after cancellation</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">5.3 Technical Issues</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>Significant Downtime:</strong> If our app has significant downtime (>24 consecutive hours), contact us for a pro-rated refund</li>
+                  <li><strong>Service Failure:</strong> If our AI analysis or data sources fail to work as advertised, we'll investigate and may issue a refund or credit</li>
+                </ul>
+
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-4">
+                  <h3 className="text-lg font-bold text-blue-900 mb-2">📊 How We Calculate Usage</h3>
+                  <p className="text-blue-800 mb-2">Your "search count" includes:</p>
+                  <ul className="list-disc pl-6 space-y-1 text-blue-800">
+                    <li>Each match prediction/analysis</li>
+                    <li>Each player stats lookup</li>
+                    <li>Each team stats lookup</li>
+                    <li>Each "Today's Best Bets" generation</li>
+                  </ul>
+                  <p className="text-blue-800 mt-2">
+                    <strong>Example:</strong> If you've searched 10 matches, looked up 5 players, and 3 teams, your total count is 18 searches (eligible for refund if within 14 days).
+                  </p>
+                </div>
+
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-4">
+                  <h3 className="text-lg font-bold text-red-900 mb-2">🚫 No Refunds After 20 Searches</h3>
+                  <p className="text-red-800">
+                    Once you've performed 20 or more searches, you have substantially utilized our premium AI services and data. 
+                    At this point, refunds are no longer available. This policy protects against abuse while ensuring genuine dissatisfaction 
+                    is addressed fairly.
+                  </p>
+                </div>
+
+                <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">5.4 How to Request a Refund</h3>
+                <p className="mb-2">To request a refund:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>Email:</strong> support@sportswagerhelper.com with your account email and reason</li>
+                  <li><strong>Subject Line:</strong> "Refund Request - [Your Email]"</li>
+                  <li><strong>We'll Check:</strong> Your purchase date and total search count</li>
+                  <li><strong>Processing Time:</strong> Refunds processed within 5-7 business days if approved</li>
                 </ul>
               </section>
 

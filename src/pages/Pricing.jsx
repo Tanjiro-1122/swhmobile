@@ -408,15 +408,30 @@ export default function Pricing() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What's the difference between Premium and VIP?</h3>
-                <p className="text-gray-600">Both have unlimited access to all features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, plus you get a VIP badge and priority support.</p>
+                <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Betting Briefs, Sharp vs Public Money indicators, VIP Discord access, and a VIP badge.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-600">We accept all major credit cards (Visa, Mastercard, Amex, Discover) through Stripe's secure payment processing.</p>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Is there a refund policy?</h3>
-                <p className="text-gray-600">Yes! We offer a 14-day money-back guarantee on all subscriptions. If you're not satisfied, contact support for a full refund.</p>
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                <h3 className="text-lg font-bold text-amber-900 mb-2">⚠️ What is your refund policy?</h3>
+                <div className="text-amber-800 space-y-2">
+                  <p className="font-semibold">VIP Annual: 14-day refund window with usage limit</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>Refunds ONLY if you've used <strong>fewer than 20 searches</strong> (match predictions + player stats + team stats combined)</li>
+                    <li>Must request within 14 days of purchase</li>
+                    <li>After 20 searches, no refunds available</li>
+                  </ul>
+                  <p className="mt-2 font-semibold">Premium Monthly: No partial month refunds</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>Cancel anytime before next billing cycle</li>
+                    <li>Keep access until end of current billing period</li>
+                  </ul>
+                  <p className="mt-2 text-sm">
+                    💡 <strong>Why 20 searches?</strong> This ensures fair usage. If you've tried our AI predictions 20+ times, you've significantly utilized the service.
+                  </p>
+                </div>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What is a Legacy Member?</h3>
