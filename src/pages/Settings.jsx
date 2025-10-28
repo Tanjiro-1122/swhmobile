@@ -1,3 +1,4 @@
+
 import React from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,8 @@ import { Settings as SettingsIcon, Bell, Palette, Database } from "lucide-react"
 import PushNotifications from "../components/mobile/PushNotifications";
 import ThemeToggle from "../components/mobile/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion"; // Added framer-motion import
+import ApiKeySettings from "../components/settings/ApiKeySettings"; // Added ApiKeySettings import
 
 function SettingsContent() {
   const cacheSize = () => {
@@ -51,6 +54,15 @@ function SettingsContent() {
         </div>
 
         <div className="space-y-6">
+          {/* API Key Settings */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <ApiKeySettings />
+          </motion.div>
+
           {/* Theme Settings */}
           <Card className="border-2 border-slate-700 bg-slate-800/50 dark:bg-slate-900/50">
             <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
