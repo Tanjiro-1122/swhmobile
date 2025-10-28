@@ -3,22 +3,21 @@ import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, CheckCircle, XCircle, Trophy, Edit, Calendar, BarChart3, Clock, CreditCard, TrendingUp, Info } from "lucide-react";
+import { Crown, Users, DollarSign, Search, CheckCircle, XCircle, Trophy, Edit, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { useToast } from "@/components/ui/use-toast";
 import StripeWebhookGuide from "../components/admin/StripeWebhookGuide";
-import PendingMatchesSection from "../components/admin/PendingMatchesSection";
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTab, setSelectedTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("users");
   const [editingMatch, setEditingMatch] = useState(null);
   const [matchResults, setMatchResults] = useState({
     winner: "",
@@ -26,7 +25,6 @@ function AdminPanelContent() {
     completed: true
   });
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -49,39 +47,17 @@ function AdminPanelContent() {
     mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to update user: ${error.message || 'Unknown error'}`,
-        variant: "destructive",
-      });
-    }
   });
 
-  const updateMatchResultMutation = useMutation({
-    mutationFn: ({ id, result }) => base44.entities.Match.update(id, { actual_result: result }),
+  const updateMatchMutation = useMutation({
+    mutationFn: ({ matchId, data }) => base44.entities.Match.update(matchId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allMatches'] });
       queryClient.invalidateQueries({ queryKey: ['aiPerformance'] });
       setEditingMatch(null);
       setMatchResults({ winner: "", final_score: "", completed: true });
-      toast({
-        title: "Success",
-        description: "Match result updated successfully",
-      });
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to update match result: ${error.message || 'Unknown error'}`,
-        variant: "destructive",
-      });
-    }
   });
 
   // Check if current user is admin
@@ -101,35 +77,29 @@ function AdminPanelContent() {
   const premiumMonthlyUsers = allUsers.filter(u => u.subscription_type === 'premium_monthly').length;
   const totalUsers = allUsers.length;
 
+  const pendingMatches = allMatches.filter(m => !m.actual_result?.completed);
   const completedMatches = allMatches.filter(m => m.actual_result?.completed);
   const correctPredictions = completedMatches.filter(m => m.prediction?.winner === m.actual_result?.winner).length;
 
-  const overduePendingMatches = allMatches.filter(m =>
-    !m.actual_result?.completed && m.match_date && new Date(m.match_date) < new Date()
-  );
-
-  const filteredUsers = allUsers.filter(user =>
+  const filteredUsers = allUsers.filter(user => 
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const makeVIPLifetime = async (user) => {
     const currentVIPCount = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
-
+    
     if (currentVIPCount >= 20) {
-      toast({
-        title: "VIP Spots Full",
-        description: "All 20 VIP Lifetime spots are taken!",
-        variant: "destructive",
-      });
+      alert('All 20 VIP Lifetime spots are taken!');
       return;
     }
 
+    const vipNumber = currentVIPCount + 1;
     await updateUserMutation.mutateAsync({
       userId: user.id,
       data: {
         subscription_type: 'vip_lifetime',
-        vip_member_number: currentVIPCount + 1
+        vip_member_number: vipNumber
       }
     });
   };
@@ -156,17 +126,15 @@ function AdminPanelContent() {
 
   const handleUpdateMatchResult = async () => {
     if (!matchResults.winner || !matchResults.final_score) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in winner and final score",
-        variant: "destructive",
-      });
+      alert('Please fill in winner and final score');
       return;
     }
 
-    await updateMatchResultMutation.mutateAsync({
-      id: editingMatch.id,
-      result: matchResults
+    await updateMatchMutation.mutateAsync({
+      matchId: editingMatch.id,
+      data: {
+        actual_result: matchResults
+      }
     });
   };
 
@@ -188,155 +156,105 @@ function AdminPanelContent() {
           <p className="text-slate-400">Manage users, VIP memberships, and match results</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-slate-700">
-          <Button
-            variant={selectedTab === 'overview' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('overview')}
-            className={selectedTab === 'overview' ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Overview
-          </Button>
-          <Button
-            variant={selectedTab === 'pending' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('pending')}
-            className={selectedTab === 'pending' ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            Pending Results
-            {overduePendingMatches.length > 0 && (
-              <Badge className="ml-2 bg-red-500 text-white">
-                {overduePendingMatches.length}
-              </Badge>
-            )}
-          </Button>
-          <Button
-            variant={selectedTab === 'users' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('users')}
-            className={selectedTab === 'users' ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Users
-          </Button>
-          <Button
-            variant={selectedTab === 'matches' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('matches')}
-            className={selectedTab === 'matches' ? 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <TrendingUp className="w-4 h-4 mr-2" />
-            All Matches
-          </Button>
-          <Button
-            variant={selectedTab === 'revenue' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('revenue')}
-            className={selectedTab === 'revenue' ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <DollarSign className="w-4 h-4 mr-2" />
-            Revenue
-          </Button>
-          <Button
-            variant={selectedTab === 'stripe' ? 'default' : 'outline'}
-            onClick={() => setSelectedTab('stripe')}
-            className={selectedTab === 'stripe' ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-          >
-            <CreditCard className="w-4 h-4 mr-2" />
-            Stripe Setup
-          </Button>
+        {/* Add Webhook Guide at the top */}
+        <div className="mb-8">
+          <StripeWebhookGuide />
         </div>
 
-        {/* Tab Content */}
-        {selectedTab === 'overview' && (
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Crown className="w-5 h-5" />
-                    VIP Lifetime
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {vipLifetimeUsers}/20
-                  </div>
-                  <p className="text-yellow-100 text-sm">
-                    {20 - vipLifetimeUsers} spots left
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+        {/* Stats Overview */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Crown className="w-5 h-5" />
+                  VIP Lifetime
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-5xl font-black text-white mb-2">
+                  {vipLifetimeUsers}/20
+                </div>
+                <p className="text-yellow-100 text-sm">
+                  {20 - vipLifetimeUsers} spots left
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <Card className="bg-gradient-to-br from-purple-500 to-indigo-600 border-0">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <DollarSign className="w-5 h-5" />
-                    Premium Monthly
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {premiumMonthlyUsers}
-                  </div>
-                  <p className="text-purple-100 text-sm">
-                    Active subscriptions
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="bg-gradient-to-br from-purple-500 to-indigo-600 border-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Premium Monthly
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-5xl font-black text-white mb-2">
+                  {premiumMonthlyUsers}
+                </div>
+                <p className="text-purple-100 text-sm">
+                  Active subscriptions
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Total Users
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {totalUsers}
-                  </div>
-                  <p className="text-emerald-100 text-sm">
-                    Registered accounts
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Total Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-5xl font-black text-white mb-2">
+                  {totalUsers}
+                </div>
+                <p className="text-emerald-100 text-sm">
+                  Registered accounts
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 border-0">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Trophy className="w-5 h-5" />
-                    AI Accuracy
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {completedMatches.length > 0 ? ((correctPredictions / completedMatches.length) * 100).toFixed(1) : 0}%
-                  </div>
-                  <p className="text-blue-100 text-sm">
-                    {correctPredictions}/{completedMatches.length} correct
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-        )}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 border-0">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  AI Accuracy
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-5xl font-black text-white mb-2">
+                  {completedMatches.length > 0 ? ((correctPredictions / completedMatches.length) * 100).toFixed(1) : 0}%
+                </div>
+                <p className="text-blue-100 text-sm">
+                  {correctPredictions}/{completedMatches.length} correct
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
-        {selectedTab === 'pending' && (
-          <div className="space-y-6">
-            <PendingMatchesSection
-              matches={allMatches}
-              onUpdateResult={(id, result) => updateMatchResultMutation.mutate({ id, result })}
-            />
-          </div>
-        )}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 h-auto bg-slate-800">
+            <TabsTrigger value="users" className="py-3 text-lg">
+              <Users className="w-5 h-5 mr-2" />
+              Manage Users
+            </TabsTrigger>
+            <TabsTrigger value="matches" className="py-3 text-lg">
+              <Trophy className="w-5 h-5 mr-2" />
+              Match Results
+            </TabsTrigger>
+          </TabsList>
 
-        {selectedTab === 'users' && (
-          <div>
+          {/* Users Tab */}
+          <TabsContent value="users" className="mt-6">
             <Card className="bg-slate-800/50 border-slate-700 mb-6">
               <CardContent className="pt-6">
                 <div className="relative">
@@ -446,83 +364,86 @@ function AdminPanelContent() {
                 ))
               )}
             </div>
-          </div>
-        )}
+          </TabsContent>
 
-        {selectedTab === 'matches' && (
-          <div>
-            <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-2">
-              <TrendingUp className="w-7 h-7 text-cyan-400" /> All Matches ({allMatches.length})
-            </h2>
-            <p className="text-slate-400 mb-6">A comprehensive list of all recorded matches, sorted by creation date.</p>
+          {/* Matches Tab */}
+          <TabsContent value="matches" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <Card className="bg-orange-500/20 border-orange-500/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Pending Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-5xl font-black text-white mb-2">
+                    {pendingMatches.length}
+                  </div>
+                  <p className="text-orange-200">
+                    Matches waiting for results
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-500/20 border-green-500/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    Completed
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-5xl font-black text-white mb-2">
+                    {completedMatches.length}
+                  </div>
+                  <p className="text-green-200">
+                    Results recorded
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
             {matchesLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
                 <p className="text-slate-400 mt-4">Loading matches...</p>
               </div>
-            ) : allMatches.length === 0 ? (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="py-12 text-center">
-                  <Info className="w-10 h-10 text-slate-500 mx-auto mb-4" />
-                  <p className="text-slate-400 text-lg">No matches found.</p>
-                </CardContent>
-              </Card>
             ) : (
               <div className="space-y-4">
-                {allMatches.map((match, index) => {
-                  const isCompleted = match.actual_result?.completed;
-                  const isOverduePending = !isCompleted && match.match_date && new Date(match.match_date) < new Date();
-                  const wasCorrect = isCompleted && match.prediction?.winner === match.actual_result?.winner;
-
-                  let borderColorClass = 'border-slate-700';
-                  if (isOverduePending) {
-                    borderColorClass = 'border-red-500/50';
-                  } else if (isCompleted) {
-                    borderColorClass = wasCorrect ? 'border-green-500/50' : 'border-red-500/50';
-                  }
-
-                  return (
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Calendar className="w-6 h-6 text-orange-400" />
+                  Pending Matches ({pendingMatches.length})
+                </h3>
+                
+                {pendingMatches.length === 0 ? (
+                  <Card className="bg-slate-800/50 border-slate-700">
+                    <CardContent className="py-12 text-center">
+                      <p className="text-slate-400">No pending matches</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  pendingMatches.map((match, index) => (
                     <motion.div
                       key={match.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      <Card className={`bg-slate-800/50 ${borderColorClass} hover:border-slate-600 transition-colors`}>
+                      <Card className="bg-slate-800/50 border-slate-700 hover:border-orange-500/50 transition-colors">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <Badge variant="secondary">{match.sport}</Badge>
                                 {match.league && <Badge variant="outline">{match.league}</Badge>}
-                                {isOverduePending && (
-                                  <Badge className="bg-red-500 text-white">OVERDUE PENDING</Badge>
-                                )}
-                                {isCompleted ? (
-                                  wasCorrect ? (
-                                    <Badge className="bg-green-100 text-green-800">
-                                      <CheckCircle className="w-3 h-3 mr-1" /> Correct
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="bg-red-100 text-red-800">
-                                      <XCircle className="w-3 h-3 mr-1" /> Incorrect
-                                    </Badge>
-                                  )
-                                ) : (
-                                  <Badge className="bg-orange-100 text-orange-800">
-                                    <Clock className="w-3 h-3 mr-1" /> Pending
-                                  </Badge>
-                                )}
                               </div>
-                              <div className="text-lg font-bold text-white mb-1">
+                              <div className="text-xl font-bold text-white mb-1">
                                 {match.home_team} vs {match.away_team}
                               </div>
                               <div className="text-sm text-slate-400">
-                                Predicted: <span className="text-white">{match.prediction?.winner || 'N/A'}</span>
-                                {isCompleted && ` | Actual: `}
-                                {isCompleted && <span className="text-white font-semibold">{match.actual_result?.winner}</span>}
-                                {isCompleted && match.actual_result?.final_score && ` (${match.actual_result.final_score})`}
+                                Predicted Winner: <span className="text-white font-semibold">{match.prediction?.winner}</span>
+                                {match.prediction?.predicted_score && ` (${match.prediction.predicted_score})`}
                               </div>
                               {match.match_date && (
                                 <div className="text-xs text-slate-500 mt-1">
@@ -532,44 +453,89 @@ function AdminPanelContent() {
                             </div>
                             <Button
                               onClick={() => openEditMatchDialog(match)}
-                              variant="outline"
-                              size="sm"
-                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                              className="bg-orange-500 hover:bg-orange-600 text-white"
                             >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit Result
+                              <Edit className="w-4 h-4 mr-2" />
+                              Record Result
                             </Button>
                           </div>
                         </CardContent>
                       </Card>
                     </motion.div>
-                  );
-                })}
+                  ))
+                )}
+
+                <div className="mt-12">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                    Completed Matches ({completedMatches.length})
+                  </h3>
+                  
+                  {completedMatches.length === 0 ? (
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="py-12 text-center">
+                        <p className="text-slate-400">No completed matches yet</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    completedMatches.slice(0, 10).map((match, index) => {
+                      const wasCorrect = match.prediction?.winner === match.actual_result?.winner;
+                      return (
+                        <motion.div
+                          key={match.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="mb-4"
+                        >
+                          <Card className={`bg-slate-800/50 ${wasCorrect ? 'border-green-500/50' : 'border-red-500/50'}`}>
+                            <CardContent className="p-6">
+                              <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge variant="secondary">{match.sport}</Badge>
+                                    {wasCorrect ? (
+                                      <Badge className="bg-green-100 text-green-800">
+                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                        Correct
+                                      </Badge>
+                                    ) : (
+                                      <Badge className="bg-red-100 text-red-800">
+                                        <XCircle className="w-3 h-3 mr-1" />
+                                        Incorrect
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-lg font-bold text-white mb-1">
+                                    {match.home_team} vs {match.away_team}
+                                  </div>
+                                  <div className="text-sm text-slate-400">
+                                    Predicted: <span className="text-white">{match.prediction?.winner}</span> | 
+                                    Actual: <span className="text-white font-semibold">{match.actual_result?.winner}</span>
+                                    {match.actual_result?.final_score && ` (${match.actual_result.final_score})`}
+                                  </div>
+                                </div>
+                                <Button
+                                  onClick={() => openEditMatchDialog(match)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-slate-600 text-slate-300"
+                                >
+                                  <Edit className="w-4 h-4 mr-1" />
+                                  Edit
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
-          </div>
-        )}
-
-        {selectedTab === 'revenue' && (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-2">
-              <DollarSign className="w-7 h-7 text-purple-400" /> Revenue & Subscriptions
-            </h2>
-            <p className="text-slate-400 mb-6">Detailed revenue information will be displayed here.</p>
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardContent className="py-12 text-center">
-                <Info className="w-10 h-10 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-400 text-lg">Revenue insights coming soon!</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {selectedTab === 'stripe' && (
-          <div className="mb-8">
-            <StripeWebhookGuide />
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Edit Match Result Dialog */}
@@ -587,14 +553,9 @@ function AdminPanelContent() {
                 <div className="text-sm text-slate-400 mb-1">Match</div>
                 <div className="text-xl font-bold">{editingMatch.home_team} vs {editingMatch.away_team}</div>
                 <div className="text-sm text-slate-400 mt-2">
-                  AI Predicted: <span className="text-white font-semibold">{editingMatch.prediction?.winner || 'N/A'}</span>
+                  AI Predicted: <span className="text-white font-semibold">{editingMatch.prediction?.winner}</span>
                   {editingMatch.prediction?.predicted_score && ` (${editingMatch.prediction.predicted_score})`}
                 </div>
-                {editingMatch.match_date && (
-                  <div className="text-xs text-slate-500 mt-1">
-                    Scheduled: {new Date(editingMatch.match_date).toLocaleString()}
-                  </div>
-                )}
               </div>
 
               <div className="space-y-4">
@@ -612,7 +573,7 @@ function AdminPanelContent() {
                       variant="outline"
                       size="sm"
                       onClick={() => setMatchResults({...matchResults, winner: editingMatch.home_team})}
-                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                      className="border-slate-600 text-slate-300"
                     >
                       {editingMatch.home_team}
                     </Button>
@@ -621,7 +582,7 @@ function AdminPanelContent() {
                       variant="outline"
                       size="sm"
                       onClick={() => setMatchResults({...matchResults, winner: editingMatch.away_team})}
-                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                      className="border-slate-600 text-slate-300"
                     >
                       {editingMatch.away_team}
                     </Button>
@@ -661,16 +622,16 @@ function AdminPanelContent() {
             <Button
               variant="outline"
               onClick={() => setEditingMatch(null)}
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              className="border-slate-600 text-slate-300"
             >
               Cancel
             </Button>
             <Button
               onClick={handleUpdateMatchResult}
-              disabled={updateMatchResultMutation.isLoading || !matchResults.winner || !matchResults.final_score}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={updateMatchMutation.isLoading || !matchResults.winner || !matchResults.final_score}
+              className="bg-green-600 hover:bg-green-700"
             >
-              {updateMatchResultMutation.isLoading ? 'Saving...' : 'Save Result'}
+              {updateMatchMutation.isLoading ? 'Saving...' : 'Save Result'}
             </Button>
           </DialogFooter>
         </DialogContent>
