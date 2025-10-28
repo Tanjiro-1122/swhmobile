@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp, RefreshCw, AlertCircle, BarChart3, Trophy, Clock, DollarSign } from "lucide-react";
+import { TrendingUp, RefreshCw, AlertCircle, BarChart3, Trophy, Clock, DollarSign, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -14,88 +14,57 @@ export default function LiveOdds() {
   const [selectedSport, setSelectedSport] = useState("basketball_nba");
 
   const sports = [
-    { id: "basketball_nba", name: "NBA", icon: "🏀" },
-    { id: "americanfootball_nfl", name: "NFL", icon: "🏈" },
-    { id: "soccer_epl", name: "Premier League", icon: "⚽" },
-    { id: "baseball_mlb", name: "MLB", icon: "⚾" },
-    { id: "icehockey_nhl", name: "NHL", icon: "🏒" },
+    { id: "basketball_nba", name: "NBA", icon: "🏀", search: "NBA" },
+    { id: "americanfootball_nfl", name: "NFL", icon: "🏈", search: "NFL" },
+    { id: "soccer_epl", name: "Premier League", icon: "⚽", search: "Premier League" },
+    { id: "baseball_mlb", name: "MLB", icon: "⚾", search: "MLB" },
+    { id: "icehockey_nhl", name: "NHL", icon: "🏒", search: "NHL" },
   ];
+
+  const currentSport = sports.find(s => s.id === selectedSport);
 
   const { data: oddsData, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['liveOdds', selectedSport],
     queryFn: async () => {
       try {
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are a sports odds data collector. Fetch LIVE, REAL-TIME betting odds for upcoming ${sports.find(s => s.id === selectedSport)?.name} games.
+          prompt: `Search Google for: "${currentSport.search} odds today ${dateStr}"
 
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+Visit OddsChecker.com, ESPN.com, or DraftKings.com to find upcoming ${currentSport.name} games and their betting odds.
 
-CRITICAL DATA SOURCES:
-1. DraftKings Sportsbook (draftkings.com/sportsbook)
-2. FanDuel Sportsbook (fanduel.com/sportsbook)
-3. BetMGM (betmgm.com)
-4. Caesars Sportsbook (caesars.com/sportsbook)
-5. OddsChecker (oddschecker.com) - for comparison
+Find 5-10 games scheduled for TODAY or the NEXT FEW DAYS.
 
-SEARCH QUERY:
-"${sports.find(s => s.id === selectedSport)?.name} betting odds today ${new Date().toLocaleDateString()}"
+For EACH game, extract:
+1. Home team name (official team name)
+2. Away team name (official team name)  
+3. Game date/time
+4. Moneyline odds (e.g., "-150" for favorite, "+130" for underdog)
+5. Spread (e.g., "-7.5" points)
+6. Total over/under (e.g., "225.5" points)
 
-REQUIRED: Find at least 5-10 upcoming games with odds from multiple bookmakers.
+Try to get odds from at least 2-3 different sportsbooks (DraftKings, FanDuel, BetMGM).
 
-For each game, provide:
+If you find NO games for today, search for games in the next 3-7 days.
 
-1. MATCH DETAILS:
-   - home_team: Full official team name
-   - away_team: Full official team name
-   - commence_time: Game start time in ISO format
-   - sport_key: "${selectedSport}"
-
-2. BETTING MARKETS (from EACH bookmaker when available):
-   
-   a) MONEYLINE (who will win):
-      - home_ml: e.g., "-150" (negative = favorite)
-      - away_ml: e.g., "+130" (positive = underdog)
-   
-   b) SPREAD (point spread):
-      - home_spread: e.g., "-7.5"
-      - home_spread_price: e.g., "-110"
-      - away_spread: e.g., "+7.5"
-      - away_spread_price: e.g., "-110"
-   
-   c) TOTALS (over/under):
-      - total_line: e.g., "225.5"
-      - over_price: e.g., "-110"
-      - under_price: e.g., "-110"
-
-3. BOOKMAKERS (provide odds from AT LEAST 3 bookmakers):
-   Each bookmaker should have: name, moneyline, spread, totals
-
-VALIDATION:
-✓ All games must be UPCOMING (not completed)
-✓ Start times must be in the future
-✓ Odds must be current (search for "today" or "this week")
-✓ Team names must match official league names
-✓ At least 3 bookmakers per game
-
-IMPORTANT: If no games are scheduled today for ${sports.find(s => s.id === selectedSport)?.name}, return games for the NEXT available game day and specify the date clearly.
-
-Return structured data with ALL fields populated.`,
+Return the data in the specified JSON format.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
               sport: { type: "string" },
               last_updated: { type: "string" },
+              search_date: { type: "string" },
               games: {
                 type: "array",
                 items: {
                   type: "object",
                   properties: {
-                    id: { type: "string" },
                     home_team: { type: "string" },
                     away_team: { type: "string" },
                     commence_time: { type: "string" },
-                    sport_key: { type: "string" },
                     bookmakers: {
                       type: "array",
                       items: {
@@ -126,36 +95,47 @@ Return structured data with ALL fields populated.`,
                               under_price: { type: "string" }
                             }
                           }
-                        }
+                        },
+                        required: ["name"]
                       }
                     }
-                  }
+                  },
+                  required: ["home_team", "away_team", "bookmakers"]
                 }
               }
-            }
+            },
+            required: ["games"]
           }
         });
 
         console.log("✅ Live Odds Data:", result);
+        
+        if (!result || !result.games || result.games.length === 0) {
+          throw new Error("No games found for this sport. Try another sport or check back later.");
+        }
+        
         return result;
       } catch (err) {
         console.error("❌ Failed to fetch odds:", err);
-        throw new Error("Failed to load live odds. Please try again.");
+        throw err;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const formatOdds = (odds) => {
     if (!odds) return "N/A";
     const numOdds = parseInt(odds);
+    if (isNaN(numOdds)) return odds;
     return numOdds > 0 ? `+${odds}` : odds;
   };
 
   const getOddsColor = (odds) => {
     if (!odds) return "text-slate-400";
     const numOdds = parseInt(odds);
+    if (isNaN(numOdds)) return "text-slate-400";
     if (numOdds < 0) return "text-green-400"; // Favorite
     return "text-blue-400"; // Underdog
   };
@@ -171,38 +151,44 @@ Return structured data with ALL fields populated.`,
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <motion.div
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center"
+              >
                 <BarChart3 className="w-6 h-6 text-white" />
-              </div>
+              </motion.div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white">Live Odds</h1>
                 <p className="text-slate-400 text-sm sm:text-base">Compare real-time betting lines</p>
               </div>
             </div>
             
-            <Button
-              onClick={() => refetch()}
-              disabled={isFetching}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 w-full sm:w-auto"
-            >
-              {isFetching ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="mr-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </motion.div>
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh Odds
-                </>
-              )}
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 w-full sm:w-auto"
+              >
+                {isFetching ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="mr-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </motion.div>
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh Odds
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </div>
 
           {/* Sport Selector */}
@@ -213,11 +199,12 @@ Return structured data with ALL fields populated.`,
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedSport(sport.id)}
+                disabled={isLoading || isFetching}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${
                   selectedSport === sport.id
                     ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                }`}
+                } ${(isLoading || isFetching) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <span className="text-xl">{sport.icon}</span>
                 {sport.name}
@@ -226,38 +213,119 @@ Return structured data with ALL fields populated.`,
           </div>
         </motion.div>
 
+        {/* Info Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
+            <Info className="w-4 h-4 text-blue-400" />
+            <AlertDescription className="text-blue-300 text-sm">
+              Odds are fetched from major sportsbooks (DraftKings, FanDuel, BetMGM). Data may take 10-15 seconds to load.
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-20">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-20"
+          >
             <div className="text-center">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 className="w-16 h-16 mx-auto mb-4 border-4 border-green-500 border-t-transparent rounded-full"
               />
-              <p className="text-white text-lg font-semibold">Loading live odds...</p>
-              <p className="text-slate-400 text-sm mt-2">Fetching data from multiple sportsbooks</p>
+              <motion.h3 
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-xl font-semibold text-white mb-2"
+              >
+                Fetching Live Odds...
+              </motion.h3>
+              <p className="text-slate-400 text-sm">Searching {currentSport.name} games from multiple sportsbooks</p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                  className="w-2 h-2 bg-green-500 rounded-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                  className="w-2 h-2 bg-emerald-500 rounded-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                  className="w-2 h-2 bg-teal-500 rounded-full"
+                />
+              </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Error State */}
-        {error && (
-          <Alert variant="destructive" className="bg-red-500/10 border-red-500/50">
-            <AlertCircle className="w-4 h-4" />
-            <AlertDescription className="text-red-300">
-              {error.message || "Failed to load odds. Please try again."}
-            </AlertDescription>
-          </Alert>
+        {error && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/50 mb-6">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription className="text-red-300">
+                {error.message || "Failed to load odds. Please try again or select a different sport."}
+              </AlertDescription>
+            </Alert>
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-12 text-center">
+                <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+                <h3 className="text-xl font-bold text-white mb-2">Unable to Load Odds</h3>
+                <p className="text-slate-400 mb-6">
+                  We couldn't fetch odds for {currentSport.name} at this time. This could be because:
+                </p>
+                <ul className="text-slate-400 text-sm text-left max-w-md mx-auto mb-6 space-y-2">
+                  <li>• No games are scheduled today</li>
+                  <li>• Sportsbooks haven't posted odds yet</li>
+                  <li>• Temporary data source issue</li>
+                </ul>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button onClick={() => refetch()} className="bg-green-600 hover:bg-green-700">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Try Again
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      const nextSportIndex = (sports.findIndex(s => s.id === selectedSport) + 1) % sports.length;
+                      setSelectedSport(sports[nextSportIndex].id);
+                    }}
+                    className="border-slate-600 text-slate-300"
+                  >
+                    Try {sports[(sports.findIndex(s => s.id === selectedSport) + 1) % sports.length].name}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {/* Games Display */}
         {!isLoading && !error && oddsData?.games && oddsData.games.length > 0 && (
-          <div className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="text-slate-400 text-sm">
                 <Clock className="w-4 h-4 inline mr-1" />
-                Last updated: {oddsData.last_updated ? format(new Date(oddsData.last_updated), 'MMM d, HH:mm') : 'Just now'}
+                Last updated: {format(new Date(), 'MMM d, HH:mm')}
               </div>
               <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                 {oddsData.games.length} Games
@@ -266,23 +334,31 @@ Return structured data with ALL fields populated.`,
 
             {oddsData.games.map((game, index) => (
               <motion.div
-                key={game.id || index}
+                key={`${game.home_team}-${game.away_team}-${index}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="bg-slate-800/90 border-slate-700 hover:border-green-500/50 transition-all">
+                <Card className="bg-slate-800/90 border-slate-700 hover:border-green-500/50 transition-all overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Trophy className="w-5 h-5 text-green-400" />
-                          <CardTitle className="text-white text-lg">{game.away_team} @ {game.home_team}</CardTitle>
+                          <CardTitle className="text-white text-lg">
+                            {game.away_team} @ {game.home_team}
+                          </CardTitle>
                         </div>
                         {game.commence_time && (
                           <div className="text-sm text-slate-400">
                             <Clock className="w-4 h-4 inline mr-1" />
-                            {format(new Date(game.commence_time), "MMM d, yyyy 'at' h:mm a")}
+                            {(() => {
+                              try {
+                                return format(new Date(game.commence_time), "MMM d, yyyy 'at' h:mm a");
+                              } catch {
+                                return game.commence_time;
+                              }
+                            })()}
                           </div>
                         )}
                       </div>
@@ -292,8 +368,8 @@ Return structured data with ALL fields populated.`,
                   <CardContent className="p-4 sm:p-6">
                     {game.bookmakers && game.bookmakers.length > 0 ? (
                       <Tabs defaultValue={game.bookmakers[0].name} className="w-full">
-                        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 bg-slate-900/50 p-1">
-                          {game.bookmakers.map((bookmaker) => (
+                        <TabsList className="w-full grid gap-2 bg-slate-900/50 p-1" style={{ gridTemplateColumns: `repeat(${Math.min(game.bookmakers.length, 6)}, minmax(0, 1fr))` }}>
+                          {game.bookmakers.slice(0, 6).map((bookmaker) => (
                             <TabsTrigger
                               key={bookmaker.name}
                               value={bookmaker.name}
@@ -308,58 +384,73 @@ Return structured data with ALL fields populated.`,
                           <TabsContent key={bookmaker.name} value={bookmaker.name} className="mt-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               {/* Moneyline */}
-                              {bookmaker.moneyline && (
-                                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                              {bookmaker.moneyline && (bookmaker.moneyline.home || bookmaker.moneyline.away) && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
+                                >
                                   <div className="flex items-center gap-2 mb-3">
                                     <DollarSign className="w-4 h-4 text-green-400" />
                                     <h4 className="font-bold text-white">Moneyline</h4>
                                   </div>
                                   <div className="space-y-2">
                                     <div className="flex justify-between items-center">
-                                      <span className="text-slate-300 text-sm">{game.away_team}</span>
+                                      <span className="text-slate-300 text-sm truncate mr-2">{game.away_team}</span>
                                       <span className={`font-bold text-lg ${getOddsColor(bookmaker.moneyline.away)}`}>
                                         {formatOdds(bookmaker.moneyline.away)}
                                       </span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                      <span className="text-slate-300 text-sm">{game.home_team}</span>
+                                      <span className="text-slate-300 text-sm truncate mr-2">{game.home_team}</span>
                                       <span className={`font-bold text-lg ${getOddsColor(bookmaker.moneyline.home)}`}>
                                         {formatOdds(bookmaker.moneyline.home)}
                                       </span>
                                     </div>
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
 
                               {/* Spread */}
-                              {bookmaker.spread && (
-                                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                              {bookmaker.spread && (bookmaker.spread.home_line || bookmaker.spread.away_line) && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.3, delay: 0.1 }}
+                                  className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
+                                >
                                   <div className="flex items-center gap-2 mb-3">
                                     <TrendingUp className="w-4 h-4 text-blue-400" />
                                     <h4 className="font-bold text-white">Spread</h4>
                                   </div>
                                   <div className="space-y-2">
                                     <div className="flex justify-between items-center">
-                                      <span className="text-slate-300 text-sm">{game.away_team}</span>
+                                      <span className="text-slate-300 text-sm truncate mr-2">{game.away_team}</span>
                                       <div className="text-right">
-                                        <div className="font-bold text-blue-400">{bookmaker.spread.away_line}</div>
+                                        <div className="font-bold text-blue-400">{bookmaker.spread.away_line || 'N/A'}</div>
                                         <div className="text-xs text-slate-400">{formatOdds(bookmaker.spread.away_price)}</div>
                                       </div>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                      <span className="text-slate-300 text-sm">{game.home_team}</span>
+                                      <span className="text-slate-300 text-sm truncate mr-2">{game.home_team}</span>
                                       <div className="text-right">
-                                        <div className="font-bold text-blue-400">{bookmaker.spread.home_line}</div>
+                                        <div className="font-bold text-blue-400">{bookmaker.spread.home_line || 'N/A'}</div>
                                         <div className="text-xs text-slate-400">{formatOdds(bookmaker.spread.home_price)}</div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
 
                               {/* Totals */}
-                              {bookmaker.totals && (
-                                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                              {bookmaker.totals && bookmaker.totals.line && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: 0.3, delay: 0.2 }}
+                                  className="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
+                                >
                                   <div className="flex items-center gap-2 mb-3">
                                     <BarChart3 className="w-4 h-4 text-purple-400" />
                                     <h4 className="font-bold text-white">Total</h4>
@@ -378,7 +469,7 @@ Return structured data with ALL fields populated.`,
                                       <div className="font-bold text-purple-400">{formatOdds(bookmaker.totals.under_price)}</div>
                                     </div>
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
                             </div>
                           </TabsContent>
@@ -386,6 +477,7 @@ Return structured data with ALL fields populated.`,
                       </Tabs>
                     ) : (
                       <div className="text-center py-8 text-slate-400">
+                        <Info className="w-12 h-12 mx-auto mb-3 opacity-50" />
                         No odds available for this game yet
                       </div>
                     )}
@@ -393,24 +485,29 @@ Return structured data with ALL fields populated.`,
                 </Card>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* Empty State */}
         {!isLoading && !error && (!oddsData || !oddsData.games || oddsData.games.length === 0) && (
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-12 text-center">
-              <BarChart3 className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <h3 className="text-xl font-bold text-white mb-2">No Live Odds Available</h3>
-              <p className="text-slate-400 mb-6">
-                No upcoming games found for {sports.find(s => s.id === selectedSport)?.name}. Try another sport or check back later.
-              </p>
-              <Button onClick={() => refetch()} className="bg-green-600 hover:bg-green-700">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-12 text-center">
+                <BarChart3 className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                <h3 className="text-xl font-bold text-white mb-2">No Live Odds Available</h3>
+                <p className="text-slate-400 mb-6">
+                  No upcoming games found for {currentSport.name}. Try another sport or check back later.
+                </p>
+                <Button onClick={() => refetch()} className="bg-green-600 hover:bg-green-700">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {/* Disclaimer */}
