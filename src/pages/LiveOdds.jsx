@@ -20,6 +20,9 @@ function LiveOddsContent() {
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
+  // Check if user is paid (unlimited access)
+  const isPaidMember = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly';
+
   const sportKeys = {
     "NBA": "basketball_nba",
     "NFL": "americanfootball_nfl",
@@ -29,9 +32,13 @@ function LiveOddsContent() {
   };
 
   const fetchLiveOdds = async (sportKey) => {
-    if (!canLookup() && !hasLoadedOnce) {
-      setShowLimitModal(true);
-      return;
+    // Paid members get unlimited access, no need to check
+    if (!isPaidMember) {
+      // Free users: check if they can lookup
+      if (!canLookup() && !hasLoadedOnce) {
+        setShowLimitModal(true);
+        return;
+      }
     }
 
     setIsRefreshing(true);
@@ -49,7 +56,8 @@ function LiveOddsContent() {
 
       const data = await response.json();
 
-      if (!hasLoadedOnce) {
+      // Record lookup only for free users on first load
+      if (!isPaidMember && !hasLoadedOnce) {
         recordLookup();
         setHasLoadedOnce(true);
       }
@@ -150,7 +158,9 @@ function LiveOddsContent() {
             </div>
             <div>
               <h1 className="text-4xl font-bold text-white">Live Odds</h1>
-              <p className="text-gray-400">Compare real-time odds from top sportsbooks</p>
+              <p className="text-gray-400">
+                {isPaidMember ? '♾️ Unlimited access for paid members' : 'Compare real-time odds from top sportsbooks'}
+              </p>
             </div>
           </div>
           <Button
@@ -165,11 +175,11 @@ function LiveOddsContent() {
 
         <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-8">
           <TabsList className="bg-slate-800 p-1">
-            <TabsTrigger value="basketball_nba" className="data-[state=active]:bg-blue-600">NBA</TabsTrigger>
-            <TabsTrigger value="americanfootball_nfl" className="data-[state=active]:bg-blue-600">NFL</TabsTrigger>
-            <TabsTrigger value="baseball_mlb" className="data-[state=active]:bg-blue-600">MLB</TabsTrigger>
-            <TabsTrigger value="icehockey_nhl" className="data-[state=active]:bg-blue-600">NHL</TabsTrigger>
-            <TabsTrigger value="soccer_epl" className="data-[state=active]:bg-blue-600">Soccer</TabsTrigger>
+            <TabsTrigger value="basketball_nba" className="data-[state=active]:bg-blue-600 text-white">NBA</TabsTrigger>
+            <TabsTrigger value="americanfootball_nfl" className="data-[state=active]:bg-blue-600 text-white">NFL</TabsTrigger>
+            <TabsTrigger value="baseball_mlb" className="data-[state=active]:bg-blue-600 text-white">MLB</TabsTrigger>
+            <TabsTrigger value="icehockey_nhl" className="data-[state=active]:bg-blue-600 text-white">NHL</TabsTrigger>
+            <TabsTrigger value="soccer_epl" className="data-[state=active]:bg-blue-600 text-white">Soccer</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -245,18 +255,18 @@ function LiveOddsContent() {
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Moneyline</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.draftkings.moneyline_home)}</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.draftkings.moneyline_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.draftkings.moneyline_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.draftkings.moneyline_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Spread</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.draftkings.spread_home, game.odds.draftkings.spread_odds_home)}</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.draftkings.spread_away, game.odds.draftkings.spread_odds_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.draftkings.spread_home, game.odds.draftkings.spread_odds_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.draftkings.spread_away, game.odds.draftkings.spread_odds_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Total</div>
-                              <div className="text-white font-bold">
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
+                              <div className="text-white font-bold text-base">
                                 {formatTotal(game.odds.draftkings.total, game.odds.draftkings.over, game.odds.draftkings.under)}
                               </div>
                             </div>
@@ -273,18 +283,18 @@ function LiveOddsContent() {
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Moneyline</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.fanduel.moneyline_home)}</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.fanduel.moneyline_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.fanduel.moneyline_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.fanduel.moneyline_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Spread</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.fanduel.spread_home, game.odds.fanduel.spread_odds_home)}</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.fanduel.spread_away, game.odds.fanduel.spread_odds_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.fanduel.spread_home, game.odds.fanduel.spread_odds_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.fanduel.spread_away, game.odds.fanduel.spread_odds_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Total</div>
-                              <div className="text-white font-bold">
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
+                              <div className="text-white font-bold text-base">
                                 {formatTotal(game.odds.fanduel.total, game.odds.fanduel.over, game.odds.fanduel.under)}
                               </div>
                             </div>
@@ -301,18 +311,18 @@ function LiveOddsContent() {
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Moneyline</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.betmgm.moneyline_home)}</div>
-                              <div className="text-white font-bold">{formatOdds(game.odds.betmgm.moneyline_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Moneyline</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.betmgm.moneyline_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatOdds(game.odds.betmgm.moneyline_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Spread</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.betmgm.spread_home, game.odds.betmgm.spread_odds_home)}</div>
-                              <div className="text-white font-bold">{formatSpread(game.odds.betmgm.spread_away, game.odds.betmgm.spread_odds_away)}</div>
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Spread</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.betmgm.spread_home, game.odds.betmgm.spread_odds_home)}</div>
+                              <div className="text-white font-bold text-lg">{formatSpread(game.odds.betmgm.spread_away, game.odds.betmgm.spread_odds_away)}</div>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-400 mb-1">Total</div>
-                              <div className="text-white font-bold">
+                              <div className="text-sm text-gray-400 mb-1 font-semibold">Total</div>
+                              <div className="text-white font-bold text-base">
                                 {formatTotal(game.odds.betmgm.total, game.odds.betmgm.over, game.odds.betmgm.under)}
                               </div>
                             </div>
