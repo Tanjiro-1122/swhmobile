@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, AlertCircle, Shield, CheckCircle, Search, Save, X, AlertTriangle } from "lucide-react";
+import { Clock, AlertCircle, Shield, CheckCircle, Search, Save, X, AlertTriangle, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -106,8 +105,76 @@ export default function AutoUpdateStatus() {
     return matchDate < fourHoursAgo;
   });
 
-  // Find matches without predictions
   const matchesWithoutPredictions = pendingMatches.filter(match => !match.prediction);
+
+  const handleManualUpdate = (match) => {
+    setSelectedMatchId(match.id);
+    setDebugInfo(null);
+    setManualScore({
+      winner: match.actual_result?.winner || "",
+      final_score: match.actual_result?.final_score || ""
+    });
+  };
+
+  const submitManualUpdate = (e) => {
+    e.preventDefault();
+    setDebugInfo({ step: 'Validating...', winner: manualScore.winner, score: manualScore.final_score });
+    
+    if (!manualScore.winner || !manualScore.final_score) {
+      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Please fill in both fields' });
+      return;
+    }
+
+    if (!manualScore.final_score.includes('-')) {
+      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Score must be in format: 122-116' });
+      return;
+    }
+
+    const currentMatch = pendingMatches.find(m => m.id === selectedMatchId);
+    
+    if (!currentMatch) {
+      setDebugInfo({ step: 'ERROR', message: 'Match not found' });
+      return;
+    }
+
+    setDebugInfo({ step: 'Checking match data...', currentMatch: currentMatch });
+
+    if (!currentMatch.prediction) {
+      setDebugInfo({ 
+        step: 'DATA ERROR', 
+        message: 'Match is missing prediction field. Cannot update.',
+        fix: 'This match was created without required data. Delete it and create a new analysis.'
+      });
+      return;
+    }
+
+    if (currentMatch.betting_markets?.spread?.line && typeof currentMatch.betting_markets.spread.line !== 'string') {
+      currentMatch.betting_markets.spread.line = String(currentMatch.betting_markets.spread.line);
+    }
+
+    const updateData = {
+      ...currentMatch,
+      actual_result: {
+        winner: manualScore.winner.trim(),
+        final_score: manualScore.final_score.trim(),
+        completed: true,
+        last_checked: new Date().toISOString(),
+        source: "Manual Entry"
+      }
+    };
+
+    delete updateData.id;
+    delete updateData.created_date;
+    delete updateData.updated_date;
+    delete updateData.created_by;
+
+    setDebugInfo({ step: 'Sending update...', dataSize: JSON.stringify(updateData).length });
+
+    updateMutation.mutate({
+      id: selectedMatchId,
+      data: updateData
+    });
+  };
 
   const handleBulkDeleteIncomplete = async () => {
     if (matchesWithoutPredictions.length === 0) {
@@ -157,81 +224,6 @@ export default function AutoUpdateStatus() {
     }, 1500);
   };
 
-  const handleManualUpdate = (match) => {
-    setSelectedMatchId(match.id);
-    setDebugInfo(null);
-    setManualScore({
-      winner: match.actual_result?.winner || "",
-      final_score: match.actual_result?.final_score || ""
-    });
-  };
-
-  const submitManualUpdate = (e) => {
-    e.preventDefault();
-    setDebugInfo({ step: 'Validating...', winner: manualScore.winner, score: manualScore.final_score });
-    
-    if (!manualScore.winner || !manualScore.final_score) {
-      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Please fill in both fields' });
-      return;
-    }
-
-    if (!manualScore.final_score.includes('-')) {
-      setDebugInfo({ step: 'VALIDATION ERROR', message: 'Score must be in format: 122-116' });
-      return;
-    }
-
-    // Get the full match object
-    const currentMatch = pendingMatches.find(m => m.id === selectedMatchId);
-    
-    if (!currentMatch) {
-      setDebugInfo({ step: 'ERROR', message: 'Match not found' });
-      return;
-    }
-
-    setDebugInfo({ step: 'Checking match data...', currentMatch: currentMatch });
-
-    // Validate required fields exist
-    if (!currentMatch.prediction) {
-      setDebugInfo({ 
-        step: 'DATA ERROR', 
-        message: 'Match is missing prediction field. Cannot update.',
-        fix: 'This match was created without required data. Delete it and create a new analysis.'
-      });
-      return;
-    }
-
-    // Fix betting_markets.spread.line if it exists and is not a string
-    if (currentMatch.betting_markets?.spread?.line && typeof currentMatch.betting_markets.spread.line !== 'string') {
-      currentMatch.betting_markets.spread.line = String(currentMatch.betting_markets.spread.line);
-      setDebugInfo(prev => ({ ...prev, step: 'Data type fixed: betting_markets.spread.line converted to string' }));
-    }
-
-    // Create updated match with ALL existing fields + our changes
-    const updateData = {
-      ...currentMatch, // Include ALL existing fields
-      actual_result: {
-        winner: manualScore.winner.trim(),
-        final_score: manualScore.final_score.trim(),
-        completed: true,
-        last_checked: new Date().toISOString(),
-        source: "Manual Entry"
-      }
-    };
-
-    // Remove built-in fields that shouldn't be updated
-    delete updateData.id;
-    delete updateData.created_date;
-    delete updateData.updated_date;
-    delete updateData.created_by;
-
-    setDebugInfo({ step: 'Sending update...', dataSize: JSON.stringify(updateData).length });
-
-    updateMutation.mutate({
-      id: selectedMatchId,
-      data: updateData
-    });
-  };
-
   const handleSearch = () => {
     if (searchQuery.trim()) {
       const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
@@ -258,8 +250,8 @@ export default function AutoUpdateStatus() {
               <Clock className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Pending Match Updates</h1>
-              <p className="text-slate-400">Manually update match results that need attention</p>
+              <h1 className="text-3xl font-bold text-white">Auto-Update Status</h1>
+              <p className="text-slate-400">Manually update pending match results</p>
             </div>
           </div>
 
@@ -269,14 +261,13 @@ export default function AutoUpdateStatus() {
           </Badge>
         </motion.div>
 
-        {/* Debug Info Display */}
         {debugInfo && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <Alert className={debugInfo.step === 'ERROR' || debugInfo.step === 'VALIDATION ERROR' || debugInfo.step === 'DATA ERROR' ? 'bg-red-500/10 border-red-500/50' : 'bg-blue-500/10 border-blue-500/50'}>
+            <Alert className={debugInfo.step.includes('ERROR') ? 'bg-red-500/10 border-red-500/50' : 'bg-blue-500/10 border-blue-500/50'}>
               <AlertTriangle className="w-4 h-4" />
               <AlertDescription>
                 <div className="font-bold mb-2">{debugInfo.step}</div>
@@ -288,65 +279,23 @@ export default function AutoUpdateStatus() {
           </motion.div>
         )}
 
-        {/* Google Search Tool */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
-          <Card className="bg-slate-800/90 border-slate-700">
-            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                Quick Google Search
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-slate-300 mb-4">Search for match results, scores, and sports news directly on Google</p>
-              <div className="flex gap-2">
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="e.g., Lakers vs Celtics final score October 23 2025"
-                  className="flex-1 bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
-                />
-                <Button
-                  onClick={handleSearch}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-              </div>
-              <p className="text-xs text-slate-500 mt-2">
-                💡 Tip: Include team names, date, and "final score" for best results
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Bulk Delete Warning */}
         {matchesWithoutPredictions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
             className="mb-6"
           >
             <Alert className="bg-yellow-500/10 border-yellow-500/50">
-              <AlertTriangle className="w-5 h-5 text-yellow-400" />
-              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <AlertTriangle className="w-4 h-4" />
+              <AlertDescription className="flex items-center justify-between">
                 <div className="text-yellow-300">
-                  <div className="font-bold mb-1">⚠️ {matchesWithoutPredictions.length} Incomplete Matches Found</div>
-                  <div className="text-sm">These matches are missing required data and cannot be updated.</div>
+                  <strong>{matchesWithoutPredictions.length}</strong> matches are missing required data and cannot be updated.
                 </div>
                 <Button
                   onClick={handleBulkDeleteIncomplete}
                   disabled={isDeleting}
                   variant="destructive"
-                  className="bg-red-600 hover:bg-red-700 whitespace-nowrap"
+                  size="sm"
                 >
                   {isDeleting ? (
                     <>
@@ -355,7 +304,7 @@ export default function AutoUpdateStatus() {
                     </>
                   ) : (
                     <>
-                      <X className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
                       Delete All Incomplete
                     </>
                   )}
@@ -365,7 +314,33 @@ export default function AutoUpdateStatus() {
           </motion.div>
         )}
 
-        {/* Pending Matches */}
+        <Card className="bg-slate-800/90 border-slate-700 mb-6">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 border-b border-slate-700">
+            <CardTitle className="text-white flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              Google Search Tool
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex gap-2">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Search: Lakers vs Celtics final score..."
+                className="flex-1 bg-slate-900 border-slate-700 text-white"
+              />
+              <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700">
+                <Search className="w-4 h-4 mr-2" />
+                Search Google
+              </Button>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">
+              💡 Tip: Search for "[team1] vs [team2] final score" to find the result
+            </p>
+          </CardContent>
+        </Card>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -436,74 +411,6 @@ export default function AutoUpdateStatus() {
                           </Button>
                         )}
                       </div>
-
-                      {selectedMatchId === match.id && (
-                        <motion.form
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          onSubmit={submitManualUpdate}
-                          className="mt-4 p-4 bg-slate-800 rounded border border-slate-600"
-                        >
-                          <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                            <Save className="w-4 h-4" />
-                            Enter Final Result:
-                          </h4>
-                          <div className="grid gap-4">
-                            <div>
-                              <Label className="text-slate-300 mb-2 block">Winner (Full Team Name)</Label>
-                              <Input
-                                value={manualScore.winner}
-                                onChange={(e) => setManualScore({...manualScore, winner: e.target.value})}
-                                placeholder="e.g., Milwaukee Bucks"
-                                className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-slate-300 mb-2 block">Final Score</Label>
-                              <Input
-                                value={manualScore.final_score}
-                                onChange={(e) => setManualScore({...manualScore, final_score: e.target.value})}
-                                placeholder="e.g., 122-116"
-                                className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
-                                required
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                type="submit"
-                                disabled={updateMutation.isLoading}
-                                className="bg-green-600 hover:bg-green-700 flex-1"
-                              >
-                                {updateMutation.isLoading ? (
-                                  <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                                    Saving...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Save className="w-4 h-4 mr-2" />
-                                    Save
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedMatchId(null);
-                                  setManualScore({ winner: "", final_score: "" });
-                                  setDebugInfo(null);
-                                }}
-                                variant="outline"
-                                className="border-slate-600"
-                              >
-                                <X className="w-4 h-4 mr-2" />
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        </motion.form>
-                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -511,6 +418,94 @@ export default function AutoUpdateStatus() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {selectedMatchId && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedMatchId(null)}
+          >
+            <Card 
+              className="bg-slate-800 border-slate-700 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 border-b border-slate-700">
+                <CardTitle className="text-white flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Save className="w-5 h-5" />
+                    Enter Final Result
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedMatchId(null)}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={submitManualUpdate} className="space-y-4">
+                  <div>
+                    <Label className="text-white mb-2 block">Winner</Label>
+                    <Input
+                      value={manualScore.winner}
+                      onChange={(e) => setManualScore({...manualScore, winner: e.target.value})}
+                      placeholder="e.g., Milwaukee Bucks"
+                      className="bg-slate-900 border-slate-700 text-white"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-white mb-2 block">Final Score</Label>
+                    <Input
+                      value={manualScore.final_score}
+                      onChange={(e) => setManualScore({...manualScore, final_score: e.target.value})}
+                      placeholder="Format: [winner score]-[loser score]"
+                      className="bg-slate-900 border-slate-700 text-white"
+                      required
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      💡 Format: [winner score]-[loser score]
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSelectedMatchId(null)}
+                      className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                      disabled={updateMutation.isLoading}
+                    >
+                      {updateMutation.isLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Result
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </div>
   );

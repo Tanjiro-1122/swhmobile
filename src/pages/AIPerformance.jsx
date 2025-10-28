@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Trophy, TrendingUp, Target, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Trophy, TrendingUp, TrendingDown, Target, Shield, CheckCircle, XCircle, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AIPerformance() {
@@ -12,15 +13,18 @@ export default function AIPerformance() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: allMatches, isLoading } = useQuery({
-    queryKey: ['aiPerformanceMatches'],
-    queryFn: () => base44.entities.Match.list('-created_date', 1000),
+  const { data: completedMatches, isLoading } = useQuery({
+    queryKey: ['completedMatches'],
+    queryFn: async () => {
+      const matches = await base44.entities.Match.list('-created_date', 500);
+      return matches.filter(match => match.actual_result?.completed === true);
+    },
     initialData: [],
   });
 
   if (userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
       </div>
     );
@@ -28,11 +32,11 @@ export default function AIPerformance() {
 
   if (currentUser?.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
         <Card className="max-w-md bg-red-500/10 border-red-500/50">
           <CardContent className="p-8 text-center">
             <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
-            <h2 className="text-2xl font-bold mb-2">Admin Access Required</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Admin Access Required</h2>
             <p className="text-red-300">This page is only accessible to administrators.</p>
           </CardContent>
         </Card>
@@ -40,20 +44,48 @@ export default function AIPerformance() {
     );
   }
 
-  const completedMatches = allMatches.filter(m => m.actual_result?.completed === true);
-  
-  const correctPredictions = completedMatches.filter(m => {
-    const predicted = m.prediction?.winner;
-    const actual = m.actual_result?.winner;
-    return predicted && actual && predicted.toLowerCase().includes(actual.toLowerCase()) || actual.toLowerCase().includes(predicted.toLowerCase());
-  });
+  // Calculate performance metrics
+  const calculatePerformance = () => {
+    let correct = 0;
+    let incorrect = 0;
+    let bySport = {};
+    let byConfidence = { high: { correct: 0, total: 0 }, medium: { correct: 0, total: 0 }, low: { correct: 0, total: 0 } };
 
-  const accuracy = completedMatches.length > 0 
-    ? Math.round((correctPredictions.length / completedMatches.length) * 100) 
-    : 0;
+    completedMatches.forEach(match => {
+      if (!match.prediction?.winner || !match.actual_result?.winner) return;
+
+      const predicted = match.prediction.winner.trim().toLowerCase();
+      const actual = match.actual_result.winner.trim().toLowerCase();
+      const isCorrect = predicted === actual;
+
+      if (isCorrect) correct++;
+      else incorrect++;
+
+      // By sport
+      if (!bySport[match.sport]) {
+        bySport[match.sport] = { correct: 0, total: 0 };
+      }
+      bySport[match.sport].total++;
+      if (isCorrect) bySport[match.sport].correct++;
+
+      // By confidence
+      const confidence = match.prediction.confidence?.toLowerCase() || 'medium';
+      if (byConfidence[confidence]) {
+        byConfidence[confidence].total++;
+        if (isCorrect) byConfidence[confidence].correct++;
+      }
+    });
+
+    const totalPredictions = correct + incorrect;
+    const accuracy = totalPredictions > 0 ? ((correct / totalPredictions) * 100).toFixed(1) : 0;
+
+    return { correct, incorrect, totalPredictions, accuracy, bySport, byConfidence };
+  };
+
+  const performance = calculatePerformance();
 
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -61,12 +93,12 @@ export default function AIPerformance() {
           className="mb-8"
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold">AI Performance</h1>
-              <p className="text-sm sm:text-base opacity-80">Track prediction accuracy and success rate</p>
+              <h1 className="text-3xl font-bold text-white">AI Performance</h1>
+              <p className="text-slate-400">Track prediction accuracy across all matches</p>
             </div>
           </div>
 
@@ -76,91 +108,171 @@ export default function AIPerformance() {
           </Badge>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <Card className="bg-slate-800/90 border-slate-700">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Target className="w-5 h-5 text-blue-400" />
-                <div className="text-sm text-slate-400">Total Predictions</div>
-              </div>
-              <div className="text-3xl sm:text-4xl font-black">{allMatches.length}</div>
-            </CardContent>
-          </Card>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+          </div>
+        ) : completedMatches.length === 0 ? (
+          <Alert className="bg-yellow-500/10 border-yellow-500/50">
+            <Clock className="w-4 h-4" />
+            <AlertDescription className="text-yellow-300">
+              No completed matches yet. Performance metrics will appear once matches are completed and results are updated.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="space-y-6">
+            {/* Overall Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="bg-slate-800/90 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="text-sm text-slate-400 mb-2">Overall Accuracy</div>
+                  <div className="text-4xl font-black text-green-400">{performance.accuracy}%</div>
+                  <div className="text-xs text-slate-500 mt-2">
+                    {performance.correct} / {performance.totalPredictions} correct
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-slate-800/90 border-slate-700">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Trophy className="w-5 h-5 text-yellow-400" />
-                <div className="text-sm text-slate-400">Completed</div>
-              </div>
-              <div className="text-3xl sm:text-4xl font-black">{completedMatches.length}</div>
-            </CardContent>
-          </Card>
+              <Card className="bg-slate-800/90 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    Correct
+                  </div>
+                  <div className="text-4xl font-black text-green-400">{performance.correct}</div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/50">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="w-5 h-5 text-green-400" />
-                <div className="text-sm text-green-300">Correct</div>
-              </div>
-              <div className="text-3xl sm:text-4xl font-black text-green-400">{correctPredictions.length}</div>
-            </CardContent>
-          </Card>
+              <Card className="bg-slate-800/90 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+                    <XCircle className="w-4 h-4 text-red-400" />
+                    Incorrect
+                  </div>
+                  <div className="text-4xl font-black text-red-400">{performance.incorrect}</div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-500/50">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Trophy className="w-5 h-5 text-blue-400" />
-                <div className="text-sm text-blue-300">Accuracy</div>
-              </div>
-              <div className="text-3xl sm:text-4xl font-black text-blue-400">{accuracy}%</div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="bg-slate-800/90 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="text-sm text-slate-400 mb-2">Total Predictions</div>
+                  <div className="text-4xl font-black text-blue-400">{performance.totalPredictions}</div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Info Card */}
-        {completedMatches.length === 0 && (
-          <Card className="bg-yellow-500/10 border-yellow-500/50">
-            <CardContent className="p-6 text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-              <h3 className="text-xl font-bold mb-2">No Completed Matches Yet</h3>
-              <p className="text-slate-400">
-                Performance tracking will appear here once match results are entered in the Auto Update Status page.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Recent Predictions */}
-        {completedMatches.length > 0 && (
-          <Card className="bg-slate-800/90 border-slate-700">
-            <CardHeader>
-              <CardTitle>Recent Completed Predictions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {completedMatches.slice(0, 10).map((match) => {
-                const isCorrect = match.prediction?.winner?.toLowerCase().includes(match.actual_result?.winner?.toLowerCase()) || 
-                                match.actual_result?.winner?.toLowerCase().includes(match.prediction?.winner?.toLowerCase());
-                
-                return (
-                  <div key={match.id} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold mb-1">{match.home_team} vs {match.away_team}</div>
-                        <div className="text-sm text-slate-400">
-                          Predicted: {match.prediction?.winner} | Actual: {match.actual_result?.winner}
+            {/* By Sport */}
+            <Card className="bg-slate-800/90 border-slate-700">
+              <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-400" />
+                  Performance by Sport
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(performance.bySport).map(([sport, stats]) => {
+                    const accuracy = ((stats.correct / stats.total) * 100).toFixed(1);
+                    return (
+                      <div key={sport} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div className="font-bold text-white mb-2">{sport}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-2xl font-black text-green-400">{accuracy}%</div>
+                          <div className="text-sm text-slate-400">{stats.correct}/{stats.total}</div>
+                        </div>
+                        <div className="mt-2 w-full bg-slate-700 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all"
+                            style={{ width: `${accuracy}%` }}
+                          />
                         </div>
                       </div>
-                      <Badge className={isCorrect ? "bg-green-500 text-white" : "bg-red-500 text-white"}>
-                        {isCorrect ? "✓ Correct" : "✗ Wrong"}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* By Confidence Level */}
+            <Card className="bg-slate-800/90 border-slate-700">
+              <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-orange-400" />
+                  Performance by Confidence Level
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(performance.byConfidence)
+                    .filter(([_, stats]) => stats.total > 0)
+                    .map(([confidence, stats]) => {
+                      const accuracy = ((stats.correct / stats.total) * 100).toFixed(1);
+                      const color = confidence === 'high' ? 'green' : confidence === 'medium' ? 'blue' : 'yellow';
+                      return (
+                        <div key={confidence} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                          <Badge className={`bg-${color}-500/20 text-${color}-400 border-${color}-500/30 mb-3`}>
+                            {confidence.toUpperCase()} Confidence
+                          </Badge>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className={`text-3xl font-black text-${color}-400`}>{accuracy}%</div>
+                            <div className="text-sm text-slate-400">{stats.correct}/{stats.total}</div>
+                          </div>
+                          <div className="w-full bg-slate-700 rounded-full h-2">
+                            <div 
+                              className={`bg-${color}-500 h-2 rounded-full transition-all`}
+                              style={{ width: `${accuracy}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Predictions */}
+            <Card className="bg-slate-800/90 border-slate-700">
+              <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700">
+                <CardTitle className="text-white">Recent Completed Predictions</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {completedMatches.slice(0, 10).map((match) => {
+                    const predicted = match.prediction?.winner?.trim().toLowerCase();
+                    const actual = match.actual_result?.winner?.trim().toLowerCase();
+                    const isCorrect = predicted === actual;
+
+                    return (
+                      <div key={match.id} className="flex items-center justify-between bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                        <div className="flex-1">
+                          <div className="font-bold text-white mb-1">
+                            {match.home_team} vs {match.away_team}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Badge variant="secondary">{match.sport}</Badge>
+                            <span className="text-slate-400">
+                              Predicted: {match.prediction?.winner}
+                            </span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-slate-400">
+                              Actual: {match.actual_result?.winner}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          {isCorrect ? (
+                            <CheckCircle className="w-8 h-8 text-green-500" />
+                          ) : (
+                            <XCircle className="w-8 h-8 text-red-500" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>
