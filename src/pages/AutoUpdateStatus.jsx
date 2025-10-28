@@ -202,8 +202,7 @@ export default function AutoUpdateStatus() {
           const sportKey = findSportKey(match.sport);
           
           if (!sportKey) {
-            const activeSportTitles = available.filter(s => s.active).map(s => s.title).join(', ') || 'None';
-            results.errors.push(`${match.home_team} vs ${match.away_team}: Cannot map sport "${match.sport}" to an active API key. Active sports: ${activeSportTitles}`);
+            results.errors.push(`${match.home_team} vs ${match.away_team}: Cannot map sport "${match.sport}" to API key.`);
             results.notFound++;
             results.details.push({
               match: `${match.home_team} vs ${match.away_team}`,
@@ -217,40 +216,74 @@ export default function AutoUpdateStatus() {
           console.log(`🔍 Checking match: ${match.home_team} vs ${match.away_team}`);
           console.log(`   Sport: "${match.sport}" → API Key: "${sportKey}"`);
 
-          // Fetch scores from The Odds API
-          const response = await fetch(
-            `https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${apiKey}&daysFrom=7`,
-            { headers: { 'Accept': 'application/json' } }
-          );
+          // FIXED: Try scores endpoint with correct parameters
+          // The Odds API scores endpoint: /v4/sports/{sport}/scores
+          // Parameters: apiKey (required), daysFrom (optional, default 3, max 3 for free tier)
+          const scoresUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/scores?apiKey=${apiKey}&daysFrom=3`; // Changed daysFrom to 3
+          
+          console.log(`   Fetching: ${scoresUrl.replace(apiKey, 'XXX')}`); // Log URL with masked API key
+          
+          const response = await fetch(scoresUrl, {
+            headers: { 'Accept': 'application/json' }
+          });
 
+          // Better error handling
           if (!response.ok) {
+            const errorText = await response.text(); // Get error text
+            console.error(`   ❌ API Error ${response.status}:`, errorText);
+            
             if (response.status === 401) {
               alert("❌ Invalid API key. Please check your Odds API key in Settings.");
-              break;
-            } else if (response.status === 404) {
-              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport key "${sportKey}" returned 404 (possibly no scores available for this sport recently).`);
+              break; // Stop processing all matches
+            } else if (response.status === 422) { // Specific handling for 422
+              console.error(`   ❌ 422 Error: Sport "${sportKey}" may not support scores endpoint or games are too old`);
+              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport "${sportKey}" doesn't support score lookups or game is too old (>3 days)`);
               results.notFound++;
               results.details.push({
                 match: `${match.home_team} vs ${match.away_team}`,
-                status: 'sport_not_available',
-                error: `${match.sport} (${sportKey}) not currently providing scores`
+                status: 'scores_not_supported',
+                error: `API doesn't support historical scores for ${sportKey}`
               });
               await new Promise(resolve => setTimeout(resolve, 500));
-              continue;
+              continue; // Move to next match
+            } else if (response.status === 404) { // Specific handling for 404
+              results.errors.push(`${match.home_team} vs ${match.away_team}: Sport "${sportKey}" not found`);
+              results.notFound++;
+              results.details.push({
+                match: `${match.home_team} vs ${match.away_team}`,
+                status: 'sport_not_found',
+                error: `Sport key "${sportKey}" not found`
+              });
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue; // Move to next match
+            } else if (response.status === 429) { // Specific handling for 429 rate limit
+              alert("❌ API rate limit exceeded. You've used all your monthly requests. Please wait or upgrade your API plan.");
+              break; // Stop processing all matches
             }
-            throw new Error(`API error: ${response.status} ${response.statusText}`);
+            
+            throw new Error(`API error: ${response.status} - ${errorText}`); // Throw generic error for others
           }
 
           const scores = await response.json();
-          console.log(`   Found ${scores.length} completed games for ${sportKey}`);
+          console.log(`   Found ${scores.length} games for ${sportKey}`); // Updated log message
           
-          // Find matching game with more flexible matching
+          // Log API quota usage
+          const remaining = response.headers.get('x-requests-remaining');
+          const used = response.headers.get('x-requests-used');
+          if (remaining) {
+            console.log(`   📊 API Quota: ${used} used, ${remaining} remaining`);
+          }
+          
+          // Find matching game with flexible matching
           const matchingGame = scores.find(game => {
             if (!game.completed) return false;
             
             // Normalize team names for better matching
             const normalizeTeam = (name) => name.toLowerCase()
-              .replace(/\s+(fc|united|city|town|athletic|club|ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|redskins|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|niners|seahawks|bucs|falcons|panthers|vikings|lions|bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks|avalanche|hurricanes|bruins|penguins|blackhawks|red wings|maple leafs|canadiens|olympiques|dorados|united)\s*$/i, '') // Added more common suffixes
+              .replace(/\s+(fc|united|city|town|athletic|club)\s*$/i, '')
+              .replace(/\s+(ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|commanders|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|49ers|seahawks|buccaneers|falcons|panthers|vikings|lions)\s*$/i, '')
+              .replace(/\s+(bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks|nets|clippers|timberwolves|nuggets|cavaliers|pacers)\s*$/i, '')
+              .replace(/\s+(avalanche|hurricanes|bruins|penguins|blackhawks|red wings|maple leafs|canadiens|lightning|panthers|rangers|islanders|devils|flyers|capitals|blue jackets|predators|blues|wild|jets|flames|oilers|canucks|golden knights|kraken|sharks|ducks|kings|coyotes|stars)\s*$/i, '')
               .replace(/[\W_]+/g, '')
               .trim();
             
@@ -263,11 +296,8 @@ export default function AutoUpdateStatus() {
             const homeMatch = gameHomeNorm.includes(homeNorm) || homeNorm.includes(gameHomeNorm);
             const awayMatch = gameAwayNorm.includes(awayNorm) || awayNorm.includes(gameAwayNorm);
             
-            // Check for reversed order in API (e.g., if our match has "Team A vs Team B" but API has "Team B vs Team A" and they are the same actual teams)
-            const reversedMatch = (gameHomeNorm.includes(awayNorm) || awayNorm.includes(gameHomeNorm)) && 
-                                  (gameAwayNorm.includes(homeNorm) || homeNorm.includes(gameAwayNorm));
-
-            return (homeMatch && awayMatch) || reversedMatch;
+            // Outline removes `reversedMatch` logic, so simplified to:
+            return homeMatch && awayMatch;
           });
 
           if (matchingGame && matchingGame.scores) {
@@ -301,7 +331,7 @@ export default function AutoUpdateStatus() {
                 winner: winner
               });
             } else {
-              console.log(`   ❌ Incomplete score data for game: ${matchingGame.home_team} vs ${matchingGame.away_team}`);
+              console.log(`   ❌ Incomplete score data`); // Simplified log message
               results.notFound++;
               results.details.push({
                 match: `${match.home_team} vs ${match.away_team}`,
@@ -309,11 +339,12 @@ export default function AutoUpdateStatus() {
               });
             }
           } else {
-            console.log(`   ❌ No matching game found in ${scores.length} results`);
+            console.log(`   ❌ No matching completed game found in ${scores.length} results`); // Updated log message
             results.notFound++;
             results.details.push({
               match: `${match.home_team} vs ${match.away_team}`,
-              status: 'not_found_in_results'
+              status: 'not_found_in_results',
+              info: `Checked ${scores.length} games, none matched or completed` // Added info field
             });
           }
 
@@ -502,6 +533,8 @@ export default function AutoUpdateStatus() {
                             <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
                               {detail.status === 'sport_mapping_failed' ? 'Mapping Failed' :
                                detail.status === 'sport_not_available' ? 'Sport Unavailable' :
+                               detail.status === 'scores_not_supported' ? 'Scores API Failed' : // New status
+                               detail.status === 'sport_not_found' ? 'Sport Not Found' : // New status
                                detail.status === 'incomplete_score_data' ? 'Incomplete Score' :
                                'Not Found'}
                             </Badge>
