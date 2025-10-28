@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, TrendingUp, BarChart3, Activity, UserPlus } from "lucide-react";
+import { Crown, Users, DollarSign, Search, TrendingUp, BarChart3, Activity, UserPlus, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -54,12 +54,14 @@ function AdminPanelContent() {
     );
   }
 
-  const vipLifetimeUsers = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
+  // Separate legacy members from paying customers
+  const legacyUsers = allUsers.filter(u => u.subscription_type === 'legacy_lifetime' || u.is_legacy_member);
+  const vipLifetimeUsers = allUsers.filter(u => u.subscription_type === 'vip_lifetime' && !u.is_legacy_member).length;
   const premiumMonthlyUsers = allUsers.filter(u => u.subscription_type === 'premium_monthly').length;
   const freeUsers = allUsers.filter(u => !u.subscription_type || u.subscription_type === 'free').length;
   const totalUsers = allUsers.length;
 
-  // Calculate revenue (estimated)
+  // Calculate revenue (EXCLUDING legacy members)
   const estimatedLifetimeRevenue = vipLifetimeUsers * 149.99;
   const estimatedMonthlyRevenue = premiumMonthlyUsers * 29.99;
   const estimatedTotalRevenue = estimatedLifetimeRevenue + estimatedMonthlyRevenue;
@@ -79,19 +81,23 @@ function AdminPanelContent() {
   );
 
   const makeVIPLifetime = async (user) => {
-    const currentVIPCount = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
-    
-    if (currentVIPCount >= 20) {
-      alert('All 20 VIP Lifetime spots are taken!');
-      return;
-    }
-
-    const vipNumber = currentVIPCount + 1;
     await updateUserMutation.mutateAsync({
       userId: user.id,
       data: {
         subscription_type: 'vip_lifetime',
-        vip_member_number: vipNumber
+        is_legacy_member: false,
+        vip_member_number: null
+      }
+    });
+  };
+
+  const makeLegacy = async (user) => {
+    await updateUserMutation.mutateAsync({
+      userId: user.id,
+      data: {
+        subscription_type: 'legacy_lifetime',
+        is_legacy_member: true,
+        vip_member_number: user.vip_member_number || null
       }
     });
   };
@@ -101,6 +107,7 @@ function AdminPanelContent() {
       userId: user.id,
       data: {
         subscription_type: 'free',
+        is_legacy_member: false,
         vip_member_number: null
       }
     });
@@ -111,6 +118,7 @@ function AdminPanelContent() {
       userId: user.id,
       data: {
         subscription_type: 'premium_monthly',
+        is_legacy_member: false,
         vip_member_number: null
       }
     });
@@ -130,6 +138,18 @@ function AdminPanelContent() {
           <StripeWebhookGuide />
         </div>
 
+        {/* Legacy Members Alert (if any exist) */}
+        {legacyUsers.length > 0 && (
+          <div className="mb-8">
+            <Alert className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400">
+              <Star className="w-5 h-5 text-purple-400" />
+              <AlertDescription className="text-white ml-2">
+                <strong>🌟 {legacyUsers.length} Legacy Members:</strong> Original supporters with complimentary lifetime access. Not included in revenue calculations.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -142,10 +162,10 @@ function AdminPanelContent() {
               </CardHeader>
               <CardContent>
                 <div className="text-5xl font-black text-white mb-2">
-                  {vipLifetimeUsers}/20
+                  {vipLifetimeUsers}
                 </div>
                 <p className="text-yellow-100 text-sm">
-                  {20 - vipLifetimeUsers} spots left
+                  Paying customers
                 </p>
               </CardContent>
             </Card>
@@ -264,10 +284,16 @@ function AdminPanelContent() {
                           <div className="flex-1 min-w-[200px]">
                             <div className="flex items-center gap-3 mb-2">
                               <div className="text-lg font-bold text-white">{user.email}</div>
-                              {user.subscription_type === 'vip_lifetime' && (
+                              {(user.subscription_type === 'legacy_lifetime' || user.is_legacy_member) && (
+                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                                  <Star className="w-3 h-3 mr-1" />
+                                  Legacy Member
+                                </Badge>
+                              )}
+                              {user.subscription_type === 'vip_lifetime' && !user.is_legacy_member && (
                                 <Badge className="bg-yellow-500 text-white">
                                   <Crown className="w-3 h-3 mr-1" />
-                                  VIP #{user.vip_member_number}
+                                  VIP Lifetime
                                 </Badge>
                               )}
                               {user.subscription_type === 'premium_monthly' && (
@@ -291,8 +317,19 @@ function AdminPanelContent() {
                             )}
                           </div>
 
-                          <div className="flex gap-2">
-                            {user.subscription_type !== 'vip_lifetime' && vipLifetimeUsers < 20 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {!user.is_legacy_member && user.subscription_type !== 'legacy_lifetime' && (
+                              <Button
+                                onClick={() => makeLegacy(user)}
+                                size="sm"
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                disabled={updateUserMutation.isLoading}
+                              >
+                                <Star className="w-4 h-4 mr-1" />
+                                Make Legacy
+                              </Button>
+                            )}
+                            {user.subscription_type !== 'vip_lifetime' && !user.is_legacy_member && (
                               <Button
                                 onClick={() => makeVIPLifetime(user)}
                                 size="sm"
@@ -303,7 +340,7 @@ function AdminPanelContent() {
                                 Make VIP
                               </Button>
                             )}
-                            {user.subscription_type !== 'premium_monthly' && (
+                            {user.subscription_type !== 'premium_monthly' && !user.is_legacy_member && (
                               <Button
                                 onClick={() => makePremium(user)}
                                 size="sm"
@@ -313,7 +350,7 @@ function AdminPanelContent() {
                                 Make Premium
                               </Button>
                             )}
-                            {user.subscription_type !== 'free' && (
+                            {user.subscription_type !== 'free' && !user.is_legacy_member && (
                               <Button
                                 onClick={() => makeFree(user)}
                                 size="sm"
@@ -337,7 +374,7 @@ function AdminPanelContent() {
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="mt-6">
             <div className="space-y-6">
-              {/* Revenue Stats */}
+              {/* Revenue Stats (Excluding Legacy) */}
               <div className="grid md:grid-cols-3 gap-6">
                 <Card className="bg-green-500/20 border-green-500/50">
                   <CardHeader>
@@ -352,6 +389,9 @@ function AdminPanelContent() {
                     </div>
                     <p className="text-green-200 text-sm">
                       Lifetime + Monthly
+                    </p>
+                    <p className="text-xs text-green-300 mt-2">
+                      * Excludes {legacyUsers.length} legacy members
                     </p>
                   </CardContent>
                 </Card>
@@ -443,6 +483,27 @@ function AdminPanelContent() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
+                    {legacyUsers.length > 0 && (
+                      <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <Star className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-white flex items-center gap-2">
+                              Legacy Lifetime
+                              <Badge variant="outline" className="text-xs">Not in revenue</Badge>
+                            </div>
+                            <div className="text-sm text-slate-400">Original supporters - Complimentary</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-white">{legacyUsers.length}</div>
+                          <div className="text-xs text-slate-400">{((legacyUsers.length / totalUsers) * 100).toFixed(1)}%</div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
@@ -512,12 +573,12 @@ function AdminPanelContent() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-400 mb-2">Conversion Rate</div>
+                      <div className="text-sm text-slate-400 mb-2">Conversion Rate (Paying)</div>
                       <div className="text-4xl font-bold text-white mb-2">
-                        {(((vipLifetimeUsers + premiumMonthlyUsers) / totalUsers) * 100).toFixed(1)}%
+                        {(((vipLifetimeUsers + premiumMonthlyUsers) / (totalUsers - legacyUsers.length)) * 100).toFixed(1)}%
                       </div>
                       <div className="text-sm text-slate-400">
-                        Free → Paid conversion
+                        Free → Paid conversion (excluding legacy)
                       </div>
                     </div>
                   </div>

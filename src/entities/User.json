@@ -4,19 +4,28 @@
     "enum": [
       "free",
       "vip_lifetime",
-      "premium_monthly"
+      "premium_monthly",
+      "legacy_lifetime"
     ],
     "default": "free",
     "description": "User's subscription tier"
   },
   "vip_member_number": {
     "type": "number",
-    "description": "VIP lifetime member number (1-20)"
+    "description": "VIP lifetime member number (for legacy tracking)"
   },
   "search_count": {
     "type": "number",
     "default": 0,
     "description": "Total number of searches performed"
   },
-  "name": "User"
+  "is_legacy_member": {
+    "type": "boolean",
+    "default": false,
+    "description": "True if user is a legacy member (original 5 users)"
+  },
+  "name": "User",
+  "type": "object",
+  "properties": {},
+  "required": []
 }

@@ -22,7 +22,8 @@ import {
   MessageSquare,
   Trophy,
   LogIn,
-  Calendar
+  Calendar,
+  Star // Added Star icon for legacy members
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -132,6 +133,7 @@ export default function Layout({ children, currentPageName }) {
   });
 
   const isVIP = currentUser?.subscription_type === 'vip_lifetime';
+  const isLegacy = currentUser?.is_legacy_member || currentUser?.subscription_type === 'legacy_lifetime'; // Added isLegacy
   const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = async () => {
@@ -210,7 +212,13 @@ export default function Layout({ children, currentPageName }) {
               
               {isAuthenticated && currentUser ? (
                 <>
-                  {isVIP && (
+                  {isLegacy && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 sm:px-4 py-2 rounded-full">
+                      <Star className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                      <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">LEGACY MEMBER</span>
+                    </div>
+                  )}
+                  {isVIP && !isLegacy && ( // Only show VIP if not a legacy member
                     <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 sm:px-4 py-2 rounded-full">
                       <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                       <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">VIP LIFETIME</span>

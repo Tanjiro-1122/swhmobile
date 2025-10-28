@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, Crown } from "lucide-react";
+import { Lock, UserPlus, Sparkles, Zap, Crown, Star } from "lucide-react"; // Added Star
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -22,8 +22,11 @@ export function useFreeLookupTracker() {
           const user = await base44.auth.me();
           setUserTier(user.subscription_type || 'free');
           
-          // VIP Lifetime and Premium users have unlimited searches
-          if (user.subscription_type === 'vip_lifetime' || user.subscription_type === 'premium_monthly') {
+          // VIP Lifetime, Legacy, and Premium users have unlimited searches
+          if (user.subscription_type === 'vip_lifetime' || 
+              user.subscription_type === 'legacy_lifetime' || 
+              user.is_legacy_member || // Added user.is_legacy_member
+              user.subscription_type === 'premium_monthly') {
             setLookupsRemaining(999); // Unlimited
           }
         } catch (error) {
@@ -39,8 +42,10 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
-      return true; // Unlimited for VIP/Premium
+    if (userTier === 'vip_lifetime' || 
+        userTier === 'legacy_lifetime' || // Added legacy_lifetime
+        userTier === 'premium_monthly') {
+      return true; // Unlimited for VIP/Legacy/Premium
     }
     
     if (!isAuthenticated) {
@@ -57,7 +62,9 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
+    if (userTier === 'vip_lifetime' || 
+        userTier === 'legacy_lifetime' || // Added legacy_lifetime
+        userTier === 'premium_monthly') {
       return true; // Unlimited
     }
     
@@ -121,9 +128,9 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
                   <div className="flex flex-wrap items-center justify-center gap-2 text-base sm:text-xl font-bold text-orange-800">
                     <Crown className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                    <span>First 20 Users Get LIFETIME VIP Access!</span>
+                    <span>Unlock LIFETIME VIP Access!</span> {/* Updated text */}
                   </div>
-                  <p className="text-sm sm:text-base text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
+                  <p className="text-sm sm:text-base text-orange-700 font-semibold mt-1">Unlimited searches forever - Get started today!</p> {/* Updated text */}
                 </div>
               </div>
 
@@ -151,7 +158,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-base sm:text-xl py-6 sm:py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
               >
                 <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
-                Sign Up Free - Claim VIP Lifetime Spot
+                Sign Up Free - Get VIP Lifetime Access
               </Button>
 
               <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6 px-4">
@@ -166,6 +173,23 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
 }
 
 export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
+  // New Legacy Lifetime Member banner
+  if (userTier === 'legacy_lifetime') {
+    return (
+      <div className="bg-gradient-to-r from-purple-500 to-pink-500 border-b-4 border-purple-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Star className="w-6 h-6 text-white" />
+            <span className="text-white font-bold text-lg">
+              ⭐ LEGACY MEMBER - Complimentary Lifetime Access! ⭐
+            </span>
+            <Star className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (userTier === 'vip_lifetime') {
     return (
       <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
@@ -253,7 +277,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
               </p>
               <p className="text-sm opacity-90 flex items-center gap-1">
                 <Crown className="w-4 h-4" />
-                Sign up now - First 20 get LIFETIME VIP access!
+                Sign up now for LIFETIME VIP access!
               </p>
             </div>
           </div>
@@ -263,7 +287,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
             className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Claim VIP Lifetime Spot
+            Get VIP Lifetime Access
           </Button>
         </div>
       </div>
