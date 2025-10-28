@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, TrendingUp, BarChart3, Activity, UserPlus, Star } from "lucide-react";
+import { Crown, Users, DollarSign, Search, TrendingUp, BarChart3, Activity, UserPlus, Star, Shield, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import StripeWebhookGuide from "../components/admin/StripeWebhookGuide";
+import { format } from 'date-fns'; // Import format for date formatting
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("users"); // Default to users tab
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -30,7 +32,7 @@ function AdminPanelContent() {
 
   const { data: allMatches } = useQuery({
     queryKey: ['allMatches'],
-    queryFn: () => base44.entities.Match.list('-created_date', 500),
+    queryFn: () => base44.entities.Match.list('-created_date', 500), // Get recent matches for user search history
     initialData: [],
   });
 
@@ -75,10 +77,15 @@ function AdminPanelContent() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const newUsersLast7Days = allUsers.filter(u => new Date(u.created_date) > sevenDaysAgo).length;
 
-  const filteredUsers = allUsers.filter(user => 
+  const filteredUsers = allUsers.filter(user =>
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Get user search history (what matches users have looked up)
+  const getUserSearchHistory = (userEmail) => {
+    return allMatches.filter(m => m.created_by === userEmail).sort((a,b) => new Date(b.created_date) - new Date(a.created_date));
+  };
 
   const makeVIPLifetime = async (user) => {
     await updateUserMutation.mutateAsync({
@@ -129,116 +136,35 @@ function AdminPanelContent() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Admin Panel</h1>
-          <p className="text-slate-400">Manage users, subscriptions, and view analytics</p>
-        </div>
-
-        {/* Add Webhook Guide at the top */}
-        <div className="mb-8">
-          <StripeWebhookGuide />
-        </div>
-
-        {/* Legacy Members Alert (if any exist) */}
-        {legacyUsers.length > 0 && (
-          <div className="mb-8">
-            <Alert className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400">
-              <Star className="w-5 h-5 text-purple-400" />
-              <AlertDescription className="text-white ml-2">
-                <strong>🌟 {legacyUsers.length} Legacy Members:</strong> Original supporters with complimentary lifetime access. Not included in revenue calculations.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* Stats Overview */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Crown className="w-5 h-5" />
-                  VIP Lifetime
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {vipLifetimeUsers}
-                </div>
-                <p className="text-yellow-100 text-sm">
-                  Paying customers
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-gradient-to-br from-purple-500 to-indigo-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Premium Monthly
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {premiumMonthlyUsers}
-                </div>
-                <p className="text-purple-100 text-sm">
-                  Active subscriptions
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Total Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {totalUsers}
-                </div>
-                <p className="text-emerald-100 text-sm">
-                  Registered accounts
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  New Users (7d)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-5xl font-black text-white mb-2">
-                  {newUsersLast7Days}
-                </div>
-                <p className="text-blue-100 text-sm">
-                  Last 7 days
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+            <Shield className="w-10 h-10 text-indigo-400" />
+            Admin Dashboard
+          </h1>
+          <p className="text-slate-300">Manage users, monitor performance, and track revenue</p>
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 h-auto bg-slate-800">
-            <TabsTrigger value="users" className="py-3 text-lg">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 h-auto bg-slate-800 border border-slate-700">
+            <TabsTrigger value="users" className="py-3 text-lg data-[state=active]:bg-indigo-600">
               <Users className="w-5 h-5 mr-2" />
-              Manage Users
+              Users
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="py-3 text-lg">
+            <TabsTrigger value="user-searches" className="py-3 text-lg data-[state=active]:bg-indigo-600">
+              <Search className="w-5 h-5 mr-2" />
+              User Searches
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="py-3 text-lg data-[state=active]:bg-indigo-600">
               <BarChart3 className="w-5 h-5 mr-2" />
-              Analytics & Revenue
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="py-3 text-lg data-[state=active]:bg-indigo-600">
+              <DollarSign className="w-5 h-5 mr-2" />
+              Revenue
+            </TabsTrigger>
+            <TabsTrigger value="setup" className="py-3 text-lg data-[state=active]:bg-indigo-600">
+              <Settings className="w-5 h-5 mr-2" />
+              Setup
             </TabsTrigger>
           </TabsList>
 
@@ -371,8 +297,270 @@ function AdminPanelContent() {
             </div>
           </TabsContent>
 
-          {/* Analytics Tab */}
+          {/* NEW: User Searches Tab */}
+          <TabsContent value="user-searches" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Search className="w-6 h-6 text-indigo-400" />
+                  User Search History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6">
+                  <Input
+                    placeholder="Search by user email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-slate-900 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  {filteredUsers.filter(user => getUserSearchHistory(user.email).length > 0).length === 0 && (
+                    <div className="text-center py-12">
+                      <Search className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                      <p className="text-slate-400">No search history found for the current filter.</p>
+                    </div>
+                  )}
+                  {filteredUsers.map((user) => {
+                    const userSearches = getUserSearchHistory(user.email);
+                    if (userSearches.length === 0) return null;
+
+                    return (
+                      <Card key={user.id} className="bg-slate-900/50 border-slate-700">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white">{user.full_name || user.email}</div>
+                              <div className="text-sm text-slate-400">{user.email}</div>
+                            </div>
+                            <Badge className={
+                              user.subscription_type === 'legacy_lifetime' || user.is_legacy_member ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
+                              user.subscription_type === 'vip_lifetime' ? 'bg-yellow-500' :
+                              user.subscription_type === 'premium_monthly' ? 'bg-purple-500' :
+                              'bg-slate-600'
+                            }>
+                              {user.subscription_type === 'legacy_lifetime' || user.is_legacy_member ? 'Legacy' :
+                               user.subscription_type === 'vip_lifetime' ? 'VIP Lifetime' :
+                               user.subscription_type === 'premium_monthly' ? 'Premium Monthly' : 'Free'}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="text-sm text-slate-400 mb-3">
+                              Total Searches: <span className="font-bold text-white">{userSearches.length}</span>
+                            </div>
+                            {userSearches.slice(0, 5).map((match, idx) => (
+                              <div key={match.id || idx} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                <div className="flex-1">
+                                  <div className="font-semibold text-white text-sm">
+                                    {match.home_team} vs {match.away_team}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                                    <Badge variant="outline" className="text-xs">{match.sport}</Badge>
+                                    <span>{format(new Date(match.created_date), 'MMM d, yyyy h:mm a')}</span>
+                                  </div>
+                                </div>
+                                {match.actual_result?.completed && (
+                                  <Badge className={
+                                    match.prediction?.winner?.toLowerCase() === match.actual_result?.winner?.toLowerCase()
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : 'bg-red-500/20 text-red-400'
+                                  }>
+                                    {match.prediction?.winner?.toLowerCase() === match.actual_result?.winner?.toLowerCase()
+                                      ? '✓ Correct'
+                                      : '✗ Incorrect'}
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                            {userSearches.length > 5 && (
+                              <div className="text-center text-slate-400 text-sm pt-2">
+                                + {userSearches.length - 5} more searches
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Analytics Tab (General Stats & Growth) */}
           <TabsContent value="analytics" className="mt-6">
+            <div className="space-y-6">
+              {/* Legacy Members Alert (if any exist) */}
+              {legacyUsers.length > 0 && (
+                <div className="mb-8">
+                  <Alert className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400">
+                    <Star className="w-5 h-5 text-purple-400" />
+                    <AlertDescription className="text-white ml-2">
+                      <strong>🌟 {legacyUsers.length} Legacy Members:</strong> Original supporters with complimentary lifetime access. Not included in revenue calculations.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
+              {/* Stats Overview */}
+              <div className="grid md:grid-cols-4 gap-6 mb-8">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 border-0">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Crown className="w-5 h-5" />
+                        VIP Lifetime
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-5xl font-black text-white mb-2">
+                        {vipLifetimeUsers}
+                      </div>
+                      <p className="text-yellow-100 text-sm">
+                        Paying customers
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <Card className="bg-gradient-to-br from-purple-500 to-indigo-600 border-0">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <DollarSign className="w-5 h-5" />
+                        Premium Monthly
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-5xl font-black text-white mb-2">
+                        {premiumMonthlyUsers}
+                      </div>
+                      <p className="text-purple-100 text-sm">
+                        Active subscriptions
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                  <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Total Users
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-5xl font-black text-white mb-2">
+                        {totalUsers}
+                      </div>
+                      <p className="text-emerald-100 text-sm">
+                        Registered accounts
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                  <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 border-0">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5" />
+                        New Users (7d)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-5xl font-black text-white mb-2">
+                        {newUsersLast7Days}
+                      </div>
+                      <p className="text-blue-100 text-sm">
+                        Last 7 days
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+
+              {/* User Activity Stats */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-6 h-6" />
+                    User Activity Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-4 gap-6">
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Active Users</div>
+                      <div className="text-3xl font-bold text-white">{usersWithSearches}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {totalUsers > 0 ? ((usersWithSearches / totalUsers) * 100).toFixed(1) : 0}% of total
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Total Searches</div>
+                      <div className="text-3xl font-bold text-white">{totalSearches}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        All time
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Avg Searches/User</div>
+                      <div className="text-3xl font-bold text-white">{avgSearchesPerUser}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Per user average
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Total Matches</div>
+                      <div className="text-3xl font-bold text-white">{allMatches.length}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Analyzed matches
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Growth Stats */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6" />
+                    Growth Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="text-sm text-slate-400 mb-2">New Users (Last 7 Days)</div>
+                      <div className="text-4xl font-bold text-white mb-2">{newUsersLast7Days}</div>
+                      <div className="text-sm text-slate-400">
+                        {(newUsersLast7Days / 7).toFixed(1)} per day average
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-2">Conversion Rate (Paying)</div>
+                      <div className="text-4xl font-bold text-white mb-2">
+                        {totalUsers > legacyUsers.length ? (((vipLifetimeUsers + premiumMonthlyUsers) / (totalUsers - legacyUsers.length)) * 100).toFixed(1) : 0}%
+                      </div>
+                      <div className="text-sm text-slate-400">
+                        Free → Paid conversion (excluding legacy)
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Revenue Tab */}
+          <TabsContent value="revenue" className="mt-6">
             <div className="space-y-6">
               {/* Revenue Stats (Excluding Legacy) */}
               <div className="grid md:grid-cols-3 gap-6">
@@ -431,48 +619,6 @@ function AdminPanelContent() {
                 </Card>
               </div>
 
-              {/* User Activity Stats */}
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="w-6 h-6" />
-                    User Activity Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-4 gap-6">
-                    <div>
-                      <div className="text-sm text-slate-400 mb-1">Active Users</div>
-                      <div className="text-3xl font-bold text-white">{usersWithSearches}</div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {((usersWithSearches / totalUsers) * 100).toFixed(1)}% of total
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400 mb-1">Total Searches</div>
-                      <div className="text-3xl font-bold text-white">{totalSearches}</div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        All time
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400 mb-1">Avg Searches/User</div>
-                      <div className="text-3xl font-bold text-white">{avgSearchesPerUser}</div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Per user average
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400 mb-1">Total Matches</div>
-                      <div className="text-3xl font-bold text-white">{allMatches.length}</div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Analyzed matches
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Subscription Breakdown */}
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
@@ -499,7 +645,7 @@ function AdminPanelContent() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-white">{legacyUsers.length}</div>
-                          <div className="text-xs text-slate-400">{((legacyUsers.length / totalUsers) * 100).toFixed(1)}%</div>
+                          <div className="text-xs text-slate-400">{totalUsers > 0 ? ((legacyUsers.length / totalUsers) * 100).toFixed(1) : 0}%</div>
                         </div>
                       </div>
                     )}
@@ -516,7 +662,7 @@ function AdminPanelContent() {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-white">{vipLifetimeUsers}</div>
-                        <div className="text-xs text-slate-400">{((vipLifetimeUsers / totalUsers) * 100).toFixed(1)}%</div>
+                        <div className="text-xs text-slate-400">{totalUsers > 0 ? ((vipLifetimeUsers / totalUsers) * 100).toFixed(1) : 0}%</div>
                       </div>
                     </div>
 
@@ -532,7 +678,7 @@ function AdminPanelContent() {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-white">{premiumMonthlyUsers}</div>
-                        <div className="text-xs text-slate-400">{((premiumMonthlyUsers / totalUsers) * 100).toFixed(1)}%</div>
+                        <div className="text-xs text-slate-400">{totalUsers > 0 ? ((premiumMonthlyUsers / totalUsers) * 100).toFixed(1) : 0}%</div>
                       </div>
                     </div>
 
@@ -548,43 +694,18 @@ function AdminPanelContent() {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-white">{freeUsers}</div>
-                        <div className="text-xs text-slate-400">{((freeUsers / totalUsers) * 100).toFixed(1)}%</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Growth Stats */}
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-6 h-6" />
-                    Growth Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-sm text-slate-400 mb-2">New Users (Last 7 Days)</div>
-                      <div className="text-4xl font-bold text-white mb-2">{newUsersLast7Days}</div>
-                      <div className="text-sm text-slate-400">
-                        {(newUsersLast7Days / 7).toFixed(1)} per day average
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400 mb-2">Conversion Rate (Paying)</div>
-                      <div className="text-4xl font-bold text-white mb-2">
-                        {(((vipLifetimeUsers + premiumMonthlyUsers) / (totalUsers - legacyUsers.length)) * 100).toFixed(1)}%
-                      </div>
-                      <div className="text-sm text-slate-400">
-                        Free → Paid conversion (excluding legacy)
+                        <div className="text-xs text-slate-400">{totalUsers > 0 ? ((freeUsers / totalUsers) * 100).toFixed(1) : 0}%</div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Setup Tab */}
+          <TabsContent value="setup" className="mt-6">
+            <StripeWebhookGuide />
           </TabsContent>
         </Tabs>
       </div>

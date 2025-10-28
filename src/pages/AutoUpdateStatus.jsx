@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, CheckCircle, Clock, Zap, Activity, TrendingUp, AlertCircle, Search, XCircle } from "lucide-react";
+import { RefreshCw, CheckCircle, Clock, Zap, Activity, TrendingUp, AlertCircle, Search, XCircle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -16,6 +16,35 @@ export default function AutoUpdateStatus() {
   const [searchAttempt, setSearchAttempt] = useState(0);
   const [lastCheckTime, setLastCheckTime] = useState(null);
   const queryClient = useQueryClient();
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000, // User info is unlikely to change often
+  });
+
+  // Check if current user is admin
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+
+  if (currentUser?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center p-6">
+        <Card className="max-w-md bg-red-500/10 border-red-500/50">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
+            <h2 className="text-2xl font-bold text-white mb-2">Admin Access Required</h2>
+            <p className="text-red-300">This page is only accessible to administrators.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const { data: pendingMatches, isLoading, refetch: refetchPending } = useQuery({
     queryKey: ['pendingMatches'],
@@ -231,6 +260,14 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Admin Badge */}
+        <div className="mb-4">
+          <Badge className="bg-red-500 text-white">
+            <Shield className="w-3 h-3 mr-1" />
+            Admin Only
+          </Badge>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
@@ -238,7 +275,7 @@ If you CANNOT confidently verify the game is finished, return completed: false`,
             Auto-Update Status
           </h1>
           <p className="text-slate-300">
-            Automated system checks match results every hour and updates AI performance
+            Automated system checks match results every hour and updates AI performance (Admin View)
           </p>
         </div>
 

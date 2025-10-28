@@ -1,15 +1,45 @@
+
 import React, { useState } from "react";
-import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Trophy, Target, Calendar, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TrendingUp, TrendingDown, Trophy, Target, Calendar, CheckCircle, XCircle, Clock, AlertCircle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 
-function AIPerformanceContent() {
-  const [timeFilter, setTimeFilter] = useState('all'); // 'all', '7days', '30days'
+export default function AIPerformance() {
+  const [timeFilter, setTimeFilter] = useState('all');
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity, // User role usually doesn't change during a session
+  });
+
+  // Check if current user is admin
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+
+  if (currentUser?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
+        <Card className="max-w-md bg-red-500/10 border-red-500/50">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
+            <h2 className="text-2xl font-bold text-white mb-2">Admin Access Required</h2>
+            <p className="text-red-300">This page is only accessible to administrators.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Fetch all matches with predictions
   const { data: allMatches, isLoading } = useQuery({
@@ -101,6 +131,14 @@ function AIPerformanceContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Admin Badge */}
+        <div className="mb-4">
+          <Badge className="bg-red-500 text-white">
+            <Shield className="w-3 h-3 mr-1" />
+            Admin Only
+          </Badge>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
@@ -108,7 +146,7 @@ function AIPerformanceContent() {
             AI Performance Tracker
           </h1>
           <p className="text-slate-300">
-            Track the accuracy of AI predictions vs actual game results
+            Track the accuracy of AI predictions vs actual game results (Admin View)
           </p>
         </div>
 
@@ -148,14 +186,8 @@ function AIPerformanceContent() {
               <AlertCircle className="w-16 h-16 mx-auto mb-4 text-slate-600" />
               <h3 className="text-xl font-bold text-white mb-2">No Predictions Yet</h3>
               <p className="text-slate-400 mb-6">
-                Start analyzing matches to see AI performance metrics here
+                No matches have been analyzed yet
               </p>
-              <Button
-                onClick={() => window.location.href = '/Dashboard'}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Analyze Your First Match
-              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -379,10 +411,10 @@ function AIPerformanceContent() {
                   How to Track Results
                 </h3>
                 <p className="text-slate-300 text-sm mb-4">
-                  To track AI performance, you need to update match results after games complete:
+                  To track AI performance, results are updated by an administrator:
                 </p>
                 <ol className="list-decimal list-inside text-slate-300 text-sm space-y-2">
-                  <li>Go to <strong>Saved Results</strong> page</li>
+                  <li>Go to <strong>Saved Results</strong> page (Admin Panel)</li>
                   <li>Find a completed match</li>
                   <li>Click "Update Result"</li>
                   <li>Enter the actual winner and final score</li>
@@ -394,13 +426,5 @@ function AIPerformanceContent() {
         )}
       </div>
     </div>
-  );
-}
-
-export default function AIPerformance() {
-  return (
-    <RequireAuth pageName="AI Performance">
-      <AIPerformanceContent />
-    </RequireAuth>
   );
 }
