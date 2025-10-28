@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,17 +14,13 @@ import {
   ThumbsUp,
   ThumbsDown,
   Trash2,
-  Flame,
-  ChevronDown, // Added ChevronDown import
-  ChevronUp    // Added ChevronUp import
+  Flame
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import PlayerRecentGames from "./PlayerRecentGames";
 
 export default function PlayerStatsDisplay({ player, onDelete, index }) {
-  const [expanded, setExpanded] = useState(false); // Added expanded state
-
   const formatDate = (dateString, formatString) => {
     if (!dateString) return null;
     try {
@@ -107,12 +103,11 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }} // Changed initial animation
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.01 }} // Added whileHover animation
     >
-      <Card className="border-2 border-purple-200 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-purple-100">
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
@@ -136,17 +131,14 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
                 </Badge>
               </div>
             </div>
-            {/* Delete button wrapped with motion.div and updated styles */}
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(player.id)}
-                className="hover:bg-red-500/10 hover:text-red-600"
-              >
-                <Trash2 className="w-4 h-4" /> {/* Updated icon size */}
-              </Button>
-            </motion.div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(player.id)}
+              className="hover:bg-white/20 text-white"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
           </div>
           {player.league && (
             <p className="text-purple-100">{player.league}</p>
@@ -298,88 +290,55 @@ export default function PlayerStatsDisplay({ player, onDelete, index }) {
             </Card>
           )}
 
-          {/* New Expand/Hide Details button */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button
-              variant="outline"
-              onClick={() => setExpanded(!expanded)}
-              className="w-full flex items-center justify-center gap-2 text-purple-700 hover:bg-purple-50/50 border-purple-300"
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp className="w-4 h-4" />
-                  Hide Details
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" />
-                  Show Career Highlights & Full Stats
-                </>
-              )}
-            </Button>
-          </motion.div>
-
-          {/* Conditional content for expanded details */}
-          {expanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden" // Prevents content from overflowing during height animation
-            >
-              <div className="space-y-6 pt-6"> {/* Added padding and space for grouped content */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {player.strengths && player.strengths.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                        <ThumbsUp className="w-5 h-5 text-green-600" />
-                        Strengths
-                      </h3>
-                      <div className="space-y-2">
-                        {player.strengths.map((strength, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
-                            <span className="text-sm text-gray-700">{strength}</span>
-                          </div>
-                        ))}
-                      </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {player.strengths && player.strengths.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                  <ThumbsUp className="w-5 h-5 text-green-600" />
+                  Strengths
+                </h3>
+                <div className="space-y-2">
+                  {player.strengths.map((strength, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
+                      <span className="text-sm text-gray-700">{strength}</span>
                     </div>
-                  )}
-                  {player.weaknesses && player.weaknesses.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                        <ThumbsDown className="w-5 h-5 text-red-600" />
-                        Weaknesses
-                      </h3>
-                      <div className="space-y-2">
-                        {player.weaknesses.map((weakness, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500 mt-2" />
-                            <span className="text-sm text-gray-700">{weakness}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
-
-                {player.career_highlights && player.career_highlights.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                      <Award className="w-5 h-5 text-yellow-600" />
-                      Career Highlights
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {player.career_highlights.map((highlight, idx) => (
-                        <Badge key={idx} className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                          {highlight}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            </motion.div>
+            )}
+            {player.weaknesses && player.weaknesses.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                  <ThumbsDown className="w-5 h-5 text-red-600" />
+                  Weaknesses
+                </h3>
+                <div className="space-y-2">
+                  {player.weaknesses.map((weakness, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500 mt-2" />
+                      <span className="text-sm text-gray-700">{weakness}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {player.career_highlights && player.career_highlights.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                <Award className="w-5 h-5 text-yellow-600" />
+                Career Highlights
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {player.career_highlights.map((highlight, idx) => (
+                  <Badge key={idx} className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                    {highlight}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -14,12 +14,6 @@ import BankrollManager from './pages/BankrollManager';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import AIPerformance from './pages/AIPerformance';
-import Settings from './pages/Settings';
-import Pricing from './pages/Pricing';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentCancelled from './pages/PaymentCancelled';
-import Billing from './pages/Billing';
-import AutoUpdateStatus from './pages/AutoUpdateStatus';
 import Layout from './Layout.jsx';
 
 
@@ -40,12 +34,6 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "TermsOfService": TermsOfService,
     "AIPerformance": AIPerformance,
-    "Settings": Settings,
-    "Pricing": Pricing,
-    "PaymentSuccess": PaymentSuccess,
-    "PaymentCancelled": PaymentCancelled,
-    "Billing": Billing,
-    "AutoUpdateStatus": AutoUpdateStatus,
 }
 
 export const pagesConfig = {

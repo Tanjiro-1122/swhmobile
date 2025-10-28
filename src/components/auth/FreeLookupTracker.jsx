@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, Crown, Star } from "lucide-react"; // Added Star
+import { Lock, UserPlus, Sparkles, Zap, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -22,11 +21,8 @@ export function useFreeLookupTracker() {
           const user = await base44.auth.me();
           setUserTier(user.subscription_type || 'free');
           
-          // VIP Lifetime, Legacy, and Premium users have unlimited searches
-          if (user.subscription_type === 'vip_lifetime' || 
-              user.subscription_type === 'legacy_lifetime' || 
-              user.is_legacy_member || // Added user.is_legacy_member
-              user.subscription_type === 'premium_monthly') {
+          // VIP Lifetime and Premium users have unlimited searches
+          if (user.subscription_type === 'vip_lifetime' || user.subscription_type === 'premium_monthly') {
             setLookupsRemaining(999); // Unlimited
           }
         } catch (error) {
@@ -42,10 +38,8 @@ export function useFreeLookupTracker() {
   }, []);
 
   const recordLookup = () => {
-    if (userTier === 'vip_lifetime' || 
-        userTier === 'legacy_lifetime' || // Added legacy_lifetime
-        userTier === 'premium_monthly') {
-      return true; // Unlimited for VIP/Legacy/Premium
+    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
+      return true; // Unlimited for VIP/Premium
     }
     
     if (!isAuthenticated) {
@@ -62,9 +56,7 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    if (userTier === 'vip_lifetime' || 
-        userTier === 'legacy_lifetime' || // Added legacy_lifetime
-        userTier === 'premium_monthly') {
+    if (userTier === 'vip_lifetime' || userTier === 'premium_monthly') {
       return true; // Unlimited
     }
     
@@ -96,75 +88,71 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.8, opacity: 0, y: 50 }}
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0, y: 50 }}
-          transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg"
         >
-          <Card className="border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-6 sm:p-8">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
-                  <Lock className="w-6 h-6 sm:w-8 sm:h-8" />
+          <Card className="max-w-lg w-full border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <Lock className="w-8 h-8" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-2xl sm:text-3xl font-black mb-1 sm:mb-2">🔒 Free Lookups Used!</CardTitle>
-                  <p className="text-base sm:text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
+                <div>
+                  <CardTitle className="text-3xl font-black mb-2">🔒 Free Lookups Used!</CardTitle>
+                  <p className="text-lg text-emerald-100">Sign up for the VIP Lifetime offer!</p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6 sm:p-8">
-              <div className="text-center mb-6 sm:mb-8">
+            <CardContent className="p-8">
+              <div className="text-center mb-8">
                 <div className="relative inline-block mb-4">
-                  <div className="text-6xl sm:text-8xl font-black text-gray-200">0/5</div>
+                  <div className="text-8xl font-black text-gray-200">0/5</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap className="w-12 h-12 sm:w-16 sm:h-16 text-emerald-500 animate-pulse" />
+                    <Zap className="w-16 h-16 text-emerald-500 animate-pulse" />
                   </div>
                 </div>
-                <p className="text-lg sm:text-xl text-gray-700 font-semibold px-4">
+                <p className="text-xl text-gray-700 font-semibold">
                   You've used all 5 free lookups!
                 </p>
-                <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-base sm:text-xl font-bold text-orange-800">
-                    <Crown className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                    <span>Unlock LIFETIME VIP Access!</span> {/* Updated text */}
+                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border-2 border-yellow-300">
+                  <div className="flex items-center gap-2 justify-center text-xl font-bold text-orange-800">
+                    <Crown className="w-6 h-6" />
+                    First 20 Users Get LIFETIME VIP Access!
                   </div>
-                  <p className="text-sm sm:text-base text-orange-700 font-semibold mt-1">Unlimited searches forever - Get started today!</p> {/* Updated text */}
+                  <p className="text-orange-700 font-semibold mt-1">Unlimited searches forever - Sign up now!</p>
                 </div>
               </div>
 
-              <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-base font-semibold text-gray-800">Unlimited Match Analysis</span>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Player Stats</span>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-base font-semibold text-gray-800">Unlimited Player Stats</span>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
-                  <span className="text-sm sm:text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Sparkles className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                  <span className="text-base font-semibold text-gray-800">Unlimited Team Analysis</span>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 flex-shrink-0" />
-                  <span className="text-sm sm:text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
+                  <Crown className="w-6 h-6 text-yellow-600 flex-shrink-0" />
+                  <span className="text-base font-semibold text-gray-800">VIP Lifetime Member Badge</span>
                 </div>
               </div>
 
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  onClick={handleSignup}
-                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-base sm:text-xl py-6 sm:py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
-                >
-                  <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
-                  Sign Up Free - Get VIP Lifetime Access
-                </Button>
-              </motion.div>
+              <Button
+                onClick={handleSignup}
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white text-xl py-8 font-bold shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40"
+              >
+                <UserPlus className="w-6 h-6 mr-3" />
+                Sign Up Free - Claim VIP Lifetime Spot
+              </Button>
 
-              <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6 px-4">
+              <p className="text-center text-sm text-gray-500 mt-6">
                 Already have an account? Click above to sign in
               </p>
             </CardContent>
@@ -176,23 +164,6 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
 }
 
 export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
-  // New Legacy Lifetime Member banner
-  if (userTier === 'legacy_lifetime') {
-    return (
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 border-b-4 border-purple-300 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-center gap-3">
-            <Star className="w-6 h-6 text-white" />
-            <span className="text-white font-bold text-lg">
-              ⭐ LEGACY MEMBER - Complimentary Lifetime Access! ⭐
-            </span>
-            <Star className="w-6 h-6 text-white" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (userTier === 'vip_lifetime') {
     return (
       <div className="bg-gradient-to-r from-yellow-500 to-orange-500 border-b-4 border-yellow-300 shadow-lg">
@@ -280,7 +251,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
               </p>
               <p className="text-sm opacity-90 flex items-center gap-1">
                 <Crown className="w-4 h-4" />
-                Sign up now for LIFETIME VIP access!
+                Sign up now - First 20 get LIFETIME VIP access!
               </p>
             </div>
           </div>
@@ -290,7 +261,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
             className="bg-white hover:bg-gray-100 text-emerald-700 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Get VIP Lifetime Access
+            Claim VIP Lifetime Spot
           </Button>
         </div>
       </div>

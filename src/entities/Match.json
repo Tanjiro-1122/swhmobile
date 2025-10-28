@@ -23,10 +23,6 @@
       "format": "date-time",
       "description": "Date and time of the match"
     },
-    "venue": {
-      "type": "string",
-      "description": "Stadium or venue name"
-    },
     "home_win_probability": {
       "type": "number",
       "description": "Probability of home team winning (0-100)"
@@ -64,24 +60,6 @@
         }
       },
       "description": "Match outcome prediction"
-    },
-    "actual_result": {
-      "type": "object",
-      "properties": {
-        "winner": {
-          "type": "string",
-          "description": "Actual winner team name"
-        },
-        "final_score": {
-          "type": "string",
-          "description": "Actual final score"
-        },
-        "completed": {
-          "type": "boolean",
-          "description": "Whether the match is completed"
-        }
-      },
-      "description": "Actual match result (filled after game completes)"
     },
     "key_factors": {
       "type": "array",
@@ -155,17 +133,6 @@
             }
           }
         },
-        "spread": {
-          "type": "object",
-          "properties": {
-            "line": {
-              "type": "string"
-            },
-            "cover_probability": {
-              "type": "number"
-            }
-          }
-        },
         "both_teams_score": {
           "type": "object",
           "properties": {
@@ -220,9 +187,6 @@
           },
           "impact": {
             "type": "string"
-          },
-          "games_missed": {
-            "type": "number"
           }
         }
       },
@@ -240,9 +204,6 @@
         "wind_speed": {
           "type": "string"
         },
-        "precipitation": {
-          "type": "string"
-        },
         "impact_rating": {
           "type": "string"
         },
@@ -251,48 +212,6 @@
         }
       },
       "description": "Weather conditions and impact on game"
-    },
-    "head_to_head": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "result": {
-            "type": "string"
-          },
-          "score": {
-            "type": "string"
-          }
-        }
-      },
-      "description": "Historical head-to-head results"
-    },
-    "data_sources": {
-      "type": "object",
-      "properties": {
-        "stats_source": {
-          "type": "string"
-        },
-        "schedule_source": {
-          "type": "string"
-        },
-        "injury_source": {
-          "type": "string"
-        },
-        "weather_source": {
-          "type": "string"
-        },
-        "head_to_head_source": {
-          "type": "string"
-        },
-        "betting_market_source": {
-          "type": "string"
-        }
-      },
-      "description": "Sources used for data"
     }
   },
   "required": [

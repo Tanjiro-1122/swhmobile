@@ -24,11 +24,7 @@ export default function SearchBar({ onSearch, isSearching }) {
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
-        <motion.div 
-          className="relative group"
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        >
+        <div className="relative group">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-blue-400 transition-colors z-10" />
           <Input
             value={query}
@@ -37,33 +33,24 @@ export default function SearchBar({ onSearch, isSearching }) {
             className="pl-16 pr-36 h-16 text-lg bg-slate-800/50 border-2 border-slate-700 focus:border-blue-500 text-white placeholder:text-slate-500 rounded-xl transition-all"
             disabled={isSearching}
           />
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <Button
+            type="submit"
+            disabled={isSearching || !query.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-blue-500/50 transition-all hover:scale-105"
           >
-            <Button
-              type="submit"
-              disabled={isSearching || !query.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-blue-500/50 transition-all"
-            >
-              {isSearching ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
-                  />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5 mr-2" />
-                  Analyze
-                </>
-              )}
-            </Button>
-          </motion.div>
-        </motion.div>
+            {isSearching ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Zap className="w-5 h-5 mr-2" />
+                Analyze
+              </>
+            )}
+          </Button>
+        </div>
       </form>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -71,11 +58,8 @@ export default function SearchBar({ onSearch, isSearching }) {
         {popularSearches.map((search, index) => (
           <motion.button
             key={index}
-            whileHover={{ scale: 1.05, y: -2 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
             onClick={() => {
               setQuery(search);
               onSearch(search);
