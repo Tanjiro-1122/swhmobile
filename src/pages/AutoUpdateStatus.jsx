@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, CheckCircle, XCircle, Clock, AlertCircle, Shield, Trophy, TrendingUp, Settings } from "lucide-react";
+import { RefreshCw, CheckCircle, XCircle, Clock, AlertCircle, Shield, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -20,12 +19,28 @@ export default function AutoUpdateStatus() {
   const [availableSports, setAvailableSports] = useState([]);
   const queryClient = useQueryClient();
 
+  // Call ALL hooks before any conditional returns
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  // Check if current user is admin
+  const { data: allMatches, isLoading } = useQuery({
+    queryKey: ['autoUpdateMatches'],
+    queryFn: () => base44.entities.Match.list('-created_date', 1000),
+    initialData: [],
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Match.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
+      setSelectedMatchId(null);
+      setManualScore({ winner: "", final_score: "" });
+    },
+  });
+
+  // NOW we can do conditional rendering AFTER all hooks are called
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -47,21 +62,6 @@ export default function AutoUpdateStatus() {
       </div>
     );
   }
-
-  const { data: allMatches, isLoading } = useQuery({
-    queryKey: ['autoUpdateMatches'],
-    queryFn: () => base44.entities.Match.list('-created_date', 1000),
-    initialData: [],
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Match.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['autoUpdateMatches'] });
-      setSelectedMatchId(null);
-      setManualScore({ winner: "", final_score: "" });
-    },
-  });
 
   // Get pending matches (games that should have finished but haven't been updated)
   const pendingMatches = allMatches.filter(match => {
@@ -88,8 +88,6 @@ export default function AutoUpdateStatus() {
         setAvailableSports(sports);
         console.log("✅ Available sports from The Odds API:", sports);
         return sports;
-      } else {
-        console.error("Failed to fetch available sports list:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch available sports:", error);
@@ -144,7 +142,7 @@ export default function AutoUpdateStatus() {
         // Try direct match first
         const possibleKeys = sportMapping[sportName] || [sportName.toLowerCase().replace(/\s+/g, '_')];
         
-        // Check against available sports from the API
+        // Check against available sports
         for (const key of possibleKeys) {
           const found = available.find(s => s.key === key && s.active);
           if (found) {
@@ -152,9 +150,8 @@ export default function AutoUpdateStatus() {
           }
         }
         
-        // If no match found among active sports, return the first possible key as a fallback
-        // The API call will then potentially return a 404 if the sport isn't available/active.
-        return possibleKeys[0] || sportName.toLowerCase().replace(/\s+/g, '_'); // Fallback to a simple conversion
+        // If no match found, return first possible key
+        return possibleKeys[0];
       };
 
       // Process each pending match
@@ -169,7 +166,7 @@ export default function AutoUpdateStatus() {
 
           // Fetch scores from The Odds API
           const response = await fetch(
-            `https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${apiKey}&daysFrom=7`, // Increased daysFrom to 7
+            `https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${apiKey}&daysFrom=7`,
             { headers: { 'Accept': 'application/json' } }
           );
 
@@ -186,8 +183,8 @@ export default function AutoUpdateStatus() {
                 status: 'sport_not_available',
                 error: `${match.sport} not currently available`
               });
-              await new Promise(resolve => setTimeout(resolve, 500)); // Still apply delay
-              continue; // Skip to the next match
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
             }
             throw new Error(`API error: ${response.status} ${response.statusText}`);
           }
@@ -202,7 +199,7 @@ export default function AutoUpdateStatus() {
             // Normalize team names for better matching
             const normalizeTeam = (name) => name.toLowerCase()
               .replace(/\s+(fc|united|city|town|athletic|club|ravens|patriots|eagles|chiefs|bills|cowboys|saints|packers|steelers|browns|bears|chargers|jets|giants|redskins|colts|jaguars|titans|texans|broncos|raiders|cardinals|rams|niners|seahawks|bucs|falcons|panthers|vikings|lions|bucks|celtics|lakers|warriors|rockets|spurs|heat|thunder|raptors|blazers|jazz|76ers|knicks|bulls|pistons|magic|hawks|hornets|grizzlies|pelicans|kings|suns|wizards|mavericks)\s*$/i, '')
-              .replace(/[\W_]+/g, '') // Remove non-alphanumeric characters
+              .replace(/[\W_]+/g, '')
               .trim();
             
             const homeNorm = normalizeTeam(match.home_team);
@@ -210,11 +207,9 @@ export default function AutoUpdateStatus() {
             const gameHomeNorm = normalizeTeam(game.home_team);
             const gameAwayNorm = normalizeTeam(game.away_team);
             
-            // Check for direct or partial matches
             const homeMatch = gameHomeNorm.includes(homeNorm) || homeNorm.includes(gameHomeNorm);
             const awayMatch = gameAwayNorm.includes(awayNorm) || awayNorm.includes(gameAwayNorm);
             
-            // Also consider that some APIs might swap home/away if not explicit
             const reversedMatch = gameHomeNorm.includes(awayNorm) && gameAwayNorm.includes(homeNorm);
 
             return (homeMatch && awayMatch) || reversedMatch;
@@ -239,7 +234,7 @@ export default function AutoUpdateStatus() {
                   completed: true,
                   last_checked: new Date().toISOString(),
                   source: "The Odds API",
-                  api_sport_key: sportKey // New field to store the used API sport key
+                  api_sport_key: sportKey
                 }
               });
 
