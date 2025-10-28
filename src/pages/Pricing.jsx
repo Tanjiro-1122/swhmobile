@@ -285,24 +285,30 @@ export default function Pricing() {
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-4">Player & Team Stats</td>
-                    <td className="text-center py-4 px-4">5 free</td>
+                    <td className="text-center py-4 px-4">5 free each</td>
                     <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-4">Live Odds Comparison</td>
+                    <td className="text-center py-4 px-4">5 free checks</td>
+                    <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
+                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Basic Betting Calculator</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Today's Best Bets (AI picks)</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Today's Best Bets</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Parlay Builder & Tools</td>
+                    <td className="py-4 px-4">Parlay Builder</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
@@ -314,9 +320,21 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">VIP Member Badge</td>
+                    <td className="py-4 px-4">Bankroll Manager</td>
                     <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Betting Alerts</td>
                     <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Save & Track Results</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
@@ -324,6 +342,42 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Daily AI Betting Briefs</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">✅ VIP Only</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Sharp vs Public Money Indicators</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">✅ VIP Only</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">VIP Member Badge</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Early Access to New Features</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Priority AI Processing</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4">Exclusive Discord Channel</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">❌</td>
+                    <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4">Annual Cost</td>
