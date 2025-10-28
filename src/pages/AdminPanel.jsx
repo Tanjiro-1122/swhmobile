@@ -59,7 +59,7 @@ function AdminPanelContent() {
   if (!currentUser || currentUser.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
-        <Card className="border-2 border-red-300">
+        <Card className="border-2 border-red-300 bg-white">
           <CardContent className="p-8 text-center">
             <Shield className="w-16 h-16 mx-auto mb-4 text-red-500" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
@@ -92,41 +92,41 @@ function AdminPanelContent() {
   const getTierBadge = (tier) => {
     switch(tier) {
       case 'legacy':
-        return <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">👑 LEGACY</Badge>;
+        return <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold">👑 LEGACY</Badge>;
       case 'vip_annual':
-        return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">💎 VIP ANNUAL</Badge>;
+        return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold">💎 VIP ANNUAL</Badge>;
       case 'premium_monthly':
-        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">⭐ PREMIUM</Badge>;
+        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold">⭐ PREMIUM</Badge>;
       default:
-        return <Badge variant="outline">Free</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 font-semibold">Free</Badge>;
     }
   };
 
   const getTierIcon = (tier) => {
     switch(tier) {
       case 'legacy':
-        return <Star className="w-4 h-4 text-yellow-600" />;
+        return <Star className="w-8 h-8 text-yellow-600" />;
       case 'vip_annual':
-        return <Crown className="w-4 h-4 text-indigo-600" />;
+        return <Crown className="w-8 h-8 text-indigo-600" />;
       case 'premium_monthly':
-        return <Sparkles className="w-4 h-4 text-purple-600" />;
+        return <Sparkles className="w-8 h-8 text-purple-600" />;
       default:
-        return <Users className="w-4 h-4 text-gray-600" />;
+        return <Users className="w-8 h-8 text-gray-700" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <Shield className="w-7 h-7 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Shield className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600">Manage users and subscriptions</p>
+              <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
+              <p className="text-xl text-gray-700 font-medium">Manage users and subscriptions</p>
             </div>
           </div>
         </div>
@@ -134,105 +134,107 @@ function AdminPanelContent() {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-5 gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-2 border-gray-200">
+            <Card className="border-2 border-gray-300 bg-white shadow-md hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Users className="w-8 h-8 text-gray-600" />
+                <div className="flex items-center justify-between mb-3">
+                  <Users className="w-10 h-10 text-gray-700" />
                 </div>
-                <div className="text-3xl font-black text-gray-900">{allUsers.length}</div>
-                <div className="text-sm text-gray-600">Total Users</div>
+                <div className="text-4xl font-black text-gray-900">{allUsers.length}</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">Total Users</div>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="border-2 border-gray-200">
+            <Card className="border-2 border-gray-300 bg-white shadow-md hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   {getTierIcon('free')}
                 </div>
-                <div className="text-3xl font-black text-gray-900">{tierCounts.free}</div>
-                <div className="text-sm text-gray-600">Free Users</div>
+                <div className="text-4xl font-black text-gray-900">{tierCounts.free}</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">Free Users</div>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="border-2 border-purple-200">
+            <Card className="border-2 border-purple-300 bg-white shadow-md hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   {getTierIcon('premium_monthly')}
                 </div>
-                <div className="text-3xl font-black text-purple-600">{tierCounts.premium_monthly}</div>
-                <div className="text-sm text-gray-600">Premium Monthly</div>
+                <div className="text-4xl font-black text-purple-700">{tierCounts.premium_monthly}</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">Premium Monthly</div>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="border-2 border-indigo-200">
+            <Card className="border-2 border-indigo-300 bg-white shadow-md hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   {getTierIcon('vip_annual')}
                 </div>
-                <div className="text-3xl font-black text-indigo-600">{tierCounts.vip_annual}</div>
-                <div className="text-sm text-gray-600">VIP Annual</div>
+                <div className="text-4xl font-black text-indigo-700">{tierCounts.vip_annual}</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">VIP Annual</div>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="border-2 border-yellow-200">
+            <Card className="border-2 border-yellow-300 bg-white shadow-md hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   {getTierIcon('legacy')}
                 </div>
-                <div className="text-3xl font-black text-yellow-600">{tierCounts.legacy}</div>
-                <div className="text-sm text-gray-600">Legacy Members</div>
+                <div className="text-4xl font-black text-yellow-700">{tierCounts.legacy}</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">Legacy Members</div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
         {/* Revenue Card */}
-        <Card className="border-2 border-green-200 mb-8">
-          <CardContent className="p-6">
+        <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
+          <CardContent className="p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <DollarSign className="w-12 h-12 text-green-600" />
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <DollarSign className="w-10 h-10 text-green-700" />
+                </div>
                 <div>
-                  <div className="text-4xl font-black text-green-600">${totalRevenue.toFixed(2)}</div>
-                  <div className="text-sm text-gray-600">Estimated Monthly Revenue</div>
+                  <div className="text-5xl font-black text-green-700">${totalRevenue.toFixed(2)}</div>
+                  <div className="text-base font-semibold text-gray-700 mt-1">Estimated Monthly Revenue</div>
                 </div>
               </div>
-              <div className="text-right text-sm text-gray-600">
-                <div>Premium: ${(tierCounts.premium_monthly * 19.99).toFixed(2)}/mo</div>
-                <div>VIP: ${(tierCounts.vip_annual * 149.99 / 12).toFixed(2)}/mo</div>
+              <div className="text-right text-base font-semibold text-gray-700">
+                <div className="mb-2">Premium: <span className="text-purple-700">${(tierCounts.premium_monthly * 19.99).toFixed(2)}/mo</span></div>
+                <div>VIP: <span className="text-indigo-700">${(tierCounts.vip_annual * 149.99 / 12).toFixed(2)}/mo</span></div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Filters */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>User Management</CardTitle>
+        <Card className="mb-8 border-2 border-gray-300 bg-white shadow-md">
+          <CardHeader className="bg-gradient-to-r from-purple-100 to-pink-100 border-b-2 border-gray-200">
+            <CardTitle className="text-2xl font-black text-gray-900">User Management</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="flex gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <Input
                     placeholder="Search by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-2 border-gray-300 text-gray-900 text-base font-medium"
                   />
                 </div>
               </div>
               <Select value={filterTier} onValueChange={setFilterTier}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-48 border-2 border-gray-300 text-gray-900 font-semibold">
                   <SelectValue placeholder="Filter by tier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,37 +250,37 @@ function AdminPanelContent() {
             {/* Users Table */}
             <div className="space-y-4">
               {isLoading ? (
-                <div className="text-center py-8 text-gray-600">Loading users...</div>
+                <div className="text-center py-8 text-gray-700 text-lg font-semibold">Loading users...</div>
               ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-8 text-gray-600">No users found</div>
+                <div className="text-center py-8 text-gray-700 text-lg font-semibold">No users found</div>
               ) : (
                 filteredUsers.map((user) => (
-                  <Card key={user.id} className="border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+                  <Card key={user.id} className="border-2 border-gray-300 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between gap-4">
                         <div className="flex-1">
-                          <div className="font-bold text-gray-900">{user.full_name || 'No name'}</div>
-                          <div className="text-sm text-gray-600">{user.email}</div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-lg font-black text-gray-900">{user.full_name || 'No name'}</div>
+                          <div className="text-base font-semibold text-gray-700">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-600 mt-1">
                             Joined: {new Date(user.created_date).toLocaleDateString()}
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <div className="min-w-32">
+                          <div className="min-w-36">
                             {getTierBadge(user.subscription_type)}
                           </div>
                           <Select
                             value={user.subscription_type || 'free'}
                             onValueChange={(value) => handleSubscriptionChange(user.id, value)}
                           >
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-56 border-2 border-gray-300 text-gray-900 font-semibold">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="free">Free</SelectItem>
-                              <SelectItem value="premium_monthly">Premium Monthly ($19.99/mo)</SelectItem>
-                              <SelectItem value="vip_annual">VIP Annual ($149.99/yr)</SelectItem>
-                              <SelectItem value="legacy">Legacy (Lifetime)</SelectItem>
+                              <SelectItem value="free" className="font-semibold">Free</SelectItem>
+                              <SelectItem value="premium_monthly" className="font-semibold">Premium Monthly ($19.99/mo)</SelectItem>
+                              <SelectItem value="vip_annual" className="font-semibold">VIP Annual ($149.99/yr)</SelectItem>
+                              <SelectItem value="legacy" className="font-semibold">Legacy (Lifetime)</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
