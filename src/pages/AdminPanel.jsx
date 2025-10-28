@@ -1,29 +1,20 @@
-
 import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Users, DollarSign, Search, CheckCircle, XCircle, Trophy, Edit, Calendar } from "lucide-react";
+import { Crown, Users, DollarSign, Search, TrendingUp, BarChart3, Activity, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import StripeWebhookGuide from "../components/admin/StripeWebhookGuide";
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("users");
-  const [editingMatch, setEditingMatch] = useState(null);
-  const [matchResults, setMatchResults] = useState({
-    winner: "",
-    final_score: "",
-    completed: true
-  });
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -37,7 +28,7 @@ function AdminPanelContent() {
     initialData: [],
   });
 
-  const { data: allMatches, isLoading: matchesLoading } = useQuery({
+  const { data: allMatches } = useQuery({
     queryKey: ['allMatches'],
     queryFn: () => base44.entities.Match.list('-created_date', 500),
     initialData: [],
@@ -47,16 +38,6 @@ function AdminPanelContent() {
     mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-    },
-  });
-
-  const updateMatchMutation = useMutation({
-    mutationFn: ({ matchId, data }) => base44.entities.Match.update(matchId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allMatches'] });
-      queryClient.invalidateQueries({ queryKey: ['aiPerformance'] });
-      setEditingMatch(null);
-      setMatchResults({ winner: "", final_score: "", completed: true });
     },
   });
 
@@ -75,11 +56,22 @@ function AdminPanelContent() {
 
   const vipLifetimeUsers = allUsers.filter(u => u.subscription_type === 'vip_lifetime').length;
   const premiumMonthlyUsers = allUsers.filter(u => u.subscription_type === 'premium_monthly').length;
+  const freeUsers = allUsers.filter(u => !u.subscription_type || u.subscription_type === 'free').length;
   const totalUsers = allUsers.length;
 
-  const pendingMatches = allMatches.filter(m => !m.actual_result?.completed);
-  const completedMatches = allMatches.filter(m => m.actual_result?.completed);
-  const correctPredictions = completedMatches.filter(m => m.prediction?.winner === m.actual_result?.winner).length;
+  // Calculate revenue (estimated)
+  const estimatedLifetimeRevenue = vipLifetimeUsers * 149.99;
+  const estimatedMonthlyRevenue = premiumMonthlyUsers * 29.99;
+  const estimatedTotalRevenue = estimatedLifetimeRevenue + estimatedMonthlyRevenue;
+
+  // User activity stats
+  const usersWithSearches = allUsers.filter(u => u.search_count > 0).length;
+  const totalSearches = allUsers.reduce((sum, u) => sum + (u.search_count || 0), 0);
+  const avgSearchesPerUser = totalUsers > 0 ? (totalSearches / totalUsers).toFixed(1) : 0;
+
+  // User growth (last 7 days)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const newUsersLast7Days = allUsers.filter(u => new Date(u.created_date) > sevenDaysAgo).length;
 
   const filteredUsers = allUsers.filter(user => 
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -124,36 +116,13 @@ function AdminPanelContent() {
     });
   };
 
-  const handleUpdateMatchResult = async () => {
-    if (!matchResults.winner || !matchResults.final_score) {
-      alert('Please fill in winner and final score');
-      return;
-    }
-
-    await updateMatchMutation.mutateAsync({
-      matchId: editingMatch.id,
-      data: {
-        actual_result: matchResults
-      }
-    });
-  };
-
-  const openEditMatchDialog = (match) => {
-    setEditingMatch(match);
-    if (match.actual_result) {
-      setMatchResults(match.actual_result);
-    } else {
-      setMatchResults({ winner: "", final_score: "", completed: true });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Admin Panel</h1>
-          <p className="text-slate-400">Manage users, VIP memberships, and match results</p>
+          <p className="text-slate-400">Manage users, subscriptions, and view analytics</p>
         </div>
 
         {/* Add Webhook Guide at the top */}
@@ -224,16 +193,16 @@ function AdminPanelContent() {
             <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 border-0">
               <CardHeader className="pb-3">
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  AI Accuracy
+                  <TrendingUp className="w-5 h-5" />
+                  New Users (7d)
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-5xl font-black text-white mb-2">
-                  {completedMatches.length > 0 ? ((correctPredictions / completedMatches.length) * 100).toFixed(1) : 0}%
+                  {newUsersLast7Days}
                 </div>
                 <p className="text-blue-100 text-sm">
-                  {correctPredictions}/{completedMatches.length} correct
+                  Last 7 days
                 </p>
               </CardContent>
             </Card>
@@ -247,9 +216,9 @@ function AdminPanelContent() {
               <Users className="w-5 h-5 mr-2" />
               Manage Users
             </TabsTrigger>
-            <TabsTrigger value="matches" className="py-3 text-lg">
-              <Trophy className="w-5 h-5 mr-2" />
-              Match Results
+            <TabsTrigger value="analytics" className="py-3 text-lg">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Analytics & Revenue
             </TabsTrigger>
           </TabsList>
 
@@ -352,7 +321,6 @@ function AdminPanelContent() {
                                 className="border-slate-600 text-slate-300 hover:bg-slate-700"
                                 disabled={updateUserMutation.isLoading}
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
                                 Make Free
                               </Button>
                             )}
@@ -366,276 +334,199 @@ function AdminPanelContent() {
             </div>
           </TabsContent>
 
-          {/* Matches Tab */}
-          <TabsContent value="matches" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <Card className="bg-orange-500/20 border-orange-500/50">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Pending Results
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="mt-6">
+            <div className="space-y-6">
+              {/* Revenue Stats */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="bg-green-500/20 border-green-500/50">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <DollarSign className="w-5 h-5" />
+                      Total Revenue (Est.)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-4xl font-black text-white mb-2">
+                      ${estimatedTotalRevenue.toFixed(2)}
+                    </div>
+                    <p className="text-green-200 text-sm">
+                      Lifetime + Monthly
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-yellow-500/20 border-yellow-500/50">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Crown className="w-5 h-5" />
+                      Lifetime Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-4xl font-black text-white mb-2">
+                      ${estimatedLifetimeRevenue.toFixed(2)}
+                    </div>
+                    <p className="text-yellow-200 text-sm">
+                      {vipLifetimeUsers} x $149.99
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-purple-500/20 border-purple-500/50">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Monthly Revenue (Est.)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-4xl font-black text-white mb-2">
+                      ${estimatedMonthlyRevenue.toFixed(2)}/mo
+                    </div>
+                    <p className="text-purple-200 text-sm">
+                      {premiumMonthlyUsers} x $29.99
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* User Activity Stats */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-6 h-6" />
+                    User Activity Stats
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {pendingMatches.length}
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-4 gap-6">
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Active Users</div>
+                      <div className="text-3xl font-bold text-white">{usersWithSearches}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {((usersWithSearches / totalUsers) * 100).toFixed(1)}% of total
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Total Searches</div>
+                      <div className="text-3xl font-bold text-white">{totalSearches}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        All time
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Avg Searches/User</div>
+                      <div className="text-3xl font-bold text-white">{avgSearchesPerUser}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Per user average
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-1">Total Matches</div>
+                      <div className="text-3xl font-bold text-white">{allMatches.length}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Analyzed matches
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-orange-200">
-                    Matches waiting for results
-                  </p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-green-500/20 border-green-500/50">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Completed
+              {/* Subscription Breakdown */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-6 h-6" />
+                    Subscription Breakdown
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-5xl font-black text-white mb-2">
-                    {completedMatches.length}
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                          <Crown className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-white">VIP Lifetime</div>
+                          <div className="text-sm text-slate-400">${estimatedLifetimeRevenue.toFixed(2)} total</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">{vipLifetimeUsers}</div>
+                        <div className="text-xs text-slate-400">{((vipLifetimeUsers / totalUsers) * 100).toFixed(1)}%</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                          <DollarSign className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-white">Premium Monthly</div>
+                          <div className="text-sm text-slate-400">${estimatedMonthlyRevenue.toFixed(2)}/month</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">{premiumMonthlyUsers}</div>
+                        <div className="text-xs text-slate-400">{((premiumMonthlyUsers / totalUsers) * 100).toFixed(1)}%</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center">
+                          <UserPlus className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-white">Free Users</div>
+                          <div className="text-sm text-slate-400">Potential customers</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">{freeUsers}</div>
+                        <div className="text-xs text-slate-400">{((freeUsers / totalUsers) * 100).toFixed(1)}%</div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-green-200">
-                    Results recorded
-                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Growth Stats */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6" />
+                    Growth Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="text-sm text-slate-400 mb-2">New Users (Last 7 Days)</div>
+                      <div className="text-4xl font-bold text-white mb-2">{newUsersLast7Days}</div>
+                      <div className="text-sm text-slate-400">
+                        {(newUsersLast7Days / 7).toFixed(1)} per day average
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400 mb-2">Conversion Rate</div>
+                      <div className="text-4xl font-bold text-white mb-2">
+                        {(((vipLifetimeUsers + premiumMonthlyUsers) / totalUsers) * 100).toFixed(1)}%
+                      </div>
+                      <div className="text-sm text-slate-400">
+                        Free → Paid conversion
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
-
-            {matchesLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
-                <p className="text-slate-400 mt-4">Loading matches...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Calendar className="w-6 h-6 text-orange-400" />
-                  Pending Matches ({pendingMatches.length})
-                </h3>
-                
-                {pendingMatches.length === 0 ? (
-                  <Card className="bg-slate-800/50 border-slate-700">
-                    <CardContent className="py-12 text-center">
-                      <p className="text-slate-400">No pending matches</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  pendingMatches.map((match, index) => (
-                    <motion.div
-                      key={match.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Card className="bg-slate-800/50 border-slate-700 hover:border-orange-500/50 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="secondary">{match.sport}</Badge>
-                                {match.league && <Badge variant="outline">{match.league}</Badge>}
-                              </div>
-                              <div className="text-xl font-bold text-white mb-1">
-                                {match.home_team} vs {match.away_team}
-                              </div>
-                              <div className="text-sm text-slate-400">
-                                Predicted Winner: <span className="text-white font-semibold">{match.prediction?.winner}</span>
-                                {match.prediction?.predicted_score && ` (${match.prediction.predicted_score})`}
-                              </div>
-                              {match.match_date && (
-                                <div className="text-xs text-slate-500 mt-1">
-                                  {new Date(match.match_date).toLocaleString()}
-                                </div>
-                              )}
-                            </div>
-                            <Button
-                              onClick={() => openEditMatchDialog(match)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Record Result
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))
-                )}
-
-                <div className="mt-12">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
-                    <CheckCircle className="w-6 h-6 text-green-400" />
-                    Completed Matches ({completedMatches.length})
-                  </h3>
-                  
-                  {completedMatches.length === 0 ? (
-                    <Card className="bg-slate-800/50 border-slate-700">
-                      <CardContent className="py-12 text-center">
-                        <p className="text-slate-400">No completed matches yet</p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    completedMatches.slice(0, 10).map((match, index) => {
-                      const wasCorrect = match.prediction?.winner === match.actual_result?.winner;
-                      return (
-                        <motion.div
-                          key={match.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="mb-4"
-                        >
-                          <Card className={`bg-slate-800/50 ${wasCorrect ? 'border-green-500/50' : 'border-red-500/50'}`}>
-                            <CardContent className="p-6">
-                              <div className="flex items-center justify-between flex-wrap gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Badge variant="secondary">{match.sport}</Badge>
-                                    {wasCorrect ? (
-                                      <Badge className="bg-green-100 text-green-800">
-                                        <CheckCircle className="w-3 h-3 mr-1" />
-                                        Correct
-                                      </Badge>
-                                    ) : (
-                                      <Badge className="bg-red-100 text-red-800">
-                                        <XCircle className="w-3 h-3 mr-1" />
-                                        Incorrect
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <div className="text-lg font-bold text-white mb-1">
-                                    {match.home_team} vs {match.away_team}
-                                  </div>
-                                  <div className="text-sm text-slate-400">
-                                    Predicted: <span className="text-white">{match.prediction?.winner}</span> | 
-                                    Actual: <span className="text-white font-semibold">{match.actual_result?.winner}</span>
-                                    {match.actual_result?.final_score && ` (${match.actual_result.final_score})`}
-                                  </div>
-                                </div>
-                                <Button
-                                  onClick={() => openEditMatchDialog(match)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-slate-600 text-slate-300"
-                                >
-                                  <Edit className="w-4 h-4 mr-1" />
-                                  Edit
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            )}
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Edit Match Result Dialog */}
-      <Dialog open={!!editingMatch} onOpenChange={() => setEditingMatch(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              Record Match Result
-            </DialogTitle>
-          </DialogHeader>
-
-          {editingMatch && (
-            <div className="space-y-6">
-              <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                <div className="text-sm text-slate-400 mb-1">Match</div>
-                <div className="text-xl font-bold">{editingMatch.home_team} vs {editingMatch.away_team}</div>
-                <div className="text-sm text-slate-400 mt-2">
-                  AI Predicted: <span className="text-white font-semibold">{editingMatch.prediction?.winner}</span>
-                  {editingMatch.prediction?.predicted_score && ` (${editingMatch.prediction.predicted_score})`}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-slate-300 mb-2 block">Winner (Enter Exact Team Name)</Label>
-                  <Input
-                    value={matchResults.winner}
-                    onChange={(e) => setMatchResults({...matchResults, winner: e.target.value})}
-                    placeholder={`e.g., "${editingMatch.home_team}" or "${editingMatch.away_team}"`}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                  <div className="mt-2 flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMatchResults({...matchResults, winner: editingMatch.home_team})}
-                      className="border-slate-600 text-slate-300"
-                    >
-                      {editingMatch.home_team}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMatchResults({...matchResults, winner: editingMatch.away_team})}
-                      className="border-slate-600 text-slate-300"
-                    >
-                      {editingMatch.away_team}
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-slate-300 mb-2 block">Final Score</Label>
-                  <Input
-                    value={matchResults.final_score}
-                    onChange={(e) => setMatchResults({...matchResults, final_score: e.target.value})}
-                    placeholder="e.g., 115-108 or 3-1"
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-
-                {matchResults.winner && editingMatch.prediction?.winner && (
-                  <div className={`p-4 rounded-lg ${matchResults.winner === editingMatch.prediction.winner ? 'bg-green-500/20 border border-green-500/50' : 'bg-red-500/20 border border-red-500/50'}`}>
-                    {matchResults.winner === editingMatch.prediction.winner ? (
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle className="w-5 h-5" />
-                        <span className="font-bold">AI Prediction: CORRECT ✓</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-red-400">
-                        <XCircle className="w-5 h-5" />
-                        <span className="font-bold">AI Prediction: INCORRECT ✗</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setEditingMatch(null)}
-              className="border-slate-600 text-slate-300"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpdateMatchResult}
-              disabled={updateMatchMutation.isLoading || !matchResults.winner || !matchResults.final_score}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {updateMatchMutation.isLoading ? 'Saving...' : 'Save Result'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

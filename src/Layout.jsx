@@ -168,7 +168,7 @@ export default function Layout({ children, currentPageName }) {
 
   if (isAdmin) {
     menuItems.push({ name: "Admin Panel", icon: Settings, page: "AdminPanel" });
-    menuItems.push({ name: "Match Results", icon: Calendar, page: "MatchResults" });
+    menuItems.push({ name: "Analytics Dashboard", icon: BarChart3, page: "AnalyticsDashboard" });
   }
 
   return (
