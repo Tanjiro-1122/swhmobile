@@ -121,12 +121,30 @@ export default function AutoUpdateStatus() {
       return;
     }
 
-    // FIXED: Get the full match object
+    // Get the full match object
     const currentMatch = pendingMatches.find(m => m.id === selectedMatchId);
     
     if (!currentMatch) {
       setDebugInfo({ step: 'ERROR', message: 'Match not found' });
       return;
+    }
+
+    setDebugInfo({ step: 'Checking match data...', currentMatch: currentMatch });
+
+    // Validate required fields exist
+    if (!currentMatch.prediction) {
+      setDebugInfo({ 
+        step: 'DATA ERROR', 
+        message: 'Match is missing prediction field. Cannot update.',
+        fix: 'This match was created without required data. Delete it and create a new analysis.'
+      });
+      return;
+    }
+
+    // Fix betting_markets.spread.line if it exists and is not a string
+    if (currentMatch.betting_markets?.spread?.line && typeof currentMatch.betting_markets.spread.line !== 'string') {
+      currentMatch.betting_markets.spread.line = String(currentMatch.betting_markets.spread.line);
+      setDebugInfo(prev => ({ ...prev, step: 'Data type fixed: betting_markets.spread.line converted to string' }));
     }
 
     // Create updated match with ALL existing fields + our changes
@@ -147,7 +165,7 @@ export default function AutoUpdateStatus() {
     delete updateData.updated_date;
     delete updateData.created_by;
 
-    setDebugInfo({ step: 'Preparing update...', data: updateData });
+    setDebugInfo({ step: 'Sending update...', dataSize: JSON.stringify(updateData).length });
 
     updateMutation.mutate({
       id: selectedMatchId,
@@ -199,7 +217,7 @@ export default function AutoUpdateStatus() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <Alert className={debugInfo.step === 'ERROR' || debugInfo.step === 'VALIDATION ERROR' ? 'bg-red-500/10 border-red-500/50' : 'bg-blue-500/10 border-blue-500/50'}>
+            <Alert className={debugInfo.step === 'ERROR' || debugInfo.step === 'VALIDATION ERROR' || debugInfo.step === 'DATA ERROR' ? 'bg-red-500/10 border-red-500/50' : 'bg-blue-500/10 border-blue-500/50'}>
               <AlertTriangle className="w-4 h-4" />
               <AlertDescription>
                 <div className="font-bold mb-2">{debugInfo.step}</div>
@@ -288,6 +306,9 @@ export default function AutoUpdateStatus() {
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant="secondary">{match.sport}</Badge>
                             {match.league && <Badge variant="outline">{match.league}</Badge>}
+                            {!match.prediction && (
+                              <Badge className="bg-red-500 text-white">⚠️ Missing Prediction</Badge>
+                            )}
                           </div>
                           <div className="font-bold text-white text-lg mb-1">
                             {match.home_team} vs {match.away_team}
@@ -299,14 +320,24 @@ export default function AutoUpdateStatus() {
                             </div>
                           )}
                         </div>
-                        <Button
-                          onClick={() => handleManualUpdate(match)}
-                          variant="outline"
-                          size="sm"
-                          className="border-slate-600 text-slate-300 hover:bg-slate-700 w-full"
-                        >
-                          Manual Update
-                        </Button>
+                        
+                        {!match.prediction ? (
+                          <Alert className="bg-yellow-500/10 border-yellow-500/50">
+                            <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                            <AlertDescription className="text-yellow-300 text-sm">
+                              This match is missing required data. Please delete it and create a new search.
+                            </AlertDescription>
+                          </Alert>
+                        ) : (
+                          <Button
+                            onClick={() => handleManualUpdate(match)}
+                            variant="outline"
+                            size="sm"
+                            className="border-slate-600 text-slate-300 hover:bg-slate-700 w-full"
+                          >
+                            Manual Update
+                          </Button>
+                        )}
                       </div>
 
                       {selectedMatchId === match.id && (
