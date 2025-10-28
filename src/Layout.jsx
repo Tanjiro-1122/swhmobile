@@ -310,7 +310,7 @@ export default function Layout({ children, currentPageName }) {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 lg:ml-64 p-4 sm:p-6 pb-20 sm:pb-6">
+        <main className="flex-1 lg:ml-64 pt-20 sm:pt-24 p-4 sm:p-6 pb-20 sm:pb-6">
           {children}
         </main>
       </div>
