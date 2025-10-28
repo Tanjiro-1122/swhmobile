@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -120,7 +121,17 @@ export default function AutoUpdateStatus() {
       return;
     }
 
+    // FIXED: Get the full match object
+    const currentMatch = pendingMatches.find(m => m.id === selectedMatchId);
+    
+    if (!currentMatch) {
+      setDebugInfo({ step: 'ERROR', message: 'Match not found' });
+      return;
+    }
+
+    // Create updated match with ALL existing fields + our changes
     const updateData = {
+      ...currentMatch, // Include ALL existing fields
       actual_result: {
         winner: manualScore.winner.trim(),
         final_score: manualScore.final_score.trim(),
@@ -129,6 +140,14 @@ export default function AutoUpdateStatus() {
         source: "Manual Entry"
       }
     };
+
+    // Remove built-in fields that shouldn't be updated
+    delete updateData.id;
+    delete updateData.created_date;
+    delete updateData.updated_date;
+    delete updateData.created_by;
+
+    setDebugInfo({ step: 'Preparing update...', data: updateData });
 
     updateMutation.mutate({
       id: selectedMatchId,
