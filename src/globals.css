@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -55,7 +56,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -66,13 +66,7 @@ body:not(.dark) {
 
 body:not(.dark) .bg-slate-800,
 body:not(.dark) .bg-slate-900 {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-body:not(.dark) .bg-slate-800\/90,
-body:not(.dark) .bg-slate-900\/50 {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
@@ -85,83 +79,16 @@ body:not(.dark) .text-slate-400 {
   color: #64748b !important;
 }
 
-body:not(.dark) .text-slate-500 {
-  color: #94a3b8 !important;
-}
-
-body:not(.dark) .border-slate-700,
-body:not(.dark) .border-slate-600 {
+body:not(.dark) .border-slate-700 {
   border-color: rgba(226, 232, 240, 0.8) !important;
 }
 
-body:not(.dark) .bg-gradient-to-r,
-body:not(.dark) .bg-gradient-to-br,
-body:not(.dark) .bg-gradient-to-l {
-  opacity: 0.9;
-}
-
-/* Light mode input styling */
-body:not(.dark) input,
-body:not(.dark) textarea,
-body:not(.dark) select {
-  background: white !important;
-  color: #1a202c !important;
-  border-color: #cbd5e1 !important;
-}
-
-body:not(.dark) input::placeholder,
-body:not(.dark) textarea::placeholder {
-  color: #94a3b8 !important;
-}
-
-/* Light mode badges and alerts */
-body:not(.dark) .bg-red-500\/10 {
-  background: #fee2e2 !important;
-}
-
-body:not(.dark) .bg-blue-500\/10 {
-  background: #dbeafe !important;
-}
-
-body:not(.dark) .bg-yellow-500\/10 {
-  background: #fef3c7 !important;
-}
-
-body:not(.dark) .bg-green-500\/10 {
-  background: #d1fae5 !important;
-}
-
-body:not(.dark) .text-red-300,
-body:not(.dark) .text-red-400 {
-  color: #dc2626 !important;
-}
-
-body:not(.dark) .text-blue-300,
-body:not(.dark) .text-blue-400 {
-  color: #2563eb !important;
-}
-
-body:not(.dark) .text-yellow-300,
-body:not(.dark) .text-yellow-400 {
-  color: #d97706 !important;
-}
-
-body:not(.dark) .text-green-300,
-body:not(.dark) .text-green-400 {
-  color: #059669 !important;
-}
-
-body:not(.dark) .text-purple-300,
-body:not(.dark) .text-purple-400 {
-  color: #9333ea !important;
-}
-
-/* DARK MODE - Keep existing dark theme */
+/* DARK MODE */
 .dark body {
   background: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(88, 28, 135), rgb(15, 23, 42)) !important;
 }
 
-/* Mobile-specific optimizations */
+/* Mobile optimizations */
 @media (max-width: 640px) {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -169,7 +96,6 @@ body:not(.dark) .text-purple-400 {
   
   body {
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
   }
   
   input, textarea, select {
@@ -177,65 +103,20 @@ body:not(.dark) .text-purple-400 {
   }
 }
 
-/* Offline mode indicator */
-body.offline-mode::before {
-  content: '📴 Offline Mode';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #ef4444;
-  color: white;
-  text-align: center;
-  padding: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  z-index: 9999;
-}
-
 /* Smooth transitions */
 * {
-  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* PWA safe area */
-.safe-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Custom scrollbar - Light mode */
-body:not(.dark) ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-body:not(.dark) ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-body:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Custom scrollbar - Dark mode */
-.dark ::-webkit-scrollbar {
+/* Scrollbar */
+::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: rgb(15, 23, 42);
+::-webkit-scrollbar-track {
+  @apply bg-slate-800;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgb(71, 85, 105);
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgb(100, 116, 139);
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-600 rounded-full;
 }
