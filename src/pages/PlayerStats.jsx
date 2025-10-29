@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User, Sparkles, AlertCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Sparkles, Trophy } from "lucide-react";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import EmptyPlayerState from "../components/player/EmptyPlayerState";
@@ -29,7 +28,7 @@ export default function PlayerStats() {
     },
   });
 
-  const { data: players, isLoading, error: loadError } = useQuery({
+  const { data: players, isLoading } = useQuery({
     queryKey: ['players', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
@@ -60,202 +59,137 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports data analyst. Find CURRENT statistics for: "${query}"
+        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. You MUST fetch LIVE, CURRENT data from StatMuse.com, ESPN, and official league websites.
 
-CRITICAL: ACCEPT NICKNAMES AND PARTIAL NAMES!
+SEARCH QUERY: "${query}"
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CURRENT SEASON: ${new Date().getFullYear()} (or ${new Date().getFullYear()}-${new Date().getFullYear() + 1} for NBA/NHL)
 
-COMMON NAME VARIATIONS TO RECOGNIZE:
-- "Stephen Curry" OR "Steph Curry" = Wardell Stephen Curry II
-- "Kevin Durant" OR "KD" = Kevin Wayne Durant
-- "LeBron James" OR "LeBron" OR "King James" = LeBron Raymone James Sr.
-- "Giannis" = Giannis Antetokounmpo
-- "Luka" OR "Luka Doncic" = Luka Dončić
-- "Nikola Jokic" = Nikola Jokić
-- "Joel Embiid" = Joel Hans Embiid
-- "Jayson Tatum" OR "JT" = Jayson Christopher Tatum Sr.
-- "Damian Lillard" OR "Dame" = Damian Lamonte Ollie Lillard Sr.
-- "Anthony Davis" OR "AD" = Anthony Marshon Davis Jr.
-- "Patrick Mahomes" = Patrick Lavon Mahomes II
-- "Travis Kelce" = Travis Michael Kelce
-- "Tyreek Hill" = Tyreek Hill
-- "Lamar Jackson" = Lamar Demeatrice Jackson Jr.
-- "Josh Allen" = Joshua Patrick Allen
-- "Cristiano Ronaldo" OR "Ronaldo" OR "CR7" = Cristiano Ronaldo dos Santos Aveiro
-- "Lionel Messi" OR "Messi" = Lionel Andrés Messi
-- "Kylian Mbappe" = Kylian Mbappé
-- "Erling Haaland" = Erling Braut Haaland
+STEP 1: IDENTIFY THE PLAYER
+Search: "${query} stats ${new Date().getFullYear()}" on StatMuse.com
+- Get player's full name, team, position, sport, and league
+- Verify they are currently active
 
-SEARCH STRATEGY:
-1. If user searches "Stephen Curry", search for: "Stephen Curry stats 2024" OR "Steph Curry Warriors"
-2. Accept ANY common variation of the name
-3. Map to full legal name ONLY in the final result
-4. Do NOT reject searches if exact legal name not provided
+STEP 2: GET SEASON AVERAGES (sport-specific)
 
-MANDATORY DATA SOURCES:
-1. StatMuse.com - Search: "${query} stats 2024" or "${query} stats 2025"
-2. Basketball-Reference.com - Search: "${query} basketball reference 2024-25"
-3. ESPN.com - Search: "${query} espn stats"
-4. Official NBA/NFL/team websites
+FOR BASKETBALL (NBA/NCAAB):
+Search: "[player name] stats ${new Date().getFullYear()}" on StatMuse or Basketball-Reference
+- Points per game (PPG)
+- Rebounds per game (RPG)
+- Assists per game (APG)
+- Steals per game
+- Blocks per game
+- Field goal % (FG%)
+- Three-point % (3P%)
+- Free throw % (FT%)
+- Minutes per game
 
-TODAY: ${new Date().toLocaleDateString()}
+FOR BASEBALL (MLB):
+FOR BATTERS:
+Search: "[player name] batting stats ${new Date().getFullYear()}" on StatMuse or Baseball-Reference
+- Batting Average (AVG)
+- Home Runs (HR)
+- Runs Batted In (RBI)
+- Stolen Bases (SB)
+- Hits per game
+- On-base percentage (OBP)
+- Slugging percentage (SLG)
 
-STEP 1: IDENTIFY PLAYER (Accept Nicknames!)
-- Search using the EXACT query provided: "${query}"
-- Accept shortened names, nicknames, common names
-- Find their FULL LEGAL NAME for the response (but search with any variation)
-- Current team (e.g., "Los Angeles Lakers")
-- Position (e.g., "SF" or "Small Forward")
-- Sport (Basketball, Football, Soccer, Baseball, Hockey)
-- League (NBA, NFL, Premier League, etc.)
-- Jersey number if available
-- ROLE: Is player a STARTER or BENCH player?
-  * Search: "${query} starting lineup" or "${query} depth chart 2024"
-  * Options: "Starter", "Bench", "Sixth Man", "Rotation", "Unknown"
-  * Basketball: If minutes per game > 28, likely Starter. If 20-28, could be Sixth Man. If < 20, likely Bench
-  * Football: Check team depth chart - is player listed as starter (1st string) or backup?
-  * Soccer: Check starting XI lineup - regular starter or substitute?
+FOR PITCHERS:
+Search: "[player name] pitching stats ${new Date().getFullYear()}" on StatMuse or Baseball-Reference
+- Earned Run Average (ERA)
+- Strikeouts (K)
+- Wins (W)
+- Saves (SV)
+- Innings pitched per game
+- WHIP (Walks + Hits per Inning Pitched)
 
-EXAMPLE SEARCHES THAT MUST WORK:
-- "Stephen Curry" → Find Wardell Stephen Curry II, return as "Stephen Curry (Wardell Stephen Curry II)"
-- "Steph Curry" → Same result
-- "KD" → Find Kevin Durant, return as "Kevin Durant (Kevin Wayne Durant)"
-- "LeBron" → Find LeBron James, return as "LeBron James (LeBron Raymone James Sr.)"
-- "Giannis" → Find Giannis Antetokounmpo
-- "Messi" → Find Lionel Messi
-
-STEP 2: CURRENT SEASON STATS (2024-25 for basketball, 2024 for football)
-
-For BASKETBALL (NBA/NCAAB):
-Search: "${query} stats per game 2024-25"
-Required:
-- Points per game (PPG) - e.g., 25.3
-- Rebounds per game (RPG) - e.g., 7.4
-- Assists per game (APG) - e.g., 7.1
-- Field Goal % - e.g., 51.2
-- 3-Point % - e.g., 38.5
-- Free Throw % - e.g., 73.8
-- Minutes per game - e.g., 35.2
-
-For FOOTBALL (NFL):
-Search: "${query} stats 2024 season"
-Required:
-- QB: Passing yards/game, TDs, INTs, Completion %
-- RB: Rushing yards/game, TDs, Yards per carry
-- WR: Receptions/game, Receiving yards, TDs
-
-For SOCCER:
-Search: "${query} stats 2024"
-Required:
+FOR SOCCER/FOOTBALL:
+Search: "[player name] stats ${new Date().getFullYear()}" on FBref.com or WhoScored
 - Goals per 90 minutes
 - Assists per 90 minutes
 - Shots per game
-- Pass accuracy
+- Pass completion %
+- Tackles per game
+- Key passes per game
 
-STEP 3: LAST 5 GAMES
-Search: "${query} game log" or "${query} last 5 games"
-Get exact stats from last 5 games:
-- Date (e.g., "12/15/2024")
-- Opponent (e.g., "vs Warriors")
-- Points/Yards/Goals scored
-- Assists
-- Rebounds (basketball)
-- Result (W/L)
+FOR AMERICAN FOOTBALL (NFL):
+FOR QUARTERBACKS:
+Search: "[player name] QB stats ${new Date().getFullYear()}" on Pro-Football-Reference
+- Passing yards per game
+- Touchdowns (TDs)
+- Interceptions (INTs)
+- Completion percentage
+- QB rating
+- Rushing yards per game
 
-Example:
-[
-  {"date": "12/15/2024", "opponent": "vs Warriors", "points": 28, "assists": 7, "rebounds": 9},
-  {"date": "12/13/2024", "opponent": "@ Suns", "points": 31, "assists": 5, "rebounds": 8}
-]
+FOR RUNNING BACKS:
+- Rushing yards per game
+- Yards per carry (YPC)
+- Rushing touchdowns
+- Receptions per game
+- Receiving yards
 
-STEP 4: INJURY STATUS (IMPORTANT: Return as simple string)
-Search: "${query} injury report" or "[team name] injury report"
-Return ONE of these exact strings:
-- "Healthy" (if no injury)
-- "Questionable" (if status uncertain)
-- "Out" (if definitely not playing)
-- "Day-to-Day" (if minor injury)
-- "Probable" (if likely to play)
-- "Doubtful" (if unlikely to play)
+FOR WIDE RECEIVERS/TIGHT ENDS:
+- Receptions per game
+- Receiving yards per game
+- Receiving touchdowns
+- Yards after catch
+- Catch percentage
 
-If no injury found, return "Healthy"
+STEP 3: RECENT FORM (Last 5 games)
+Search: "[player name] game log ${new Date().getFullYear()}" on StatMuse
+Get actual stats from the last 5 games with:
+- Date
+- Opponent
+- Key stats (sport-specific from above)
+- Performance rating (Excellent/Good/Average/Poor)
 
-STEP 5: NEXT GAME
-Search: "[team name] schedule" (e.g., "Lakers schedule" or "Warriors schedule")
-Find next upcoming game:
-- Opponent (e.g., "vs Boston Celtics")
-- Date (e.g., "12/20/2024 7:30 PM ET")
-- Location (e.g., "Home - Crypto.com Arena" or "Away - TD Garden")
+STEP 4: NEXT GAME PREDICTION
+Search: "[team name] schedule" on ESPN
+- Find next scheduled game (opponent, date, location)
+- PREDICT SPECIFIC STATS for that game based on:
+  * Player's season averages
+  * Last 5 games performance trend
+  * Historical performance against this opponent
+  * Current form (hot/cold streak)
 
-STEP 6: PREDICT NEXT GAME PERFORMANCE
-Based on season averages and recent form, predict:
+BASKETBALL PREDICTION FORMAT:
+"28 PTS, 7 REB, 5 AST" (specific numbers)
 
-For Basketball: "Expected: 26 PTS, 8 REB, 7 AST"
-For Football QB: "Expected: 275 passing yards, 2 TDs"
-For Football RB: "Expected: 95 rushing yards, 1 TD"
-For Soccer: "Expected: 1 goal, 1 assist"
+BASEBALL BATTER PREDICTION:
+"2 hits, 1 HR, 3 RBI, .300 AVG for the game"
 
-STEP 7: BETTING INSIGHTS
-Calculate:
-- Over/Under line (season PPG ± 2-3)
-- Probability to score (based on recent games)
-- Hot streak: true if scored above average in 3+ of last 5 games
-- Consistency rating: "High" if std deviation low, "Medium" if moderate, "Low" if high variance
+BASEBALL PITCHER PREDICTION:
+"6 IP, 7 K, 2 ER, 1.00 ERA for the game"
 
-STEP 8: STRENGTHS & WEAKNESSES
-List 3-5 of each based on stats:
+SOCCER PREDICTION:
+"1 goal, 1 assist, 4 shots on target"
 
-Strengths examples:
-- "Elite three-point shooter (40%+ from 3)"
-- "Excellent playmaker (8+ assists per game)"
-- "Strong rebounder for position"
+NFL QB PREDICTION:
+"285 passing yards, 2 TDs, 1 INT, 25 rushing yards"
 
-Weaknesses examples:
-- "Free throw shooting needs improvement (65%)"
-- "High turnover rate (3.5 per game)"
-- "Below average defensive rating"
+STEP 5: BETTING INSIGHTS
+- Over/Under line for relevant stat (e.g., points for NBA, home runs for MLB)
+- Probability to score/perform well (0-100%)
+- Is player on a hot streak? (boolean)
+- Consistency rating: "Very Consistent", "Moderately Consistent", or "Inconsistent"
 
-STEP 9: CAREER HIGHLIGHTS
-List 5-10 major achievements:
-- "4x NBA Champion"
-- "4x NBA MVP"
-- "19x NBA All-Star"
-- "All-time leading scorer"
-- "Olympic Gold Medalist"
+STEP 6: INJURY STATUS
+Search: "[player name] injury report" or "[team name] injury report today"
+- Current injury status: "Healthy", "Questionable", "Out", "Day-to-Day"
+- If injured, specify the injury
 
-IMPORTANT ERROR HANDLING:
-If you CANNOT find ANY data for this player:
-1. Try common nickname variations (Steph, KD, LeBron, etc.)
-2. Try adding team name: "${query} Lakers" or "${query} Warriors"
-3. Check if player is retired
-4. Check if player exists
+CRITICAL RULES:
+✓ Use ONLY stats from the CURRENT ${new Date().getFullYear()} season
+✓ DO NOT mix sport stats (no "rebounds" for baseball, no "home runs" for basketball)
+✓ Predictions must be SPECIFIC NUMBERS, not ranges
+✓ All stats must be from StatMuse, ESPN, or official league sources
+✓ Recent form must show ACTUAL game results, not estimates
 
-If player truly doesn't exist or is retired:
-- Set predicted_performance to: "Unable to find current (2024-25) statistics for this player. They may be retired or inactive. Try: 'Stephen Curry Warriors' or 'LeBron James Lakers'"
-- Set all numeric stats to 0 or null
-- Set injury_status to "Unknown"
-- Set role to "Unknown"
-- Set team to "Unknown"
+If player not found, return an error in the reasoning field of next_game.
 
-OTHERWISE: You MUST return complete, realistic data.
-
-PLAYER NAME IN RESPONSE:
-- Use the COMMON/POPULAR name in player_name field
-- Examples: "Stephen Curry" (not Wardell Stephen Curry II), "Kevin Durant" (not Kevin Wayne Durant)
-- Use the name people actually call them
-
-VALIDATION:
-Before returning, verify:
-✓ player_name uses common name (Stephen Curry, not Wardell)
-✓ sport is one of: Basketball, Football, Soccer, Baseball, Hockey
-✓ team is not "Unknown" (unless player not found)
-✓ role is one of: Starter, Bench, Sixth Man, Rotation, Unknown
-✓ At least ONE stat in season_averages has a non-zero value
-✓ next_game.predicted_performance contains specific numbers
-✓ injury_status is a simple string
-✓ At least 3 career_highlights listed
-✓ At least 3 strengths and 3 weaknesses
-
-Return complete JSON with ALL required fields populated.`,
+Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -264,32 +198,35 @@ Return complete JSON with ALL required fields populated.`,
             sport: { type: "string" },
             team: { type: "string" },
             position: { type: "string" },
-            role: { 
-              type: "string",
-              enum: ["Starter", "Bench", "Sixth Man", "Rotation", "Unknown"],
-              description: "Player's role on team"
-            },
+            role: { type: "string" },
             league: { type: "string" },
-            jersey_number: { type: ["string", "null"] },
             season_averages: {
               type: "object",
               properties: {
-                points_per_game: { type: ["number", "null"] },
-                assists_per_game: { type: ["number", "null"] },
-                rebounds_per_game: { type: ["number", "null"] },
-                steals_per_game: { type: ["number", "null"] },
-                blocks_per_game: { type: ["number", "null"] },
-                field_goal_percentage: { type: ["number", "null"] },
-                three_point_percentage: { type: ["number", "null"] },
-                free_throw_percentage: { type: ["number", "null"] },
-                goals_per_game: { type: ["number", "null"] },
-                shots_per_game: { type: ["number", "null"] },
-                passes_per_game: { type: ["number", "null"] },
-                tackles_per_game: { type: ["number", "null"] },
-                passing_yards_per_game: { type: ["number", "null"] },
-                rushing_yards_per_game: { type: ["number", "null"] },
-                receptions_per_game: { type: ["number", "null"] },
-                minutes_per_game: { type: ["number", "null"] }
+                points_per_game: { type: "number" },
+                assists_per_game: { type: "number" },
+                rebounds_per_game: { type: "number" },
+                steals_per_game: { type: "number" },
+                blocks_per_game: { type: "number" },
+                field_goal_percentage: { type: "number" },
+                three_point_percentage: { type: "number" },
+                free_throw_percentage: { type: "number" },
+                minutes_per_game: { type: "number" },
+                goals_per_game: { type: "number" },
+                shots_per_game: { type: "number" },
+                passes_per_game: { type: "number" },
+                tackles_per_game: { type: "number" },
+                passing_yards_per_game: { type: "number" },
+                rushing_yards_per_game: { type: "number" },
+                receptions_per_game: { type: "number" },
+                batting_average: { type: "number" },
+                home_runs: { type: "number" },
+                rbis: { type: "number" },
+                stolen_bases: { type: "number" },
+                era: { type: "number" },
+                strikeouts: { type: "number" },
+                wins: { type: "number" },
+                saves: { type: "number" }
               }
             },
             recent_form: {
@@ -299,21 +236,20 @@ Return complete JSON with ALL required fields populated.`,
                 properties: {
                   date: { type: "string" },
                   opponent: { type: "string" },
-                  points: { type: ["number", "null"] },
-                  assists: { type: ["number", "null"] },
-                  rebounds: { type: ["number", "null"] },
-                  goals: { type: ["number", "null"] },
-                  passing_yards: { type: ["number", "null"] },
-                  rushing_yards: { type: ["number", "null"] },
-                  performance_rating: { type: ["string", "null"] }
-                },
-                required: ["date", "opponent"]
+                  points: { type: "number" },
+                  assists: { type: "number" },
+                  rebounds: { type: "number" },
+                  goals: { type: "number" },
+                  passing_yards: { type: "number" },
+                  rushing_yards: { type: "number" },
+                  hits: { type: "number" },
+                  home_runs: { type: "number" },
+                  rbis: { type: "number" },
+                  performance_rating: { type: "string" }
+                }
               }
             },
-            injury_status: {
-              type: "string",
-              description: "Must be one of: Healthy, Questionable, Out, Day-to-Day, Probable, Doubtful, Unknown"
-            },
+            injury_status: { type: "string" },
             next_game: {
               type: "object",
               properties: {
@@ -324,7 +260,7 @@ Return complete JSON with ALL required fields populated.`,
                 confidence: { type: "string" },
                 reasoning: { type: "string" }
               },
-              required: ["opponent", "date", "location", "predicted_performance", "confidence", "reasoning"]
+              required: ["opponent", "predicted_performance", "confidence", "reasoning"]
             },
             career_highlights: {
               type: "array",
@@ -333,10 +269,10 @@ Return complete JSON with ALL required fields populated.`,
             betting_insights: {
               type: "object",
               properties: {
-                over_under_points: { type: ["number", "null"] },
-                probability_to_score: { type: ["number", "null"] },
-                hot_streak: { type: ["boolean", "null"] },
-                consistency_rating: { type: ["string", "null"] }
+                over_under_points: { type: "number" },
+                probability_to_score: { type: "number" },
+                hot_streak: { type: "boolean" },
+                consistency_rating: { type: "string" }
               }
             },
             strengths: {
@@ -346,37 +282,18 @@ Return complete JSON with ALL required fields populated.`,
             weaknesses: {
               type: "array",
               items: { type: "string" }
-            },
-            data_sources: {
-              type: "object",
-              properties: {
-                stats_source: { type: ["string", "null"] },
-                injury_source: { type: ["string", "null"] },
-                schedule_source: { type: ["string", "null"] }
-              }
             }
           },
-          required: ["player_name", "sport", "team", "position", "role", "league", "injury_status", "next_game", "career_highlights", "betting_insights", "strengths", "weaknesses"]
+          required: ["player_name", "sport", "team", "next_game"]
         }
       });
 
-      console.log("✅ Player Stats Result:", result);
+      if (!result || !result.player_name || !result.next_game) {
+        throw new Error("Invalid response - player not found or missing data");
+      }
 
-      // Check if the AI couldn't find the player or returned incomplete data indicating a lookup failure
-      if (!result || !result.player_name || result.team === "Unknown" ||
-          result?.next_game?.predicted_performance?.toLowerCase().includes("unable to find") ||
-          result?.next_game?.predicted_performance?.toLowerCase().includes("player not found")) {
-        throw new Error(`Could not find current statistics for "${query}". 
-
-Please try:
-• "${query}" with full name
-• Adding current team: "Stephen Curry Warriors" or "LeBron James Lakers"
-• Using nicknames: "Steph Curry", "KD", "King James"
-
-Common issues:
-• Player recently retired or traded
-• Name spelling (try "Stephen" not "Steven")
-• Include current 2024-25 team`);
+      if (result.next_game?.reasoning?.includes("not found") || result.next_game?.reasoning?.includes("Unable to find")) {
+        throw new Error("Player not found - please check spelling and try again");
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -384,27 +301,15 @@ Common issues:
       queryClient.invalidateQueries({ queryKey: ['players'] });
       
     } catch (err) {
-      console.error("❌ Player Stats Error:", err);
-      setError(err.message || `Failed to find player statistics for "${query}". Please try with full name and current team.`);
+      console.error("Player analysis error:", err);
+      setError("Failed to analyze player. Please try again with full name or different spelling.");
     }
 
     setIsSearching(false);
   };
 
-  if (loadError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
-        <Alert variant="destructive" className="max-w-2xl mx-auto">
-          <AlertDescription>
-            Failed to load player statistics. Please refresh the page.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -412,68 +317,57 @@ Common issues:
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <User className="w-7 h-7" />
-            </div>
-            <h1 className="text-4xl font-bold">Player Statistics</h1>
-          </div>
-          <p className="text-purple-100 text-lg max-w-2xl">
-            Get comprehensive player stats including averages, recent form, betting insights, and next game predictions
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black text-gray-900">Player Stats & Predictions</h1>
+              <p className="text-gray-600">Analyze any player's performance and get AI-powered predictions</p>
+            </div>
+          </div>
         </div>
+
+        <Card className="p-6 mb-8 border-2 border-purple-200 bg-white shadow-lg">
+          <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
+        </Card>
 
         {error && (
-          <Alert className="mb-6 bg-yellow-50 border-yellow-300">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-            <AlertDescription className="text-yellow-800 whitespace-pre-line ml-2">
-              {error}
-            </AlertDescription>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {isSearching ? (
-          <div className="flex items-center justify-center py-12">
+        {isSearching && (
+          <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 rounded-full border-4 border-purple-200" />
-                <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
+              <div className="relative w-24 h-24 mx-auto mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full opacity-20 animate-ping" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
+                <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-purple-500" />
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-gray-600 justify-center">
-                <Sparkles className="w-5 h-5 text-purple-600" />
-                <span className="font-medium">Searching internet for player statistics...</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">This may take 10-20 seconds</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Player Data</h3>
+              <p className="text-gray-600">Fetching stats from StatMuse & ESPN...</p>
             </div>
           </div>
-        ) : (
+        )}
+
+        {!isSearching && (
           <>
-            {players.length > 0 ? (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Analyzed Players ({players.length})
-                  </h2>
-                </div>
-                <div className="space-y-6">
-                  {players.map((player, index) => (
-                    <PlayerStatsDisplay
-                      key={player.id}
-                      player={player}
-                      onDelete={deleteMutation.mutate}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </>
+            {players && players.length > 0 ? (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {players.map((player) => (
+                  <PlayerStatsDisplay
+                    key={player.id}
+                    player={player}
+                    onDelete={deleteMutation.mutate}
+                  />
+                ))}
+              </div>
             ) : (
               <EmptyPlayerState />
             )}

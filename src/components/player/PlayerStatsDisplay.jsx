@@ -1,326 +1,326 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, TrendingUp, Calendar, MapPin, Trophy, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, TrendingUp, Target, Calendar, AlertCircle, Trophy, Zap, Star } from "lucide-react";
+import { motion } from "framer-motion";
 import PlayerRecentGames from "./PlayerRecentGames";
 
-export default function PlayerStatsDisplay({ player, onDelete, index }) {
-  const [expanded, setExpanded] = useState(false);
+export default function PlayerStatsDisplay({ player, onDelete }) {
+  const getStatsBySport = () => {
+    const sport = player.sport?.toLowerCase() || '';
+    const stats = [];
 
-  const getInjuryColor = (status) => {
-    const colors = {
-      'Healthy': 'bg-green-500/20 text-green-300 border-green-500/50',
-      'Questionable': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-      'Out': 'bg-red-500/20 text-red-300 border-red-500/50',
-      'Day-to-Day': 'bg-orange-500/20 text-orange-300 border-orange-500/50',
-      'Probable': 'bg-blue-500/20 text-blue-300 border-blue-500/50'
-    };
-    return colors[status] || 'bg-gray-500/20 text-gray-300 border-gray-500/50';
+    // Basketball Stats
+    if (sport.includes('basketball') || sport.includes('nba')) {
+      if (player.season_averages?.points_per_game) {
+        stats.push({ label: "PPG", value: player.season_averages.points_per_game.toFixed(1), icon: Target, color: "text-blue-600" });
+      }
+      if (player.season_averages?.rebounds_per_game) {
+        stats.push({ label: "RPG", value: player.season_averages.rebounds_per_game.toFixed(1), icon: TrendingUp, color: "text-green-600" });
+      }
+      if (player.season_averages?.assists_per_game) {
+        stats.push({ label: "APG", value: player.season_averages.assists_per_game.toFixed(1), icon: Zap, color: "text-purple-600" });
+      }
+      
+      // Combined stat (PTS+REB+AST)
+      const pts = player.season_averages?.points_per_game || 0;
+      const reb = player.season_averages?.rebounds_per_game || 0;
+      const ast = player.season_averages?.assists_per_game || 0;
+      if (pts || reb || ast) {
+        stats.push({ 
+          label: "PTS+REB+AST", 
+          value: (pts + reb + ast).toFixed(1), 
+          icon: Trophy, 
+          color: "text-orange-600",
+          highlight: true 
+        });
+      }
+
+      if (player.season_averages?.field_goal_percentage) {
+        stats.push({ label: "FG%", value: `${(player.season_averages.field_goal_percentage * 100).toFixed(1)}%`, color: "text-gray-600" });
+      }
+      if (player.season_averages?.three_point_percentage) {
+        stats.push({ label: "3P%", value: `${(player.season_averages.three_point_percentage * 100).toFixed(1)}%`, color: "text-indigo-600" });
+      }
+    }
+    
+    // Baseball Stats - Batters
+    else if ((sport.includes('baseball') || sport.includes('mlb')) && player.season_averages?.batting_average) {
+      if (player.season_averages.batting_average) {
+        stats.push({ label: "AVG", value: player.season_averages.batting_average.toFixed(3), icon: Target, color: "text-blue-600" });
+      }
+      if (player.season_averages.home_runs) {
+        stats.push({ label: "Home Runs", value: player.season_averages.home_runs, icon: Trophy, color: "text-orange-600", highlight: true });
+      }
+      if (player.season_averages.rbis) {
+        stats.push({ label: "RBIs", value: player.season_averages.rbis, icon: TrendingUp, color: "text-green-600" });
+      }
+      if (player.season_averages.stolen_bases) {
+        stats.push({ label: "Stolen Bases", value: player.season_averages.stolen_bases, icon: Zap, color: "text-purple-600" });
+      }
+    }
+    
+    // Baseball Stats - Pitchers
+    else if ((sport.includes('baseball') || sport.includes('mlb')) && player.season_averages?.era) {
+      if (player.season_averages.era) {
+        stats.push({ label: "ERA", value: player.season_averages.era.toFixed(2), icon: Target, color: "text-blue-600", highlight: true });
+      }
+      if (player.season_averages.strikeouts) {
+        stats.push({ label: "Strikeouts", value: player.season_averages.strikeouts, icon: Zap, color: "text-orange-600" });
+      }
+      if (player.season_averages.wins) {
+        stats.push({ label: "Wins", value: player.season_averages.wins, icon: Trophy, color: "text-green-600" });
+      }
+      if (player.season_averages.saves) {
+        stats.push({ label: "Saves", value: player.season_averages.saves, icon: Star, color: "text-purple-600" });
+      }
+    }
+    
+    // Soccer Stats
+    else if (sport.includes('soccer') || (sport.includes('football') && !sport.includes('american'))) {
+      if (player.season_averages?.goals_per_game) {
+        stats.push({ label: "Goals/Game", value: player.season_averages.goals_per_game.toFixed(2), icon: Trophy, color: "text-orange-600", highlight: true });
+      }
+      if (player.season_averages?.assists_per_game) {
+        stats.push({ label: "Assists/Game", value: player.season_averages.assists_per_game.toFixed(2), icon: Zap, color: "text-purple-600" });
+      }
+      if (player.season_averages?.shots_per_game) {
+        stats.push({ label: "Shots/Game", value: player.season_averages.shots_per_game.toFixed(1), icon: Target, color: "text-blue-600" });
+      }
+      if (player.season_averages?.tackles_per_game) {
+        stats.push({ label: "Tackles/Game", value: player.season_averages.tackles_per_game.toFixed(1), color: "text-green-600" });
+      }
+    }
+    
+    // American Football Stats
+    else if (sport.includes('nfl') || sport.includes('american football')) {
+      // QB Stats
+      if (player.season_averages?.passing_yards_per_game) {
+        stats.push({ label: "Pass Yds/G", value: player.season_averages.passing_yards_per_game.toFixed(1), icon: Target, color: "text-blue-600", highlight: true });
+      }
+      // RB Stats
+      if (player.season_averages?.rushing_yards_per_game) {
+        stats.push({ label: "Rush Yds/G", value: player.season_averages.rushing_yards_per_game.toFixed(1), icon: TrendingUp, color: "text-green-600", highlight: true });
+      }
+      // WR/TE Stats
+      if (player.season_averages?.receptions_per_game) {
+        stats.push({ label: "Rec/Game", value: player.season_averages.receptions_per_game.toFixed(1), icon: Zap, color: "text-purple-600" });
+      }
+    }
+
+    return stats;
   };
 
-  const getRoleColor = (role) => {
-    const colors = {
-      'Starter': 'bg-purple-500/20 text-purple-200 border-purple-500/50',
-      'Bench': 'bg-gray-500/20 text-gray-200 border-gray-500/50',
-      'Sixth Man': 'bg-blue-500/20 text-blue-200 border-blue-500/50',
-      'Rotation': 'bg-green-500/20 text-green-200 border-green-500/50'
-    };
-    return colors[role] || 'bg-gray-500/20 text-gray-200 border-gray-500/50';
-  };
+  const stats = getStatsBySort();
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
     >
-      <Card className="border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50 shadow-xl overflow-hidden">
-        {/* Header Section */}
-        <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white pb-8">
-          <div className="flex justify-between items-start mb-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <Badge className="bg-white/20 text-white border-white/30">{player.sport}</Badge>
+      <Card className="border-2 border-purple-200 bg-white hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-2xl font-black mb-2">{player.player_name}</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="bg-white/20 text-white border-white/30">
+                  {player.team}
+                </Badge>
+                <Badge className="bg-white/10 text-white border-white/20">
+                  {player.position}
+                </Badge>
+                <Badge className="bg-white/10 text-white border-white/20">
+                  {player.sport}
+                </Badge>
                 {player.league && (
-                  <Badge className="bg-white/10 text-white border-white/20">{player.league}</Badge>
-                )}
-                {player.role && (
-                  <Badge className={`${getRoleColor(player.role)} border font-bold`}>
-                    {player.role}
+                  <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                    {player.league}
                   </Badge>
                 )}
               </div>
-              <CardTitle className="text-4xl font-black text-white drop-shadow-lg">
-                {player.player_name}
-              </CardTitle>
-              <div className="flex items-center gap-4 text-white/90">
-                <span className="font-semibold">{player.team}</span>
-                <span>•</span>
-                <span>{player.position}</span>
-                {player.jersey_number && (
-                  <>
-                    <span>•</span>
-                    <span>#{player.jersey_number}</span>
-                  </>
-                )}
-              </div>
             </div>
-            <div className="flex gap-2">
-              {player.injury_status && (
-                <Badge className={`${getInjuryColor(player.injury_status)} border font-bold text-base px-3 py-1`}>
-                  {player.injury_status}
-                </Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(player.id)}
-                className="hover:bg-red-500/20 hover:text-red-300 text-white/80"
-              >
-                <Trash2 className="w-5 h-5" />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(player.id)}
+              className="hover:bg-red-500/20 hover:text-red-200 text-white/80"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          {/* Season Averages */}
-          {player.season_averages && Object.keys(player.season_averages).some(key => player.season_averages[key] !== null && player.season_averages[key] !== 0) && (
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-purple-600" />
-                Season Averages
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {player.season_averages.points_per_game && (
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
-                    <div className="text-sm font-semibold text-blue-900 mb-1">PPG</div>
-                    <div className="text-3xl font-black text-blue-600">{player.season_averages.points_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.assists_per_game && (
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-200">
-                    <div className="text-sm font-semibold text-green-900 mb-1">APG</div>
-                    <div className="text-3xl font-black text-green-600">{player.season_averages.assists_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.rebounds_per_game && (
-                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-200">
-                    <div className="text-sm font-semibold text-orange-900 mb-1">RPG</div>
-                    <div className="text-3xl font-black text-orange-600">{player.season_averages.rebounds_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.field_goal_percentage && (
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200">
-                    <div className="text-sm font-semibold text-purple-900 mb-1">FG%</div>
-                    <div className="text-3xl font-black text-purple-600">{player.season_averages.field_goal_percentage.toFixed(1)}%</div>
-                  </div>
-                )}
-                {player.season_averages.three_point_percentage && (
-                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border-2 border-indigo-200">
-                    <div className="text-sm font-semibold text-indigo-900 mb-1">3P%</div>
-                    <div className="text-3xl font-black text-indigo-600">{player.season_averages.three_point_percentage.toFixed(1)}%</div>
-                  </div>
-                )}
-                {player.season_averages.free_throw_percentage && (
-                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border-2 border-pink-200">
-                    <div className="text-sm font-semibold text-pink-900 mb-1">FT%</div>
-                    <div className="text-3xl font-black text-pink-600">{player.season_averages.free_throw_percentage.toFixed(1)}%</div>
-                  </div>
-                )}
-                {player.season_averages.minutes_per_game && (
-                  <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-4 border-2 border-teal-200">
-                    <div className="text-sm font-semibold text-teal-900 mb-1">MPG</div>
-                    <div className="text-3xl font-black text-teal-600">{player.season_averages.minutes_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.passing_yards_per_game && (
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
-                    <div className="text-sm font-semibold text-blue-900 mb-1">Pass YPG</div>
-                    <div className="text-3xl font-black text-blue-600">{player.season_averages.passing_yards_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.rushing_yards_per_game && (
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-200">
-                    <div className="text-sm font-semibold text-green-900 mb-1">Rush YPG</div>
-                    <div className="text-3xl font-black text-green-600">{player.season_averages.rushing_yards_per_game.toFixed(1)}</div>
-                  </div>
-                )}
-                {player.season_averages.goals_per_game && (
-                  <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border-2 border-red-200">
-                    <div className="text-sm font-semibold text-red-900 mb-1">Goals/Game</div>
-                    <div className="text-3xl font-black text-red-600">{player.season_averages.goals_per_game.toFixed(2)}</div>
-                  </div>
-                )}
+          {/* Injury Status */}
+          {player.injury_status && player.injury_status !== "Healthy" && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              <div>
+                <div className="font-bold text-amber-900">Injury Status</div>
+                <div className="text-sm text-amber-800">{player.injury_status}</div>
               </div>
             </div>
           )}
 
-          {/* Next Game Prediction */}
-          {player.next_game && (
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-6 text-white shadow-xl">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-6 h-6" />
-                <h3 className="text-2xl font-black">Next Game Prediction</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <div>
-                    <div className="text-white/80 text-sm mb-1">Opponent</div>
-                    <div className="text-2xl font-bold">{player.next_game.opponent}</div>
-                  </div>
-                  {player.next_game.location && (
-                    <div className="text-right">
-                      <div className="text-white/80 text-sm mb-1">Location</div>
-                      <div className="flex items-center gap-1 text-sm">
-                        <MapPin className="w-4 h-4" />
-                        {player.next_game.location}
+          {/* Season Averages */}
+          {stats.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-purple-600" />
+                {new Date().getFullYear()} Season Averages
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {stats.map((stat, idx) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div 
+                      key={idx}
+                      className={`rounded-lg p-4 ${
+                        stat.highlight 
+                          ? 'bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-300' 
+                          : 'bg-gray-50 border border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {Icon && <Icon className={`w-4 h-4 ${stat.color || 'text-gray-600'}`} />}
+                        <div className={`text-xs font-semibold ${stat.highlight ? 'text-orange-900' : 'text-gray-600'}`}>
+                          {stat.label}
+                        </div>
+                      </div>
+                      <div className={`text-2xl font-black ${stat.highlight ? 'text-orange-600' : stat.color || 'text-gray-900'}`}>
+                        {stat.value}
                       </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
+          {/* Recent Form */}
+          {player.recent_form && player.recent_form.length > 0 && (
+            <PlayerRecentGames games={player.recent_form} sport={player.sport} />
+          )}
+
+          {/* Next Game Prediction */}
+          {player.next_game && (
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-lg font-bold text-emerald-900">Next Game Prediction</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-emerald-700">Opponent:</span>
+                  <span className="font-bold text-emerald-900">{player.next_game.opponent}</span>
+                </div>
+                
                 {player.next_game.date && (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                    <div className="text-white/80 text-sm mb-1">Game Date</div>
-                    <div className="text-lg font-semibold">{player.next_game.date}</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-emerald-700">Date:</span>
+                    <span className="font-semibold text-emerald-900">{player.next_game.date}</span>
                   </div>
                 )}
 
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <div className="text-white/80 text-sm mb-2">Predicted Performance</div>
-                  <div className="text-2xl font-black mb-3">{player.next_game.predicted_performance}</div>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-white/20 text-white border-white/30">
+                {player.next_game.location && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-emerald-700">Location:</span>
+                    <span className="font-semibold text-emerald-900">{player.next_game.location}</span>
+                  </div>
+                )}
+
+                <div className="pt-3 border-t border-emerald-200">
+                  <div className="text-sm text-emerald-700 mb-2">Predicted Performance:</div>
+                  <div className="text-xl font-black text-emerald-600 mb-3">
+                    {player.next_game.predicted_performance}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className={
+                      player.next_game.confidence === 'High' ? 'bg-green-500' :
+                      player.next_game.confidence === 'Medium' ? 'bg-yellow-500' :
+                      'bg-orange-500'
+                    }>
                       {player.next_game.confidence} Confidence
                     </Badge>
                   </div>
-                </div>
 
-                {player.next_game.reasoning && (
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                    <div className="text-white/90 text-sm leading-relaxed">{player.next_game.reasoning}</div>
-                  </div>
-                )}
+                  {player.next_game.reasoning && (
+                    <div className="text-sm text-emerald-800 leading-relaxed">
+                      {player.next_game.reasoning}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {/* Betting Insights */}
           {player.betting_insights && (
-            <div className="bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl p-6 border-2 border-orange-200">
-              <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-6 h-6" />
-                Betting Insights
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {player.betting_insights.over_under_points !== null && player.betting_insights.over_under_points !== undefined && (
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">O/U Points</div>
-                    <div className="text-2xl font-black text-orange-600">{player.betting_insights.over_under_points.toFixed(1)}</div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-sm font-bold text-blue-900 mb-3">📊 Betting Insights</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {player.betting_insights.over_under_points && (
+                  <div>
+                    <span className="text-blue-600">O/U Line:</span>
+                    <span className="ml-2 font-bold text-blue-900">{player.betting_insights.over_under_points}</span>
                   </div>
                 )}
-                {player.betting_insights.probability_to_score !== null && player.betting_insights.probability_to_score !== undefined && (
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">Score Prob</div>
-                    <div className="text-2xl font-black text-green-600">{player.betting_insights.probability_to_score.toFixed(0)}%</div>
+                {player.betting_insights.probability_to_score !== undefined && (
+                  <div>
+                    <span className="text-blue-600">Score Prob:</span>
+                    <span className="ml-2 font-bold text-blue-900">{player.betting_insights.probability_to_score}%</span>
                   </div>
                 )}
-                {player.betting_insights.hot_streak !== null && player.betting_insights.hot_streak !== undefined && (
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">Hot Streak</div>
-                    <div className="text-2xl font-black text-red-600">{player.betting_insights.hot_streak ? '🔥 YES' : '❄️ NO'}</div>
+                {player.betting_insights.hot_streak !== undefined && (
+                  <div>
+                    <span className="text-blue-600">Hot Streak:</span>
+                    <span className="ml-2 font-bold text-blue-900">{player.betting_insights.hot_streak ? '🔥 Yes' : 'No'}</span>
                   </div>
                 )}
                 {player.betting_insights.consistency_rating && (
-                  <div className="bg-white rounded-lg p-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">Consistency</div>
-                    <div className="text-2xl font-black text-blue-600">{player.betting_insights.consistency_rating}</div>
+                  <div>
+                    <span className="text-blue-600">Consistency:</span>
+                    <span className="ml-2 font-bold text-blue-900">{player.betting_insights.consistency_rating}</span>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Expandable Section Toggle */}
-          <Button
-            variant="outline"
-            onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-2 border-purple-200"
-          >
-            {expanded ? (
-              <>
-                <ChevronUp className="w-5 h-5" />
-                Hide Details
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-5 h-5" />
-                Show Recent Games, Strengths & Weaknesses
-              </>
-            )}
-          </Button>
-
-          {/* Expandable Section */}
-          {expanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="space-y-6 pt-4"
-            >
-              {/* Recent Form */}
-              {player.recent_form && player.recent_form.length > 0 && (
-                <PlayerRecentGames games={player.recent_form} sport={player.sport} />
-              )}
-
-              {/* Strengths */}
-              {player.strengths && player.strengths.length > 0 && (
+          {/* Strengths & Weaknesses */}
+          {(player.strengths?.length > 0 || player.weaknesses?.length > 0) && (
+            <div className="grid md:grid-cols-2 gap-4">
+              {player.strengths?.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">💪 Strengths</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <h3 className="text-sm font-bold text-green-900 mb-2">✅ Strengths</h3>
+                  <ul className="space-y-1">
                     {player.strengths.map((strength, idx) => (
-                      <Badge key={idx} className="bg-green-100 text-green-800 border-green-300 text-sm py-2 px-3">
-                        {strength}
-                      </Badge>
+                      <li key={idx} className="text-sm text-green-700 flex items-start gap-2">
+                        <span>•</span>
+                        <span>{strength}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
-
-              {/* Weaknesses */}
-              {player.weaknesses && player.weaknesses.length > 0 && (
+              {player.weaknesses?.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">⚠️ Weaknesses</h3>
-                  <div className="flex flex-wrap gap-2">
+                  <h3 className="text-sm font-bold text-red-900 mb-2">⚠️ Weaknesses</h3>
+                  <ul className="space-y-1">
                     {player.weaknesses.map((weakness, idx) => (
-                      <Badge key={idx} className="bg-red-100 text-red-800 border-red-300 text-sm py-2 px-3">
-                        {weakness}
-                      </Badge>
+                      <li key={idx} className="text-sm text-red-700 flex items-start gap-2">
+                        <span>•</span>
+                        <span>{weakness}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
-
-              {/* Career Highlights */}
-              {player.career_highlights && player.career_highlights.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">🏆 Career Highlights</h3>
-                  <div className="bg-gradient-to-br from-yellow-50 to-amber-100 rounded-xl p-4 border-2 border-yellow-200">
-                    <ul className="space-y-2">
-                      {player.career_highlights.map((highlight, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-gray-800">
-                          <span className="text-yellow-600 font-bold">•</span>
-                          <span className="font-semibold">{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+            </div>
           )}
         </CardContent>
       </Card>
