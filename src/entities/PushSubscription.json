@@ -1,0 +1,33 @@
+{
+  "name": "PushSubscription",
+  "type": "object",
+  "properties": {
+    "fcm_token": {
+      "type": "string",
+      "description": "Firebase Cloud Messaging token for this device"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "web",
+        "android",
+        "ios"
+      ],
+      "default": "web",
+      "description": "Type of device"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this subscription is active"
+    },
+    "last_used": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this token was used successfully"
+    }
+  },
+  "required": [
+    "fcm_token"
+  ]
+}

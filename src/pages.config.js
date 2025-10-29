@@ -16,6 +16,7 @@ import TermsOfService from './pages/TermsOfService';
 import Pricing from './pages/Pricing';
 import PowerUser from './pages/PowerUser';
 import BettingBriefs from './pages/BettingBriefs';
+import Profile from './pages/Profile';
 import Layout from './Layout.jsx';
 
 
@@ -38,6 +39,7 @@ export const PAGES = {
     "Pricing": Pricing,
     "PowerUser": PowerUser,
     "BettingBriefs": BettingBriefs,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -155,6 +156,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
     { name: "Community", icon: MessageSquare, page: "Community" },
     { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
+    { name: "Profile", icon: User, page: "Profile" },
   ];
 
   if (isAdmin) {
