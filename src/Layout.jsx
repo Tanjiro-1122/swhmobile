@@ -158,6 +158,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Community", icon: MessageSquare, page: "Community" },
     { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
     { name: "Profile", icon: User, page: "Profile" },
+    { name: "Preferences", icon: Settings, page: "UserPreferences" },
   ];
 
   if (isAdmin) {
