@@ -38,10 +38,10 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
       }
 
       if (player.season_averages?.field_goal_percentage) {
-        stats.push({ label: "FG%", value: `${(player.season_averages.field_goal_percentage * 100).toFixed(1)}%`, color: "text-gray-600" });
+        stats.push({ label: "FG%", value: `${(player.season_averages.field_goal_percentage).toFixed(1)}%`, color: "text-gray-600" });
       }
       if (player.season_averages?.three_point_percentage) {
-        stats.push({ label: "3P%", value: `${(player.season_averages.three_point_percentage * 100).toFixed(1)}%`, color: "text-indigo-600" });
+        stats.push({ label: "3P%", value: `${(player.season_averages.three_point_percentage).toFixed(1)}%`, color: "text-indigo-600" });
       }
     }
     
