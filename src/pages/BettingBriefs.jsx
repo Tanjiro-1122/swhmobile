@@ -97,6 +97,24 @@ function BettingBriefsContent() {
           </Card>
         )}
 
+        {generateBriefMutation.isError && (
+          <Card className="border-2 border-red-200 mb-6 bg-red-50">
+            <CardContent className="p-8 text-center">
+              <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              <h3 className="text-xl font-bold text-red-900 mb-2">Generation Failed</h3>
+              <p className="text-red-700 mb-4">{generateBriefMutation.error?.message || 'Failed to generate brief. Please try again.'}</p>
+              <Button
+                onClick={handleGenerateBrief}
+                variant="outline"
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {brief && (
           <div className="space-y-6">
             {/* Summary */}
