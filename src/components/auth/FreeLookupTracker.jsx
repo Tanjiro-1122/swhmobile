@@ -243,7 +243,13 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
     );
   }
 
-  // Don't show banner if user has all lookups
+  // IMPORTANT: If user is on any paid tier, don't show free user banner
+  // This prevents the "999 free lookups" bug for paid users
+  if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
+    return null;
+  }
+
+  // Don't show banner if user has all lookups remaining (hasn't used any yet)
   if (lookupsRemaining === 5) return null;
 
   const handleSignup = () => {
