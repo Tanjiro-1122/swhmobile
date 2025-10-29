@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import DomainChangeBanner from "./components/DomainChangeBanner";
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -214,6 +215,9 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       
+      {/* Domain Change Banner */}
+      <DomainChangeBanner />
+      
       {/* Fixed Header - Highest z-index */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700">
         <div className="flex items-center justify-between px-4 py-3 lg:px-6">
@@ -292,7 +296,6 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       <div className="flex pt-16 lg:pt-20">
-        {/* Sidebar - z-40 (below header) */}
         <aside
           className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
