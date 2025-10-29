@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield } from "lucide-react";
@@ -103,7 +104,7 @@ export default function PrivacyPolicy() {
                   <li><strong>Opt-Out:</strong> Unsubscribe from marketing emails or push notifications</li>
                 </ul>
                 <p className="mt-4">
-                  To exercise these rights, contact us at: <strong>privacy@sportswagerhelper.com</strong>
+                  To exercise these rights, contact us at: <strong>support@sportswagerhelper.com</strong>
                 </p>
               </section>
 
@@ -151,7 +152,7 @@ export default function PrivacyPolicy() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">11. Contact Us</h2>
                 <p>If you have questions about this privacy policy or your data, contact us:</p>
                 <ul className="list-none space-y-2 mt-4">
-                  <li><strong>Email:</strong> privacy@sportswagerhelper.com</li>
+                  <li><strong>Email:</strong> support@sportswagerhelper.com</li>
                   <li><strong>Support:</strong> Use the feedback button in the app</li>
                   <li><strong>Mail:</strong> [Your Company Address]</li>
                 </ul>
