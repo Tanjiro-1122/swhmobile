@@ -112,7 +112,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
     return stats;
   };
 
-  const stats = getStatsBySort();
+  const stats = getStatsBySport();
 
   return (
     <motion.div
