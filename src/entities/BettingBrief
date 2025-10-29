@@ -1,0 +1,133 @@
+{
+  "name": "BettingBrief",
+  "type": "object",
+  "properties": {
+    "brief_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this brief is for"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user this personalized brief is for (null for global briefs)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Brief title"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Executive summary of the day's betting landscape"
+    },
+    "focused_sports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sports this brief focuses on based on user preferences"
+    },
+    "focused_leagues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Leagues this brief focuses on based on user preferences"
+    },
+    "top_picks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sport": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "pick": {
+            "type": "string"
+          },
+          "odds": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Top 3-5 picks for the day"
+    },
+    "injury_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player": {
+            "type": "string"
+          },
+          "team": {
+            "type": "string"
+          },
+          "injury": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Key injury updates"
+    },
+    "line_movements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "type": "string"
+          },
+          "movement": {
+            "type": "string"
+          },
+          "significance": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Significant betting line movements"
+    },
+    "sharp_money_indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Where sharp money is going"
+    },
+    "weather_alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "type": "string"
+          },
+          "conditions": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Weather conditions affecting games"
+    }
+  },
+  "required": [
+    "brief_date",
+    "title",
+    "summary"
+  ]
+}
