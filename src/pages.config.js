@@ -18,7 +18,6 @@ import PowerUser from './pages/PowerUser';
 import BettingBriefs from './pages/BettingBriefs';
 import Profile from './pages/Profile';
 import UserPreferences from './pages/UserPreferences';
-import Feeds from './pages/Feeds';
 import Layout from './Layout.jsx';
 
 
@@ -43,7 +42,6 @@ export const PAGES = {
     "BettingBriefs": BettingBriefs,
     "Profile": Profile,
     "UserPreferences": UserPreferences,
-    "Feeds": Feeds,
 }
 
 export const pagesConfig = {

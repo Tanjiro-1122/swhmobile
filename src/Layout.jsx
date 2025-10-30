@@ -150,7 +150,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Player Stats", icon: User, page: "PlayerStats" },
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
-    { name: "Feeds", icon: Sparkles, page: "Feeds" },
+    { name: "Betting Briefs", icon: Sparkles, page: "BettingBriefs" },
     { name: "Pricing", icon: Crown, page: "Pricing" },
     { name: "Alerts", icon: Bell, page: "Alerts" },
     { name: "Power User", icon: Zap, page: "PowerUser" },
