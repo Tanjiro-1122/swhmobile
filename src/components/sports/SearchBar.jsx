@@ -1,98 +1,98 @@
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Zap, HelpCircle } from "lucide-react";
-import { motion } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Search, X, Sparkles } from "lucide-react";
 
 export default function SearchBar({ onSearch, isSearching }) {
   const [query, setQuery] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query);
+    if (query.trim() && !isSearching) {
+      onSearch(query.trim());
     }
+  };
+
+  const handleClear = () => {
+    setQuery("");
   };
 
   const popularSearches = [
     "Lakers vs Celtics",
-    "Man United vs Liverpool",
-    "NBA tonight",
-    "Champions League today"
+    "Chiefs vs Bills NFL",
+    "Yankees vs Red Sox",
+    "Man City vs Arsenal",
+    "Bucks vs Heat NBA"
   ];
 
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="relative group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-blue-400 transition-colors z-10" />
+        <div className="relative">
           <Input
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search any match: 'Lakers vs Celtics', 'Man United vs Liverpool'..."
-            className="pl-16 pr-36 h-16 text-lg bg-slate-800/50 border-2 border-slate-700 focus:border-blue-500 text-white placeholder:text-slate-500 rounded-xl transition-all"
+            placeholder="Search for any match (e.g., 'Lakers vs Celtics NBA' or 'Chelsea vs Arsenal')"
             disabled={isSearching}
+            className="w-full h-14 pl-12 pr-24 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
           />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="absolute right-32 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                >
-                  <HelpCircle className="w-5 h-5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs text-sm">
-                  Try: "Lakers vs Celtics NBA", "Patriots vs Chiefs", "Man City Premier League"
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button
-            type="submit"
-            disabled={isSearching || !query.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-lg shadow-lg shadow-blue-500/50 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-          >
-            {isSearching ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5 mr-2" />
-                Analyze
-              </>
-            )}
-          </Button>
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          {query && !isSearching && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-20 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          )}
         </div>
+        <Button
+          type="submit"
+          disabled={!query.trim() || isSearching}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 h-10 disabled:opacity-50"
+        >
+          {isSearching ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+              Analyzing...
+            </div>
+          ) : (
+            <>
+              <Search className="w-4 h-4 mr-2" />
+              Analyze
+            </>
+          )}
+        </Button>
       </form>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm text-slate-400 font-medium">Popular:</span>
-        {popularSearches.map((search, index) => (
-          <motion.button
-            key={index}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setQuery(search);
-              onSearch(search);
-            }}
-            disabled={isSearching}
-            className="text-sm px-4 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500/50 transition-all disabled:opacity-50"
-          >
-            {search}
-          </motion.button>
-        ))}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-4 h-4 text-blue-600" />
+          <span className="text-sm font-semibold text-gray-700">Popular Searches:</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {popularSearches.map((search, index) => (
+            <button
+              key={index}
+              onClick={() => setQuery(search)}
+              disabled={isSearching}
+              className="px-4 py-2 bg-white border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              {search}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+        <div className="text-sm text-gray-700 space-y-1">
+          <p className="font-semibold text-blue-900 mb-2">💡 Search Tips:</p>
+          <p>• Include team names and sport: <span className="font-semibold text-blue-700">"Lakers vs Celtics NBA"</span></p>
+          <p>• Add league for soccer: <span className="font-semibold text-blue-700">"Chelsea vs Arsenal Premier League"</span></p>
+          <p>• Be specific with dates: <span className="font-semibold text-blue-700">"Chiefs vs Bills Sunday"</span></p>
+        </div>
       </div>
     </div>
   );

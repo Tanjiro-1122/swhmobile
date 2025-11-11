@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -33,7 +32,6 @@ import DomainChangeBanner from "./components/DomainChangeBanner";
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,12 +40,6 @@ export default function Layout({ children, currentPageName }) {
       setIsAuthenticated(authenticated);
     };
     checkAuth();
-
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
-    if (savedDarkMode) {
-      document.documentElement.classList.add('dark');
-    }
 
     const viewport = document.querySelector('meta[name="viewport"]');
     if (!viewport) {
@@ -95,17 +87,6 @@ export default function Layout({ children, currentPageName }) {
       document.head.removeChild(manifestLink);
     };
   }, []);
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -166,61 +147,12 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <style>{`
-        :root {
-          --primary: 222.2 47.4% 11.2%;
-          --primary-foreground: 210 40% 98%;
-          --secondary: 217.2 32.6% 17.5%;
-          --secondary-foreground: 210 40% 98%;
-          --muted: 217.2 32.6% 17.5%;
-          --muted-foreground: 215 20.2% 65.1%;
-          --accent: 217.2 32.6% 17.5%;
-          --accent-foreground: 210 40% 98%;
-          --destructive: 0 62.8% 30.6%;
-          --destructive-foreground: 210 40% 98%;
-          --border: 217.2 32.6% 17.5%;
-          --input: 217.2 32.6% 17.5%;
-          --ring: 212.7 26.8% 83.9%;
-          --popover: 222.2 84% 4.9%;
-          --popover-foreground: 210 40% 98%;
-          --card: 222.2 84% 4.9%;
-          --card-foreground: 210 40% 98%;
-        }
-        
-        .dark {
-          --primary: 210 40% 98%;
-          --primary-foreground: 222.2 47.4% 11.2%;
-          --secondary: 217.2 32.6% 17.5%;
-          --secondary-foreground: 210 40% 98%;
-          --muted: 217.2 32.6% 17.5%;
-          --muted-foreground: 215 20.2% 65.1%;
-          --accent: 217.2 32.6% 17.5%;
-          --accent-foreground: 210 40% 98%;
-          --destructive: 0 62.8% 30.6%;
-          --destructive-foreground: 210 40% 98%;
-          --border: 217.2 32.6% 17.5%;
-          --input: 217.2 32.6% 17.5%;
-          --ring: 212.7 26.8% 83.9%;
-          --popover: 222.2 84% 4.9%;
-          --popover-foreground: 210 40% 98%;
-          --card: 222.2 84% 4.9%;
-          --card-foreground: 210 40% 98%;
-        }
-
-        /* Mobile-specific fixes */
-        @media (max-width: 1024px) {
-          body {
-            overflow-x: hidden;
-          }
-        }
-      `}</style>
-      
+    <div className="min-h-screen bg-slate-50">
       {/* Domain Change Banner */}
       <DomainChangeBanner />
       
-      {/* Fixed Header - Highest z-index */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-slate-700 shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 lg:px-6">
           <div className="flex items-center gap-3">
             <Button
@@ -237,10 +169,10 @@ export default function Layout({ children, currentPageName }) {
                 alt="SWH Logo"
                 className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl object-cover flex-shrink-0"
               />
-              <span className="text-lg lg:text-2xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hidden sm:inline">
+              <span className="text-lg lg:text-2xl font-black text-white hidden sm:inline">
                 Sports Wager Helper
               </span>
-              <span className="text-lg font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent sm:hidden">
+              <span className="text-lg font-black text-white sm:hidden">
                 SWH
               </span>
             </Link>
@@ -298,7 +230,7 @@ export default function Layout({ children, currentPageName }) {
 
       <div className="flex pt-16 lg:pt-20">
         <aside
-          className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 overflow-y-auto transition-transform duration-300 z-40 ${
+          className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-white border-r border-gray-200 overflow-y-auto transition-transform duration-300 z-40 shadow-xl ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -312,8 +244,8 @@ export default function Layout({ children, currentPageName }) {
                   onClick={() => handleMenuClick(item.page)}
                   className={`w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all text-left ${
                     isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50'
-                      : 'text-gray-400 hover:text-white hover:bg-slate-800'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
@@ -326,25 +258,25 @@ export default function Layout({ children, currentPageName }) {
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all text-left lg:hidden mt-4"
+                className="w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all text-left lg:hidden mt-4"
               >
                 <LogOut className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium text-sm">Log Out</span>
               </button>
             )}
 
-            <div className="pt-4 border-t border-slate-700 mt-4 space-y-2">
+            <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
               <Link
                 to={createPageUrl("PrivacyPolicy")}
                 onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-500 hover:text-gray-300"
+                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
               >
                 Privacy Policy
               </Link>
               <Link
                 to={createPageUrl("TermsOfService")}
                 onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-500 hover:text-gray-300"
+                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
               >
                 Terms of Service
               </Link>
@@ -356,7 +288,7 @@ export default function Layout({ children, currentPageName }) {
                     href="https://www.reddit.com/r/sportswagerhelper/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs lg:text-sm text-gray-400 hover:text-orange-400 transition-colors"
+                    className="flex items-center gap-2 text-xs lg:text-sm text-gray-600 hover:text-orange-500 transition-colors"
                   >
                     <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
@@ -368,7 +300,7 @@ export default function Layout({ children, currentPageName }) {
                       href="https://discord.gg/2TswBjam"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs lg:text-sm text-gray-400 hover:text-purple-400 transition-colors"
+                      className="flex items-center gap-2 text-xs lg:text-sm text-gray-600 hover:text-purple-500 transition-colors"
                     >
                       <MessageSquare className="w-4 h-4 flex-shrink-0" />
                       VIP Discord
@@ -382,12 +314,12 @@ export default function Layout({ children, currentPageName }) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 p-4 lg:p-6 min-h-screen">
+        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50">
           {children}
         </main>
       </div>
 
-      {/* Backdrop Overlay - z-30 (below sidebar and header) */}
+      {/* Backdrop Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"

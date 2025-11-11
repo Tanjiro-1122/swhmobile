@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -309,7 +310,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -330,13 +331,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </div>
         </div>
 
-        <Card className="p-6 mb-8 border-2 border-purple-200 bg-white shadow-lg">
+        <Card className="p-6 mb-8 border-2 border-purple-200 bg-white shadow-xl">
           <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </Card>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 bg-red-50 border-2 border-red-200">
+            <AlertDescription className="text-red-900">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -351,7 +352,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Player Data</h3>
-              <p className="text-gray-600">Fetching stats from StatMuse & ESPN...</p>
+              <p className="text-gray-700">Fetching stats from StatMuse & ESPN...</p>
             </div>
           </div>
         )}

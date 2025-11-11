@@ -401,7 +401,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
       <WelcomeTutorial />
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
@@ -410,7 +410,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto">
           {/* VIP Discord Card - Show for VIP/Legacy only */}
           {isVIPorLegacy && (
             <div className="mb-12">
@@ -429,14 +429,14 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
 
           {/* Search Section */}
           <div className="mb-12">
-            <div className="bg-white/90 backdrop-blur-xl border-4 border-white rounded-3xl p-8 shadow-2xl">
+            <div className="bg-white border-2 border-gray-200 rounded-3xl p-8 shadow-xl">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
                   <Target className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Analyze Any Match</h2>
-                  <p className="text-slate-600">Get instant win probabilities and betting insights</p>
+                  <h2 className="text-2xl font-bold text-gray-900">Analyze Any Match</h2>
+                  <p className="text-gray-600">Get instant win probabilities and betting insights</p>
                 </div>
               </div>
               <SearchBar onSearch={handleSearch} isSearching={isSearching} />
@@ -444,8 +444,8 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </div>
 
           {error && (
-            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/50 text-red-400">
-              <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
+            <Alert variant="destructive" className="mb-6 bg-red-50 border-2 border-red-200">
+              <AlertDescription className="whitespace-pre-line text-red-900">{error}</AlertDescription>
             </Alert>
           )}
 
@@ -456,11 +456,11 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
                   <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-                    <Sparkles className="w-10 h-10 text-emerald-400" />
+                    <Sparkles className="w-10 h-10 text-emerald-500" />
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Analyzing Match Data</h3>
-                <p className="text-white/80">Fetching live stats from StatMuse & ESPN...</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Match Data</h3>
+                <p className="text-gray-700">Fetching live stats from StatMuse & ESPN...</p>
                 <div className="mt-4 flex items-center justify-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -475,10 +475,10 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
               {matches.length > 0 ? (
                 <>
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                       <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
                       Your Match Predictions
-                      <span className="text-white/70">({matches.length})</span>
+                      <span className="text-gray-500">({matches.length})</span>
                     </h2>
                   </div>
                   <div className="grid lg:grid-cols-2 gap-8">
@@ -500,10 +500,10 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         </div>
 
       {/* Footer Disclaimer */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
-        <div className="bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-6">
-          <p className="text-sm text-white">
-            <strong className="font-bold">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
+      <div className="max-w-7xl mx-auto px-6 pb-12 mt-12">
+        <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
+          <p className="text-sm text-gray-700">
+            <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
             Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
           </p>
         </div>
