@@ -80,7 +80,8 @@ export default function Pricing() {
       "5 free player stats lookups",
       "5 free team analysis",
       "Basic betting calculator",
-      "Community access"
+      "Community access",
+      "30-day saved results retention"
     ],
     premium: [
       "✅ Unlimited match predictions",
@@ -93,7 +94,8 @@ export default function Pricing() {
       "✅ Bankroll manager",
       "✅ Betting alerts",
       "✅ Save & track results",
-      "✅ Priority support"
+      "✅ Priority support",
+      "✅ 30-day saved results retention"
     ],
     vip: [
       "🏆 Everything in Premium",
@@ -105,7 +107,8 @@ export default function Pricing() {
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
       "🏆 Exclusive VIP Discord channel",
-      "🏆 Lifetime feature updates"
+      "🏆 Lifetime feature updates",
+      "🏆 UNLIMITED saved results retention (forever!)"
     ]
   };
 
@@ -331,6 +334,12 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
+                  <tr className="border-b border-gray-100 bg-yellow-50">
+                    <td className="py-4 px-4 font-bold">📁 Saved Results Retention</td>
+                    <td className="text-center py-4 px-4">30 days</td>
+                    <td className="text-center py-4 px-4">30 days</td>
+                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">♾️ UNLIMITED (Forever!)</td>
+                  </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-4">Live Odds Comparison</td>
                     <td className="text-center py-4 px-4">5 free checks</td>
@@ -444,14 +453,29 @@ export default function Pricing() {
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What happens after I use my 5 free lookups?</h3>
                 <p className="text-gray-600">Your account will be locked and you'll need to subscribe to Premium or VIP to continue using the app. Don't worry - you can upgrade anytime!</p>
               </div>
+              
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                <h3 className="text-lg font-bold text-amber-900 mb-2">📁 What happens to my saved results?</h3>
+                <div className="text-amber-800 space-y-2">
+                  <p><strong>Free & Premium Monthly users:</strong> Your saved results (match predictions, player stats, team analysis) are automatically deleted after 30 days. This keeps your saved results page clean and focused on recent activity.</p>
+                  <p className="font-bold text-amber-900">
+                    <span className="text-yellow-600">👑 VIP Annual & Legacy members:</span> Enjoy UNLIMITED retention! Your saved results are stored forever, allowing you to track long-term trends, analyze betting performance over seasons, and access your complete betting history anytime.
+                  </p>
+                  <p className="mt-2 text-sm">
+                    💡 <strong>Why this matters:</strong> Serious bettors need historical data to refine strategies, track ROI over time, and identify long-term patterns. VIP Annual gives you that edge.
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Can I cancel anytime?</h3>
                 <p className="text-gray-600">Yes! Premium Monthly can be cancelled anytime. VIP Annual is billed yearly but you can still cancel before the next renewal.</p>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What's the difference between Premium and VIP?</h3>
-                <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Betting Briefs, Sharp vs Public Money indicators, VIP Discord access, and a VIP badge.</p>
+                <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Betting Briefs, Sharp vs Public Money indicators, VIP Discord access, unlimited saved results retention, and a VIP badge.</p>
               </div>
+
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What is the VIP Discord channel?</h3>
                 <p className="text-gray-600 mb-2">VIP Annual and Legacy members get exclusive access to our private Discord community where you can:</p>

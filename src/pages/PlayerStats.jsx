@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,14 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, Trophy } from "lucide-react";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
-import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
-import EmptyPlayerState from "../components/player/EmptyPlayerState";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
 export default function PlayerStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [searchSuccess, setSearchSuccess] = useState(false);
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
@@ -29,26 +27,6 @@ export default function PlayerStats() {
     },
   });
 
-  const { data: players, isLoading } = useQuery({
-    queryKey: ['players', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      return await base44.entities.PlayerStats.filter(
-        { created_by: currentUser.email },
-        '-created_date'
-      );
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.PlayerStats.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] });
-    },
-  });
-
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -57,6 +35,7 @@ export default function PlayerStats() {
 
     setIsSearching(true);
     setError(null);
+    setSearchSuccess(false);
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -300,6 +279,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       await base44.entities.PlayerStats.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['players'] });
+      setSearchSuccess(true);
       
     } catch (err) {
       console.error("Player analysis error:", err);
@@ -341,6 +321,14 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </Alert>
         )}
 
+        {searchSuccess && !isSearching && (
+          <Alert className="mb-6 bg-green-50 border-2 border-green-200">
+            <AlertDescription className="text-green-900">
+              ✅ Player analysis complete! View it in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -355,24 +343,6 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
               <p className="text-gray-700">Fetching stats from StatMuse & ESPN...</p>
             </div>
           </div>
-        )}
-
-        {!isSearching && (
-          <>
-            {players && players.length > 0 ? (
-              <div className="grid lg:grid-cols-2 gap-6">
-                {players.map((player) => (
-                  <PlayerStatsDisplay
-                    key={player.id}
-                    player={player}
-                    onDelete={deleteMutation.mutate}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyPlayerState />
-            )}
-          </>
         )}
       </div>
     </div>
