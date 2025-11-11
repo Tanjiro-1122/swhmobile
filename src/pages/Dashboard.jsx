@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,8 +6,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SearchBar from "../components/sports/SearchBar";
-import MatchCard from "../components/sports/MatchCard";
-import EmptyState from "../components/sports/EmptyState";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import WelcomeTutorial from "../components/onboarding/WelcomeTutorial";
@@ -19,6 +16,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchSuccess, setSearchSuccess] = useState(false);
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated: isAuth, recordLookup, canLookup, userTier } = useFreeLookupTracker();
@@ -44,26 +42,6 @@ export default function Dashboard() {
 
   const isVIPorLegacy = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
 
-  const { data: matches, isLoading, error: loadError } = useQuery({
-    queryKey: ['matches', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      return await base44.entities.Match.filter(
-        { created_by: currentUser.email },
-        '-created_date'
-      );
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Match.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-    },
-  });
-
   const handleSearch = async (query) => {
     
     if (!canLookup()) {
@@ -73,6 +51,7 @@ export default function Dashboard() {
 
     setIsSearching(true);
     setError(null);
+    setSearchSuccess(false);
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -297,12 +276,12 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 spread: {
                   type: "object",
                   properties: {
-                    line: { type: "string" }, // e.g. "-7.5"
+                    line: { type: "string" },
                     cover_probability: { type: "number" }
                   }
                 },
-                both_teams_score: { type: "object" }, // Left as generic object as no specific properties defined in prompt
-                first_to_score: { type: "object" } // Left as generic object as no specific properties defined in prompt
+                both_teams_score: { type: "object" },
+                first_to_score: { type: "object" }
               }
             },
             injuries: {
@@ -370,7 +349,6 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         throw new Error("Invalid response - missing required match data or prediction");
       }
 
-      // Check the new prediction.reasoning field for "Unable to find"
       if (result.prediction?.reasoning?.includes("Unable to find scheduled match")) {
         throw new Error("Match not found - try a different date or check team names");
       }
@@ -378,27 +356,15 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       await base44.entities.Match.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['matches'] });
+      setSearchSuccess(true);
       
     } catch (err) {
       console.error("❌ Match Analysis Error:", err);
-      // Simplified error handling message
       setError("Failed to analyze the match. Please try again with more specific details (team names, league, or date).");
     }
 
     setIsSearching(false);
   };
-
-  if (loadError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-600 p-6">
-        <Alert variant="destructive" className="max-w-2xl mx-auto bg-red-500/10 border-red-500/50 text-red-400">
-          <AlertDescription>
-            Failed to load matches. Please refresh the page or contact support.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
@@ -410,94 +376,74 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-        <div className="max-w-7xl mx-auto">
-          {/* VIP Discord Card - Show for VIP/Legacy only */}
-          {isVIPorLegacy && (
-            <div className="mb-12">
-              <VIPDiscordCard />
-            </div>
-          )}
-
-          {/* Today's Best Bets Section */}
+      <div className="max-w-7xl mx-auto">
+        {/* VIP Discord Card */}
+        {isVIPorLegacy && (
           <div className="mb-12">
-            <TodaysBestBets 
-              onLookupUsed={recordLookup}
-              canLookup={canLookup}
-              onLimitReached={() => setShowLimitModal(true)}
-            />
+            <VIPDiscordCard />
           </div>
+        )}
 
-          {/* Search Section */}
-          <div className="mb-12">
-            <div className="bg-white border-2 border-gray-200 rounded-3xl p-8 shadow-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Analyze Any Match</h2>
-                  <p className="text-gray-600">Get instant win probabilities and betting insights</p>
-                </div>
-              </div>
-              <SearchBar onSearch={handleSearch} isSearching={isSearching} />
-            </div>
-          </div>
-
-          {error && (
-            <Alert variant="destructive" className="mb-6 bg-red-50 border-2 border-red-200">
-              <AlertDescription className="whitespace-pre-line text-red-900">{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {isSearching && (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <div className="relative w-24 h-24 mx-auto mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
-                  <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-                    <Sparkles className="w-10 h-10 text-emerald-500" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Match Data</h3>
-                <p className="text-gray-700">Fetching live stats from StatMuse & ESPN...</p>
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!isSearching && (
-            <>
-              {matches.length > 0 ? (
-                <>
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                      <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full" />
-                      Your Match Predictions
-                      <span className="text-gray-500">({matches.length})</span>
-                    </h2>
-                  </div>
-                  <div className="grid lg:grid-cols-2 gap-8">
-                    {matches.map((match, index) => (
-                      <MatchCard
-                        key={match.id}
-                        match={match}
-                        onDelete={deleteMutation.mutate}
-                        index={index}
-                      />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <EmptyState />
-              )}
-            </>
-          )}
+        {/* Today's Best Bets Section */}
+        <div className="mb-12">
+          <TodaysBestBets 
+            onLookupUsed={recordLookup}
+            canLookup={canLookup}
+            onLimitReached={() => setShowLimitModal(true)}
+          />
         </div>
+
+        {/* Search Section */}
+        <div className="mb-12">
+          <div className="bg-white border-2 border-gray-200 rounded-3xl p-8 shadow-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Analyze Any Match</h2>
+                <p className="text-gray-600">Get instant win probabilities and betting insights</p>
+              </div>
+            </div>
+            <SearchBar onSearch={handleSearch} isSearching={isSearching} />
+          </div>
+        </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6 bg-red-50 border-2 border-red-200">
+            <AlertDescription className="whitespace-pre-line text-red-900">{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {searchSuccess && !isSearching && (
+          <Alert className="mb-6 bg-green-50 border-2 border-green-200">
+            <AlertDescription className="text-green-900">
+              ✅ Match analysis complete! View it in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isSearching && (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="relative w-24 h-24 mx-auto mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-20 animate-ping" />
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full opacity-75 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
+                <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-emerald-500" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Match Data</h3>
+              <p className="text-gray-700">Fetching live stats from StatMuse & ESPN...</p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Footer Disclaimer */}
       <div className="max-w-7xl mx-auto px-6 pb-12 mt-12">

@@ -1,30 +1,38 @@
-
 import React, { useState } from "react";
-import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Trophy, User, Shield, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
+import { Trophy, User, Users, Trash2, Calendar, Crown, Lock, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "../components/sports/MatchCard";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
+import RequireAuth from "../components/auth/RequireAuth";
 
 function SavedResultsContent() {
   const [activeTab, setActiveTab] = useState("matches");
   const queryClient = useQueryClient();
 
-  // Get current user
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
   });
 
-  // Fetch user's saved matches
-  const { data: matches, isLoading: matchesLoading } = useQuery({
+  const hasUnlimitedRetention = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  // Fetch matches
+  const { data: allMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['savedMatches', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
@@ -37,164 +45,151 @@ function SavedResultsContent() {
     initialData: [],
   });
 
-  // Fetch user's saved players
-  const { data: players, isLoading: playersLoading } = useQuery({
-    queryKey: ['savedPlayers', currentUser?.email],
+  // Fetch player stats
+  const { data: allPlayerStats, isLoading: playersLoading } = useQuery({
+    queryKey: ['savedPlayerStats', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.PlayerStats.filter(
+      const stats = await base44.entities.PlayerStats.filter(
         { created_by: currentUser.email },
         '-created_date'
       );
+      return stats || [];
     },
     enabled: !!currentUser?.email,
     initialData: [],
   });
 
-  // Fetch user's saved teams
-  const { data: teams, isLoading: teamsLoading } = useQuery({
-    queryKey: ['savedTeams', currentUser?.email],
+  // Fetch team stats
+  const { data: allTeamStats, isLoading: teamsLoading } = useQuery({
+    queryKey: ['savedTeamStats', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.TeamStats.filter(
+      const stats = await base44.entities.TeamStats.filter(
         { created_by: currentUser.email },
         '-created_date'
       );
+      return stats || [];
     },
     enabled: !!currentUser?.email,
     initialData: [],
   });
 
+  // Filter by retention policy
+  const matches = hasUnlimitedRetention 
+    ? allMatches 
+    : allMatches.filter(m => new Date(m.created_date) >= thirtyDaysAgo);
+
+  const playerStats = hasUnlimitedRetention 
+    ? allPlayerStats 
+    : allPlayerStats.filter(p => new Date(p.created_date) >= thirtyDaysAgo);
+
+  const teamStats = hasUnlimitedRetention 
+    ? allTeamStats 
+    : allTeamStats.filter(t => new Date(t.created_date) >= thirtyDaysAgo);
+
+  // Delete mutations
   const deleteMatchMutation = useMutation({
     mutationFn: (id) => base44.entities.Match.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedMatches'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedMatches'] }),
   });
 
   const deletePlayerMutation = useMutation({
     mutationFn: (id) => base44.entities.PlayerStats.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedPlayers'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedPlayerStats'] }),
   });
 
   const deleteTeamMutation = useMutation({
     mutationFn: (id) => base44.entities.TeamStats.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savedTeams'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedTeamStats'] }),
   });
 
-  const clearAllMatches = async () => {
-    if (window.confirm('Are you sure you want to delete all saved matches?')) {
-      for (const match of matches) {
-        await deleteMatchMutation.mutateAsync(match.id);
-      }
-    }
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
-
-  const clearAllPlayers = async () => {
-    if (window.confirm('Are you sure you want to delete all saved players?')) {
-      for (const player of players) {
-        await deletePlayerMutation.mutateAsync(player.id);
-      }
-    }
-  };
-
-  const clearAllTeams = async () => {
-    if (window.confirm('Are you sure you want to delete all saved teams?')) {
-      for (const team of teams) {
-        await deleteTeamMutation.mutateAsync(team.id);
-      }
-    }
-  };
-
-  const totalSaved = (matches?.length || 0) + (players?.length || 0) + (teams?.length || 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Bookmark className="w-7 h-7" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-black text-gray-900 mb-2">Saved Results</h1>
+              <p className="text-gray-600 text-lg">Your complete betting analysis history</p>
             </div>
-            <h1 className="text-4xl font-bold">My Saved Results</h1>
+            {hasUnlimitedRetention && (
+              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 text-sm font-bold">
+                <Crown className="w-4 h-4 mr-2" />
+                UNLIMITED RETENTION
+              </Badge>
+            )}
           </div>
-          <p className="text-indigo-100 text-lg max-w-2xl">
-            All your analyzed matches, players, and teams in one place. Only you can see these results.
-          </p>
-          <div className="mt-4 flex items-center gap-4">
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {totalSaved} Total Saved
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {matches?.length || 0} Matches
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {players?.length || 0} Players
-            </Badge>
-            <Badge className="bg-white/20 text-white border-white/30 text-base px-4 py-2">
-              {teams?.length || 0} Teams
-            </Badge>
-          </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger value="matches" className="flex items-center gap-2 py-3">
-              <Trophy className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Matches</div>
-                <div className="text-xs text-gray-500">{matches?.length || 0} saved</div>
+          {/* Retention Policy Banner */}
+          {!hasUnlimitedRetention && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-4 mb-6"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    📅 30-Day History Limit
+                  </h3>
+                  <p className="text-gray-700 mb-3">
+                    Your saved results are automatically deleted after 30 days. 
+                    <strong> Upgrade to VIP Annual</strong> for unlimited retention and access to your complete betting history forever!
+                  </p>
+                  <Button
+                    onClick={() => window.location.href = '/Pricing'}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to VIP Annual
+                  </Button>
+                </div>
               </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-white p-2 rounded-xl shadow-md">
+            <TabsTrigger value="matches" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white">
+              <Trophy className="w-4 h-4 mr-2" />
+              Matches ({matches.length})
             </TabsTrigger>
-            <TabsTrigger value="players" className="flex items-center gap-2 py-3">
-              <User className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Players</div>
-                <div className="text-xs text-gray-500">{players?.length || 0} saved</div>
-              </div>
+            <TabsTrigger value="players" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+              <User className="w-4 h-4 mr-2" />
+              Players ({playerStats.length})
             </TabsTrigger>
-            <TabsTrigger value="teams" className="flex items-center gap-2 py-3">
-              <Shield className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">Teams</div>
-                <div className="text-xs text-gray-500">{teams?.length || 0} saved</div>
-              </div>
+            <TabsTrigger value="teams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white">
+              <Users className="w-4 h-4 mr-2" />
+              Teams ({teamStats.length})
             </TabsTrigger>
           </TabsList>
 
           {/* Matches Tab */}
-          <TabsContent value="matches" className="space-y-6">
-            {matches && matches.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Matches ({matches.length})
-                </h2>
-                <Button
-                  variant="outline"
-                  onClick={clearAllMatches}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
-
+          <TabsContent value="matches">
             {matchesLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved matches...</p>
+                <Sparkles className="w-12 h-12 mx-auto text-emerald-500 animate-spin mb-4" />
+                <p className="text-gray-600">Loading matches...</p>
               </div>
-            ) : matches && matches.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
+            ) : matches.length > 0 ? (
+              <div className="grid lg:grid-cols-2 gap-6">
                 {matches.map((match, index) => (
                   <MatchCard
                     key={match.id}
@@ -205,115 +200,96 @@ function SavedResultsContent() {
                 ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Matches</h3>
-                <p className="text-gray-600">
-                  Search for matches on the Match Analysis page to save them here
-                </p>
-              </motion.div>
+              <Card className="border-2 border-gray-200">
+                <CardContent className="p-12 text-center">
+                  <Trophy className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No saved matches</h3>
+                  <p className="text-gray-600 mb-4">
+                    {hasUnlimitedRetention 
+                      ? "Start analyzing matches from the Dashboard!"
+                      : "You don't have any matches saved in the last 30 days."}
+                  </p>
+                  <Button onClick={() => window.location.href = '/Dashboard'}>
+                    Go to Dashboard
+                  </Button>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
           {/* Players Tab */}
-          <TabsContent value="players" className="space-y-6">
-            {players && players.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Players ({players.length})
-                </h2>
-                <Button
-                  variant="outline"
-                  onClick={clearAllPlayers}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
-
+          <TabsContent value="players">
             {playersLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved players...</p>
+                <Sparkles className="w-12 h-12 mx-auto text-blue-500 animate-spin mb-4" />
+                <p className="text-gray-600">Loading player stats...</p>
               </div>
-            ) : players && players.length > 0 ? (
+            ) : playerStats.length > 0 ? (
               <div className="space-y-6">
-                {players.map((player, index) => (
-                  <PlayerStatsDisplay
+                {playerStats.map((player, index) => (
+                  <motion.div
                     key={player.id}
-                    player={player}
-                    onDelete={deletePlayerMutation.mutate}
-                    index={index}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <PlayerStatsDisplay player={player} onDelete={deletePlayerMutation.mutate} />
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <User className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Players</h3>
-                <p className="text-gray-600">
-                  Search for players on the Player Stats page to save them here
-                </p>
-              </motion.div>
+              <Card className="border-2 border-gray-200">
+                <CardContent className="p-12 text-center">
+                  <User className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No saved player stats</h3>
+                  <p className="text-gray-600 mb-4">
+                    {hasUnlimitedRetention 
+                      ? "Start analyzing players from the Player Stats page!"
+                      : "You don't have any player stats saved in the last 30 days."}
+                  </p>
+                  <Button onClick={() => window.location.href = '/PlayerStats'}>
+                    Go to Player Stats
+                  </Button>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
           {/* Teams Tab */}
-          <TabsContent value="teams" className="space-y-6">
-            {teams && teams.length > 0 && (
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Teams ({teams.length})
-                </h2>
-                <Button
-                  variant="outline"
-                  onClick={clearAllTeams}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
-
+          <TabsContent value="teams">
             {teamsLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto" />
-                <p className="text-gray-600 mt-4">Loading your saved teams...</p>
+                <Sparkles className="w-12 h-12 mx-auto text-orange-500 animate-spin mb-4" />
+                <p className="text-gray-600">Loading team stats...</p>
               </div>
-            ) : teams && teams.length > 0 ? (
+            ) : teamStats.length > 0 ? (
               <div className="space-y-6">
-                {teams.map((team, index) => (
-                  <TeamStatsDisplay
+                {teamStats.map((team, index) => (
+                  <motion.div
                     key={team.id}
-                    team={team}
-                    onDelete={deleteTeamMutation.mutate}
-                    index={index}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <TeamStatsDisplay team={team} onDelete={deleteTeamMutation.mutate} />
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Saved Teams</h3>
-                <p className="text-gray-600">
-                  Search for teams on the Team Stats page to save them here
-                </p>
-              </motion.div>
+              <Card className="border-2 border-gray-200">
+                <CardContent className="p-12 text-center">
+                  <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No saved team stats</h3>
+                  <p className="text-gray-600 mb-4">
+                    {hasUnlimitedRetention 
+                      ? "Start analyzing teams from the Team Stats page!"
+                      : "You don't have any team stats saved in the last 30 days."}
+                  </p>
+                  <Button onClick={() => window.location.href = '/TeamStats'}>
+                    Go to Team Stats
+                  </Button>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
