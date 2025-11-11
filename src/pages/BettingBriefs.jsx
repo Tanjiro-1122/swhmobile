@@ -8,9 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-function BettingBriefsContent() {
+function FeedsContent() {
   const queryClient = useQueryClient();
   const today = new Date().toISOString().split('T')[0];
+
+  // Get current user to access their preferences
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+  });
 
   const { data: brief, isLoading, error } = useQuery({
     queryKey: ['dailyBrief', today],
@@ -26,7 +38,14 @@ function BettingBriefsContent() {
 
   const generateBriefMutation = useMutation({
     mutationFn: async () => {
-      const response = await base44.functions.invoke('generateDailyBrief', {});
+      // Get user preferences for personalization
+      const favoriteSports = currentUser?.favorite_sports || [];
+      const favoriteLeagues = currentUser?.favorite_leagues || [];
+
+      const response = await base44.functions.invoke('generateDailyBrief', {
+        favoriteSports,
+        favoriteLeagues
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -49,60 +68,74 @@ function BettingBriefsContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading today's betting brief...</p>
+          <p className="text-gray-600">Loading your personalized feed...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Sparkles className="w-8 h-8 text-purple-600" />
-            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Daily Betting Brief</h1>
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Your Personalized Feed</h1>
           </div>
-          <p className="text-gray-600">AI-powered insights and top picks for {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-600">
+            AI-powered insights and top picks for {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {currentUser?.favorite_sports?.length > 0 && (
+              <span className="ml-2 text-purple-600 font-semibold">
+                • Focused on {currentUser.favorite_sports.slice(0, 2).join(', ')}
+                {currentUser.favorite_sports.length > 2 && ` +${currentUser.favorite_sports.length - 2} more`}
+              </span>
+            )}
+          </p>
         </div>
 
         {!brief && !generateBriefMutation.isPending && (
-          <Card className="border-2 border-purple-200 mb-6">
+          <Card className="border-2 border-purple-200 mb-6 bg-white shadow-lg">
             <CardContent className="p-8 text-center">
               <Sparkles className="w-16 h-16 mx-auto mb-4 text-purple-400" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No Brief Available Yet</h3>
-              <p className="text-gray-600 mb-6">Generate today's AI-powered betting brief with top picks, injury updates, and sharp money indicators.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">No Feed Available Yet</h3>
+              <p className="text-gray-600 mb-6">
+                Generate today's AI-powered betting feed with picks tailored to your favorite sports
+                {currentUser?.favorite_sports?.length > 0 && ` (${currentUser.favorite_sports.join(', ')})`}.
+              </p>
               <Button
                 onClick={handleGenerateBrief}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-lg px-8 py-6"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate Today's Brief
+                Generate Today's Feed
               </Button>
             </CardContent>
           </Card>
         )}
 
         {generateBriefMutation.isPending && (
-          <Card className="border-2 border-purple-200 mb-6">
+          <Card className="border-2 border-purple-200 mb-6 bg-white shadow-lg">
             <CardContent className="p-8 text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Generating Your Brief...</h3>
-              <p className="text-gray-600">Analyzing today's games, odds, injuries, and market trends...</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Generating Your Personalized Feed...</h3>
+              <p className="text-gray-600">
+                Analyzing today's games, odds, injuries, and market trends
+                {currentUser?.favorite_sports?.length > 0 && ` for ${currentUser.favorite_sports.join(', ')}`}...
+              </p>
             </CardContent>
           </Card>
         )}
 
         {generateBriefMutation.isError && (
-          <Card className="border-2 border-red-200 mb-6 bg-red-50">
+          <Card className="border-2 border-red-200 mb-6 bg-red-50 shadow-lg">
             <CardContent className="p-8 text-center">
               <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-500" />
               <h3 className="text-xl font-bold text-red-900 mb-2">Generation Failed</h3>
-              <p className="text-red-700 mb-4">{generateBriefMutation.error?.message || 'Failed to generate brief. Please try again.'}</p>
+              <p className="text-red-700 mb-4">{generateBriefMutation.error?.message || 'Failed to generate feed. Please try again.'}</p>
               <Button
                 onClick={handleGenerateBrief}
                 variant="outline"
@@ -119,7 +152,7 @@ function BettingBriefsContent() {
           <div className="space-y-6">
             {/* Summary */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="border-2 border-purple-200 shadow-lg">
+              <Card className="border-2 border-purple-200 shadow-lg bg-white">
                 <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
                     <Activity className="w-6 h-6" />
@@ -135,7 +168,7 @@ function BettingBriefsContent() {
             {/* Top Picks */}
             {brief.top_picks && brief.top_picks.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="border-2 border-green-200 shadow-lg">
+                <Card className="border-2 border-green-200 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
                     <CardTitle className="text-2xl font-bold flex items-center gap-2">
                       <Target className="w-6 h-6" />
@@ -148,7 +181,7 @@ function BettingBriefsContent() {
                         <div key={index} className="bg-white rounded-lg border-2 border-green-100 p-4 hover:shadow-md transition-shadow">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <Badge variant="outline" className="mb-2">{pick.sport}</Badge>
+                              <Badge variant="outline" className="mb-2 border-gray-300 text-gray-700">{pick.sport}</Badge>
                               <h4 className="text-xl font-bold text-gray-900">{pick.match}</h4>
                             </div>
                             <Badge className={`${getConfidenceColor(pick.confidence)} border`}>
@@ -177,7 +210,7 @@ function BettingBriefsContent() {
             {/* Injury Updates */}
             {brief.injury_updates && brief.injury_updates.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <Card className="border-2 border-red-200 shadow-lg">
+                <Card className="border-2 border-red-200 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
                     <CardTitle className="text-2xl font-bold flex items-center gap-2">
                       <AlertTriangle className="w-6 h-6" />
@@ -212,7 +245,7 @@ function BettingBriefsContent() {
             {/* Line Movements */}
             {brief.line_movements && brief.line_movements.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <Card className="border-2 border-blue-200 shadow-lg">
+                <Card className="border-2 border-blue-200 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
                     <CardTitle className="text-2xl font-bold flex items-center gap-2">
                       <TrendingUp className="w-6 h-6" />
@@ -237,7 +270,7 @@ function BettingBriefsContent() {
             {/* Sharp Money */}
             {brief.sharp_money_indicators && brief.sharp_money_indicators.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                <Card className="border-2 border-indigo-200 shadow-lg">
+                <Card className="border-2 border-indigo-200 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                     <CardTitle className="text-2xl font-bold">💎 Sharp Money Indicators</CardTitle>
                   </CardHeader>
@@ -258,7 +291,7 @@ function BettingBriefsContent() {
             {/* Weather Alerts */}
             {brief.weather_alerts && brief.weather_alerts.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-                <Card className="border-2 border-cyan-200 shadow-lg">
+                <Card className="border-2 border-cyan-200 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
                     <CardTitle className="text-2xl font-bold flex items-center gap-2">
                       <CloudRain className="w-6 h-6" />
@@ -285,10 +318,10 @@ function BettingBriefsContent() {
               <Button
                 onClick={handleGenerateBrief}
                 variant="outline"
-                className="border-2 border-purple-300 hover:bg-purple-50"
+                className="border-2 border-purple-300 hover:bg-purple-50 text-gray-700"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Regenerate Brief
+                Regenerate Feed
               </Button>
             </div>
           </div>
@@ -298,10 +331,10 @@ function BettingBriefsContent() {
   );
 }
 
-export default function BettingBriefs() {
+export default function Feeds() {
   return (
-    <RequireAuth pageName="Betting Briefs">
-      <BettingBriefsContent />
+    <RequireAuth pageName="Feeds">
+      <FeedsContent />
     </RequireAuth>
   );
 }

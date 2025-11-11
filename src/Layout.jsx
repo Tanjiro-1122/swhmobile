@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -131,7 +132,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Player Stats", icon: User, page: "PlayerStats" },
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
-    { name: "Betting Briefs", icon: Sparkles, page: "BettingBriefs" },
+    { name: "Feeds", icon: Sparkles, page: "BettingBriefs" },
     { name: "Pricing", icon: Crown, page: "Pricing" },
     { name: "Alerts", icon: Bell, page: "Alerts" },
     { name: "Power User", icon: Zap, page: "PowerUser" },
@@ -199,7 +200,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="text-xs lg:text-sm font-bold text-white">PREMIUM</span>
                   </div>
                 )}
-                <Avatar className="w-8 h-8 lg:w-10 lg:h-10">
+                <Avatar className="w-8 h-8 lg:w-10 h-10">
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                     {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
