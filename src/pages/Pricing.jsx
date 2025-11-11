@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3, Star } from "lucide-react";
+import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3, Star, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,17 +35,42 @@ export default function Pricing() {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
-  const handleSubscribe = (plan) => {
+  const handleSubscribe = async (plan) => {
     if (!isAuthenticated) {
       handleLogin();
       return;
     }
 
-    // Redirect to Stripe checkout
-    if (plan === 'vip') {
-      window.location.href = 'https://buy.stripe.com/7sY14p9g14HS43Q2hE8N207';
-    } else if (plan === 'premium') {
-      window.location.href = 'https://buy.stripe.com/bJe14p1Nza2ceIu2hE8N208';
+    setIsProcessing(true);
+
+    try {
+      let priceId, mode;
+      
+      // Map plans to Stripe price IDs from your product catalog
+      if (plan === 'vip') {
+        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99
+        mode = 'payment'; // One-time payment
+      } else if (plan === 'premium') {
+        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
+        mode = 'subscription'; // Recurring subscription
+      }
+
+      // Call your backend function to create Stripe checkout session
+      const response = await base44.functions.invoke('createCheckoutSession', {
+        priceId,
+        mode
+      });
+
+      if (response.data?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('Failed to start checkout. Please try again or contact support.');
+      setIsProcessing(false);
     }
   };
 
@@ -78,7 +104,7 @@ export default function Pricing() {
       "🏆 Sharp vs Public Money indicators",
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
-      "🏆 Exclusive VIP Discord channel", // Updated text for Discord channel
+      "🏆 Exclusive VIP Discord channel",
       "🏆 Lifetime feature updates"
     ]
   };
@@ -202,9 +228,17 @@ export default function Pricing() {
                 ) : (
                   <Button 
                     onClick={() => handleSubscribe('premium')}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-lg shadow-lg"
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-lg shadow-lg disabled:opacity-70"
                   >
-                    {isAuthenticated ? 'Subscribe Now' : 'Sign Up & Subscribe'}
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      isAuthenticated ? 'Subscribe Now' : 'Sign Up & Subscribe'
+                    )}
                   </Button>
                 )}
               </CardContent>
@@ -250,9 +284,17 @@ export default function Pricing() {
                 ) : (
                   <Button 
                     onClick={() => handleSubscribe('vip')}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-lg shadow-lg"
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-lg shadow-lg disabled:opacity-70"
                   >
-                    {isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'}
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'
+                    )}
                   </Button>
                 )}
               </CardContent>
