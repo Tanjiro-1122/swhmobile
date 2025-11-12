@@ -17,6 +17,17 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
     });
   };
 
+  // Helper to format percentage - handles both decimal (0.45) and whole number (45) formats
+  const formatPercentage = (value) => {
+    if (!value) return '-';
+    // If value is less than 1, assume it's a decimal (0.45) and multiply by 100
+    if (value < 1) {
+      return (value * 100).toFixed(1);
+    }
+    // If value is >= 1, assume it's already a percentage (45)
+    return value.toFixed(1);
+  };
+
   const getPerformanceColor = (rating) => {
     const lowerRating = rating?.toLowerCase() || '';
     if (lowerRating.includes('excellent')) return 'text-green-600 bg-green-50';
@@ -436,13 +447,13 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                     )}
                     {player.season_averages.field_goal_percentage && (
                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <div className="text-2xl font-black text-gray-700">{(player.season_averages.field_goal_percentage * 100).toFixed(1)}%</div>
+                        <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.field_goal_percentage)}%</div>
                         <div className="text-xs text-gray-600 font-semibold">FG%</div>
                       </div>
                     )}
                     {player.season_averages.three_point_percentage && (
                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <div className="text-2xl font-black text-gray-700">{(player.season_averages.three_point_percentage * 100).toFixed(1)}%</div>
+                        <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.three_point_percentage)}%</div>
                         <div className="text-xs text-gray-600 font-semibold">3P%</div>
                       </div>
                     )}
