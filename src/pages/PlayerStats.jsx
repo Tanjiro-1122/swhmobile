@@ -61,6 +61,7 @@ Search: "[player name] stats ${new Date().getFullYear()}" on StatMuse or Basketb
 - Blocks per game
 - Field goal % (FG%)
 - Three-point % (3P%)
+- Three-pointers made per game
 - Free throw % (FT%)
 - Minutes per game
 
@@ -117,25 +118,86 @@ FOR WIDE RECEIVERS/TIGHT ENDS:
 - Yards after catch
 - Catch percentage
 
-STEP 3: RECENT FORM (Last 5 games)
-Search: "[player name] game log ${new Date().getFullYear()}" on StatMuse
-Get actual stats from the last 5 games with:
+STEP 3: RECENT FORM - DETAILED LAST 5 GAMES (CRITICAL - MUST BE SPECIFIC!)
+Search: "[player name] game log ${new Date().getFullYear()}" on StatMuse or Basketball-Reference
+Get EXACT stats from each of the last 5 games:
+
+FOR BASKETBALL - Each game must include:
+- Date (MM/DD/YYYY)
+- Opponent team name
+- Result (W/L and score like "W 115-108")
+- Points scored (exact number)
+- Rebounds (exact number)
+- Assists (exact number)
+- Steals (exact number)
+- Blocks (exact number)
+- Three-pointers made (exact number)
+- Field goals made/attempted (e.g., 10/18)
+- Free throws made/attempted (e.g., 5/6)
+- Minutes played
+- Performance rating (Excellent/Good/Average/Poor)
+
+FOR BASEBALL BATTERS - Each game must include:
 - Date
 - Opponent
-- Key stats (sport-specific from above)
-- Performance rating (Excellent/Good/Average/Poor)
+- Result
+- Hits (exact number)
+- At-bats (exact number)
+- Home runs (exact number)
+- RBIs (exact number)
+- Stolen bases (exact number)
+- Batting average for that game
+
+FOR BASEBALL PITCHERS - Each game must include:
+- Date
+- Opponent
+- Result
+- Innings pitched (e.g., 6.0)
+- Strikeouts (exact number)
+- Earned runs (exact number)
+- Hits allowed
+- Walks
+
+FOR SOCCER - Each game must include:
+- Date
+- Opponent
+- Result
+- Goals scored (exact number)
+- Assists (exact number)
+- Shots on target
+- Key passes
+- Tackles made
+- Minutes played
+
+FOR NFL QB - Each game must include:
+- Date
+- Opponent
+- Result
+- Passing yards (exact number)
+- Passing touchdowns
+- Interceptions thrown
+- Completion percentage
+- Rushing yards
+
+FOR NFL RB/WR - Each game must include:
+- Date
+- Opponent
+- Result
+- Rushing yards (RB) or Receptions (WR)
+- Rushing touchdowns or Receiving yards
+- Yards per carry or Receiving touchdowns
 
 STEP 4: NEXT GAME PREDICTION
 Search: "[team name] schedule" on ESPN
 - Find next scheduled game (opponent, date, location)
 - PREDICT SPECIFIC STATS for that game based on:
   * Player's season averages
-  * Last 5 games performance trend
+  * Last 5 games performance trend (calculate average from the 5 games)
   * Historical performance against this opponent
   * Current form (hot/cold streak)
 
 BASKETBALL PREDICTION FORMAT:
-"28 PTS, 7 REB, 5 AST" (specific numbers)
+"28 PTS, 7 REB, 5 AST, 2 3PM" (specific numbers with 3-pointers made)
 
 BASEBALL BATTER PREDICTION:
 "2 hits, 1 HR, 3 RBI, .300 AVG for the game"
@@ -152,8 +214,8 @@ NFL QB PREDICTION:
 STEP 5: BETTING INSIGHTS
 - Over/Under line for relevant stat (e.g., points for NBA, home runs for MLB)
 - Probability to score/perform well (0-100%)
-- Is player on a hot streak? (boolean)
-- Consistency rating: "Very Consistent", "Moderately Consistent", or "Inconsistent"
+- Is player on a hot streak? (boolean - true if last 3 games above season average)
+- Consistency rating: "Very Consistent" (if variation <15%), "Moderately Consistent" (15-30%), or "Inconsistent" (>30%)
 
 STEP 6: INJURY STATUS
 Search: "[player name] injury report" or "[team name] injury report today"
@@ -163,9 +225,10 @@ Search: "[player name] injury report" or "[team name] injury report today"
 CRITICAL RULES:
 ✓ Use ONLY stats from the CURRENT ${new Date().getFullYear()} season
 ✓ DO NOT mix sport stats (no "rebounds" for baseball, no "home runs" for basketball)
+✓ Recent form MUST show ACTUAL game results with EXACT numbers from game logs, not estimates
+✓ Each of the 5 games must have complete stat lines appropriate for the sport
+✓ All stats must be from StatMuse, ESPN, Basketball-Reference, Pro-Football-Reference, or official league sources
 ✓ Predictions must be SPECIFIC NUMBERS, not ranges
-✓ All stats must be from StatMuse, ESPN, or official league sources
-✓ Recent form must show ACTUAL game results, not estimates
 
 If player not found, return an error in the reasoning field of next_game.
 
@@ -190,6 +253,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 blocks_per_game: { type: "number" },
                 field_goal_percentage: { type: "number" },
                 three_point_percentage: { type: "number" },
+                three_pointers_made_per_game: { type: "number" },
                 free_throw_percentage: { type: "number" },
                 minutes_per_game: { type: "number" },
                 goals_per_game: { type: "number" },
@@ -216,15 +280,38 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 properties: {
                   date: { type: "string" },
                   opponent: { type: "string" },
+                  result: { type: "string" },
                   points: { type: "number" },
                   assists: { type: "number" },
                   rebounds: { type: "number" },
+                  steals: { type: "number" },
+                  blocks: { type: "number" },
+                  three_pointers_made: { type: "number" },
+                  field_goals_made: { type: "number" },
+                  field_goals_attempted: { type: "number" },
+                  free_throws_made: { type: "number" },
+                  free_throws_attempted: { type: "number" },
+                  minutes_played: { type: "number" },
                   goals: { type: "number" },
+                  shots_on_target: { type: "number" },
+                  key_passes: { type: "number" },
+                  tackles: { type: "number" },
                   passing_yards: { type: "number" },
+                  passing_touchdowns: { type: "number" },
+                  interceptions_thrown: { type: "number" },
                   rushing_yards: { type: "number" },
+                  rushing_touchdowns: { type: "number" },
+                  receptions: { type: "number" },
+                  receiving_yards: { type: "number" },
+                  receiving_touchdowns: { type: "number" },
                   hits: { type: "number" },
                   home_runs: { type: "number" },
                   rbis: { type: "number" },
+                  stolen_bases: { type: "number" },
+                  at_bats: { type: "number" },
+                  strikeouts: { type: "number" },
+                  innings_pitched: { type: "number" },
+                  earned_runs: { type: "number" },
                   performance_rating: { type: "string" }
                 }
               }
@@ -340,7 +427,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Player Data</h3>
-              <p className="text-gray-700">Fetching stats from StatMuse & ESPN...</p>
+              <p className="text-gray-700">Fetching detailed game-by-game stats from StatMuse & ESPN...</p>
             </div>
           </div>
         )}
