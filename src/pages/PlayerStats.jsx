@@ -5,13 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, Trophy } from "lucide-react";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
+import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PlayerStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [searchSuccess, setSearchSuccess] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState(null);
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
@@ -35,7 +37,7 @@ export default function PlayerStats() {
 
     setIsSearching(true);
     setError(null);
-    setSearchSuccess(false);
+    setCurrentPlayer(null);
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -397,10 +399,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         throw new Error("Player not found - please check spelling and try again");
       }
 
+      // Save to database for historical tracking
       await base44.entities.PlayerStats.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['players'] });
-      setSearchSuccess(true);
+      
+      // Display results immediately on this page
+      setCurrentPlayer(result);
       
     } catch (err) {
       console.error("Player analysis error:", err);
@@ -442,14 +447,6 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </Alert>
         )}
 
-        {searchSuccess && !isSearching && (
-          <Alert className="mb-6 bg-green-50 border-2 border-green-200">
-            <AlertDescription className="text-green-900">
-              ✅ Player analysis complete! View it in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -466,6 +463,26 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             </div>
           </div>
         )}
+
+        {/* Display player results directly on this page */}
+        <AnimatePresence>
+          {currentPlayer && !isSearching && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <PlayerStatsDisplay player={currentPlayer} />
+              
+              <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
+                <AlertDescription className="text-blue-900">
+                  ✅ Player analysis saved! View all your saved results in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
