@@ -24,7 +24,8 @@ import {
   LogIn,
   Crown,
   Sparkles,
-  Zap
+  Zap,
+  Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -129,6 +130,7 @@ export default function Layout({ children, currentPageName }) {
 
   const menuItems = [
     { name: "Dashboard", icon: Home, page: "Dashboard" },
+    { name: "My Insights", icon: Sparkles, page: "MyInsights" },
     { name: "Player Stats", icon: User, page: "PlayerStats" },
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
@@ -138,9 +140,9 @@ export default function Layout({ children, currentPageName }) {
     { name: "Power User", icon: Zap, page: "PowerUser" },
     { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
     { name: "Community", icon: MessageSquare, page: "Community" },
-    { name: "Saved Results", icon: TrendingUp, page: "SavedResults" },
+    { name: "Saved Results", icon: Trophy, page: "SavedResults" },
     { name: "Profile", icon: User, page: "Profile" },
-    { name: "Preferences", icon: Settings, page: "UserPreferences" },
+    { name: "Preferences", icon: Heart, page: "UserPreferences" },
   ];
 
   if (isAdmin) {
