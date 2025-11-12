@@ -5,13 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, TrendingUp } from "lucide-react";
 import TeamSearchBar from "../components/team/TeamSearchBar";
+import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TeamStats() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [searchSuccess, setSearchSuccess] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState(null);
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading } = useFreeLookupTracker();
@@ -35,7 +37,7 @@ export default function TeamStats() {
 
     setIsSearching(true);
     setError(null);
-    setSearchSuccess(false);
+    setCurrentTeam(null);
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -237,10 +239,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         throw new Error("Team not found - please check spelling and try again");
       }
 
+      // Save to database for historical tracking
       await base44.entities.TeamStats.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      setSearchSuccess(true);
+      
+      // Display results immediately on this page
+      setCurrentTeam(result);
       
     } catch (err) {
       console.error("Team analysis error:", err);
@@ -282,14 +287,6 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </Alert>
         )}
 
-        {searchSuccess && !isSearching && (
-          <Alert className="mb-6 bg-green-50 border-2 border-green-200">
-            <AlertDescription className="text-green-900">
-              ✅ Team analysis complete! View it in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -305,6 +302,26 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             </div>
           </div>
         )}
+
+        {/* Display team results directly on this page */}
+        <AnimatePresence>
+          {currentTeam && !isSearching && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <TeamStatsDisplay team={currentTeam} />
+              
+              <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
+                <AlertDescription className="text-blue-900">
+                  ✅ Team analysis saved! View all your saved results in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

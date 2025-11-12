@@ -6,17 +6,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SearchBar from "../components/sports/SearchBar";
+import MatchCard from "../components/sports/MatchCard";
 import TodaysBestBets from "../components/sports/TodaysBestBets";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import WelcomeTutorial from "../components/onboarding/WelcomeTutorial";
 import VIPDiscordCard from "../components/community/VIPDiscordCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchSuccess, setSearchSuccess] = useState(false);
+  const [currentMatch, setCurrentMatch] = useState(null);
   const queryClient = useQueryClient();
   
   const { lookupsRemaining, isAuthenticated: isAuth, recordLookup, canLookup, userTier } = useFreeLookupTracker();
@@ -51,7 +53,7 @@ export default function Dashboard() {
 
     setIsSearching(true);
     setError(null);
-    setSearchSuccess(false);
+    setCurrentMatch(null);
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -353,10 +355,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         throw new Error("Match not found - try a different date or check team names");
       }
 
+      // Save to database for historical tracking
       await base44.entities.Match.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['matches'] });
-      setSearchSuccess(true);
+      
+      // Display results immediately on this page
+      setCurrentMatch(result);
       
     } catch (err) {
       console.error("❌ Match Analysis Error:", err);
@@ -415,14 +420,6 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </Alert>
         )}
 
-        {searchSuccess && !isSearching && (
-          <Alert className="mb-6 bg-green-50 border-2 border-green-200">
-            <AlertDescription className="text-green-900">
-              ✅ Match analysis complete! View it in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {isSearching && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -443,6 +440,26 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             </div>
           </div>
         )}
+
+        {/* Display match results directly on this page */}
+        <AnimatePresence>
+          {currentMatch && !isSearching && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <MatchCard match={currentMatch} index={0} />
+              
+              <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
+                <AlertDescription className="text-blue-900">
+                  ✅ Match analysis saved! View all your saved results in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Footer Disclaimer */}
