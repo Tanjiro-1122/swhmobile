@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
@@ -151,10 +150,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Domain Change Banner */}
       <DomainChangeBanner />
       
-      {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-slate-700 shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 lg:px-6">
           <div className="flex items-center gap-3">
@@ -202,7 +199,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="text-xs lg:text-sm font-bold text-white">PREMIUM</span>
                   </div>
                 )}
-                <Avatar className="w-8 h-8 lg:w-10 h-10">
+                <Avatar className="w-8 h-8 lg:w-10 lg:h-10">
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                     {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
@@ -257,7 +254,6 @@ export default function Layout({ children, currentPageName }) {
               );
             })}
             
-            {/* Mobile-only logout button */}
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
@@ -316,13 +312,11 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50">
           {children}
         </main>
       </div>
 
-      {/* Backdrop Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
