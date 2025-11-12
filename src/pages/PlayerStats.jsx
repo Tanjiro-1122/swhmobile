@@ -39,11 +39,13 @@ export default function PlayerStats() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. You MUST fetch LIVE, CURRENT data from StatMuse.com, ESPN, and official league websites.
+        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. You MUST fetch LIVE, CURRENT data from StatMuse.com, Basketball-Reference.com, and ESPN.
 
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 CURRENT SEASON: ${new Date().getFullYear()} (or ${new Date().getFullYear()}-${new Date().getFullYear() + 1} for NBA/NHL)
+
+⚠️ CRITICAL REQUIREMENT: The "recent_form" array (last 5 games) MUST include COMPLETE stats for EVERY game. Missing data is NOT acceptable. These per-game stats are used for sports betting prop bets and MUST be accurate and complete.
 
 STEP 1: IDENTIFY THE PLAYER
 Search: "${query} stats ${new Date().getFullYear()}" on StatMuse.com
@@ -59,10 +61,10 @@ Search: "[player name] stats ${new Date().getFullYear()}" on StatMuse or Basketb
 - Assists per game (APG)
 - Steals per game
 - Blocks per game
-- Field goal % (FG%)
-- Three-point % (3P%)
+- Field goal % (FG%) - return as decimal (e.g., 0.456 for 45.6%)
+- Three-point % (3P%) - return as decimal (e.g., 0.350 for 35.0%)
 - Three-pointers made per game
-- Free throw % (FT%)
+- Free throw % (FT%) - return as decimal (e.g., 0.850 for 85.0%)
 - Minutes per game
 
 FOR BASEBALL (MLB):
@@ -118,24 +120,44 @@ FOR WIDE RECEIVERS/TIGHT ENDS:
 - Yards after catch
 - Catch percentage
 
-STEP 3: RECENT FORM - DETAILED LAST 5 GAMES (CRITICAL - MUST BE SPECIFIC!)
-Search: "[player name] game log ${new Date().getFullYear()}" on StatMuse or Basketball-Reference
-Get EXACT stats from each of the last 5 games:
+STEP 3: RECENT FORM - DETAILED LAST 5 GAMES (⚠️ ABSOLUTELY CRITICAL!)
 
-FOR BASKETBALL - Each game must include:
-- Date (MM/DD/YYYY)
-- Opponent team name
-- Result (W/L and score like "W 115-108")
-- Points scored (exact number)
-- Rebounds (exact number)
-- Assists (exact number)
-- Steals (exact number)
-- Blocks (exact number)
-- Three-pointers made (exact number)
-- Field goals made/attempted (e.g., 10/18)
-- Free throws made/attempted (e.g., 5/6)
-- Minutes played
-- Performance rating (Excellent/Good/Average/Poor)
+🚨 MANDATORY DATA SOURCES FOR GAME-BY-GAME STATS:
+1. Basketball-Reference.com - "[player name] game log ${new Date().getFullYear()}"
+2. StatMuse.com - "[player name] last 5 games"
+3. ESPN.com - "[player name] game log"
+
+⚠️ YOU MUST FETCH EVERY SINGLE STAT FOR EACH OF THE LAST 5 GAMES. DO NOT LEAVE ANY FIELDS BLANK OR USE PLACEHOLDERS.
+
+FOR BASKETBALL - EACH GAME MUST INCLUDE ALL OF THESE (NO EXCEPTIONS):
+REQUIRED URL: https://www.basketball-reference.com/players/[player-id]/gamelog/${new Date().getFullYear()}
+
+For EACH of the last 5 games, you MUST provide:
+✅ date (exact format: "MM/DD/YYYY" or "Jan 15, 2025")
+✅ opponent (team name - e.g., "Los Angeles Lakers")
+✅ result (format: "W 115-108" or "L 102-110")
+✅ points (exact integer - e.g., 28)
+✅ rebounds (exact integer - e.g., 7)
+✅ assists (exact integer - e.g., 5)
+✅ steals (exact integer - REQUIRED, cannot be blank)
+✅ blocks (exact integer - REQUIRED, cannot be blank)
+✅ three_pointers_made (exact integer - e.g., 4 - REQUIRED, cannot be blank)
+✅ field_goals_made (exact integer - e.g., 10 - REQUIRED)
+✅ field_goals_attempted (exact integer - e.g., 18 - REQUIRED)
+✅ free_throws_made (exact integer - e.g., 6 - REQUIRED)
+✅ free_throws_attempted (exact integer - e.g., 8 - REQUIRED)
+✅ minutes_played (exact integer - e.g., 35 - REQUIRED, cannot be blank)
+✅ performance_rating (text: "Excellent" if above season avg, "Good" if close, "Average", or "Poor")
+
+CRITICAL BASKETBALL STATS THAT ARE OFTEN MISSING:
+- steals (STL) - Find this in the game log table on Basketball-Reference, usually 4th or 5th column
+- blocks (BLK) - Find this immediately after steals in game log
+- three_pointers_made (3PM) - Find this before field goals in game log
+- field_goals_made/attempted (FGM/FGA) - Core stat, always in game log
+- free_throws_made/attempted (FTM/FTA) - Core stat, always in game log
+- minutes_played (MIN) - Usually first or second column in game log
+
+VERIFICATION: After extracting basketball game data, verify EVERY stat is a number (not null, not "-", not blank). If any stat is missing from the game log, return 0 for that game but include a note in performance_rating.
 
 FOR BASEBALL BATTERS - Each game must include:
 - Date
@@ -197,7 +219,7 @@ Search: "[team name] schedule" on ESPN
   * Current form (hot/cold streak)
 
 BASKETBALL PREDICTION FORMAT:
-"28 PTS, 7 REB, 5 AST, 2 3PM" (specific numbers with 3-pointers made)
+"28 PTS, 7 REB, 5 AST, 2 STL, 1 BLK, 4 3PM" (specific numbers with all key stats)
 
 BASEBALL BATTER PREDICTION:
 "2 hits, 1 HR, 3 RBI, .300 AVG for the game"
@@ -215,7 +237,10 @@ STEP 5: BETTING INSIGHTS
 - Over/Under line for relevant stat (e.g., points for NBA, home runs for MLB)
 - Probability to score/perform well (0-100%)
 - Is player on a hot streak? (boolean - true if last 3 games above season average)
-- Consistency rating: "Very Consistent" (if variation <15%), "Moderately Consistent" (15-30%), or "Inconsistent" (>30%)
+- Consistency rating: Calculate variation in last 5 games:
+  * If std deviation < 15% of mean: "Very Consistent"
+  * If 15-30%: "Moderately Consistent"
+  * If > 30%: "Inconsistent"
 
 STEP 6: INJURY STATUS
 Search: "[player name] injury report" or "[team name] injury report today"
@@ -227,8 +252,17 @@ CRITICAL RULES:
 ✓ DO NOT mix sport stats (no "rebounds" for baseball, no "home runs" for basketball)
 ✓ Recent form MUST show ACTUAL game results with EXACT numbers from game logs, not estimates
 ✓ Each of the 5 games must have complete stat lines appropriate for the sport
+✓ EVERY FIELD must be populated with a number, not null, not "-", not blank
+✓ If a stat truly cannot be found for a game, use 0 (zero) instead of leaving it blank
 ✓ All stats must be from StatMuse, ESPN, Basketball-Reference, Pro-Football-Reference, or official league sources
 ✓ Predictions must be SPECIFIC NUMBERS, not ranges
+✓ Percentages should be returned as decimals (0.45 for 45%, not 45)
+
+VALIDATION BEFORE RETURNING:
+1. Check that "recent_form" array has exactly 5 games
+2. For each game, verify EVERY required stat for that sport is a number (not null)
+3. For basketball: verify steals, blocks, 3PM, FG made/attempted, FT made/attempted, and minutes are ALL present
+4. If any critical stat is missing, re-search specifically for that stat on Basketball-Reference game log
 
 If player not found, return an error in the reasoning field of next_game.
 
@@ -427,7 +461,8 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Player Data</h3>
-              <p className="text-gray-700">Fetching detailed game-by-game stats from StatMuse & ESPN...</p>
+              <p className="text-gray-700">Fetching complete game-by-game stats from Basketball-Reference & StatMuse...</p>
+              <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds for detailed data extraction</p>
             </div>
           </div>
         )}
