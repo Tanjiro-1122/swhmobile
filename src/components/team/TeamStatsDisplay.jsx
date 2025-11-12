@@ -3,133 +3,152 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  TrendingUp, 
-  Target, 
-  Activity, 
-  Award, 
-  AlertCircle,
-  Calendar,
-  Zap,
-  ThumbsUp,
-  ThumbsDown,
-  Trash2,
-  Users,
-  BarChart3
+  Trophy, TrendingUp, TrendingDown, AlertCircle, Activity, 
+  Target, Award, Calendar, Trash2, Users, Shield 
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
 
-export default function TeamStatsDisplay({ team, onDelete, index }) {
-  const formatDate = (dateString, formatString) => {
-    if (!dateString) return null;
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return null;
-      return format(date, formatString);
-    } catch (error) {
-      return null;
-    }
+export default function TeamStatsDisplay({ team, onDelete }) {
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   const getResultBadge = (result) => {
-    if (result.toUpperCase().includes('W')) {
-      return <Badge className="bg-green-100 text-green-800 border-green-300">W</Badge>;
-    } else if (result.toUpperCase().includes('L')) {
-      return <Badge className="bg-red-100 text-red-800 border-red-300">L</Badge>;
-    } else if (result.toUpperCase().includes('D')) {
-      return <Badge className="bg-gray-100 text-gray-800 border-gray-300">D</Badge>;
-    }
-    return <Badge variant="outline">{result}</Badge>;
+    if (result?.includes('W')) return 'default';
+    if (result?.includes('L')) return 'destructive';
+    return 'secondary';
   };
 
-  const renderSeasonAverages = () => {
-    if (!team.season_averages) return null;
-    
-    const stats = [];
-    const averages = team.season_averages;
-    
-    if (averages.points_per_game) stats.push({ label: "PPG", value: averages.points_per_game.toFixed(1) });
-    if (averages.points_allowed_per_game) stats.push({ label: "Opp PPG", value: averages.points_allowed_per_game.toFixed(1) });
-    if (averages.goals_per_game) stats.push({ label: "Goals/Game", value: averages.goals_per_game.toFixed(1) });
-    if (averages.goals_allowed_per_game) stats.push({ label: "Goals Allowed", value: averages.goals_allowed_per_game.toFixed(1) });
-    if (averages.possession_percentage) stats.push({ label: "Possession %", value: `${averages.possession_percentage.toFixed(1)}%` });
-    if (averages.shots_per_game) stats.push({ label: "Shots/Game", value: averages.shots_per_game.toFixed(1) });
-    if (averages.field_goal_percentage) stats.push({ label: "FG%", value: `${averages.field_goal_percentage.toFixed(1)}%` });
-    if (averages.three_point_percentage) stats.push({ label: "3P%", value: `${averages.three_point_percentage.toFixed(1)}%` });
-    if (averages.assists_per_game) stats.push({ label: "Assists/Game", value: averages.assists_per_game.toFixed(1) });
-    if (averages.rebounds_per_game) stats.push({ label: "Rebounds/Game", value: averages.rebounds_per_game.toFixed(1) });
-    
-    return stats;
+  const getConfidenceColor = (confidence) => {
+    const lowerConfidence = confidence?.toLowerCase() || '';
+    if (lowerConfidence.includes('high')) return 'text-green-600 bg-green-50 border-green-200';
+    if (lowerConfidence.includes('medium')) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    return 'text-orange-600 bg-orange-50 border-orange-200';
   };
 
-  const seasonStats = renderSeasonAverages();
+  const getOutcomeIcon = (outcome) => {
+    const lowerOutcome = outcome?.toLowerCase() || '';
+    if (lowerOutcome.includes('win')) return '✅';
+    if (lowerOutcome.includes('loss')) return '❌';
+    return '🤝';
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-green-100">
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">{team.team_name}</h2>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="bg-white/20 text-white border-white/30">
-                  {team.sport}
-                </Badge>
-                {team.league && (
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    {team.league}
-                  </Badge>
+      <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-shadow">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <Trophy className="w-8 h-8" />
+                <div>
+                  <CardTitle className="text-3xl font-black">{team.team_name}</CardTitle>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge className="bg-white/20 text-white border-white/30">
+                      {team.sport}
+                    </Badge>
+                    <Badge className="bg-white/20 text-white border-white/30">
+                      {team.league}
+                    </Badge>
+                    {team.form && (
+                      <Badge className="bg-white/20 text-white border-white/30 font-mono">
+                        {team.form}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(team.id)}
+                className="text-white hover:bg-white/20"
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6 space-y-6">
+          {/* Current Record */}
+          {team.current_record && (
+            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-blue-600" />
+                Current Record
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                  <div className="text-2xl font-black text-green-600">{team.current_record.wins}</div>
+                  <div className="text-xs text-gray-600 font-semibold">Wins</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                  <div className="text-2xl font-black text-red-600">{team.current_record.losses}</div>
+                  <div className="text-xs text-gray-600 font-semibold">Losses</div>
+                </div>
+                {team.current_record.draws !== undefined && team.current_record.draws > 0 && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                    <div className="text-2xl font-black text-gray-600">{team.current_record.draws}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Draws</div>
+                  </div>
                 )}
-                {team.form && (
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    Form: {team.form}
-                  </Badge>
+                {team.current_record.win_percentage !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                    <div className="text-2xl font-black text-blue-600">
+                      {(team.current_record.win_percentage * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 font-semibold">Win %</div>
+                  </div>
                 )}
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(team.id)}
-              className="hover:bg-white/20 text-white"
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-          </div>
-          {team.current_record && (
-            <div className="flex items-center gap-4 text-white/90">
-              <span className="text-lg">
-                Record: {team.current_record.wins}W - {team.current_record.losses}L
-                {team.current_record.draws ? ` - ${team.current_record.draws}D` : ''}
-              </span>
-              {team.current_record.win_percentage && (
-                <span className="text-lg">
-                  ({team.current_record.win_percentage.toFixed(1)}%)
-                </span>
-              )}
-            </div>
           )}
-        </div>
 
-        <CardContent className="p-6 space-y-6">
           {/* Season Averages */}
-          {seasonStats && seasonStats.length > 0 && (
+          {team.season_averages && Object.keys(team.season_averages).length > 0 && (
             <div>
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-green-600" />
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-600" />
                 Season Averages
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {seasonStats.map((stat, idx) => (
-                  <div key={idx} className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100">
-                    <div className="text-sm text-gray-600 mb-1">{stat.label}</div>
-                    <div className="text-2xl font-bold text-green-900">{stat.value}</div>
+                {team.season_averages.points_per_game && (
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="text-2xl font-black text-blue-600">{team.season_averages.points_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">PPG</div>
                   </div>
-                ))}
+                )}
+                {team.season_averages.points_allowed_per_game && (
+                  <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                    <div className="text-2xl font-black text-red-600">{team.season_averages.points_allowed_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">PPG Allowed</div>
+                  </div>
+                )}
+                {team.season_averages.goals_per_game && (
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <div className="text-2xl font-black text-green-600">{team.season_averages.goals_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Goals/Game</div>
+                  </div>
+                )}
+                {team.season_averages.field_goal_percentage && (
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                    <div className="text-2xl font-black text-purple-600">
+                      {(team.season_averages.field_goal_percentage * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 font-semibold">FG%</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -137,81 +156,31 @@ export default function TeamStatsDisplay({ team, onDelete, index }) {
           {/* Last 5 Games */}
           {team.last_five_games && team.last_five_games.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-blue-600" />
-                Last 5 Games
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                Last {team.last_five_games.length} Games
               </h3>
-              <div className="space-y-3">
-                {team.last_five_games.map((game, idx) => {
-                  const formattedDate = formatDate(game.date, "MMM d, yyyy");
-                  return (
-                    <div key={idx} className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-3">
-                          {getResultBadge(game.result)}
-                          <div>
-                            <div className="font-bold text-lg">{game.score}</div>
-                            <div className="text-sm text-gray-600">
-                              {game.home_away === 'home' ? 'vs' : '@'} {game.opponent}
-                            </div>
-                            {formattedDate && (
-                              <div className="text-xs text-gray-500">{formattedDate}</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {game.key_stats && Object.keys(game.key_stats).length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200">
-                          {Object.entries(game.key_stats).map(([key, value]) => (
-                            <div key={key} className="text-center">
-                              <div className="text-xs text-gray-500">{key}</div>
-                              <div className="font-semibold">{value}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Key Players */}
-          {team.key_players && team.key_players.length > 0 && (
-            <Card className="border-2 border-purple-100 bg-gradient-to-br from-purple-50 to-pink-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  Key Players
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {team.key_players.map((player, idx) => (
-                    <Badge key={idx} className="bg-white text-purple-700 border-purple-200">
-                      {player}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Injuries */}
-          {team.injuries && team.injuries.length > 0 && (
-            <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertCircle className="w-5 h-5 text-amber-600" />
-                <h3 className="font-bold text-amber-900">Injury Report</h3>
-              </div>
               <div className="space-y-2">
-                {team.injuries.map((injury, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-white rounded p-2">
-                    <span className="font-medium">{injury.player_name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">{injury.injury}</span>
-                      <Badge variant="outline" className="text-xs">{injury.status}</Badge>
+                {team.last_five_games.map((game, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Badge variant={getResultBadge(game.result)}>
+                          {game.result}
+                        </Badge>
+                        <span className="text-sm text-gray-600">{formatDate(game.date)}</span>
+                        <span className="text-sm font-semibold text-gray-900">vs {game.opponent}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="font-mono">
+                          {game.score}
+                        </Badge>
+                        {game.home_away && (
+                          <Badge variant="secondary" className="text-xs">
+                            {game.home_away}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -219,74 +188,129 @@ export default function TeamStatsDisplay({ team, onDelete, index }) {
             </div>
           )}
 
-          {/* Next Game */}
+          {/* Next Game Prediction - ENHANCED */}
           {team.next_game && (
-            <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  Next Game
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="text-xl font-bold text-blue-900">
-                    vs {team.next_game.opponent}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-600" />
+                Next Game Prediction
+              </h3>
+              <div className="space-y-4">
+                {/* Game Details */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-gray-600">vs</div>
+                    <div className="text-xl font-bold text-gray-900">{team.next_game.opponent}</div>
                   </div>
-                  {team.next_game.date && formatDate(team.next_game.date, "EEEE, MMM d 'at' HH:mm") && (
-                    <div className="text-sm text-gray-600">
-                      {formatDate(team.next_game.date, "EEEE, MMM d 'at' HH:mm")}
+                  <div className="text-right">
+                    <Badge className="bg-orange-600 text-white mb-1">{team.next_game.date}</Badge>
+                    {team.next_game.location && (
+                      <div className="text-xs text-gray-600">{team.next_game.location}</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Prediction Box */}
+                <div className="bg-white p-5 rounded-lg border-2 border-orange-300 shadow-md">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="text-4xl">{getOutcomeIcon(team.next_game.predicted_outcome)}</div>
+                    <div>
+                      <div className="text-2xl font-black text-orange-600">
+                        {team.next_game.predicted_outcome || 'Win'}
+                      </div>
+                      {team.next_game.predicted_score && (
+                        <div className="text-lg font-bold text-gray-700">
+                          Predicted Score: {team.next_game.predicted_score}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Confidence Badge */}
+                  {team.next_game.confidence && (
+                    <div className="mb-3">
+                      <Badge className={`${getConfidenceColor(team.next_game.confidence)} border-2 px-3 py-1`}>
+                        {team.next_game.confidence} Confidence
+                      </Badge>
                     </div>
                   )}
-                  {team.next_game.location && (
-                    <div className="text-sm text-gray-600">{team.next_game.location}</div>
-                  )}
-                  {team.next_game.prediction && (
-                    <div className="mt-3 p-3 bg-white rounded border border-blue-200">
-                      <div className="text-sm font-semibold text-blue-900 mb-1">
-                        <Zap className="w-4 h-4 inline mr-1" />
-                        Prediction
-                      </div>
-                      <div className="text-sm text-gray-700">{team.next_game.prediction}</div>
+
+                  {/* Reasoning */}
+                  {team.next_game.reasoning && (
+                    <div className="text-sm text-gray-700 leading-relaxed">
+                      <div className="font-semibold text-gray-900 mb-1">Analysis:</div>
+                      {team.next_game.reasoning}
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Key Players */}
+          {team.key_players && team.key_players.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-600" />
+                Key Players
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {team.key_players.map((player, idx) => (
+                  <Badge key={idx} className="bg-purple-100 text-purple-800 border-purple-300 px-3 py-1">
+                    {player}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Injuries */}
+          {team.injuries && team.injuries.length > 0 && (
+            <div className="bg-red-50 p-4 rounded-xl border-2 border-red-200">
+              <h3 className="text-lg font-bold text-red-900 mb-3 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Injury Report
+              </h3>
+              <div className="space-y-2">
+                {team.injuries.map((injury, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-lg border border-red-200">
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-gray-900">{injury.player_name}</div>
+                      <Badge variant="destructive">{injury.status}</Badge>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">{injury.injury}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Strengths & Weaknesses */}
           <div className="grid md:grid-cols-2 gap-4">
             {team.strengths && team.strengths.length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                  <ThumbsUp className="w-5 h-5 text-green-600" />
+              <div className="bg-green-50 p-4 rounded-xl border-2 border-green-200">
+                <h4 className="font-bold text-green-900 mb-2 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
                   Strengths
-                </h3>
-                <div className="space-y-2">
+                </h4>
+                <ul className="space-y-1">
                   {team.strengths.map((strength, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
-                      <span className="text-sm text-gray-700">{strength}</span>
-                    </div>
+                    <li key={idx} className="text-sm text-green-800">• {strength}</li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
             {team.weaknesses && team.weaknesses.length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                  <ThumbsDown className="w-5 h-5 text-red-600" />
+              <div className="bg-red-50 p-4 rounded-xl border-2 border-red-200">
+                <h4 className="font-bold text-red-900 mb-2 flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4" />
                   Weaknesses
-                </h3>
-                <div className="space-y-2">
+                </h4>
+                <ul className="space-y-1">
                   {team.weaknesses.map((weakness, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500 mt-2" />
-                      <span className="text-sm text-gray-700">{weakness}</span>
-                    </div>
+                    <li key={idx} className="text-sm text-red-800">• {weakness}</li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
           </div>

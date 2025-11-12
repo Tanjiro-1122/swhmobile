@@ -111,12 +111,27 @@ STEP 5: FORM
 Based on last 5 games, create a form string:
 Example: "W-W-L-W-D" or "W-L-W-W-L"
 
-STEP 6: NEXT GAME
+STEP 6: NEXT GAME PREDICTION (DETAILED - REQUIRED)
 Search: "[team name] schedule" on ESPN
-- Next opponent
-- Date and time
-- Location (home/away)
-- Brief prediction based on form
+
+Get next game details:
+- Next opponent (full team name)
+- Date and time (exact)
+- Location (Home/Away with city)
+
+THEN CREATE A DETAILED PREDICTION:
+- predicted_outcome: "Win", "Loss", or "Draw" (one word only)
+- predicted_score: Specific score based on team averages (e.g., "115-108" for basketball, "3-1" for soccer, "28-24" for NFL)
+- confidence: "High" (80%+ confident), "Medium" (60-79%), or "Low" (<60%)
+- reasoning: 3-4 sentences explaining WHY this prediction, including:
+  * Team's recent form (last 5 games record)
+  * Head-to-head history against this opponent
+  * Key statistical advantages/disadvantages
+  * Impact of injuries or home/away factors
+  * Specific numbers to support the prediction
+
+EXAMPLE REASONING FORMAT:
+"The Lakers are predicted to win based on their strong 4-1 record in last 5 games, averaging 118 PPG at home. They've won 7 of the last 10 matchups against the Pistons by an average of 12 points. Detroit is struggling on the road (2-8) and allowing 115 PPG. With LeBron and AD healthy, Lakers have a significant advantage in frontcourt scoring."
 
 STEP 7: STRENGTHS & WEAKNESSES
 Based on stats:
@@ -139,8 +154,10 @@ CRITICAL RULES:
 ✓ All stats from StatMuse, ESPN, or official league sources
 ✓ Last 5 games must show ACTUAL results, not estimates
 ✓ Team names must be spelled correctly (official names)
+✓ Next game prediction MUST include all 4 fields: predicted_outcome, predicted_score, confidence, reasoning
+✓ Reasoning must be detailed with specific statistics
 
-If team not found, return an error in the prediction field.
+If team not found, return an error in the reasoning field.
 
 Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         add_context_from_internet: true,
@@ -223,11 +240,15 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
                 opponent: { type: "string" },
                 date: { type: "string" },
                 location: { type: "string" },
-                prediction: { type: "string" }
-              }
+                predicted_outcome: { type: "string" },
+                predicted_score: { type: "string" },
+                confidence: { type: "string" },
+                reasoning: { type: "string" }
+              },
+              required: ["opponent", "predicted_outcome", "confidence", "reasoning"]
             }
           },
-          required: ["team_name", "sport"]
+          required: ["team_name", "sport", "next_game"]
         }
       });
 
@@ -235,7 +256,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         throw new Error("Invalid response - team not found or missing data");
       }
 
-      if (result.next_game?.prediction?.includes("not found") || result.next_game?.prediction?.includes("Unable to find")) {
+      if (result.next_game?.reasoning?.includes("not found") || result.next_game?.reasoning?.includes("Unable to find")) {
         throw new Error("Team not found - please check spelling and try again");
       }
 
