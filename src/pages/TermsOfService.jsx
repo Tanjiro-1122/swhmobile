@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
@@ -122,7 +121,7 @@ export default function TermsOfService() {
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">5.3 Technical Issues</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Significant Downtime:</strong> If our app has significant downtime (>24 consecutive hours), contact us for a pro-rated refund</li>
+                  <li><strong>Significant Downtime:</strong> If our app has significant downtime (&gt;24 consecutive hours), contact us for a pro-rated refund</li>
                   <li><strong>Service Failure:</strong> If our AI analysis or data sources fail to work as advertised, we'll investigate and may issue a refund or credit</li>
                 </ul>
 
