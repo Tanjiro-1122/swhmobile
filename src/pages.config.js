@@ -19,7 +19,7 @@ import BettingBriefs from './pages/BettingBriefs';
 import Profile from './pages/Profile';
 import UserPreferences from './pages/UserPreferences';
 import MyInsights from './pages/MyInsights';
-import Support from './pages/Support';
+import ContactUs from './pages/ContactUs';
 import __Layout from './Layout.jsx';
 
 
@@ -45,7 +45,7 @@ export const PAGES = {
     "Profile": Profile,
     "UserPreferences": UserPreferences,
     "MyInsights": MyInsights,
-    "Support": Support,
+    "ContactUs": ContactUs,
 }
 
 export const pagesConfig = {
