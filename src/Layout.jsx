@@ -24,7 +24,9 @@ import {
   Crown,
   Sparkles,
   Zap,
-  Heart
+  Heart,
+  Mail,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -234,7 +236,7 @@ export default function Layout({ children, currentPageName }) {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
-          <nav className="p-3 lg:p-4 space-y-1 lg:space-y-2">
+          <nav className="p-3 lg:p-4 space-y-1 lg:space-y-2 pb-24">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPageName === item.page;
@@ -266,10 +268,19 @@ export default function Layout({ children, currentPageName }) {
 
             <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
               <Link
+                to={createPageUrl("ContactUs")}
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
+              >
+                <Mail className="w-4 h-4" />
+                Contact Us
+              </Link>
+              <Link
                 to={createPageUrl("PrivacyPolicy")}
                 onClick={() => setSidebarOpen(false)}
                 className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
               >
+                <Shield className="w-4 h-4" />
                 Privacy Policy
               </Link>
               <Link
@@ -277,6 +288,7 @@ export default function Layout({ children, currentPageName }) {
                 onClick={() => setSidebarOpen(false)}
                 className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
               >
+                <FileText className="w-4 h-4" />
                 Terms of Service
               </Link>
               
@@ -312,8 +324,62 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </aside>
 
-        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50">
+        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 pb-20">
           {children}
+          
+          {/* Footer */}
+          <footer className="bg-white border-t-2 border-gray-200 py-6 mt-12">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="grid md:grid-cols-3 gap-6 mb-6">
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3">Sports Wager Helper</h3>
+                  <p className="text-sm text-gray-600">
+                    AI-powered sports betting analysis and insights
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3">Quick Links</h3>
+                  <div className="space-y-2">
+                    <Link to={createPageUrl("Pricing")} className="block text-sm text-gray-600 hover:text-blue-600">
+                      Pricing
+                    </Link>
+                    <Link to={createPageUrl("LearningCenter")} className="block text-sm text-gray-600 hover:text-blue-600">
+                      Learning Center
+                    </Link>
+                    <Link to={createPageUrl("Community")} className="block text-sm text-gray-600 hover:text-blue-600">
+                      Community
+                    </Link>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3">Support</h3>
+                  <div className="space-y-2">
+                    <Link to={createPageUrl("ContactUs")} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600">
+                      <Mail className="w-4 h-4" />
+                      Contact Us
+                    </Link>
+                    <Link to={createPageUrl("PrivacyPolicy")} className="block text-sm text-gray-600 hover:text-blue-600">
+                      Privacy Policy
+                    </Link>
+                    <Link to={createPageUrl("TermsOfService")} className="block text-sm text-gray-600 hover:text-blue-600">
+                      Terms of Service
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-6 border-t border-gray-200 text-center">
+                <p className="text-sm text-gray-600 mb-2">
+                  © {new Date().getFullYear()} Sports Wager Helper. All rights reserved.
+                </p>
+                <p className="text-xs text-gray-500">
+                  ⚠️ Always gamble responsibly. If you have a gambling problem, call 1-800-522-4700.
+                </p>
+              </div>
+            </div>
+          </footer>
         </main>
       </div>
 
