@@ -19,7 +19,8 @@ import BettingBriefs from './pages/BettingBriefs';
 import Profile from './pages/Profile';
 import UserPreferences from './pages/UserPreferences';
 import MyInsights from './pages/MyInsights';
-import Layout from './Layout.jsx';
+import Support from './pages/Support';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -44,10 +45,11 @@ export const PAGES = {
     "Profile": Profile,
     "UserPreferences": UserPreferences,
     "MyInsights": MyInsights,
+    "Support": Support,
 }
 
 export const pagesConfig = {
     mainPage: "Dashboard",
     Pages: PAGES,
-    Layout: Layout,
+    Layout: __Layout,
 };
