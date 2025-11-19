@@ -193,7 +193,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-600" />
-                Next Game Prediction
+                Next Game Analysis
               </h3>
               <div className="space-y-4">
                 {/* Game Details */}
@@ -216,11 +216,11 @@ export default function TeamStatsDisplay({ team, onDelete }) {
                     <div className="text-4xl">{getOutcomeIcon(team.next_game.predicted_outcome)}</div>
                     <div>
                       <div className="text-2xl font-black text-orange-600">
-                        {team.next_game.predicted_outcome || 'Win'}
+                        Projected: {team.next_game.predicted_outcome || 'Win'}
                       </div>
                       {team.next_game.predicted_score && (
                         <div className="text-lg font-bold text-gray-700">
-                          Predicted Score: {team.next_game.predicted_score}
+                          Projected Score: {team.next_game.predicted_score}
                         </div>
                       )}
                     </div>

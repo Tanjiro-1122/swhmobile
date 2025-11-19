@@ -160,7 +160,7 @@ export default function MatchCard({ match, onDelete, index }) {
             <div className="p-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl border-2 border-emerald-400 shadow-lg">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="w-6 h-6 text-white" />
-                <span className="font-black text-white text-xl">AI Prediction</span>
+                <span className="font-black text-white text-xl">AI Analysis</span>
                 {match.prediction.confidence && (
                   <Badge className="bg-white/20 text-white border-white/30 ml-auto">
                     {match.prediction.confidence} Confidence
@@ -175,7 +175,7 @@ export default function MatchCard({ match, onDelete, index }) {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-sm max-w-xs">
-                        AI analyzes real-time data from StatMuse, ESPN, injury reports, weather, and historical matchups to generate this prediction.
+                        AI analyzes real-time data from StatMuse, ESPN, injury reports, weather, and historical matchups to generate this analysis.
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -184,15 +184,15 @@ export default function MatchCard({ match, onDelete, index }) {
               
               <div className="space-y-3">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                  <div className="text-white/80 text-sm mb-1">Predicted Winner</div>
-                  <div className="text-white font-black text-2xl">{match.prediction.winner}</div>
+                <div className="text-white/80 text-sm mb-1">Projected Winner</div>
+                <div className="text-white font-black text-2xl">{match.prediction.winner}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-                    <div className="text-white/80 text-xs mb-1">Predicted Score</div>
-                    <div className="text-white font-bold text-lg">{match.prediction.predicted_score}</div>
-                  </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                  <div className="text-white/80 text-xs mb-1">Projected Score</div>
+                  <div className="text-white font-bold text-lg">{match.prediction.predicted_score}</div>
+                </div>
                   {match.prediction.win_margin && (
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
                       <div className="text-white/80 text-xs mb-1">Win Margin</div>

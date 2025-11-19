@@ -484,7 +484,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300">
               <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-600" />
-                Next Game Prediction
+                Next Game Analysis
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -493,7 +493,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-orange-200">
                   <div className="text-2xl font-black text-orange-600 mb-2">
-                    {player.next_game.predicted_performance}
+                    Projected: {player.next_game.predicted_performance}
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className={`${
