@@ -22,7 +22,7 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-bold text-red-900 mb-3">⚠️ IMPORTANT DISCLAIMERS</h2>
                 <ul className="list-disc pl-6 space-y-2 text-red-800">
                   <li><strong>NOT A LICENSED BETTING ADVISOR:</strong> We are NOT a licensed gambling advisor, bookmaker, or financial advisor</li>
-                  <li><strong>EDUCATIONAL PURPOSES:</strong> All predictions and analyses are for informational and educational purposes ONLY</li>
+                  <li><strong>EDUCATIONAL PURPOSES:</strong> All analysis and insights are for informational and educational purposes ONLY</li>
                   <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports betting involves risk</li>
                   <li><strong>BET RESPONSIBLY:</strong> Never bet more than you can afford to lose. If you have a gambling problem, seek help immediately</li>
                   <li><strong>AGE RESTRICTION:</strong> You must be 18+ (or 21+ where legally required) to use this app</li>
@@ -44,7 +44,7 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">2. Service Description</h2>
                 <p>Sports Wager Helper provides:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>AI-Powered Analysis:</strong> Match predictions, player statistics, and team performance data</li>
+                  <li><strong>AI-Powered Analysis:</strong> Match analysis, player statistics, and team performance data</li>
                   <li><strong>Live Odds Comparison:</strong> Real-time odds from multiple sportsbooks</li>
                   <li><strong>Betting Tools:</strong> Calculators, bankroll management, ROI tracking, parlay builders</li>
                   <li><strong>Educational Content:</strong> Betting strategies, terminology, and responsible gambling resources</li>
@@ -198,7 +198,7 @@ export default function TermsOfService() {
                     THE APP IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES. We do not guarantee that:
                   </p>
                   <ul className="list-disc pl-6 space-y-1 text-yellow-800">
-                    <li>Our predictions will be accurate</li>
+                    <li>Our AI analysis will be accurate</li>
                     <li>You will win money using our analysis</li>
                     <li>The app will be error-free or uninterrupted</li>
                     <li>Third-party odds data will always be available or accurate</li>
@@ -207,14 +207,14 @@ export default function TermsOfService() {
                   <h4 className="font-bold text-yellow-800 mb-2 mt-4">8.2 Limitation of Liability</h4>
                   <p className="text-yellow-800">
                     <strong>WE ARE NOT LIABLE FOR:</strong>
-                  </p>
-                  <ul className="list-disc pl-6 space-y-1 text-yellow-800">
+                    </p>
+                    <ul className="list-disc pl-6 space-y-1 text-yellow-800">
                     <li>Any financial losses from bets placed based on our analysis</li>
-                    <li>Incorrect predictions or data errors</li>
+                    <li>Incorrect analysis or data errors</li>
                     <li>Technical issues, downtime, or data loss</li>
                     <li>Third-party services (sportsbooks, odds providers) failures</li>
                     <li>Gambling addiction or related harm</li>
-                  </ul>
+                    </ul>
                   
                   <p className="text-yellow-800 font-bold mt-4">
                     MAXIMUM LIABILITY: Our total liability is limited to the amount you paid for your subscription (if any) in the last 12 months.
@@ -228,7 +228,7 @@ export default function TermsOfService() {
                   We strive for accuracy but cannot guarantee that:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>AI predictions are 100% correct (they're probabilistic, not certain)</li>
+                  <li>AI analysis is 100% correct (it's probabilistic and educational, not certain)</li>
                   <li>Odds from third-party APIs are real-time (slight delays possible)</li>
                   <li>Injury reports are instantly updated (check official team sources)</li>
                   <li>Weather data is perfectly accurate</li>
@@ -315,7 +315,7 @@ export default function TermsOfService() {
                 <ul className="list-disc pl-6 space-y-2 text-green-800">
                   <li>You are of legal gambling age in your jurisdiction</li>
                   <li>You understand that sports betting involves financial risk</li>
-                  <li>Our predictions are educational, not guaranteed to be accurate</li>
+                  <li>Our AI analysis is educational, not guaranteed to be accurate</li>
                   <li>You are solely responsible for your betting decisions</li>
                   <li>You will gamble responsibly and within your means</li>
                 </ul>

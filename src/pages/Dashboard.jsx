@@ -348,7 +348,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       console.log("✅ Match Analysis Result:", result);
 
       if (!result || !result.sport || !result.home_team || !result.away_team || !result.prediction) {
-        throw new Error("Invalid response - missing required match data or prediction");
+        throw new Error("Invalid response - missing required match data or analysis");
       }
 
       if (result.prediction?.reasoning?.includes("Unable to find scheduled match")) {
@@ -407,7 +407,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Analyze Any Match</h2>
-                <p className="text-gray-600">Get instant win probabilities and betting insights</p>
+                <p className="text-gray-600">Get instant AI analysis with win probabilities and betting insights</p>
               </div>
             </div>
             <SearchBar onSearch={handleSearch} isSearching={isSearching} />
@@ -464,12 +464,12 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
 
       {/* Footer Disclaimer */}
       <div className="max-w-7xl mx-auto px-6 pb-12 mt-12">
-        <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
-          <p className="text-sm text-gray-700">
-            <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> These predictions are for informational purposes only. 
-            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
-          </p>
-        </div>
+      <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
+        <p className="text-sm text-gray-700">
+          <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> This AI analysis is for informational and educational purposes only. 
+          Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
+        </p>
+      </div>
       </div>
     </div>
   );
