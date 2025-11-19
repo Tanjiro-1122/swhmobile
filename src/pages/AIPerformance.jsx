@@ -154,8 +154,8 @@ function AIPerformanceContent() {
                 <div className="space-y-4">
                   {calibrationData.calibration_bins.map((bin, idx) => {
                     const isWellCalibrated = Math.abs(
-                      parseFloat(bin.predicted_confidence_range.match(/\d+/g)[0]) + 
-                      parseFloat(bin.predicted_confidence_range.match(/\d+/g)[1])) / 2 - 
+                      ((parseFloat(bin.predicted_confidence_range.match(/\d+/g)[0]) + 
+                      parseFloat(bin.predicted_confidence_range.match(/\d+/g)[1])) / 2) - 
                       bin.actual_accuracy
                     ) < 15;
 
