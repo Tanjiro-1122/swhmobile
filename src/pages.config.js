@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import UserPreferences from './pages/UserPreferences';
 import MyInsights from './pages/MyInsights';
 import ContactUs from './pages/ContactUs';
+import AIPerformance from './pages/AIPerformance';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "UserPreferences": UserPreferences,
     "MyInsights": MyInsights,
     "ContactUs": ContactUs,
+    "AIPerformance": AIPerformance,
 }
 
 export const pagesConfig = {

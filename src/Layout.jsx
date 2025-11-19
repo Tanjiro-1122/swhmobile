@@ -26,7 +26,8 @@ import {
   Zap,
   Heart,
   Mail,
-  FileText
+  FileText,
+  Target
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -137,6 +138,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
     { name: "Feeds", icon: Sparkles, page: "BettingBriefs" },
+    { name: "AI Performance", icon: Target, page: "AIPerformance" },
     { name: "Pricing", icon: Crown, page: "Pricing" },
     { name: "Alerts", icon: Bell, page: "Alerts" },
     { name: "Power User", icon: Zap, page: "PowerUser" },
