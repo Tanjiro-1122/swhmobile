@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import ProbabilityMeter from "./ProbabilityMeter";
 import PlayerStatsCard from "./PlayerStatsCard";
 import BettingMarketsCard from "./BettingMarketsCard";
+import OutcomeRecorder from "../calibration/OutcomeRecorder";
 import {
   Tooltip,
   TooltipContent,
@@ -93,14 +94,16 @@ export default function MatchCard({ match, onDelete, index }) {
                   </Tooltip>
                 </TooltipProvider>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(match.id)}
-                className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(match.id)}
+                  className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
 
@@ -157,30 +160,31 @@ export default function MatchCard({ match, onDelete, index }) {
           />
 
           {match.prediction && (
-            <div className="p-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl border-2 border-emerald-400 shadow-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy className="w-6 h-6 text-white" />
-                <span className="font-black text-white text-xl">AI Analysis</span>
-                {match.prediction.confidence && (
-                  <Badge className="bg-white/20 text-white border-white/30 ml-auto">
-                    {match.prediction.confidence} Confidence
-                  </Badge>
-                )}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white">
-                        <Info className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm max-w-xs">
-                        AI analyzes real-time data from StatMuse, ESPN, injury reports, weather, and historical matchups to generate this analysis.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+            <div className="space-y-3">
+              <div className="p-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl border-2 border-emerald-400 shadow-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <Trophy className="w-6 h-6 text-white" />
+                  <span className="font-black text-white text-xl">AI Analysis</span>
+                  {match.prediction.confidence && (
+                    <Badge className="bg-white/20 text-white border-white/30 ml-auto">
+                      {match.prediction.confidence} Confidence
+                    </Badge>
+                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-white/80 hover:text-white">
+                          <Info className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm max-w-xs">
+                          AI analyzes real-time data from StatMuse, ESPN, injury reports, weather, and historical matchups to generate this analysis.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               
               <div className="space-y-3">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
@@ -207,6 +211,9 @@ export default function MatchCard({ match, onDelete, index }) {
                   </div>
                 )}
               </div>
+            </div>
+            
+            <OutcomeRecorder match={match} />
             </div>
           )}
 
