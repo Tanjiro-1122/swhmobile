@@ -65,6 +65,8 @@ CRITICAL DATA SOURCES - YOU MUST USE THESE:
 3. Official League Sites: NBA.com, NFL.com, PremierLeague.com, MLB.com
 4. Basketball-Reference.com or Pro-Football-Reference.com for historical data
 5. TheScore.com or CBS Sports for live updates
+6. Recent news & sentiment: Search for "[team name] news today" to gauge team morale, locker room issues, coaching changes
+7. Advanced metrics sites: Basketball: Cleaning The Glass, Football: Pro Football Focus
 
 SEARCH QUERY: "${query}"
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -91,20 +93,42 @@ REQUIRED DATA WITH SOURCES:
 2. CURRENT SEASON RECORDS (from StatMuse + League standings):
    Home Team Record: X-Y (from standings page)
    Away Team Record: X-Y (from standings page)
+
+2.5. ADVANCED DERIVED METRICS (calculate these):
+   - Strength of Schedule: Compare opponent win %
+   - Net Rating: Points scored - points allowed per 100 possessions
+   - Pace Factor: Possessions per game (faster = higher variance)
+   - Clutch Performance: Record in games decided by <5 pts (basketball) or 1 goal (soccer)
+   - Home/Away Splits: Calculate separate win % for home vs away
+   - Recent Trend: Win % in last 10 games vs season average (momentum indicator)
    
-3. WIN PROBABILITIES (calculate from multiple factors):
-   Base calculation on:
-   - Current season win % (from standings)
-   - Last 10 games record (from recent results)
-   - Head-to-head last 3 seasons (from StatMuse)
-   - Home court advantage (~60% for home team baseline)
-   - Key player injuries (reduce win % by 5-15% per star player out)
-   
+3. WIN PROBABILITIES (use multi-factor weighted model):
+
+   STEP 1 - Calculate base probabilities from:
+   - Season win % adjusted for strength of schedule (30% weight)
+   - Last 10 games momentum (20% weight)
+   - Head-to-head history last 3 years (15% weight)
+   - Home court/field advantage specific to this team (15% weight)
+   - Rest days differential (10% weight)
+   - Injury impact quantified (10% weight)
+
+   STEP 2 - Apply contextual adjustments:
+   - Back-to-back games: -4% to fatigued team
+   - Travel distance >1000 miles: -2% to away team
+   - Playoff implications: +3% to team needing win more
+   - Weather conditions (outdoor): adjust based on team's historical performance in similar conditions
+
+   STEP 3 - Normalize probabilities:
    Home Win: X%
    Away Win: Y%
-   Draw: Z% (ONLY for soccer/hockey)
-   
-   IMPORTANT: Must total exactly 100%
+   Draw: Z% (ONLY for soccer/hockey where draws are common)
+
+   CRITICAL: Must total exactly 100%
+
+   STEP 4 - Calculate prediction confidence:
+   High (80%+): Strong statistical signals, low variance, clear favorite
+   Medium (65-79%): Moderate signals, some uncertainty
+   Low (<65%): High variance, many unknowns, toss-up game
 
 4. DETAILED MATCH PREDICTION (REQUIRED):
    - Predicted Winner: "[Team Name]" (the team most likely to win)
@@ -114,13 +138,25 @@ REQUIRED DATA WITH SOURCES:
    - Reasoning: 3-4 sentences with SPECIFIC STATS:
      Example: "Lakers have won 8 of last 10 home games (80% win rate) averaging 118 PPG. Celtics are 2-8 on road trips averaging 105 PPG. Lakers star players are healthy while Celtics missing starting PG (team averages 8 fewer assists without him). Historical H2H shows Lakers won last 4 meetings by average margin of 9 points."
 
-5. KEY FACTORS (5-7 bullet points with STATISTICS):
-   Example format:
-   - "Home team won 12 of last 15 games (80% win rate since Jan 1)"
-   - "Away team averaging 118 PPG vs opponent allowing 112 PPG (6-point offensive advantage)"
-   - "Home team's star player averaging 32 PPG in last 5 games (career high)"
-   - "Weather forecast: 45°F with 15mph winds (affects passing game in NFL)"
-   - "Away team on 3rd road game in 4 days (fatigue factor)"
+5. KEY FACTORS (7-10 bullet points with STATISTICS & ADVANCED METRICS):
+   Prioritize factors with highest predictive value:
+
+   TIER 1 - High Impact Factors (include at least 3):
+   - Injury to star player: "[Player] out, team is 2-8 without him this season (-12% win rate)"
+   - Extreme rest differential: "Home team on 3 days rest, away team on back-to-back (-4% for away)"
+   - Historical dominance: "Home team won 15 of last 20 meetings (75% H2H win rate)"
+   - Stylistic mismatch: "Away team ranks #2 in pace (105 poss/game) vs home team #28 (95 poss/game) - favors away"
+
+   TIER 2 - Moderate Impact Factors (include 3-5):
+   - Recent momentum: "Home team won 8 of last 10 (80%) averaging +12 point margin"
+   - Home court edge: "Home team 18-5 at home (.783) vs 10-13 away (.435) - strong venue advantage"
+   - Defensive strength: "Away team allows 102 PPG (#3 in league) vs home team scores 115 PPG (#8) - defensive edge"
+   - Weather/environment: "45°F, 15mph winds - home team 6-2 in windy games, away team 3-7"
+
+   TIER 3 - Context Factors (include 2-3):
+   - Playoff positioning: "Home team fighting for playoff spot, away team eliminated - motivation gap"
+   - Coaching history: "Home coach 12-3 vs away coach in career matchups"
+   - Recent news: "Away team traded key player yesterday - potential chemistry disruption"
 
 6. KEY PLAYERS (3-4 per team) - SPORT-SPECIFIC STATS ONLY:
    
