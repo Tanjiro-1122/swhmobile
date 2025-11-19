@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SearchBar from "../components/sports/SearchBar";
 import MatchCard from "../components/sports/MatchCard";
-import TodaysBestBets from "../components/sports/TodaysBestBets";
+import TodaysFeaturedAnalysis from "../components/sports/TodaysFeaturedAnalysis";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import WelcomeTutorial from "../components/onboarding/WelcomeTutorial";
 import VIPDiscordCard from "../components/community/VIPDiscordCard";
@@ -389,9 +389,9 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
           </div>
         )}
 
-        {/* Today's Best Bets Section */}
+        {/* Today's Featured Analysis Section */}
         <div className="mb-12">
-          <TodaysBestBets 
+          <TodaysFeaturedAnalysis 
             onLookupUsed={recordLookup}
             canLookup={canLookup}
             onLimitReached={() => setShowLimitModal(true)}
