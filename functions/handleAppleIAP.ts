@@ -1,15 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 
-// Apple App Store Receipt Validation URLs
+// Apple Receipt Verification URLs
 const PRODUCTION_URL = 'https://buy.itunes.apple.com/verifyReceipt';
 const SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
 
-// Map Apple product IDs to Base44 subscription types
-// TODO: Replace these with your actual Apple product IDs from App Store Connect
-const PRODUCT_ID_MAPPING = {
+// Map Apple Product IDs to subscription types
+// WebToNative will create these product IDs in App Store Connect
+const PRODUCT_MAPPING = {
   'com.sportswagerhelper.premium.monthly': 'premium_monthly',
-  'com.sportswagerhelper.vip.annual': 'vip_annual',
-  // Add more mappings as needed
+  'com.sportswagerhelper.vip.annual': 'vip_annual'
 };
 
 Deno.serve(async (req) => {
@@ -23,7 +22,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { receiptData, transactionReceipt, isServerNotification } = body;
+    const { receipt, productId, isServerNotification } = body;
 
     // Handle server-to-server notifications from Apple
     if (isServerNotification) {
@@ -31,100 +30,101 @@ Deno.serve(async (req) => {
     }
 
     // Validate receipt with Apple
-    const validationResult = await validateReceipt(receiptData || transactionReceipt);
+    const validationResult = await validateReceipt(receipt);
 
     if (!validationResult.success) {
       return Response.json({ 
-        error: 'Receipt validation failed', 
+        error: 'Receipt validation failed',
         details: validationResult.error 
       }, { status: 400 });
     }
 
-    // Extract product ID from the receipt
-    const productId = validationResult.productId;
-    const subscriptionType = PRODUCT_ID_MAPPING[productId];
-
+    // Get subscription type from product ID
+    const subscriptionType = PRODUCT_MAPPING[validationResult.productId];
+    
     if (!subscriptionType) {
       return Response.json({ 
-        error: 'Unknown product ID', 
-        productId 
+        error: 'Unknown product ID',
+        productId: validationResult.productId 
       }, { status: 400 });
     }
 
-    // Update user's subscription type in Base44
+    // Update user subscription
     await base44.asServiceRole.entities.User.update(user.id, {
-      subscription_type: subscriptionType
+      subscription_type: subscriptionType,
+      apple_transaction_id: validationResult.transactionId,
+      apple_original_transaction_id: validationResult.originalTransactionId,
+      subscription_expires_at: validationResult.expiresDate
     });
 
     return Response.json({
       success: true,
       subscriptionType,
-      productId,
-      expiresDate: validationResult.expiresDate,
-      message: 'Subscription updated successfully'
+      expiresDate: validationResult.expiresDate
     });
 
   } catch (error) {
-    console.error('Apple IAP error:', error);
+    console.error('Apple IAP Error:', error);
     return Response.json({ 
-      error: error.message || 'Internal server error' 
+      error: error.message 
     }, { status: 500 });
   }
 });
 
+// Validate receipt with Apple servers
 async function validateReceipt(receiptData) {
   try {
-    // First try production
+    // Try production first
     let response = await fetch(PRODUCTION_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         'receipt-data': receiptData,
-        'password': Deno.env.get('APPLE_SHARED_SECRET') || '', // Optional: for auto-renewable subscriptions
         'exclude-old-transactions': true
       })
     });
 
-    let data = await response.json();
+    let result = await response.json();
 
     // If production returns sandbox receipt error, try sandbox
-    if (data.status === 21007) {
+    if (result.status === 21007) {
       response = await fetch(SANDBOX_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           'receipt-data': receiptData,
-          'password': Deno.env.get('APPLE_SHARED_SECRET') || '',
           'exclude-old-transactions': true
         })
       });
-      data = await response.json();
+      result = await response.json();
     }
 
-    // Status 0 means receipt is valid
-    if (data.status === 0) {
-      const latestReceipt = data.latest_receipt_info?.[0] || data.receipt?.in_app?.[0];
-      
-      if (!latestReceipt) {
-        return { success: false, error: 'No receipt info found' };
-      }
-
+    // Check if validation succeeded
+    if (result.status !== 0) {
       return {
-        success: true,
-        productId: latestReceipt.product_id,
-        transactionId: latestReceipt.transaction_id,
-        expiresDate: latestReceipt.expires_date_ms 
-          ? new Date(parseInt(latestReceipt.expires_date_ms)).toISOString() 
-          : null,
-        originalTransactionId: latestReceipt.original_transaction_id
+        success: false,
+        error: `Apple validation failed with status ${result.status}`
       };
     }
 
-    // Receipt validation failed
+    // Extract purchase info
+    const latestReceipt = result.latest_receipt_info?.[0] || result.receipt?.in_app?.[0];
+    
+    if (!latestReceipt) {
+      return {
+        success: false,
+        error: 'No purchase information found in receipt'
+      };
+    }
+
     return {
-      success: false,
-      error: `Apple validation failed with status ${data.status}`,
-      status: data.status
+      success: true,
+      productId: latestReceipt.product_id,
+      transactionId: latestReceipt.transaction_id,
+      originalTransactionId: latestReceipt.original_transaction_id,
+      expiresDate: latestReceipt.expires_date_ms 
+        ? new Date(parseInt(latestReceipt.expires_date_ms)).toISOString()
+        : null
     };
 
   } catch (error) {
@@ -135,64 +135,67 @@ async function validateReceipt(receiptData) {
   }
 }
 
+// Handle Apple server-to-server notifications
 async function handleServerNotification(base44, notificationData) {
   try {
-    // Apple sends notifications for subscription events
-    // notification_type can be: INITIAL_BUY, DID_RENEW, DID_CHANGE_RENEWAL_STATUS, CANCEL, etc.
-    
     const { notification_type, unified_receipt } = notificationData;
-    const latestReceipt = unified_receipt?.latest_receipt_info?.[0];
-
-    if (!latestReceipt) {
+    
+    if (!unified_receipt) {
       return Response.json({ error: 'No receipt in notification' }, { status: 400 });
     }
 
-    const productId = latestReceipt.product_id;
-    const subscriptionType = PRODUCT_ID_MAPPING[productId];
-    const originalTransactionId = latestReceipt.original_transaction_id;
-
-    // Find user by transaction ID (you'd need to store this during initial purchase)
-    // For now, we'll use the approach of storing transaction ID in user metadata
-    const users = await base44.asServiceRole.entities.User.list();
-    const user = users.find(u => u.apple_transaction_id === originalTransactionId);
-
-    if (!user) {
-      console.error('User not found for transaction:', originalTransactionId);
-      return Response.json({ error: 'User not found' }, { status: 404 });
+    const latestReceipt = unified_receipt.latest_receipt_info?.[0];
+    if (!latestReceipt) {
+      return Response.json({ error: 'No receipt info' }, { status: 400 });
     }
+
+    const originalTransactionId = latestReceipt.original_transaction_id;
+    const productId = latestReceipt.product_id;
+    const expiresDate = latestReceipt.expires_date_ms 
+      ? new Date(parseInt(latestReceipt.expires_date_ms))
+      : null;
+
+    // Find user by original transaction ID
+    const users = await base44.asServiceRole.entities.User.filter({
+      apple_original_transaction_id: originalTransactionId
+    });
+
+    if (users.length === 0) {
+      console.log('User not found for transaction:', originalTransactionId);
+      return Response.json({ received: true });
+    }
+
+    const user = users[0];
+    const subscriptionType = PRODUCT_MAPPING[productId];
 
     // Handle different notification types
     switch (notification_type) {
       case 'INITIAL_BUY':
       case 'DID_RENEW':
-      case 'INTERACTIVE_RENEWAL':
-        // Activate subscription
+        // Activate/renew subscription
         await base44.asServiceRole.entities.User.update(user.id, {
-          subscription_type: subscriptionType
+          subscription_type: subscriptionType,
+          subscription_expires_at: expiresDate?.toISOString()
         });
         break;
 
       case 'CANCEL':
-      case 'DID_CHANGE_RENEWAL_PREF':
-        // Check if subscription is still active
-        const expiresDate = new Date(parseInt(latestReceipt.expires_date_ms));
-        if (expiresDate < new Date()) {
-          // Subscription expired, downgrade to free
+      case 'DID_FAIL_TO_RENEW':
+      case 'REFUND':
+        // Check if subscription is expired
+        if (expiresDate && expiresDate < new Date()) {
           await base44.asServiceRole.entities.User.update(user.id, {
-            subscription_type: 'free'
+            subscription_type: 'free',
+            subscription_expires_at: null
           });
         }
         break;
 
-      case 'REFUND':
-        // Revoke subscription immediately
-        await base44.asServiceRole.entities.User.update(user.id, {
-          subscription_type: 'free'
-        });
-        break;
+      default:
+        console.log('Unhandled notification type:', notification_type);
     }
 
-    return Response.json({ success: true, notification_type });
+    return Response.json({ received: true });
 
   } catch (error) {
     console.error('Server notification error:', error);
