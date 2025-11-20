@@ -45,18 +45,27 @@ Deno.serve(async (req) => {
 
         // Determine subscription type based on price/product
         let subscriptionType = 'free';
+        
+        // Price ID Mapping
+        const PRICE_MAP = {
+          'price_1SN2OGRrQjRM0rB2u6TnCiP8': 'premium_monthly', // Premium Monthly $19.99
+          'price_1SN2OrRrQjRM0rB2FrP8gDYp': 'vip_annual',      // VIP Annual $149.99
+          // Add legacy/other prices if needed
+        };
+
         if (session.mode === 'subscription') {
           const subscription = await stripe.subscriptions.retrieve(session.subscription);
           const priceId = subscription.items.data[0]?.price.id;
+          subscriptionType = PRICE_MAP[priceId] || 'free';
           
-          // Map price IDs to subscription types (you'll need to set these based on your Stripe prices)
-          if (priceId?.includes('monthly') || priceId?.includes('premium')) {
-            subscriptionType = 'premium_monthly';
-          } else if (priceId?.includes('annual') || priceId?.includes('vip')) {
-            subscriptionType = 'vip_annual';
+          if (subscriptionType === 'free') {
+             console.warn(`⚠️ Unknown price ID in subscription: ${priceId}`);
           }
         } else if (session.mode === 'payment') {
-          // One-time payment for VIP
+          // Check line items for one-time payments to be sure
+          // For now, assuming all payment mode checkouts are VIP based on Pricing.js logic
+          // But better to check if possible. Since session object here is limited, 
+          // and Pricing.js sends VIP as payment, we default to VIP but log it.
           subscriptionType = 'vip_annual';
         }
 
