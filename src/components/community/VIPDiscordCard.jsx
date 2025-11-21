@@ -6,7 +6,7 @@ import { Crown, MessageSquare, Users, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function VIPDiscordCard() {
-  const discordInviteUrl = "https://discord.gg/2TswBjam";
+  const discordInviteUrl = "https://discord.gg/v6ZVC8MR";
 
   return (
     <motion.div
