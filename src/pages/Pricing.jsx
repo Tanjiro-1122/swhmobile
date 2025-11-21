@@ -43,28 +43,71 @@ export default function Pricing() {
     setIsProcessing(true);
 
     try {
-      let priceId, mode;
-      
-      // Map plans to Stripe price IDs from your product catalog
-      if (plan === 'vip') {
-        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99
-        mode = 'payment'; // One-time payment
-      } else if (plan === 'premium') {
-        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
-        mode = 'subscription'; // Recurring subscription
-      }
+      // Check if running in mobile app with IAP support
+      if (typeof window !== 'undefined' && window.WTN && window.WTN.inAppPurchase) {
+        // Use Apple In-App Purchase for mobile
+        let productId;
+        
+        if (plan === 'premium') {
+          productId = 'com.sportswagerhelper.premium.monthly';
+        } else if (plan === 'vip') {
+          productId = 'com.sportswagerhelper.vip.annual';
+        }
 
-      // Call your backend function to create Stripe checkout session
-      const response = await base44.functions.invoke('createCheckoutSession', {
-        priceId,
-        mode
-      });
+        window.WTN.inAppPurchase({
+          productId: productId,
+          callback: async function(data) {
+            if (data.isSuccess && data.receiptData) {
+              try {
+                // Send receipt to backend for verification
+                const response = await base44.functions.invoke('handleAppleIAP', {
+                  receipt: data.receiptData,
+                  productId: productId
+                });
 
-      if (response.data?.url) {
-        // Redirect to Stripe checkout
-        window.location.href = response.data.url;
+                if (response.data.success) {
+                  alert('Subscription successful! Your account has been upgraded.');
+                  window.location.href = '/Profile';
+                } else {
+                  alert('Receipt verification failed. Please contact support.');
+                }
+              } catch (error) {
+                console.error('IAP verification error:', error);
+                alert('Failed to verify purchase. Please contact support.');
+              }
+            } else {
+              alert('Purchase was not completed.');
+            }
+            setIsProcessing(false);
+          }
+        });
       } else {
-        throw new Error('Failed to create checkout session');
+        // Use Stripe for web
+        let priceId, mode;
+        
+        // Map plans to Stripe price IDs from your product catalog
+        if (plan === 'vip') {
+          priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99
+          mode = 'payment'; // One-time payment
+        } else if (plan === 'premium') {
+          priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
+          mode = 'subscription'; // Recurring subscription
+        }
+
+        // Call your backend function to create Stripe checkout session
+        const response = await base44.functions.invoke('createCheckoutSession', {
+          priceId,
+          mode
+        });
+
+        if (response.data?.url) {
+          // Redirect to Stripe checkout
+          window.location.href = response.data.url;
+        } else {
+          throw new Error('Failed to create checkout session');
+        }
+        
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
