@@ -312,7 +312,7 @@ export default function Layout({ children, currentPageName }) {
                   </a>
                   {(isAuthenticated && currentUser && (currentUser.subscription_type === 'vip_annual' || currentUser.subscription_type === 'legacy')) && (
                     <a
-                      href="https://discord.gg/2TswBjam"
+                      href="https://discord.gg/v6ZVC8MR"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-xs lg:text-sm text-gray-600 hover:text-purple-500 transition-colors"
