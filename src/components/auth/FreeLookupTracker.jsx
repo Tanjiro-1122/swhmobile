@@ -109,8 +109,9 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
+          className="modal-ipad px-4"
         >
-          <Card className="max-w-lg w-full border-2 border-red-500 shadow-2xl shadow-red-500/20">
+          <Card className="max-w-lg w-full border-2 border-red-500 shadow-2xl shadow-red-500/20 dark:bg-slate-900 dark:border-red-600">
             <CardHeader className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white p-8">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">

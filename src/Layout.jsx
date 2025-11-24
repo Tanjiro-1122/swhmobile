@@ -46,21 +46,44 @@ export default function Layout({ children, currentPageName }) {
     };
     checkAuth();
 
+    // Enhanced viewport for iOS/iPadOS
     const viewport = document.querySelector('meta[name="viewport"]');
     if (!viewport) {
       const meta = document.createElement('meta');
       meta.name = 'viewport';
-      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
       document.head.appendChild(meta);
     }
 
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (!themeColor) {
-      const meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      meta.content = '#1e293b';
-      document.head.appendChild(meta);
-    }
+    // Apple-specific meta tags
+    const appleCapable = document.createElement('meta');
+    appleCapable.name = 'apple-mobile-web-app-capable';
+    appleCapable.content = 'yes';
+    document.head.appendChild(appleCapable);
+
+    const appleStatus = document.createElement('meta');
+    appleStatus.name = 'apple-mobile-web-app-status-bar-style';
+    appleStatus.content = 'black-translucent';
+    document.head.appendChild(appleStatus);
+
+    // Dark mode detection and theme color
+    const updateThemeColor = () => {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const themeColor = document.querySelector('meta[name="theme-color"]');
+      if (themeColor) {
+        themeColor.content = isDark ? '#0f172a' : '#1e293b';
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = isDark ? '#0f172a' : '#1e293b';
+        document.head.appendChild(meta);
+      }
+      document.documentElement.classList.toggle('dark', isDark);
+    };
+
+    updateThemeColor();
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    darkModeQuery.addEventListener('change', updateThemeColor)
 
     const jqueryScript = document.createElement("script");
     jqueryScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
@@ -90,8 +113,11 @@ export default function Layout({ children, currentPageName }) {
       document.head.removeChild(firebaseScript);
       document.head.removeChild(web2appScript);
       document.head.removeChild(manifestLink);
+      document.head.removeChild(appleCapable);
+      document.head.removeChild(appleStatus);
+      darkModeQuery.removeEventListener('change', updateThemeColor);
     };
-  }, []);
+    }, []);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -155,11 +181,11 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
       <AgeGate />
       <DomainChangeBanner />
       
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-slate-700 shadow-lg">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 dark:bg-slate-950 border-b border-slate-700 dark:border-slate-800 shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 lg:px-6">
           <div className="flex items-center gap-3">
             <Button
@@ -236,7 +262,7 @@ export default function Layout({ children, currentPageName }) {
 
       <div className="flex pt-16 lg:pt-20">
         <aside
-          className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-white border-r border-gray-200 overflow-y-auto transition-transform duration-300 z-40 shadow-xl ${
+          className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 overflow-y-auto transition-transform duration-300 z-40 shadow-xl ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -328,13 +354,13 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </aside>
 
-        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 pb-20">
+        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 dark:bg-slate-900 pb-20 transition-colors duration-200">
           <div className="container mx-auto px-6 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 max-w-7xl safe-area-inset">
             {children}
           </div>
           
           {/* Footer */}
-          <footer className="bg-white border-t-2 border-gray-200 py-6 mt-12">
+          <footer className="bg-white dark:bg-slate-900 border-t-2 border-gray-200 dark:border-slate-700 py-6 mt-12">
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid md:grid-cols-3 gap-6 mb-6">
                 <div>
