@@ -21,6 +21,7 @@ import UserPreferences from './pages/UserPreferences';
 import MyInsights from './pages/MyInsights';
 import ContactUs from './pages/ContactUs';
 import AIPerformance from './pages/AIPerformance';
+import AIParlayBuilder from './pages/AIParlayBuilder';
 import __Layout from './Layout.jsx';
 
 
@@ -48,6 +49,7 @@ export const PAGES = {
     "MyInsights": MyInsights,
     "ContactUs": ContactUs,
     "AIPerformance": AIPerformance,
+    "AIParlayBuilder": AIParlayBuilder,
 }
 
 export const pagesConfig = {

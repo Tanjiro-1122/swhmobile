@@ -134,6 +134,7 @@ export default function Layout({ children, currentPageName }) {
   const menuItems = [
     { name: "Dashboard", icon: Home, page: "Dashboard" },
     { name: "My Insights", icon: Sparkles, page: "MyInsights" },
+    { name: "AI Parlay Builder", icon: Zap, page: "AIParlayBuilder" },
     { name: "Player Stats", icon: User, page: "PlayerStats" },
     { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
     { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
