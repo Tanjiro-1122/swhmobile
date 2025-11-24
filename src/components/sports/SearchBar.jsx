@@ -27,22 +27,22 @@ export default function SearchBar({ onSearch, isSearching }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="relative">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for any match (e.g., 'Lakers vs Celtics NBA' or 'Chelsea vs Arsenal')"
             disabled={isSearching}
-            className="w-full h-14 pl-12 pr-24 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
+            className="w-full h-14 pl-12 pr-10 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
           />
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           {query && !isSearching && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-20 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
@@ -51,7 +51,7 @@ export default function SearchBar({ onSearch, isSearching }) {
         <Button
           type="submit"
           disabled={!query.trim() || isSearching}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 h-10 disabled:opacity-50"
+          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 h-14 disabled:opacity-50 flex items-center justify-center whitespace-nowrap"
         >
           {isSearching ? (
             <div className="flex items-center gap-2">

@@ -417,16 +417,16 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="w-full">
+      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* VIP Discord Card */}
         {isVIPorLegacy && (
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <VIPDiscordCard />
           </div>
         )}
 
         {/* Today's Featured Analysis Section */}
-        <div className="mb-12">
+        <div className="mb-8 sm:mb-12">
           <TodaysFeaturedAnalysis 
             onLookupUsed={recordLookup}
             canLookup={canLookup}
@@ -435,15 +435,15 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         </div>
 
         {/* Search Section */}
-        <div className="mb-12">
-          <div className="bg-white border-2 border-gray-200 rounded-3xl p-8 shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
+        <div className="mb-8 sm:mb-12">
+          <div className="bg-white border-2 border-gray-200 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Analyze Any Match</h2>
-                <p className="text-gray-600">Get instant AI analysis with win probabilities and betting insights</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Analyze Any Match</h2>
+                <p className="text-sm sm:text-base text-gray-600">Get instant AI analysis with win probabilities and betting insights</p>
               </div>
             </div>
             <SearchBar onSearch={handleSearch} isSearching={isSearching} />
@@ -499,7 +499,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       </div>
 
       {/* Footer Disclaimer */}
-      <div className="pb-12 mt-12">
+      <div className="pb-12 mt-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
           <p className="text-sm text-gray-700">
             <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> This AI analysis is for informational and educational purposes only. 
