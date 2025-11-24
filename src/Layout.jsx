@@ -329,7 +329,9 @@ export default function Layout({ children, currentPageName }) {
         </aside>
 
         <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 pb-20">
-          {children}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 max-w-7xl">
+            {children}
+          </div>
           
           {/* Footer */}
           <footer className="bg-white border-t-2 border-gray-200 py-6 mt-12">
