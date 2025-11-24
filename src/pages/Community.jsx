@@ -123,7 +123,7 @@ function CommunityContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto py-12">
+        <div className="max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
               <Users className="w-7 h-7" />
@@ -136,7 +136,7 @@ function CommunityContent() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto py-8 space-y-8">
+      <div className="max-w-6xl mx-auto py-8 space-y-8 px-4 sm:px-6 lg:px-8">
         {/* Header - Share a Pick button */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
