@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -121,10 +120,10 @@ function CommunityContent() {
   const redditUrl = "https://www.reddit.com/r/sportswagerhelper/";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto py-12">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
               <Users className="w-7 h-7" />
@@ -137,7 +136,7 @@ function CommunityContent() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto py-8 space-y-8">
         {/* Header - Share a Pick button */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

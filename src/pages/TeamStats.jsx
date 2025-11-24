@@ -277,7 +277,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
