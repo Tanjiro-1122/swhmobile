@@ -408,7 +408,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       <WelcomeTutorial />
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
@@ -417,7 +417,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         {/* VIP Discord Card */}
         {isVIPorLegacy && (
           <div className="mb-12">
@@ -499,13 +499,13 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       </div>
 
       {/* Footer Disclaimer */}
-      <div className="max-w-7xl mx-auto px-6 pb-12 mt-12">
-      <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
-        <p className="text-sm text-gray-700">
-          <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> This AI analysis is for informational and educational purposes only. 
-          Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
-        </p>
-      </div>
+      <div className="pb-12 mt-12">
+        <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
+          <p className="text-sm text-gray-700">
+            <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> This AI analysis is for informational and educational purposes only. 
+            Always gamble responsibly and never bet more than you can afford to lose. Statistics are sourced from StatMuse, ESPN, and official league data.
+          </p>
+        </div>
       </div>
     </div>
   );
