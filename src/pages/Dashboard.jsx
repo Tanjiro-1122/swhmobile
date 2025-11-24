@@ -417,7 +417,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="px-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* VIP Discord Card */}
         {isVIPorLegacy && (
           <div className="mb-8 sm:mb-12">
@@ -499,7 +499,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
       </div>
 
       {/* Footer Disclaimer */}
-      <div className="pb-12 mt-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="pb-12 mt-12 px-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
           <p className="text-sm text-gray-700">
             <strong className="font-bold text-gray-900">⚠️ Responsible Gambling:</strong> This AI analysis is for informational and educational purposes only. 

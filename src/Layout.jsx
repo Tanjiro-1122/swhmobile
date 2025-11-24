@@ -165,7 +165,7 @@ export default function Layout({ children, currentPageName }) {
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-white hover:bg-slate-800 flex-shrink-0"
+              className="lg:hidden text-white hover:bg-slate-800 flex-shrink-0 min-w-[44px] min-h-[44px]"
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </Button>
@@ -214,7 +214,7 @@ export default function Layout({ children, currentPageName }) {
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 hidden sm:flex"
+                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 hidden sm:flex min-w-[44px] min-h-[44px]"
                   title="Log out"
                 >
                   <LogOut className="w-5 h-5" />
@@ -223,8 +223,7 @@ export default function Layout({ children, currentPageName }) {
             ) : (
               <Button
                 onClick={handleLogin}
-                size="sm"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-3 py-2 lg:px-6 text-xs lg:text-base"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 text-base min-h-[44px] rounded-[16px]"
               >
                 <LogIn className="w-4 h-4 mr-1 lg:mr-2" />
                 Sign In
@@ -248,14 +247,14 @@ export default function Layout({ children, currentPageName }) {
                 <button
                   key={item.page}
                   onClick={() => handleMenuClick(item.page)}
-                  className={`w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all text-left ${
+                  className={`w-full flex items-center gap-3 px-4 lg:px-4 py-3 lg:py-3 rounded-[16px] transition-all text-left min-h-[44px] ${
                     isActive
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                       : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
-                  <span className="font-medium text-sm lg:text-base">{item.name}</span>
+                  <span className="font-medium text-base lg:text-base">{item.name}</span>
                 </button>
               );
             })}
@@ -263,10 +262,10 @@ export default function Layout({ children, currentPageName }) {
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all text-left lg:hidden mt-4"
+                className="w-full flex items-center gap-3 px-4 lg:px-4 py-3 lg:py-3 rounded-[16px] text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all text-left lg:hidden mt-4 min-h-[44px]"
               >
                 <LogOut className="w-4 h-4 flex-shrink-0" />
-                <span className="font-medium text-sm">Log Out</span>
+                <span className="font-medium text-base">Log Out</span>
               </button>
             )}
 
@@ -329,7 +328,7 @@ export default function Layout({ children, currentPageName }) {
         </aside>
 
         <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 pb-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 max-w-7xl">
+          <div className="container mx-auto px-6 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 max-w-7xl safe-area-inset">
             {children}
           </div>
           

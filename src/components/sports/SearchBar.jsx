@@ -35,7 +35,7 @@ export default function SearchBar({ onSearch, isSearching }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for any match (e.g., 'Lakers vs Celtics NBA' or 'Chelsea vs Arsenal')"
             disabled={isSearching}
-            className="w-full h-14 pl-12 pr-10 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
+            className="w-full min-h-[56px] pl-12 pr-10 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-[16px] shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
           />
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           {query && !isSearching && (
@@ -51,7 +51,7 @@ export default function SearchBar({ onSearch, isSearching }) {
         <Button
           type="submit"
           disabled={!query.trim() || isSearching}
-          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 h-14 disabled:opacity-50 flex items-center justify-center whitespace-nowrap"
+          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 min-h-[56px] text-base disabled:opacity-50 flex items-center justify-center whitespace-nowrap rounded-[16px]"
         >
           {isSearching ? (
             <div className="flex items-center gap-2">
@@ -78,7 +78,7 @@ export default function SearchBar({ onSearch, isSearching }) {
               key={index}
               onClick={() => setQuery(search)}
               disabled={isSearching}
-              className="px-4 py-2 bg-white border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="px-4 py-3 bg-white border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-[16px] text-base font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm min-h-[44px]"
             >
               {search}
             </button>
