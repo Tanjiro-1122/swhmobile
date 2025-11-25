@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
   Sparkles, Zap, MessageSquare, User, Crown, 
-  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText
+  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
