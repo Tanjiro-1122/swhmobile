@@ -215,6 +215,19 @@ export default function Dashboard() {
                 </div>
               </div>
               {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={async () => {
+                  localStorage.clear();
+                  await base44.auth.logout();
+                  window.location.href = createPageUrl("Dashboard");
+                }}
+                className="ml-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
             </motion.div>
           )}
 
