@@ -125,18 +125,15 @@ export default function Layout({ children, currentPageName }) {
 
   // Stadium background component for consistent styling
   const StadiumBackground = () => (
-    <div className="fixed inset-0 z-0 bg-gradient-to-b from-green-900 via-green-800 to-green-900">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-4 border-white rounded-full" />
-        <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white transform -translate-x-1/2" />
-        <div className="absolute top-1/4 left-0 right-0 h-1 bg-white" />
-        <div className="absolute top-3/4 left-0 right-0 h-1 bg-white" />
-        <div className="absolute inset-8 border-4 border-white rounded-lg" />
-      </div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)`
+    <div className="fixed inset-0 z-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Subtle gradient orbs */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl" />
+      {/* Grid pattern */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px'
       }} />
     </div>
   );
@@ -162,7 +159,7 @@ export default function Layout({ children, currentPageName }) {
         <AgeGate />
 
         {/* Header */}
-        <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
+        <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-xl">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
@@ -235,17 +232,6 @@ export default function Layout({ children, currentPageName }) {
 
       </div>
 
-      {/* Footer with Dashboard Button - Outside the relative container */}
-      <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-black border-t-2 border-emerald-500 p-4 shadow-2xl" style={{ position: 'fixed', bottom: 0 }}>
-        <div className="flex justify-center">
-          <Link to={createPageUrl("Dashboard")}>
-            <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold gap-2 shadow-lg px-8 py-3 text-lg min-h-[50px]">
-              <Home className="w-5 h-5" />
-              Dashboard
-            </Button>
-          </Link>
-        </div>
       </div>
-    </div>
-  );
+      );
 }
