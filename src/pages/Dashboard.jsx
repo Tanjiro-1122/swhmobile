@@ -228,7 +228,7 @@ export default function Dashboard() {
                 onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
                 className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold px-8 py-6 text-lg rounded-full shadow-lg shadow-emerald-500/30"
               >
-                SIGN IN TO PLAY
+                SIGN IN WITH EMAIL
               </Button>
             </motion.div>
           )}
