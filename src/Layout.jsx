@@ -226,6 +226,7 @@ export default function Layout({ children, currentPageName }) {
                 Sign In
               </Button>
             )}
+            </div>
           </div>
         </div>
 
