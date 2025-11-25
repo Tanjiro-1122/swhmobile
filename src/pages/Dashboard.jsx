@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import DashboardPredictionsWidget from "@/components/predictions/DashboardPredictionsWidget";
+
 
 // Sport-themed icons as SVG components
 const FootballIcon = () => (
@@ -314,15 +314,7 @@ export default function Dashboard() {
             );
           })}
 
-          {/* AI Prediction Widget */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
-            className="sm:col-span-2 lg:col-span-3"
-          >
-            <DashboardPredictionsWidget />
-          </motion.div>
+
 
           {/* Admin Panel - Only for admins */}
           {isAdmin && (
