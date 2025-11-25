@@ -216,7 +216,7 @@ export default function Layout({ children, currentPageName }) {
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
+                  Sign In with Email
                 </Button>
               )}
             </div>
