@@ -61,6 +61,7 @@ function SavedResultsContent() {
     },
     enabled: !!currentUser?.email,
     initialData: [],
+    refetchOnWindowFocus: true,
   });
 
   // Fetch player stats
@@ -76,6 +77,7 @@ function SavedResultsContent() {
     },
     enabled: !!currentUser?.email,
     initialData: [],
+    refetchOnWindowFocus: true,
   });
 
   // Fetch team stats
@@ -91,6 +93,7 @@ function SavedResultsContent() {
     },
     enabled: !!currentUser?.email,
     initialData: [],
+    refetchOnWindowFocus: true,
   });
 
   // Helper function to get date range filter

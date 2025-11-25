@@ -128,6 +128,7 @@ export default function Layout({ children, currentPageName }) {
         return null;
       }
     },
+    refetchOnWindowFocus: true,
   });
 
   const isLegacy = currentUser?.subscription_type === 'legacy';

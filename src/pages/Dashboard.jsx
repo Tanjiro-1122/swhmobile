@@ -40,6 +40,7 @@ export default function Dashboard() {
         return null;
       }
     },
+    refetchOnWindowFocus: true,
   });
 
   const isVIPorLegacy = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
