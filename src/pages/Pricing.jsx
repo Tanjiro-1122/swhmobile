@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -560,13 +561,14 @@ export default function Pricing() {
         </Card>
 
         {/* Disclaimer */}
-        <div className="mt-12 p-6 bg-amber-50 border-2 border-amber-200 rounded-xl">
+        <div className="mt-12 p-6 bg-amber-50 border-2 border-amber-200 rounded-xl mb-24">
           <p className="text-sm text-amber-900 text-center">
             <strong>⚠️ Responsible Gambling:</strong> Must be 18+ (21+ where required). Predictions are for informational purposes only. 
             Never bet more than you can afford to lose. National Gambling Helpline: 1-800-522-4700
           </p>
         </div>
       </div>
+      <FloatingDashboardButton />
     </div>
   );
 }

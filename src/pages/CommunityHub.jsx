@@ -6,6 +6,7 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
 import LearningCenterContent from "@/components/hub/LearningCenterContent";
 import CommunityContent from "@/components/hub/CommunityContent";
+import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 function CommunityHubPage() {
   const [activeTab, setActiveTab] = useState("feeds");
@@ -61,6 +62,7 @@ function CommunityHubPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <FloatingDashboardButton />
     </div>
   );
 }
