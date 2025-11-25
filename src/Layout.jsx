@@ -147,23 +147,25 @@ export default function Layout({ children, currentPageName }) {
   // Dashboard has its own full layout with header built in
   if (currentPageName === "Dashboard") {
     return (
-      <div className="min-h-screen">
-        <AgeGate />
+      <div className="min-h-screen flex flex-col">
         <DomainChangeBanner />
-        {children}
+        <AgeGate />
+        <div className="flex-1">
+          {children}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative flex flex-col">
       <StadiumBackground />
-      <div className="relative z-10">
-        <AgeGate />
+      <div className="relative z-10 flex flex-col min-h-screen">
         <DomainChangeBanner />
-        
+        <AgeGate />
+
         {/* Header */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
+        <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6">
             <div className="flex items-center gap-4">
               {/* Back/Home Button */}

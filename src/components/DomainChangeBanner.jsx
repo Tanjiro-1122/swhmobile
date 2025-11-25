@@ -38,7 +38,7 @@ export default function DomainChangeBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
           transition={{ duration: 0.3 }}
-          className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg"
+          className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg"
         >
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1">
