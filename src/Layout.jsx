@@ -233,17 +233,18 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </main>
 
-        {/* Footer with Dashboard Button */}
-        <footer className="fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-t border-white/10 p-4">
-          <div className="flex justify-center">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold gap-2 shadow-lg px-8 py-3 text-lg">
-                <Home className="w-5 h-5" />
-                Dashboard
-              </Button>
-            </Link>
-          </div>
-        </footer>
+      </div>
+
+      {/* Footer with Dashboard Button - Outside the relative container */}
+      <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-black border-t-2 border-emerald-500 p-4 shadow-2xl" style={{ position: 'fixed', bottom: 0 }}>
+        <div className="flex justify-center">
+          <Link to={createPageUrl("Dashboard")}>
+            <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold gap-2 shadow-lg px-8 py-3 text-lg min-h-[50px]">
+              <Home className="w-5 h-5" />
+              Dashboard
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
