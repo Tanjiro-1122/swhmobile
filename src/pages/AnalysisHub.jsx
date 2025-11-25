@@ -11,7 +11,7 @@ import AIPerformanceContent from "@/components/hub/AIPerformanceContent";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 
 function AnalysisHubContent() {
-  const [activeTab, setActiveTab] = useState("insights");
+  const [activeTab, setActiveTab] = useState("predictions");
 
   return (
     <div className="min-h-screen">
