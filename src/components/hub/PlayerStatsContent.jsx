@@ -144,29 +144,29 @@ If no next game scheduled, say TBD.`,
         <div className="space-y-6 animate-fade-in">
           {/* Skeleton loader while searching */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl border-2 border-purple-200 overflow-hidden shadow-xl">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-white/20 animate-pulse" />
-                <div className="flex-1 space-y-3">
-                  <div className="h-8 bg-white/20 rounded-lg w-2/3 animate-pulse" />
-                  <div className="flex gap-2">
-                    <div className="h-6 bg-white/20 rounded-full w-20 animate-pulse" />
-                    <div className="h-6 bg-white/20 rounded-full w-16 animate-pulse" />
-                    <div className="h-6 bg-white/20 rounded-full w-24 animate-pulse" />
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-white/20 animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
+                  <div className="h-6 sm:h-8 bg-white/20 rounded-lg w-2/3 animate-pulse" />
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-5 sm:h-6 bg-white/20 rounded-full w-16 sm:w-20 animate-pulse" />
+                    <div className="h-5 sm:h-6 bg-white/20 rounded-full w-14 sm:w-16 animate-pulse" />
+                    <div className="h-5 sm:h-6 bg-white/20 rounded-full w-20 sm:w-24 animate-pulse" />
                   </div>
                 </div>
               </div>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-4 gap-3">
+            <div className="p-4 sm:p-6 space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-purple-50 rounded-lg p-3 space-y-2">
-                    <div className="h-8 bg-purple-200 rounded animate-pulse" />
-                    <div className="h-4 bg-purple-100 rounded w-1/2 animate-pulse" />
+                  <div key={i} className="bg-purple-50 rounded-lg p-2 sm:p-3 space-y-2">
+                    <div className="h-6 sm:h-8 bg-purple-200 rounded animate-pulse" />
+                    <div className="h-3 sm:h-4 bg-purple-100 rounded w-1/2 animate-pulse" />
                   </div>
                 ))}
               </div>
-              <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />
+              <div className="h-32 sm:h-48 bg-gray-100 rounded-lg animate-pulse" />
             </div>
           </div>
           

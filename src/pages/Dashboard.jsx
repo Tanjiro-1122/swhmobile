@@ -235,7 +235,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Main Menu Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 px-1">
           {menuItems.map((item, index) => {
             const isHovered = hoveredItem === item.id;
             const SportIcon = item.SportIcon;
@@ -263,41 +263,43 @@ export default function Dashboard() {
                       isHovered ? 'translate-x-full' : '-translate-x-full'
                     }`} />
 
-                    <CardContent className="relative p-6">
-                      {/* Tag */}
-                      {item.tag && (
-                        <div className={`absolute top-3 right-3 ${item.tagColor} text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>
-                          {item.tag}
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-4">
-                        {/* Sport Icon */}
-                        <div className={`w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center transition-transform duration-300 border border-white/20 ${
-                          isHovered ? 'scale-110 rotate-6' : ''
-                        }`}>
-                          <SportIcon />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-black text-white mb-0.5 tracking-wide">
-                            {item.title}
-                          </h3>
-                          <div className="text-white/80 font-semibold text-sm">
-                            {item.subtitle}
+                    <CardContent className="relative p-4 sm:p-6">
+                        {/* Tag */}
+                        {item.tag && (
+                          <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 ${item.tagColor} text-white text-[9px] sm:text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>
+                            {item.tag}
                           </div>
-                          <p className="text-white/50 text-xs mt-1 truncate">
-                            {item.description}
-                          </p>
-                        </div>
+                        )}
 
-                        {/* Arrow */}
-                        <ChevronRight className={`w-6 h-6 text-white/40 transition-transform duration-300 flex-shrink-0 ${
-                          isHovered ? 'translate-x-1 text-white/70' : ''
-                        }`} />
-                      </div>
-                    </CardContent>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          {/* Sport Icon */}
+                          <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center transition-transform duration-300 border border-white/20 flex-shrink-0 ${
+                            isHovered ? 'scale-110 rotate-6' : ''
+                          }`}>
+                            <div className="w-8 h-8 sm:w-12 sm:h-12">
+                              <SportIcon />
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <h3 className="text-base sm:text-xl font-black text-white mb-0.5 tracking-wide truncate">
+                              {item.title}
+                            </h3>
+                            <div className="text-white/80 font-semibold text-xs sm:text-sm truncate">
+                              {item.subtitle}
+                            </div>
+                            <p className="text-white/50 text-[10px] sm:text-xs mt-1 truncate">
+                              {item.description}
+                            </p>
+                          </div>
+
+                          {/* Arrow */}
+                          <ChevronRight className={`w-5 h-5 sm:w-6 sm:h-6 text-white/40 transition-transform duration-300 flex-shrink-0 ${
+                            isHovered ? 'translate-x-1 text-white/70' : ''
+                          }`} />
+                        </div>
+                      </CardContent>
                   </Card>
                 </Link>
               </motion.div>

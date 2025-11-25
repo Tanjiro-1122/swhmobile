@@ -28,62 +28,55 @@ function BettingHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 mb-8 bg-black/40 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white/10 h-auto">
             <TabsTrigger 
               value="tracker" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <ClipboardList className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Bet Tracker</span>
-              <span className="lg:hidden">Track</span>
+              <ClipboardList className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Track</span>
             </TabsTrigger>
             <TabsTrigger 
               value="parlay" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <Zap className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Parlay Builder</span>
-              <span className="lg:hidden">Parlay</span>
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Parlay</span>
             </TabsTrigger>
             <TabsTrigger 
               value="odds" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Live Odds</span>
-              <span className="lg:hidden">Odds</span>
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Odds</span>
             </TabsTrigger>
             <TabsTrigger 
               value="alerts" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <Bell className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Alerts</span>
-              <span className="lg:hidden">Alerts</span>
+              <Bell className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Alerts</span>
             </TabsTrigger>
             <TabsTrigger 
               value="calculator" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <Calculator className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Calculator</span>
-              <span className="lg:hidden">Calc</span>
+              <Calculator className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Calc</span>
             </TabsTrigger>
             <TabsTrigger 
               value="roi" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">ROI Tracker</span>
-              <span className="lg:hidden">ROI</span>
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">ROI</span>
             </TabsTrigger>
             <TabsTrigger 
               value="bankroll" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
-              <Wallet className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline">Bankroll</span>
-              <span className="lg:hidden">Bank</span>
+              <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Bank</span>
             </TabsTrigger>
           </TabsList>
 
