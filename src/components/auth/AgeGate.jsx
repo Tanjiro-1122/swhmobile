@@ -105,47 +105,47 @@ export default function AgeGate() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 overflow-y-auto"
+        className="fixed inset-0 z-[100] bg-black/95 flex items-start justify-center p-3 sm:p-4 overflow-y-auto"
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="max-w-md w-full my-8"
+          className="max-w-md w-full my-2 sm:my-8"
         >
-          <Card className="border-4 border-red-500 shadow-2xl">
-            <CardHeader className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <AlertTriangle className="w-10 h-10" />
+          <Card className="border-2 sm:border-4 border-red-500 shadow-2xl">
+            <CardHeader className="bg-gradient-to-r from-red-600 to-orange-600 text-white p-3 sm:p-6">
+              <div className="flex items-center justify-center mb-2 sm:mb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
               </div>
-              <CardTitle className="text-center text-2xl font-black">
-                🔞 AGE VERIFICATION REQUIRED
+              <CardTitle className="text-center text-lg sm:text-2xl font-black">
+                🔞 AGE VERIFICATION
               </CardTitle>
             </CardHeader>
             
-            <CardContent className="p-6 sm:p-8 space-y-4 sm:space-y-6">
-              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 sm:p-4">
-                <p className="text-gray-900 font-bold text-center text-base sm:text-lg mb-1 sm:mb-2">
-                  You must be 18 years or older to use this app
+            <CardContent className="p-3 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="bg-yellow-50 border border-yellow-400 rounded-lg p-2 sm:p-3">
+                <p className="text-gray-900 font-bold text-center text-sm sm:text-base">
+                  You must be 18+ to use this app
                 </p>
-                <p className="text-gray-700 text-center text-xs sm:text-sm">
-                  (21+ in certain jurisdictions where required by law)
+                <p className="text-gray-600 text-center text-[10px] sm:text-xs">
+                  (21+ where required by law)
                 </p>
               </div>
 
               {/* Age Verification Form */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  <p className="font-bold text-gray-900">Please enter your date of birth:</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <p className="font-bold text-gray-900 text-sm">Enter your date of birth:</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <select
                     value={birthMonth}
                     onChange={(e) => setBirthMonth(e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="w-full p-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500"
                   >
                     <option value="">Month</option>
                     {months.map((m) => (
@@ -155,7 +155,7 @@ export default function AgeGate() {
                   <select
                     value={birthYear}
                     onChange={(e) => setBirthYear(e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="w-full p-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500"
                   >
                     <option value="">Year</option>
                     {years.map((y) => (
@@ -164,58 +164,52 @@ export default function AgeGate() {
                   </select>
                 </div>
                 {verificationError && (
-                  <p className="text-red-600 font-bold text-sm mt-2 text-center">{verificationError}</p>
+                  <p className="text-red-600 font-bold text-xs mt-2 text-center">{verificationError}</p>
                 )}
               </div>
 
-              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-700">
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2 text-[11px] sm:text-xs text-gray-700">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <p>
-                    <strong>This app provides sports analytics and statistical insights.</strong> It is intended for informational and entertainment purposes only. It does not facilitate or encourage real-money wagering.
+                    <strong>Sports analytics for informational purposes only.</strong> Does not facilitate real-money wagering.
                   </p>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
                   <p>
-                    <strong>If you or someone you know has a gambling problem,</strong> please seek help by calling <strong>1-800-522-4700</strong>.
+                    <strong>Gambling problem?</strong> Call <strong>1-800-522-4700</strong>
                   </p>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
                   <p>
-                    By continuing, you certify that you are of legal age in your jurisdiction and accept our Terms of Service.
+                    By continuing, you certify you are of legal age and accept our Terms.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3 sm:p-4">
-                <p className="text-center text-red-900 font-bold text-xs sm:text-sm">
-                  ⚠️ WARNING: This app is NOT available to minors
-                </p>
-              </div>
-
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2">
                 <Button
                   onClick={handleVerify}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm sm:text-lg py-4 sm:py-6 font-bold shadow-lg"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm py-3 font-bold shadow-lg"
                 >
-                  ✅ Verify Age & Continue
+                  ✅ Verify & Continue
                 </Button>
 
                 <Button
                   onClick={handleDecline}
                   variant="outline"
-                  className="w-full border-2 border-red-400 text-red-700 hover:bg-red-50 text-xs sm:text-base py-3 sm:py-5 font-semibold"
+                  className="w-full border border-red-400 text-red-700 hover:bg-red-50 text-xs py-2 font-semibold"
                 >
                   ❌ I am under 18 / Exit
                 </Button>
               </div>
 
-              <p className="text-center text-[10px] sm:text-xs text-gray-500 mt-3 sm:mt-4">
-                Your date of birth is used only for age verification and is not stored on our servers.
+              <p className="text-center text-[9px] sm:text-[10px] text-gray-500">
+                Birth date used only for verification, not stored on servers.
               </p>
             </CardContent>
           </Card>
