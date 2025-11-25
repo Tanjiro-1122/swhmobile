@@ -18,7 +18,7 @@ export default function TeamStatsContent() {
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
-  const handleSearch = async (query) => {
+  const handleSearch = async (query, retryCount = 0) => {
     if (!canLookup()) {
       setShowLimitModal(true);
       return;
@@ -26,31 +26,25 @@ export default function TeamStatsContent() {
 
     setIsSearching(true);
     setError(null);
-    setCurrentTeam(null);
+    if (retryCount === 0) {
+      setCurrentTeam(null);
+    }
+
+    const maxRetries = 2;
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. Search for team: "${query}"
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+        prompt: `Search for team: "${query}"
+Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Get comprehensive team stats including:
-- Team logo URL (search ESPN, official league sites for the team logo)
-- Current record and standings
-- Season averages
-- Last 5 games with scores
-- Next game prediction with specific score
-- Strengths and weaknesses
-- Injury report
+Return: team name, sport, league, current record, season averages, last 5 games with scores, next game prediction, key players, injuries, strengths, weaknesses.
 
-IMPORTANT: For logo_url, find the official team logo from ESPN, NBA.com, NFL.com, MLB.com, NHL.com or similar sports sites. The URL should be a direct link to the team's logo image.
-
-Return complete JSON with all fields populated.`,
+If no next game scheduled, say TBD.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
             team_name: { type: "string" },
-            logo_url: { type: "string", description: "Direct URL to team logo from ESPN or official league site" },
             sport: { type: "string" },
             league: { type: "string" },
             current_record: { type: "object" },
@@ -71,11 +65,10 @@ Return complete JSON with all fields populated.`,
                 predicted_score: { type: "string" },
                 confidence: { type: "string" },
                 reasoning: { type: "string" }
-              },
-              required: ["opponent", "predicted_outcome", "confidence", "reasoning"]
+              }
             }
           },
-          required: ["team_name", "sport", "next_game"]
+          required: ["team_name", "sport"]
         }
       });
 
@@ -83,17 +76,36 @@ Return complete JSON with all fields populated.`,
         throw new Error("Invalid response - team not found");
       }
 
+      // Ensure next_game has defaults if missing
+      if (!result.next_game) {
+        result.next_game = {
+          opponent: "TBD",
+          date: "TBD",
+          predicted_outcome: "TBD",
+          confidence: "N/A",
+          reasoning: "Next game has not been announced yet."
+        };
+      }
+
       await base44.entities.TeamStats.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       setCurrentTeam(result);
+      setIsSearching(false);
       
     } catch (err) {
       console.error("Team analysis error:", err);
-      setError("Failed to analyze team. Please try again with full team name.");
+      
+      // Auto-retry on failure
+      if (retryCount < maxRetries) {
+        console.log(`Retrying... attempt ${retryCount + 2}/${maxRetries + 1}`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+        return handleSearch(query, retryCount + 1);
+      }
+      
+      setError("Failed to analyze team. Please try again.");
+      setIsSearching(false);
     }
-
-    setIsSearching(false);
   };
 
   return (

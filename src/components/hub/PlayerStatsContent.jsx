@@ -18,7 +18,7 @@ export default function PlayerStatsContent() {
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
-  const handleSearch = async (query) => {
+  const handleSearch = async (query, retryCount = 0) => {
     if (!canLookup()) {
       setShowLimitModal(true);
       return;
@@ -26,30 +26,27 @@ export default function PlayerStatsContent() {
 
     setIsSearching(true);
     setError(null);
-    setCurrentPlayer(null);
+    if (retryCount === 0) {
+      setCurrentPlayer(null);
+    }
+
+    const maxRetries = 2;
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports analyst. Search for athlete: "${query}"
-Current Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        prompt: `Search for athlete: "${query}"
+Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Provide comprehensive data for this player including:
-1. Full name, team, position, sport/league
-2. Current season statistics (use most recent available stats)
-3. Last 5 game performances with dates and key stats
-4. Injury status (if any)
-5. Next scheduled game with prediction
-6. Strengths and weaknesses
-7. Betting insights
+Return player data: name, team, position, sport, league, season stats, last 5 games, injury status, next game prediction, strengths, weaknesses.
 
-For sports:
-- NBA/Basketball: points, rebounds, assists, steals, blocks, 3PM, FG%, minutes
-- NFL/Football: passing/rushing/receiving yards, touchdowns, etc.
-- MLB/Baseball: batting avg, home runs, RBIs, hits (batters) or ERA, strikeouts, wins (pitchers)
-- Soccer/Football: goals, assists, shots, passes
-- NHL/Hockey: goals, assists, points, plus/minus
+Stats by sport:
+- Basketball: PPG, RPG, APG, SPG, BPG, 3PM, FG%
+- Football: passing/rushing/receiving yards, TDs
+- Baseball: AVG, HR, RBI (batters) or ERA, K, W (pitchers)
+- Hockey: G, A, PTS, +/-
+- Soccer: goals, assists
 
-Return all available data. If next game is not scheduled, indicate that.`,
+If no next game scheduled, say TBD.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -101,20 +98,21 @@ Return all available data. If next game is not scheduled, indicate that.`,
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['players'] });
       setCurrentPlayer(result);
+      setIsSearching(false);
       
     } catch (err) {
       console.error("Player analysis error:", err);
-      const errorMessage = err?.message || "Unknown error";
-      if (errorMessage.includes("rate") || errorMessage.includes("limit")) {
-        setError("Service is busy. Please wait a moment and try again.");
-      } else if (errorMessage.includes("timeout")) {
-        setError("Request timed out. Please try again.");
-      } else {
-        setError("Failed to analyze player. Please try again with full name.");
+      
+      // Auto-retry on failure
+      if (retryCount < maxRetries) {
+        console.log(`Retrying... attempt ${retryCount + 2}/${maxRetries + 1}`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+        return handleSearch(query, retryCount + 1);
       }
+      
+      setError("Failed to analyze player. Please try again.");
+      setIsSearching(false);
     }
-
-    setIsSearching(false);
   };
 
   return (
