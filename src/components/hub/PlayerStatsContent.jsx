@@ -67,19 +67,29 @@ Return complete JSON with all fields populated.`,
                 predicted_performance: { type: "string" },
                 confidence: { type: "string" },
                 reasoning: { type: "string" }
-              },
-              required: ["opponent", "predicted_performance", "confidence", "reasoning"]
+              }
             },
             betting_insights: { type: "object" },
             strengths: { type: "array", items: { type: "string" } },
             weaknesses: { type: "array", items: { type: "string" } }
           },
-          required: ["player_name", "sport", "team", "next_game"]
+          required: ["player_name", "sport", "team"]
         }
       });
 
-      if (!result || !result.player_name || !result.next_game) {
+      if (!result || !result.player_name) {
         throw new Error("Invalid response - player not found");
+      }
+
+      // Ensure next_game has defaults if missing
+      if (!result.next_game) {
+        result.next_game = {
+          opponent: "TBD",
+          date: "TBD",
+          predicted_performance: "No upcoming game scheduled",
+          confidence: "N/A",
+          reasoning: "Player's next game has not been announced yet."
+        };
       }
 
       await base44.entities.PlayerStats.create(result);
@@ -89,7 +99,14 @@ Return complete JSON with all fields populated.`,
       
     } catch (err) {
       console.error("Player analysis error:", err);
-      setError("Failed to analyze player. Please try again with full name.");
+      const errorMessage = err?.message || "Unknown error";
+      if (errorMessage.includes("rate") || errorMessage.includes("limit")) {
+        setError("Service is busy. Please wait a moment and try again.");
+      } else if (errorMessage.includes("timeout")) {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError("Failed to analyze player. Please try again with full name.");
+      }
     }
 
     setIsSearching(false);
