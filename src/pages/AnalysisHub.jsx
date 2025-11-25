@@ -31,7 +31,7 @@ function AnalysisHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
             >
               <Brain className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Predictions</span>
+              <span className="hidden sm:inline">AI Analysis</span>
               <span className="sm:hidden">AI</span>
             </TabsTrigger>
             <TabsTrigger 
