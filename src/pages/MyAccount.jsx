@@ -8,6 +8,7 @@ import ProfileContent from "@/components/hub/ProfileContent";
 import PreferencesContent from "@/components/hub/PreferencesContent";
 import SavedResultsContent from "@/components/hub/SavedResultsContent";
 import SubscriptionContent from "@/components/hub/SubscriptionContent";
+import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -90,13 +91,14 @@ function MyAccountContent() {
           <TabsContent value="saved">
             <SavedResultsContent />
           </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
+          </Tabs>
+          <FloatingDashboardButton />
+          </div>
+          </div>
+          );
+          }
 
-export default function MyAccount() {
+          export default function MyAccount() {
   return (
     <RequireAuth pageName="My Account">
       <MyAccountContent />

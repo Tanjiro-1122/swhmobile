@@ -11,6 +11,7 @@ import BankrollManagerContent from "@/components/poweruser/BankrollManagerConten
 import LiveOddsContent from "@/components/hub/LiveOddsContent";
 import AlertsContent from "@/components/hub/AlertsContent";
 import BetTrackerContent from "@/components/hub/BetTrackerContent";
+import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 function BettingHubContent() {
   const [activeTab, setActiveTab] = useState("tracker");
@@ -115,6 +116,7 @@ function BettingHubContent() {
           </TabsContent>
         </Tabs>
       </div>
+      <FloatingDashboardButton />
     </div>
   );
 }

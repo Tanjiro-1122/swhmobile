@@ -9,6 +9,7 @@ import PlayerStatsContent from "@/components/hub/PlayerStatsContent";
 import TeamStatsContent from "@/components/hub/TeamStatsContent";
 import AIPerformanceContent from "@/components/hub/AIPerformanceContent";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
+import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
@@ -89,6 +90,7 @@ function AnalysisHubContent() {
           </TabsContent>
         </Tabs>
       </div>
+      <FloatingDashboardButton />
     </div>
   );
 }
