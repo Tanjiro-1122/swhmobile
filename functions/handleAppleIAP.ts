@@ -176,7 +176,8 @@ async function handleServerNotification(base44, notificationData) {
         // Activate/renew subscription
         await base44.asServiceRole.entities.User.update(user.id, {
           subscription_type: subscriptionType,
-          subscription_expires_at: expiresDate?.toISOString()
+          subscription_expires_at: expiresDate?.toISOString(),
+          subscription_source: 'apple'
         });
         break;
 
