@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Heart, Trophy } from "lucide-react";
-import RequireAuth from "../components/auth/RequireAuth";
+import RequireAuth from "@/components/auth/RequireAuth";
 
-import ProfileContent from "../components/hub/ProfileContent";
-import PreferencesContent from "../components/hub/PreferencesContent";
-import SavedResultsContent from "../components/hub/SavedResultsContent";
+import ProfileContent from "@/components/hub/ProfileContent";
+import PreferencesContent from "@/components/hub/PreferencesContent";
+import SavedResultsContent from "@/components/hub/SavedResultsContent";
 
 function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");

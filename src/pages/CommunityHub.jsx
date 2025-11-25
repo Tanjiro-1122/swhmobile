@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, BookOpen, Sparkles } from "lucide-react";
-import RequireAuth from "../components/auth/RequireAuth";
+import RequireAuth from "@/components/auth/RequireAuth";
 
-import BettingBriefsContent from "../components/hub/BettingBriefsContent";
-import LearningCenterContent from "../components/hub/LearningCenterContent";
-import CommunityContent from "../components/hub/CommunityContent";
+import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
+import LearningCenterContent from "@/components/hub/LearningCenterContent";
+import CommunityContent from "@/components/hub/CommunityContent";
 
 function CommunityHubPage() {
   const [activeTab, setActiveTab] = useState("feeds");

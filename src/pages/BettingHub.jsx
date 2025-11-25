@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList } from "lucide-react";
-import RequireAuth from "../components/auth/RequireAuth";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 // Import content components
-import ParlayBuilderContent from "../components/poweruser/ParlayBuilderContent";
-import BettingCalculatorContent from "../components/poweruser/BettingCalculatorContent";
-import ROITrackerContent from "../components/poweruser/ROITrackerContent";
-import BankrollManagerContent from "../components/poweruser/BankrollManagerContent";
-import LiveOddsContent from "../components/hub/LiveOddsContent";
-import AlertsContent from "../components/hub/AlertsContent";
-import BetTrackerContent from "../components/hub/BetTrackerContent";
+import ParlayBuilderContent from "@/components/poweruser/ParlayBuilderContent";
+import BettingCalculatorContent from "@/components/poweruser/BettingCalculatorContent";
+import ROITrackerContent from "@/components/poweruser/ROITrackerContent";
+import BankrollManagerContent from "@/components/poweruser/BankrollManagerContent";
+import LiveOddsContent from "@/components/hub/LiveOddsContent";
+import AlertsContent from "@/components/hub/AlertsContent";
+import BetTrackerContent from "@/components/hub/BetTrackerContent";
 
 function BettingHubContent() {
   const [activeTab, setActiveTab] = useState("tracker");
