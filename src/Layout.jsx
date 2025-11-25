@@ -1,33 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import {
   Home,
-  User,
-  TrendingUp,
-  Calculator,
-  DollarSign,
-  Wallet,
-  BookOpen,
-  Settings,
   LogOut,
-  Menu,
-  X,
-  Shield,
-  BarChart3,
-  Bell,
-  MessageSquare,
-  Trophy,
-  LogIn,
   Crown,
-  Sparkles,
-  Zap,
-  Heart,
-  Mail,
-  FileText,
-  Target
+  LogIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -35,16 +15,10 @@ import DomainChangeBanner from "./components/DomainChangeBanner";
 import AgeGate from "./components/auth/AgeGate";
 
 export default function Layout({ children, currentPageName }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-    };
-    checkAuth();
+    base44.auth.isAuthenticated().then(setIsAuthenticated);
 
     // Enhanced viewport for iOS/iPadOS
     const viewport = document.querySelector('meta[name="viewport"]');
@@ -83,7 +57,7 @@ export default function Layout({ children, currentPageName }) {
 
     updateThemeColor();
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    darkModeQuery.addEventListener('change', updateThemeColor)
+    darkModeQuery.addEventListener('change', updateThemeColor);
 
     const jqueryScript = document.createElement("script");
     jqueryScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js";
@@ -98,9 +72,6 @@ export default function Layout({ children, currentPageName }) {
     const web2appScript = document.createElement("script");
     web2appScript.src = "https://web2application.com/w2a/webapps/36296/web2app1.js";
     web2appScript.async = true;
-    web2appScript.onload = () => {
-      console.log("✅ web2application.com integration loaded successfully!");
-    };
     document.head.appendChild(web2appScript);
 
     const manifestLink = document.createElement("link");
@@ -117,7 +88,7 @@ export default function Layout({ children, currentPageName }) {
       document.head.removeChild(appleStatus);
       darkModeQuery.removeEventListener('change', updateThemeColor);
     };
-    }, []);
+  }, []);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -134,7 +105,6 @@ export default function Layout({ children, currentPageName }) {
   const isLegacy = currentUser?.subscription_type === 'legacy';
   const isVIP = currentUser?.subscription_type === 'vip_annual';
   const isPremium = currentUser?.subscription_type === 'premium_monthly';
-  const isAdmin = currentUser?.role === 'admin';
 
   const handleLogout = async () => {
     try {
@@ -153,18 +123,15 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
-  const handleMenuClick = (pageName) => {
-    setSidebarOpen(false);
-    navigate(createPageUrl(pageName));
-  };
-
-  const menuItems = [
-    { name: "Home", icon: Home, page: "Dashboard" },
-    { name: "Pricing", icon: Crown, page: "Pricing" },
-  ];
-
-  if (isAdmin) {
-    menuItems.push({ name: "Admin Panel", icon: Settings, page: "AdminPanel" });
+  // Dashboard has its own full layout, so we render children directly for it
+  if (currentPageName === "Dashboard") {
+    return (
+      <div className="min-h-screen">
+        <AgeGate />
+        <DomainChangeBanner />
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -172,54 +139,52 @@ export default function Layout({ children, currentPageName }) {
       <AgeGate />
       <DomainChangeBanner />
       
+      {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 dark:bg-slate-950 border-b border-slate-700 dark:border-slate-800 shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-white hover:bg-slate-800 flex-shrink-0 min-w-[44px] min-h-[44px]"
-            >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </Button>
-            <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                alt="SWH Logo"
-                className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl object-cover flex-shrink-0"
-              />
-              <span className="text-lg lg:text-2xl font-black text-white hidden sm:inline">
-                Sports Wager Helper
-              </span>
-              <span className="text-lg font-black text-white sm:hidden">
-                SWH
-              </span>
-            </Link>
-          </div>
+          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+              alt="SWH Logo"
+              className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
+            />
+            <span className="text-xl font-black text-white hidden sm:inline">
+              Sports Wager Helper
+            </span>
+            <span className="text-xl font-black text-white sm:hidden">
+              SWH
+            </span>
+          </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link to={createPageUrl("Dashboard")}>
+              <Button variant="ghost" className="text-white hover:bg-slate-800">
+                <Home className="w-5 h-5 mr-2" />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+            </Link>
+
             {isAuthenticated && currentUser ? (
               <>
                 {isLegacy && (
                   <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
-                    <span className="text-xs lg:text-sm font-bold text-white">LEGACY</span>
+                    <Crown className="w-4 h-4 text-white" />
+                    <span className="text-xs font-bold text-white">LEGACY</span>
                   </div>
                 )}
                 {isVIP && (
                   <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
-                    <span className="text-xs lg:text-sm font-bold text-white">VIP</span>
+                    <Crown className="w-4 h-4 text-white" />
+                    <span className="text-xs font-bold text-white">VIP</span>
                   </div>
                 )}
                 {isPremium && (
                   <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
-                    <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
-                    <span className="text-xs lg:text-sm font-bold text-white">PREMIUM</span>
+                    <Crown className="w-4 h-4 text-white" />
+                    <span className="text-xs font-bold text-white">PREMIUM</span>
                   </div>
                 )}
-                <Avatar className="w-8 h-8 lg:w-10 lg:h-10">
+                <Avatar className="w-9 h-9">
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                     {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
@@ -228,7 +193,7 @@ export default function Layout({ children, currentPageName }) {
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 hidden sm:flex min-w-[44px] min-h-[44px]"
+                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
                   title="Log out"
                 >
                   <LogOut className="w-5 h-5" />
@@ -237,9 +202,9 @@ export default function Layout({ children, currentPageName }) {
             ) : (
               <Button
                 onClick={handleLogin}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 text-base min-h-[44px] rounded-[16px]"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
               >
-                <LogIn className="w-4 h-4 mr-1 lg:mr-2" />
+                <LogIn className="w-4 h-4 mr-2" />
                 Sign In
               </Button>
             )}
@@ -247,168 +212,12 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </div>
 
-      <div className="flex pt-16 lg:pt-20">
-        <aside
-          className={`fixed left-0 top-16 lg:top-20 bottom-0 w-64 lg:w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 overflow-y-auto transition-transform duration-300 z-40 shadow-xl ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
-        >
-          <nav className="p-3 lg:p-4 space-y-1 lg:space-y-2 pb-24">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPageName === item.page;
-              return (
-                <button
-                  key={item.page}
-                  onClick={() => handleMenuClick(item.page)}
-                  className={`w-full flex items-center gap-3 px-4 lg:px-4 py-3 lg:py-3 rounded-[16px] transition-all text-left min-h-[44px] ${
-                    isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
-                  <span className="font-medium text-base lg:text-base">{item.name}</span>
-                </button>
-              );
-            })}
-            
-            {isAuthenticated && (
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 lg:px-4 py-3 lg:py-3 rounded-[16px] text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all text-left lg:hidden mt-4 min-h-[44px]"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                <span className="font-medium text-base">Log Out</span>
-              </button>
-            )}
-
-            <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
-              <Link
-                to={createPageUrl("ContactUs")}
-                onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
-              >
-                <Mail className="w-4 h-4" />
-                Contact Us
-              </Link>
-              <Link
-                to={createPageUrl("PrivacyPolicy")}
-                onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
-              >
-                <Shield className="w-4 h-4" />
-                Privacy Policy
-              </Link>
-              <Link
-                to={createPageUrl("TermsOfService")}
-                onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-3 px-3 lg:px-4 py-2 text-xs lg:text-sm text-gray-600 hover:text-gray-900"
-              >
-                <FileText className="w-4 h-4" />
-                Terms of Service
-              </Link>
-              
-              <div className="mt-4 px-3 lg:px-4">
-                <div className="text-xs text-gray-500 font-semibold mb-2">COMMUNITY</div>
-                <div className="space-y-2">
-                  <a
-                    href="https://www.reddit.com/r/sportswagerhelper/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs lg:text-sm text-gray-600 hover:text-orange-500 transition-colors"
-                  >
-                    <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
-                    </svg>
-                    r/sportswagerhelper
-                  </a>
-                  {(isAuthenticated && currentUser && (currentUser.subscription_type === 'vip_annual' || currentUser.subscription_type === 'legacy')) && (
-                    <a
-                      href="https://discord.gg/v6ZVC8MR"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs lg:text-sm text-gray-600 hover:text-purple-500 transition-colors"
-                    >
-                      <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                      VIP Discord
-                      <Crown className="w-3 h-3 text-yellow-500" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </nav>
-        </aside>
-
-        <main className="flex-1 lg:ml-64 min-h-screen bg-slate-50 dark:bg-slate-900 pb-20 transition-colors duration-200">
-          <div className="container mx-auto px-6 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 max-w-7xl safe-area-inset">
-            {children}
-          </div>
-          
-          {/* Footer */}
-          <footer className="bg-white dark:bg-slate-900 border-t-2 border-gray-200 dark:border-slate-700 py-6 mt-12">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid md:grid-cols-3 gap-6 mb-6">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">Sports Wager Helper</h3>
-                  <p className="text-sm text-gray-600">
-                    AI-powered sports betting analysis and insights
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">Quick Links</h3>
-                  <div className="space-y-2">
-                    <Link to={createPageUrl("Pricing")} className="block text-sm text-gray-600 hover:text-blue-600">
-                      Pricing
-                    </Link>
-                    <Link to={createPageUrl("LearningCenter")} className="block text-sm text-gray-600 hover:text-blue-600">
-                      Learning Center
-                    </Link>
-                    <Link to={createPageUrl("Community")} className="block text-sm text-gray-600 hover:text-blue-600">
-                      Community
-                    </Link>
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">Support</h3>
-                  <div className="space-y-2">
-                    <Link to={createPageUrl("ContactUs")} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600">
-                      <Mail className="w-4 h-4" />
-                      Contact Us
-                    </Link>
-                    <Link to={createPageUrl("PrivacyPolicy")} className="block text-sm text-gray-600 hover:text-blue-600">
-                      Privacy Policy
-                    </Link>
-                    <Link to={createPageUrl("TermsOfService")} className="block text-sm text-gray-600 hover:text-blue-600">
-                      Terms of Service
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-6 border-t border-gray-200 text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  © {new Date().getFullYear()} Sports Wager Helper. All rights reserved.
-                </p>
-                <p className="text-xs text-gray-500">
-                  ⚠️ Always gamble responsibly. If you have a gambling problem, call 1-800-522-4700.
-                </p>
-              </div>
-            </div>
-          </footer>
-        </main>
-      </div>
-
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          style={{ top: '4rem' }}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Main Content */}
+      <main className="pt-20 min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }
