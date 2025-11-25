@@ -42,7 +42,7 @@ function BettingHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
               <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
-              <span className="truncate">Parlay</span>
+              <span className="truncate">Multi</span>
             </TabsTrigger>
             <TabsTrigger 
               value="odds" 
@@ -70,14 +70,14 @@ function BettingHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
-              <span className="truncate">ROI</span>
+              <span className="truncate">Perf</span>
             </TabsTrigger>
             <TabsTrigger 
               value="bankroll" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
             >
               <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
-              <span className="truncate">Bank</span>
+              <span className="truncate">Budget</span>
             </TabsTrigger>
             <TabsTrigger 
               value="value" 
@@ -128,7 +128,7 @@ function BettingHubContent() {
 
 export default function BettingHub() {
   return (
-    <RequireAuth pageName="Betting Tools">
+    <RequireAuth pageName="Tracking Tools">
       <BettingHubContent />
     </RequireAuth>
   );
