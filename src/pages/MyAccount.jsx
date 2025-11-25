@@ -34,6 +34,15 @@ function MyAccountContent() {
               <p className="text-white/70 text-lg">Manage your profile, preferences, and saved results</p>
             </div>
 
+            {paymentSuccess && (
+              <Alert className="mb-6 bg-green-50 border-2 border-green-300">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <AlertDescription className="text-green-800 font-semibold">
+                  🎉 Payment successful! Your subscription is now active. Welcome to the club!
+                </AlertDescription>
+              </Alert>
+            )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
             <TabsTrigger 
