@@ -126,7 +126,6 @@ export default function Layout({ children, currentPageName }) {
   // Stadium background component for consistent styling
   const StadiumBackground = () => (
     <div className="fixed inset-0 z-0 bg-gradient-to-b from-green-900 via-green-800 to-green-900">
-      {/* Field Lines */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-4 border-white rounded-full" />
         <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white transform -translate-x-1/2" />
@@ -134,10 +133,8 @@ export default function Layout({ children, currentPageName }) {
         <div className="absolute top-3/4 left-0 right-0 h-1 bg-white" />
         <div className="absolute inset-8 border-4 border-white rounded-lg" />
       </div>
-      {/* Stadium Lights */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      {/* Grass Texture */}
       <div className="absolute inset-0 opacity-30" style={{
         backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)`
       }} />
@@ -168,7 +165,6 @@ export default function Layout({ children, currentPageName }) {
         <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6">
             <div className="flex items-center gap-3">
-              {/* Logo */}
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
@@ -183,49 +179,49 @@ export default function Layout({ children, currentPageName }) {
 
             <div className="flex items-center gap-3">
               {isAuthenticated && currentUser ? (
-              <>
-                {isLegacy && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">LEGACY</span>
-                  </div>
-                )}
-                {isVIP && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">VIP</span>
-                  </div>
-                )}
-                {isPremium && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">PREMIUM</span>
-                  </div>
-                )}
-                <Avatar className="w-9 h-9">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                    {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <>
+                  {isLegacy && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">LEGACY</span>
+                    </div>
+                  )}
+                  {isVIP && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">VIP</span>
+                    </div>
+                  )}
+                  {isPremium && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">PREMIUM</span>
+                    </div>
+                  )}
+                  <Avatar className="w-9 h-9">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                      {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
+                    title="Log out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
-                  title="Log out"
+                  onClick={handleLogin}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
                 </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleLogin}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-            )}
+              )}
             </div>
           </div>
         </div>
