@@ -37,7 +37,12 @@ export default function PlayerStatsContent() {
         prompt: `Search for athlete: "${query}"
 Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Return player data: name, team, position, sport, league, season stats, last 5 games, injury status, next game prediction, strengths, weaknesses.
+Return player data: name, team, position, sport, league, season stats, last 5 games, health status, next game prediction, strengths, weaknesses.
+
+IMPORTANT FIELDS:
+- role: Must be one of "Starter", "Bench", "Sixth Man", "Rotation", or "Unknown" - indicate if player starts or comes off bench
+- health_status: Must be one of "Healthy", "Day-to-Day", "Out 1-2 Weeks", "Out 2-4 Weeks", "Out 4-6 Weeks", "Out 6+ Weeks", or "Out for Season"
+- injury_details: If not healthy, specify the injury (e.g., "Sprained ankle", "Hamstring strain")
 
 Stats by sport:
 - Basketball: PPG, RPG, APG, SPG, BPG, 3PM, FG%
@@ -55,11 +60,12 @@ If no next game scheduled, say TBD.`,
             sport: { type: "string" },
             team: { type: "string" },
             position: { type: "string" },
-            role: { type: "string" },
+            role: { type: "string", enum: ["Starter", "Bench", "Sixth Man", "Rotation", "Unknown"] },
             league: { type: "string" },
             season_averages: { type: "object" },
             recent_form: { type: "array", items: { type: "object" } },
-            injury_status: { type: "string" },
+            health_status: { type: "string", enum: ["Healthy", "Day-to-Day", "Out 1-2 Weeks", "Out 2-4 Weeks", "Out 4-6 Weeks", "Out 6+ Weeks", "Out for Season"] },
+            injury_details: { type: "string" },
             next_game: {
               type: "object",
               properties: {
