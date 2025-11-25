@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Heart, Trophy, CreditCard } from "lucide-react";
+import { User, Heart, Trophy, CreditCard, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 import ProfileContent from "@/components/hub/ProfileContent";
@@ -10,6 +11,17 @@ import SubscriptionContent from "@/components/hub/SubscriptionContent";
 
 function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment_success') === 'true') {
+      setPaymentSuccess(true);
+      setActiveTab("subscription");
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   return (
         <div className="min-h-screen">
