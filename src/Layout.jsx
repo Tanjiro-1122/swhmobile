@@ -159,11 +159,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const menuItems = [
-    { name: "Dashboard", icon: Home, page: "Dashboard" },
-    { name: "Analysis Hub", icon: Sparkles, page: "AnalysisHub" },
-    { name: "Betting Tools", icon: Zap, page: "BettingHub" },
-    { name: "Community", icon: MessageSquare, page: "CommunityHub" },
-    { name: "My Account", icon: User, page: "MyAccount" },
+    { name: "Home", icon: Home, page: "Dashboard" },
     { name: "Pricing", icon: Crown, page: "Pricing" },
   ];
 
