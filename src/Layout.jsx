@@ -236,6 +236,18 @@ export default function Layout({ children, currentPageName }) {
             {children}
           </div>
         </main>
+
+        {/* Footer with Dashboard Button */}
+        <footer className="sticky bottom-0 z-50 bg-black/80 backdrop-blur-md border-t border-white/10 p-4">
+          <div className="flex justify-center">
+            <Link to={createPageUrl("Dashboard")}>
+              <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold gap-2 shadow-lg px-8 py-3 text-lg">
+                <Home className="w-5 h-5" />
+                Dashboard
+              </Button>
+            </Link>
+          </div>
+        </footer>
       </div>
     </div>
   );
