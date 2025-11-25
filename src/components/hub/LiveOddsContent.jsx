@@ -144,12 +144,12 @@ export default function LiveOddsContent() {
 
         {sportOptions.map((sport) => (
           <TabsContent key={sport.key} value={sport.key} className="mt-4">
-            <Card className="border-2 border-white/20 bg-black/40 backdrop-blur-sm overflow-hidden">
+            <Card className="border-2 border-white/20 bg-white rounded-xl overflow-hidden">
               <CardContent className="p-0">
                 <iframe
                   title={`${sport.label} Odds Widget`}
-                  style={{ width: '100%', height: '600px', border: 'none' }}
-                  src={`https://widget.the-odds-api.com/v1/sports/${sport.key}/events/?accessKey=${apiKey}&bookmakerKeys=draftkings,fanduel,betmgm,pointsbet,caesars&oddsFormat=american&markets=h2h,spreads,totals&marketNames=h2h:Moneyline,spreads:Spreads,totals:Over/Under`}
+                  style={{ width: '100%', height: '600px', border: 'none', background: '#ffffff' }}
+                  src={`https://widget.the-odds-api.com/v1/sports/${sport.key}/events/?accessKey=${apiKey}&bookmakerKeys=draftkings,fanduel,betmgm,pointsbet,caesars&oddsFormat=american&markets=h2h,spreads,totals&marketNames=h2h:Moneyline,spreads:Spreads,totals:Over/Under&theme=light`}
                 />
               </CardContent>
             </Card>
