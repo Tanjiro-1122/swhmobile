@@ -11,16 +11,18 @@ function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-gray-900 mb-2">My Account</h1>
-          <p className="text-gray-600 text-lg">Manage your profile, preferences, and saved results</p>
-        </div>
+        <div className="min-h-screen">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+              <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
+                👤 MY ACCOUNT
+              </h1>
+              <p className="text-white/70 text-lg">Manage your profile, preferences, and saved results</p>
+            </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-white p-2 rounded-xl shadow-md">
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
             <TabsTrigger 
               value="profile" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
