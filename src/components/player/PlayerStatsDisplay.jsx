@@ -383,7 +383,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+      <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white">
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4 flex-1">
@@ -471,101 +471,210 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
           )}
 
           {/* Season Averages */}
-          {player.season_averages && (
-            <div>
+          {player.season_averages && Object.keys(player.season_averages).length > 0 && (
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
               <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-purple-600" />
                 Season Averages
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {isBasketball && (
-                  <>
-                    {player.season_averages.points_per_game && (
-                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <div className="text-2xl font-black text-purple-600">{player.season_averages.points_per_game}</div>
-                        <div className="text-xs text-gray-600 font-semibold">PPG</div>
-                      </div>
-                    )}
-                    {player.season_averages.rebounds_per_game && (
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <div className="text-2xl font-black text-blue-600">{player.season_averages.rebounds_per_game}</div>
-                        <div className="text-xs text-gray-600 font-semibold">RPG</div>
-                      </div>
-                    )}
-                    {player.season_averages.assists_per_game && (
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                        <div className="text-2xl font-black text-green-600">{player.season_averages.assists_per_game}</div>
-                        <div className="text-xs text-gray-600 font-semibold">APG</div>
-                      </div>
-                    )}
-                    {player.season_averages.three_pointers_made_per_game && (
-                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                        <div className="text-2xl font-black text-orange-600">{player.season_averages.three_pointers_made_per_game}</div>
-                        <div className="text-xs text-gray-600 font-semibold">3PM/G</div>
-                      </div>
-                    )}
-                    {player.season_averages.field_goal_percentage && (
-                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.field_goal_percentage)}%</div>
-                        <div className="text-xs text-gray-600 font-semibold">FG%</div>
-                      </div>
-                    )}
-                    {player.season_averages.three_point_percentage && (
-                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.three_point_percentage)}%</div>
-                        <div className="text-xs text-gray-600 font-semibold">3P%</div>
-                      </div>
-                    )}
-                  </>
+                {/* Basketball Stats */}
+                {player.season_averages.points_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="text-2xl font-black text-purple-600">{player.season_averages.points_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">PPG</div>
+                  </div>
                 )}
-                {/* Add similar sections for other sports */}
+                {player.season_averages.rebounds_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-2xl font-black text-blue-600">{player.season_averages.rebounds_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">RPG</div>
+                  </div>
+                )}
+                {player.season_averages.assists_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                    <div className="text-2xl font-black text-green-600">{player.season_averages.assists_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">APG</div>
+                  </div>
+                )}
+                {player.season_averages.steals_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
+                    <div className="text-2xl font-black text-yellow-600">{player.season_averages.steals_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">SPG</div>
+                  </div>
+                )}
+                {player.season_averages.blocks_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                    <div className="text-2xl font-black text-red-600">{player.season_averages.blocks_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">BPG</div>
+                  </div>
+                )}
+                {player.season_averages.three_pointers_made_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                    <div className="text-2xl font-black text-orange-600">{player.season_averages.three_pointers_made_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">3PM/G</div>
+                  </div>
+                )}
+                {player.season_averages.field_goal_percentage !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                    <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.field_goal_percentage)}%</div>
+                    <div className="text-xs text-gray-600 font-semibold">FG%</div>
+                  </div>
+                )}
+                {player.season_averages.three_point_percentage !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                    <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.three_point_percentage)}%</div>
+                    <div className="text-xs text-gray-600 font-semibold">3P%</div>
+                  </div>
+                )}
+                {player.season_averages.free_throw_percentage !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                    <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.free_throw_percentage)}%</div>
+                    <div className="text-xs text-gray-600 font-semibold">FT%</div>
+                  </div>
+                )}
+                {player.season_averages.minutes_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-indigo-200 shadow-sm">
+                    <div className="text-2xl font-black text-indigo-600">{player.season_averages.minutes_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">MPG</div>
+                  </div>
+                )}
+                
+                {/* Football Stats */}
+                {player.season_averages.passing_yards_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-2xl font-black text-blue-600">{player.season_averages.passing_yards_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Pass YPG</div>
+                  </div>
+                )}
+                {player.season_averages.rushing_yards_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                    <div className="text-2xl font-black text-orange-600">{player.season_averages.rushing_yards_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Rush YPG</div>
+                  </div>
+                )}
+                {player.season_averages.receptions_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="text-2xl font-black text-purple-600">{player.season_averages.receptions_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">REC/G</div>
+                  </div>
+                )}
+                
+                {/* Baseball Stats */}
+                {player.season_averages.batting_average !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-2xl font-black text-blue-600">{player.season_averages.batting_average.toFixed(3)}</div>
+                    <div className="text-xs text-gray-600 font-semibold">AVG</div>
+                  </div>
+                )}
+                {player.season_averages.home_runs !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                    <div className="text-2xl font-black text-orange-600">{player.season_averages.home_runs}</div>
+                    <div className="text-xs text-gray-600 font-semibold">HR</div>
+                  </div>
+                )}
+                {player.season_averages.rbis !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                    <div className="text-2xl font-black text-green-600">{player.season_averages.rbis}</div>
+                    <div className="text-xs text-gray-600 font-semibold">RBI</div>
+                  </div>
+                )}
+                {player.season_averages.era !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                    <div className="text-2xl font-black text-red-600">{player.season_averages.era}</div>
+                    <div className="text-xs text-gray-600 font-semibold">ERA</div>
+                  </div>
+                )}
+                {player.season_averages.strikeouts !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div className="text-2xl font-black text-purple-600">{player.season_averages.strikeouts}</div>
+                    <div className="text-xs text-gray-600 font-semibold">K</div>
+                  </div>
+                )}
+                
+                {/* Soccer Stats */}
+                {player.season_averages.goals_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                    <div className="text-2xl font-black text-green-600">{player.season_averages.goals_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Goals/G</div>
+                  </div>
+                )}
+                {player.season_averages.shots_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                    <div className="text-2xl font-black text-blue-600">{player.season_averages.shots_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Shots/G</div>
+                  </div>
+                )}
+                {player.season_averages.passes_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
+                    <div className="text-2xl font-black text-yellow-600">{player.season_averages.passes_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Passes/G</div>
+                  </div>
+                )}
+                {player.season_averages.tackles_per_game !== undefined && (
+                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                    <div className="text-2xl font-black text-red-600">{player.season_averages.tackles_per_game}</div>
+                    <div className="text-xs text-gray-600 font-semibold">Tackles/G</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Last 5 Games - Detailed Stats Table */}
           {player.recent_form && player.recent_form.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <h3 className="text-lg font-bold text-gray-900 p-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
                 Last {player.recent_form.length} Games (Detailed Stats)
               </h3>
-              <Card className="border-2 border-gray-200">
-                <CardContent className="p-0">
-                  {renderStatsTable()}
-                </CardContent>
-              </Card>
+              <div className="p-0">
+                {renderStatsTable()}
+              </div>
             </div>
           )}
 
           {/* Next Game Prediction */}
-          {player.next_game && (
+          {player.next_game && (player.next_game.opponent || player.next_game.predicted_performance) && (
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300">
               <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-600" />
                 Next Game Analysis
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700 font-semibold">vs {player.next_game.opponent}</span>
-                  <Badge className="bg-orange-600 text-white">{player.next_game.date}</Badge>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-gray-700 font-semibold">
+                    {player.next_game.opponent ? `vs ${player.next_game.opponent}` : 'Upcoming Game'}
+                  </span>
+                  {player.next_game.date && (
+                    <Badge className="bg-orange-600 text-white">{player.next_game.date}</Badge>
+                  )}
                 </div>
+                {player.next_game.location && (
+                  <p className="text-sm text-gray-600">📍 {player.next_game.location}</p>
+                )}
                 <div className="bg-white p-4 rounded-lg border border-orange-200">
-                  <div className="text-2xl font-black text-orange-600 mb-2">
-                    Projected: {player.next_game.predicted_performance}
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={`${
-                      player.next_game.confidence?.toLowerCase().includes('high')
-                        ? 'bg-green-100 text-green-800'
-                        : player.next_game.confidence?.toLowerCase().includes('medium')
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {player.next_game.confidence} Confidence
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-700">{player.next_game.reasoning}</p>
+                  {player.next_game.predicted_performance && (
+                    <div className="text-2xl font-black text-orange-600 mb-2">
+                      Projected: {player.next_game.predicted_performance}
+                    </div>
+                  )}
+                  {player.next_game.confidence && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={`${
+                        player.next_game.confidence?.toLowerCase().includes('high')
+                          ? 'bg-green-100 text-green-800'
+                          : player.next_game.confidence?.toLowerCase().includes('medium')
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {player.next_game.confidence} Confidence
+                      </Badge>
+                    </div>
+                  )}
+                  {player.next_game.reasoning && (
+                    <p className="text-sm text-gray-700">{player.next_game.reasoning}</p>
+                  )}
                 </div>
               </div>
             </div>
