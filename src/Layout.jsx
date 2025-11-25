@@ -178,54 +178,54 @@ export default function Layout({ children, currentPageName }) {
 
             <div className="flex items-center gap-3">
               {isAuthenticated && currentUser ? (
-              <>
-                {isLegacy && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">LEGACY</span>
-                  </div>
-                )}
-                {isVIP && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">VIP</span>
-                  </div>
-                )}
-                {isPremium && (
-                  <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
-                    <Crown className="w-4 h-4 text-white" />
-                    <span className="text-xs font-bold text-white">PREMIUM</span>
-                  </div>
-                )}
-                <Avatar className="w-9 h-9">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                    {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <>
+                  {isLegacy && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">LEGACY</span>
+                    </div>
+                  )}
+                  {isVIP && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">VIP</span>
+                    </div>
+                  )}
+                  {isPremium && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
+                      <Crown className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">PREMIUM</span>
+                    </div>
+                  )}
+                  <Avatar className="w-9 h-9">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                      {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
+                    title="Log out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
-                  title="Log out"
+                  onClick={handleLogin}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
                 </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleLogin}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
+        {/* Main Content */}
         <main className="pt-20 pb-24 min-h-screen">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
             {children}
@@ -244,6 +244,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </div>
-      </div>
-      );
-      }
+    </div>
+  );
+}
