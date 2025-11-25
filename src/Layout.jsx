@@ -165,26 +165,15 @@ export default function Layout({ children, currentPageName }) {
         {/* Header */}
         <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-            <div className="flex items-center gap-4">
-              {/* Back/Home Button */}
-              <Link to={createPageUrl("Dashboard")}>
-                <Button className="bg-white/10 hover:bg-white/20 text-white border border-white/20 gap-2 font-bold">
-                  <Home className="w-5 h-5" />
-                  <span className="hidden sm:inline">Back to Home</span>
-                  <span className="sm:hidden">Home</span>
-                </Button>
-              </Link>
-              
-              <div className="hidden md:flex items-center gap-3">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                  alt="SWH Logo"
-                  className="w-8 h-8 rounded-lg object-cover"
-                />
-                <span className="text-lg font-bold text-white">
-                  Sports Wager Helper
-                </span>
-              </div>
+            <div className="flex items-center gap-3">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                alt="SWH Logo"
+                className="w-8 h-8 rounded-lg object-cover"
+              />
+              <span className="text-lg font-bold text-white">
+                Sports Wager Helper
+              </span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -237,12 +226,24 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Content */}
-        <main className="pt-20 min-h-screen">
+        <main className="pt-20 pb-24 min-h-screen">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
             {children}
           </div>
         </main>
+
+        {/* Fixed Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-t border-white/10 shadow-lg p-4">
+          <div className="container mx-auto max-w-7xl flex justify-center">
+            <Link to={createPageUrl("Dashboard")}>
+              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-2 font-bold px-8 py-3 text-lg rounded-full shadow-lg">
+                <Home className="w-5 h-5" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
+      </div>
+      );
+      }
