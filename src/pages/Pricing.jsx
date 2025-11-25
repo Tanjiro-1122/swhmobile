@@ -43,42 +43,67 @@ export default function Pricing() {
     setIsProcessing(true);
 
     try {
-      // MUST use Apple In-App Purchase for iOS mobile app
-      let productId;
-      
-      if (plan === 'premium') {
-        productId = 'com.sportswagerhelper.premium.monthly';
-      } else if (plan === 'vip') {
-        productId = 'com.sportswagerhelper.vip.annual';
-      }
-
-      window.WTN.inAppPurchase({
-        productId: productId,
-        callback: async function(data) {
-          if (data.isSuccess && data.receiptData) {
-            try {
-              // Send receipt to backend for verification
-              const response = await base44.functions.invoke('handleAppleIAP', {
-                receipt: data.receiptData,
-                productId: productId
-              });
-
-              if (response.data.success) {
-                alert('Subscription successful! Your account has been upgraded.');
-                window.location.href = '/Profile';
-              } else {
-                alert('Receipt verification failed. Please contact support.');
-              }
-            } catch (error) {
-              console.error('IAP verification error:', error);
-              alert('Failed to verify purchase. Please contact support.');
-            }
-          } else {
-            alert('Purchase was not completed.');
-          }
-          setIsProcessing(false);
+      // Check if we're in the iOS app with IAP support
+      if (typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase) {
+        // Use Apple In-App Purchase for iOS mobile app
+        let productId;
+        
+        if (plan === 'premium') {
+          productId = 'com.sportswagerhelper.premium.monthly';
+        } else if (plan === 'vip') {
+          productId = 'com.sportswagerhelper.vip.annual';
         }
-      });
+
+        window.WTN.inAppPurchase({
+          productId: productId,
+          callback: async function(data) {
+            if (data.isSuccess && data.receiptData) {
+              try {
+                const response = await base44.functions.invoke('handleAppleIAP', {
+                  receipt: data.receiptData,
+                  productId: productId
+                });
+
+                if (response.data.success) {
+                  alert('Subscription successful! Your account has been upgraded.');
+                  window.location.href = '/MyAccount';
+                } else {
+                  alert('Receipt verification failed. Please contact support.');
+                }
+              } catch (error) {
+                console.error('IAP verification error:', error);
+                alert('Failed to verify purchase. Please contact support.');
+              }
+            } else {
+              alert('Purchase was not completed.');
+            }
+            setIsProcessing(false);
+          }
+        });
+      } else {
+        // Use Stripe for web users
+        let priceId;
+        let mode;
+        
+        if (plan === 'premium') {
+          priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
+          mode = 'subscription';
+        } else if (plan === 'vip') {
+          priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99
+          mode = 'payment';
+        }
+
+        const response = await base44.functions.invoke('createCheckoutSession', {
+          priceId,
+          mode
+        });
+
+        if (response.data?.url) {
+          window.location.href = response.data.url;
+        } else {
+          throw new Error('No checkout URL returned');
+        }
+      }
     } catch (error) {
       console.error('Subscription error:', error);
       alert('Failed to start checkout. Please try again or contact support.');
