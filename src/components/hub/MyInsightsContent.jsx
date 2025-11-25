@@ -133,7 +133,7 @@ export default function MyInsightsContent() {
       )}
 
       {/* Insights Display */}
-      {insights && insights.insights && (
+      {insights && (insights.insights || insights.suggested_matches) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -159,11 +159,11 @@ export default function MyInsightsContent() {
           </div>
 
           {/* Personalized Message */}
-          {insights.insights.personalized_message && (
+          {(insights.insights?.personalized_message || insights.personalized_message) && (
             <Alert className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300">
               <Sparkles className="w-5 h-5 text-purple-600" />
               <AlertDescription className="text-purple-900 text-lg font-semibold">
-                {insights.insights.personalized_message}
+                {insights.insights?.personalized_message || insights.personalized_message}
               </AlertDescription>
             </Alert>
           )}
@@ -196,7 +196,7 @@ export default function MyInsightsContent() {
           )}
 
           {/* Suggested Matches */}
-          {insights.insights.suggested_matches && insights.insights.suggested_matches.length > 0 && (
+          {((insights.insights?.suggested_matches || insights.suggested_matches)?.length > 0) && (
             <Card className="border-2 border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200">
                 <CardTitle className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export default function MyInsightsContent() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {insights.insights.suggested_matches.map((match, idx) => (
+                  {(insights.insights?.suggested_matches || insights.suggested_matches || []).map((match, idx) => (
                     <div key={idx} className="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-green-300 transition-colors">
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -233,7 +233,7 @@ export default function MyInsightsContent() {
           )}
 
           {/* Players to Watch */}
-          {insights.insights.players_to_watch && insights.insights.players_to_watch.length > 0 && (
+          {((insights.insights?.players_to_watch || insights.players_to_watch)?.length > 0) && (
             <Card className="border-2 border-blue-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
                 <CardTitle className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export default function MyInsightsContent() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid md:grid-cols-2 gap-4">
-                  {insights.insights.players_to_watch.map((player, idx) => (
+                  {(insights.insights?.players_to_watch || insights.players_to_watch || []).map((player, idx) => (
                     <div key={idx} className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -267,7 +267,7 @@ export default function MyInsightsContent() {
           )}
 
           {/* Betting Trends */}
-          {insights.insights.betting_trends && (
+          {(insights.insights?.betting_trends || insights.betting_trends) && (
             <Card className="border-2 border-purple-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b-2 border-purple-200">
                 <CardTitle className="flex items-center gap-2">
@@ -276,52 +276,59 @@ export default function MyInsightsContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                {insights.insights.betting_trends.win_rate_analysis && (
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-bold text-gray-900 mb-2">📊 Win Rate Analysis</h4>
-                    <p className="text-sm text-gray-700">{insights.insights.betting_trends.win_rate_analysis}</p>
-                  </div>
-                )}
-                {insights.insights.betting_trends.favorite_bet_types && (
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-bold text-gray-900 mb-2">🎯 Favorite Bet Types</h4>
-                    <p className="text-sm text-gray-700">{insights.insights.betting_trends.favorite_bet_types}</p>
-                  </div>
-                )}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {insights.insights.betting_trends.strengths?.length > 0 && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h4 className="font-bold text-green-800 mb-2">💪 Your Strengths</h4>
-                      <ul className="space-y-1">
-                        {insights.insights.betting_trends.strengths.map((s, i) => (
-                          <li key={i} className="text-sm text-green-700 flex items-start gap-2">
-                            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {insights.insights.betting_trends.areas_to_improve?.length > 0 && (
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <h4 className="font-bold text-orange-800 mb-2">📈 Areas to Explore</h4>
-                      <ul className="space-y-1">
-                        {insights.insights.betting_trends.areas_to_improve.map((a, i) => (
-                          <li key={i} className="text-sm text-orange-700 flex items-start gap-2">
-                            <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            {a}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                {(() => {
+                  const trends = insights.insights?.betting_trends || insights.betting_trends || {};
+                  return (
+                    <>
+                      {trends.win_rate_analysis && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                          <h4 className="font-bold text-gray-900 mb-2">📊 Win Rate Analysis</h4>
+                          <p className="text-sm text-gray-700">{trends.win_rate_analysis}</p>
+                        </div>
+                      )}
+                      {trends.favorite_bet_types && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                          <h4 className="font-bold text-gray-900 mb-2">🎯 Favorite Bet Types</h4>
+                          <p className="text-sm text-gray-700">{trends.favorite_bet_types}</p>
+                        </div>
+                      )}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {trends.strengths?.length > 0 && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h4 className="font-bold text-green-800 mb-2">💪 Your Strengths</h4>
+                            <ul className="space-y-1">
+                              {trends.strengths.map((s, i) => (
+                                <li key={i} className="text-sm text-green-700 flex items-start gap-2">
+                                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                  {s}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {trends.areas_to_improve?.length > 0 && (
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <h4 className="font-bold text-orange-800 mb-2">📈 Areas to Explore</h4>
+                            <ul className="space-y-1">
+                              {trends.areas_to_improve.map((a, i) => (
+                                <li key={i} className="text-sm text-orange-700 flex items-start gap-2">
+                                  <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                  {a}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           )}
 
           {/* Strategy Recommendations */}
-          {insights.insights.strategy_recommendations && insights.insights.strategy_recommendations.length > 0 && (
+          {((insights.insights?.strategy_recommendations || insights.strategy_recommendations)?.length > 0) && (
             <Card className="border-2 border-yellow-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b-2 border-yellow-200">
                 <CardTitle className="flex items-center gap-2">
@@ -331,7 +338,7 @@ export default function MyInsightsContent() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {insights.insights.strategy_recommendations.map((rec, idx) => (
+                  {(insights.insights?.strategy_recommendations || insights.strategy_recommendations || []).map((rec, idx) => (
                     <div key={idx} className="bg-white border-2 border-gray-200 rounded-xl p-5">
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="text-lg font-bold text-gray-900 flex-1">{rec.tip}</h3>
