@@ -160,21 +160,11 @@ export default function Layout({ children, currentPageName }) {
 
   const menuItems = [
     { name: "Dashboard", icon: Home, page: "Dashboard" },
-    { name: "My Insights", icon: Sparkles, page: "MyInsights" },
-    { name: "AI Parlay Builder", icon: Zap, page: "AIParlayBuilder" },
-    { name: "Player Stats", icon: User, page: "PlayerStats" },
-    { name: "Team Stats", icon: TrendingUp, page: "TeamStats" },
-    { name: "Live Odds", icon: BarChart3, page: "LiveOdds" },
-    { name: "Feeds", icon: Sparkles, page: "BettingBriefs" },
-    { name: "AI Performance", icon: Target, page: "AIPerformance" },
+    { name: "Analysis Hub", icon: Sparkles, page: "AnalysisHub" },
+    { name: "Betting Tools", icon: Zap, page: "BettingHub" },
+    { name: "Community", icon: MessageSquare, page: "CommunityHub" },
+    { name: "My Account", icon: User, page: "MyAccount" },
     { name: "Pricing", icon: Crown, page: "Pricing" },
-    { name: "Alerts", icon: Bell, page: "Alerts" },
-    { name: "Power User", icon: Zap, page: "PowerUser" },
-    { name: "Learning Center", icon: BookOpen, page: "LearningCenter" },
-    { name: "Community", icon: MessageSquare, page: "Community" },
-    { name: "Saved Results", icon: Trophy, page: "SavedResults" },
-    { name: "Profile", icon: User, page: "Profile" },
-    { name: "Preferences", icon: Heart, page: "UserPreferences" },
   ];
 
   if (isAdmin) {
