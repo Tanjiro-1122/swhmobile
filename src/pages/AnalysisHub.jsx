@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, Sparkles, Target } from "lucide-react";
+import { User, Users, Sparkles, Target, Brain } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 // Import the content from existing pages
@@ -8,6 +8,7 @@ import MyInsightsContent from "@/components/hub/MyInsightsContent";
 import PlayerStatsContent from "@/components/hub/PlayerStatsContent";
 import TeamStatsContent from "@/components/hub/TeamStatsContent";
 import AIPerformanceContent from "@/components/hub/AIPerformanceContent";
+import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("insights");
