@@ -54,7 +54,8 @@ Deno.serve(async (req) => {
       subscription_type: subscriptionType,
       apple_transaction_id: validationResult.transactionId,
       apple_original_transaction_id: validationResult.originalTransactionId,
-      subscription_expires_at: validationResult.expiresDate
+      subscription_expires_at: validationResult.expiresDate,
+      subscription_source: 'apple'
     });
 
     return Response.json({
