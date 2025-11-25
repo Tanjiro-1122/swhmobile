@@ -354,22 +354,37 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
       <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-shadow">
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Trophy className="w-8 h-8" />
-                <div>
-                  <CardTitle className="text-3xl font-black">{player.player_name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge className="bg-white/20 text-white border-white/30">
-                      {player.team}
-                    </Badge>
-                    <Badge className="bg-white/20 text-white border-white/30">
-                      {player.position}
-                    </Badge>
-                    <Badge className="bg-white/20 text-white border-white/30">
-                      {player.league}
-                    </Badge>
-                  </div>
+            <div className="flex items-center gap-4 flex-1">
+              {/* Player Photo */}
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0">
+                {player.image_url ? (
+                  <img 
+                    src={player.image_url} 
+                    alt={player.player_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full flex items-center justify-center ${player.image_url ? 'hidden' : 'flex'}`}>
+                  <Trophy className="w-10 h-10 text-white/70" />
+                </div>
+              </div>
+              
+              <div>
+                <CardTitle className="text-3xl font-black">{player.player_name}</CardTitle>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {player.team}
+                  </Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {player.position}
+                  </Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {player.league}
+                  </Badge>
                 </div>
               </div>
             </div>

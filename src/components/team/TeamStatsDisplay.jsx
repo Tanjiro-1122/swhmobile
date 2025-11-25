@@ -46,24 +46,39 @@ export default function TeamStatsDisplay({ team, onDelete }) {
       <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-shadow">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Trophy className="w-8 h-8" />
-                <div>
-                  <CardTitle className="text-3xl font-black">{team.team_name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge className="bg-white/20 text-white border-white/30">
-                      {team.sport}
+            <div className="flex items-center gap-4 flex-1">
+              {/* Team Logo */}
+              <div className="w-20 h-20 rounded-xl bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0">
+                {team.logo_url ? (
+                  <img 
+                    src={team.logo_url} 
+                    alt={team.team_name}
+                    className="w-full h-full object-contain p-1"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full flex items-center justify-center ${team.logo_url ? 'hidden' : 'flex'}`}>
+                  <Shield className="w-10 h-10 text-white/70" />
+                </div>
+              </div>
+              
+              <div>
+                <CardTitle className="text-3xl font-black">{team.team_name}</CardTitle>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {team.sport}
+                  </Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {team.league}
+                  </Badge>
+                  {team.form && (
+                    <Badge className="bg-white/20 text-white border-white/30 font-mono">
+                      {team.form}
                     </Badge>
-                    <Badge className="bg-white/20 text-white border-white/30">
-                      {team.league}
-                    </Badge>
-                    {team.form && (
-                      <Badge className="bg-white/20 text-white border-white/30 font-mono">
-                        {team.form}
-                      </Badge>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
