@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import AppleSignInButton from "@/components/auth/AppleSignInButton";
+
 
 
 // Sport-themed icons as SVG components
