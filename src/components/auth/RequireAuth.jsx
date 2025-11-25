@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import AppleSignInButton from "./AppleSignInButton";
 
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -102,6 +103,8 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                 >
                   Sign In with Email
                 </Button>
+
+                <AppleSignInButton className="w-full py-6 text-lg" />
 
                 <Button
                   onClick={handleViewPricing}

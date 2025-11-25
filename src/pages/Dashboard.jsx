@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import AppleSignInButton from "@/components/auth/AppleSignInButton";
 
 
 // Sport-themed icons as SVG components
@@ -218,20 +219,21 @@ export default function Dashboard() {
           )}
 
           {!isAuthenticated && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-6"
-            >
-              <Button
-                onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold px-8 py-6 text-lg rounded-full shadow-lg shadow-emerald-500/30"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-6 flex flex-col sm:flex-row items-center gap-3"
               >
-                SIGN IN WITH EMAIL
-              </Button>
-            </motion.div>
-          )}
+                <Button
+                  onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold px-8 py-6 text-lg rounded-full shadow-lg shadow-emerald-500/30"
+                >
+                  SIGN IN WITH EMAIL
+                </Button>
+                <AppleSignInButton className="px-8 py-6 text-lg rounded-full shadow-lg" />
+              </motion.div>
+            )}
         </motion.div>
 
         {/* Main Menu Grid */}
