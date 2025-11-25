@@ -123,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
-  // Dashboard has its own full layout, so we render children directly for it
+  // Dashboard has its own full layout with header built in
   if (currentPageName === "Dashboard") {
     return (
       <div className="min-h-screen">
