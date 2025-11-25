@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -31,34 +32,15 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
     window.location.href = '/Pricing';
   };
 
-  // Stadium Background Component
-  const StadiumBackground = () => (
-    <div className="fixed inset-0 z-0 bg-gradient-to-b from-green-900 via-green-800 to-green-900">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-4 border-white rounded-full" />
-        <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white transform -translate-x-1/2" />
-        <div className="absolute top-1/4 left-0 right-0 h-1 bg-white" />
-        <div className="absolute top-3/4 left-0 right-0 h-1 bg-white" />
-        <div className="absolute inset-8 border-4 border-white rounded-lg" />
-      </div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)`
-      }} />
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center">
-        <StadiumBackground />
-        <div className="relative z-10 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 relative">
-            <div className="absolute inset-0 rounded-full border-4 border-white/30 animate-pulse" />
-            <div className="absolute inset-0 rounded-full border-4 border-white border-t-transparent animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
           </div>
-          <p className="text-white font-semibold text-lg">Checking authentication...</p>
+          <p className="text-gray-700 font-semibold text-lg">Checking authentication...</p>
         </div>
       </div>
     );
@@ -66,15 +48,14 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center p-6">
-        <StadiumBackground />
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="relative z-10 max-w-md w-full"
+          className="max-w-md w-full"
         >
-          <Card className="border-2 border-white/20 shadow-2xl bg-white/95 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8 rounded-t-lg">
+          <Card className="border-2 border-purple-300 shadow-2xl">
+            <CardHeader className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8">
               <div className="flex items-center justify-center mb-4">
                 <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <Lock className="w-10 h-10" />

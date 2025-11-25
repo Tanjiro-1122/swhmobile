@@ -16,95 +16,105 @@ function BettingHubContent() {
   const [activeTab, setActiveTab] = useState("tracker");
 
   return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-6 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
-          <TabsTrigger 
-            value="tracker" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
-          >
-            <ClipboardList className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Bet Tracker</span>
-            <span className="lg:hidden">Track</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="parlay" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white"
-          >
-            <Zap className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Parlay Builder</span>
-            <span className="lg:hidden">Parlay</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="odds" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white"
-          >
-            <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Live Odds</span>
-            <span className="lg:hidden">Odds</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="alerts" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
-          >
-            <Bell className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Alerts</span>
-            <span className="lg:hidden">Alerts</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="calculator" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white"
-          >
-            <Calculator className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Calculator</span>
-            <span className="lg:hidden">Calc</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="roi" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white"
-          >
-            <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">ROI Tracker</span>
-            <span className="lg:hidden">ROI</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="bankroll" 
-            className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
-          >
-            <Wallet className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden lg:inline">Bankroll</span>
-            <span className="lg:hidden">Bank</span>
-          </TabsTrigger>
-        </TabsList>
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+          <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
+            🎯 BETTING TOOLS
+          </h1>
+          <p className="text-white/70 text-lg">Track bets, build parlays, and manage your bankroll</p>
+        </div>
 
-        <TabsContent value="tracker">
-          <BetTrackerContent />
-        </TabsContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+            <TabsTrigger 
+              value="tracker" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+            >
+              <ClipboardList className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Bet Tracker</span>
+              <span className="lg:hidden">Track</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="parlay" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white"
+            >
+              <Zap className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Parlay Builder</span>
+              <span className="lg:hidden">Parlay</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="odds" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white"
+            >
+              <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Live Odds</span>
+              <span className="lg:hidden">Odds</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="alerts" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+            >
+              <Bell className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Alerts</span>
+              <span className="lg:hidden">Alerts</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calculator" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white"
+            >
+              <Calculator className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Calculator</span>
+              <span className="lg:hidden">Calc</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="roi" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white"
+            >
+              <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">ROI Tracker</span>
+              <span className="lg:hidden">ROI</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="bankroll" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+            >
+              <Wallet className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline">Bankroll</span>
+              <span className="lg:hidden">Bank</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="parlay">
-          <ParlayBuilderContent />
-        </TabsContent>
+          <TabsContent value="tracker">
+            <BetTrackerContent />
+          </TabsContent>
 
-        <TabsContent value="odds">
-          <LiveOddsContent />
-        </TabsContent>
+          <TabsContent value="parlay">
+            <ParlayBuilderContent />
+          </TabsContent>
 
-        <TabsContent value="alerts">
-          <AlertsContent />
-        </TabsContent>
+          <TabsContent value="odds">
+            <LiveOddsContent />
+          </TabsContent>
 
-        <TabsContent value="calculator">
-          <BettingCalculatorContent />
-        </TabsContent>
+          <TabsContent value="alerts">
+            <AlertsContent />
+          </TabsContent>
 
-        <TabsContent value="roi">
-          <ROITrackerContent />
-        </TabsContent>
+          <TabsContent value="calculator">
+            <BettingCalculatorContent />
+          </TabsContent>
 
-        <TabsContent value="bankroll">
-          <BankrollManagerContent />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="roi">
+            <ROITrackerContent />
+          </TabsContent>
+
+          <TabsContent value="bankroll">
+            <BankrollManagerContent />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
