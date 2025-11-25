@@ -22,6 +22,10 @@ import MyInsights from './pages/MyInsights';
 import ContactUs from './pages/ContactUs';
 import AIPerformance from './pages/AIPerformance';
 import AIParlayBuilder from './pages/AIParlayBuilder';
+import AnalysisHub from './pages/AnalysisHub';
+import BettingHub from './pages/BettingHub';
+import CommunityHub from './pages/CommunityHub';
+import MyAccount from './pages/MyAccount';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +54,10 @@ export const PAGES = {
     "ContactUs": ContactUs,
     "AIPerformance": AIPerformance,
     "AIParlayBuilder": AIParlayBuilder,
+    "AnalysisHub": AnalysisHub,
+    "BettingHub": BettingHub,
+    "CommunityHub": CommunityHub,
+    "MyAccount": MyAccount,
 }
 
 export const pagesConfig = {
