@@ -351,24 +351,25 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-shadow">
+      <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4 flex-1">
-              {/* Player Photo */}
-              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0">
-                {player.image_url ? (
+              {/* Player Photo with optimized loading */}
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0 relative">
+                {player.image_url && (
                   <img 
                     src={player.image_url} 
                     alt={player.player_name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                    loading="lazy"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
-                ) : null}
-                <div className={`w-full h-full flex items-center justify-center ${player.image_url ? 'hidden' : 'flex'}`}>
+                )}
+                <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-500/30 to-pink-500/30 ${player.image_url ? 'hidden' : 'flex'}`}>
                   <Trophy className="w-10 h-10 text-white/70" />
                 </div>
               </div>

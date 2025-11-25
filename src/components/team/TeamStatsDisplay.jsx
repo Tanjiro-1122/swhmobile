@@ -43,24 +43,25 @@ export default function TeamStatsDisplay({ team, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-shadow">
+      <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4 flex-1">
-              {/* Team Logo */}
-              <div className="w-20 h-20 rounded-xl bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0">
-                {team.logo_url ? (
+              {/* Team Logo with optimized loading */}
+              <div className="w-20 h-20 rounded-xl bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0 relative">
+                {team.logo_url && (
                   <img 
                     src={team.logo_url} 
                     alt={team.team_name}
-                    className="w-full h-full object-contain p-1"
+                    className="w-full h-full object-contain p-1 transition-opacity duration-300"
+                    loading="lazy"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
-                ) : null}
-                <div className={`w-full h-full flex items-center justify-center ${team.logo_url ? 'hidden' : 'flex'}`}>
+                )}
+                <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/30 to-indigo-500/30 ${team.logo_url ? 'hidden' : 'flex'}`}>
                   <Shield className="w-10 h-10 text-white/70" />
                 </div>
               </div>

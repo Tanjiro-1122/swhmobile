@@ -116,16 +116,48 @@ Return complete JSON with all fields populated.`,
       )}
 
       {isSearching && (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full opacity-20 animate-ping" />
-              <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-blue-500 animate-spin" />
+        <div className="space-y-6 animate-fade-in">
+          {/* Skeleton loader while searching */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl border-2 border-blue-200 overflow-hidden shadow-xl">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-xl bg-white/20 animate-pulse" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-8 bg-white/20 rounded-lg w-2/3 animate-pulse" />
+                  <div className="flex gap-2">
+                    <div className="h-6 bg-white/20 rounded-full w-20 animate-pulse" />
+                    <div className="h-6 bg-white/20 rounded-full w-24 animate-pulse" />
+                  </div>
+                </div>
               </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Team Data</h3>
-            <p className="text-gray-700">Fetching stats from StatMuse & ESPN...</p>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-4 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-blue-50 rounded-lg p-3 space-y-2">
+                    <div className="h-8 bg-blue-200 rounded animate-pulse" />
+                    <div className="h-4 bg-blue-100 rounded w-1/2 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-center py-4">
+            <div className="text-center">
+              <div className="relative w-16 h-16 mx-auto mb-4">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full opacity-20 animate-ping" />
+                <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-8 h-8 text-blue-500 animate-spin" />
+                </div>
+              </div>
+              <p className="text-gray-600 font-medium">Analyzing team data...</p>
+            </div>
           </div>
         </div>
       )}
