@@ -68,9 +68,12 @@ export default function LiveOddsContent() {
       <div className="flex items-center gap-3">
         <Crown className="w-6 h-6 text-yellow-500" />
         <p className="text-white/80 font-semibold">
-          VIP Access • Live odds from top sportsbooks
+          VIP Access • Real-time odds comparison from top sportsbooks
         </p>
       </div>
+      <p className="text-white/50 text-xs">
+        For entertainment purposes only. Not financial or betting advice.
+      </p>
 
       <Tabs value={selectedSport} onValueChange={setSelectedSport}>
         <TabsList className="bg-black/40 p-1 border border-white/20">
