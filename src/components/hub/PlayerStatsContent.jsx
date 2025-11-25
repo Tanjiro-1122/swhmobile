@@ -30,26 +30,31 @@ export default function PlayerStatsContent() {
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. Search for player: "${query}"
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+        prompt: `You are a professional sports analyst. Search for athlete: "${query}"
+Current Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Get comprehensive stats including:
-- Player headshot/photo URL (search ESPN, NBA.com, NFL.com, MLB.com etc for official player photo)
-- Season averages (sport-specific stats)
-- Last 5 games with detailed per-game stats
-- Next game prediction with specific numbers
-- Betting insights (over/under, hot streak, consistency)
-- Injury status
+Provide comprehensive data for this player including:
+1. Full name, team, position, sport/league
+2. Current season statistics (use most recent available stats)
+3. Last 5 game performances with dates and key stats
+4. Injury status (if any)
+5. Next scheduled game with prediction
+6. Strengths and weaknesses
+7. Betting insights
 
-IMPORTANT: For image_url, find the official player headshot from ESPN, NBA.com, NFL.com, MLB.com, NHL.com or similar sports sites. The URL should be a direct link to the player's photo.
+For sports:
+- NBA/Basketball: points, rebounds, assists, steals, blocks, 3PM, FG%, minutes
+- NFL/Football: passing/rushing/receiving yards, touchdowns, etc.
+- MLB/Baseball: batting avg, home runs, RBIs, hits (batters) or ERA, strikeouts, wins (pitchers)
+- Soccer/Football: goals, assists, shots, passes
+- NHL/Hockey: goals, assists, points, plus/minus
 
-Return complete JSON with all fields populated.`,
+Return all available data. If next game is not scheduled, indicate that.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
             player_name: { type: "string" },
-            image_url: { type: "string", description: "Direct URL to player headshot/photo from ESPN or official league site" },
             sport: { type: "string" },
             team: { type: "string" },
             position: { type: "string" },
