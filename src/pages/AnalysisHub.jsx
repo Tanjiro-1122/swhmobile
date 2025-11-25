@@ -25,13 +25,21 @@ function AnalysisHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+            <TabsTrigger 
+              value="predictions" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Predictions</span>
+              <span className="sm:hidden">AI</span>
+            </TabsTrigger>
             <TabsTrigger 
               value="insights" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">My Insights</span>
+              <span className="hidden sm:inline">Insights</span>
               <span className="sm:hidden">Insights</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -39,7 +47,7 @@ function AnalysisHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white"
             >
               <User className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Player Stats</span>
+              <span className="hidden sm:inline">Players</span>
               <span className="sm:hidden">Players</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -47,7 +55,7 @@ function AnalysisHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
             >
               <Users className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Team Stats</span>
+              <span className="hidden sm:inline">Teams</span>
               <span className="sm:hidden">Teams</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -55,10 +63,14 @@ function AnalysisHubContent() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
             >
               <Target className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">AI Performance</span>
-              <span className="sm:hidden">AI</span>
+              <span className="hidden sm:inline">AI Stats</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="predictions">
+            <TodaysPredictions />
+          </TabsContent>
 
           <TabsContent value="insights">
             <MyInsightsContent />
