@@ -371,6 +371,17 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                   <Badge className="bg-white/20 text-white border-white/30">
                     {player.position}
                   </Badge>
+                  {player.role && (
+                    <Badge className={`border-white/30 ${
+                      player.role === 'Starter' 
+                        ? 'bg-green-500 text-white' 
+                        : player.role === 'Sixth Man'
+                        ? 'bg-yellow-500 text-white'
+                        : 'bg-white/20 text-white'
+                    }`}>
+                      {player.role === 'Starter' ? '⭐ Starter' : player.role}
+                    </Badge>
+                  )}
                   <Badge className="bg-white/20 text-white border-white/30">
                     {player.league}
                   </Badge>
