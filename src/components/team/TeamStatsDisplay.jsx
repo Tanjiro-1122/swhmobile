@@ -46,25 +46,25 @@ export default function TeamStatsDisplay({ team, onDelete }) {
       transition={{ duration: 0.3 }}
     >
       <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4 flex-1">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               {/* Team Icon */}
-              <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm border-4 border-white/30 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-white/20 backdrop-blur-sm border-2 sm:border-4 border-white/30 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               
-              <div>
-                <CardTitle className="text-3xl font-black">{team.team_name}</CardTitle>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <Badge className="bg-white/20 text-white border-white/30">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-xl sm:text-3xl font-black truncate">{team.team_name}</CardTitle>
+                <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+                  <Badge className="bg-white/20 text-white border-white/30 text-xs">
                     {team.sport}
                   </Badge>
-                  <Badge className="bg-white/20 text-white border-white/30">
+                  <Badge className="bg-white/20 text-white border-white/30 text-xs">
                     {team.league}
                   </Badge>
                   {team.form && (
-                    <Badge className="bg-white/20 text-white border-white/30 font-mono">
+                    <Badge className="bg-white/20 text-white border-white/30 font-mono text-xs">
                       {team.form}
                     </Badge>
                   )}
@@ -84,7 +84,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Current Record */}
           {team.current_record && (
             <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
