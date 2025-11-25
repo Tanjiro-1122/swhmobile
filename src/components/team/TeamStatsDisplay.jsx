@@ -8,6 +8,38 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+// Sport/League logos
+const LEAGUE_LOGOS = {
+  nba: "https://cdn.nba.com/logos/leagues/logo-nba.svg",
+  nfl: "https://static.www.nfl.com/image/private/t_q-best/league/nvwvzyamxilflxmnhqsa",
+  mlb: "https://www.mlbstatic.com/team-logos/league-on-dark/1.svg",
+  nhl: "https://www-league.nhlstatic.com/images/logos/league-dark/133-flat.svg",
+  mls: "https://images.mlssoccer.com/image/private/t_q-best/mls-logos/mls-logo-primary",
+  premier_league: "https://www.premierleague.com/resources/rebrand/v7/i/elements/pl-main-logo.png",
+  la_liga: "https://assets.laliga.com/assets/logos/laliga-v/laliga-v-1200x1200.png",
+  serie_a: "https://upload.wikimedia.org/wikipedia/en/e/e1/Serie_A_logo_%282019%29.svg",
+  bundesliga: "https://upload.wikimedia.org/wikipedia/en/d/df/Bundesliga_logo_%282017%29.svg",
+  ncaa: "https://upload.wikimedia.org/wikipedia/commons/d/dd/NCAA_logo.svg",
+};
+
+const getLeagueLogo = (sport, league) => {
+  const sportLower = sport?.toLowerCase() || '';
+  const leagueLower = league?.toLowerCase() || '';
+  
+  if (leagueLower.includes('nba') || sportLower.includes('nba')) return LEAGUE_LOGOS.nba;
+  if (leagueLower.includes('nfl') || sportLower.includes('nfl')) return LEAGUE_LOGOS.nfl;
+  if (leagueLower.includes('mlb') || sportLower.includes('mlb') || sportLower.includes('baseball')) return LEAGUE_LOGOS.mlb;
+  if (leagueLower.includes('nhl') || sportLower.includes('nhl') || sportLower.includes('hockey')) return LEAGUE_LOGOS.nhl;
+  if (leagueLower.includes('mls') || (sportLower.includes('soccer') && leagueLower.includes('major'))) return LEAGUE_LOGOS.mls;
+  if (leagueLower.includes('premier') || leagueLower.includes('epl')) return LEAGUE_LOGOS.premier_league;
+  if (leagueLower.includes('la liga') || leagueLower.includes('laliga')) return LEAGUE_LOGOS.la_liga;
+  if (leagueLower.includes('serie a')) return LEAGUE_LOGOS.serie_a;
+  if (leagueLower.includes('bundesliga')) return LEAGUE_LOGOS.bundesliga;
+  if (leagueLower.includes('ncaa') || leagueLower.includes('college')) return LEAGUE_LOGOS.ncaa;
+  
+  return null;
+};
+
 export default function TeamStatsDisplay({ team, onDelete }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -62,7 +94,18 @@ export default function TeamStatsDisplay({ team, onDelete }) {
                   />
                 )}
                 <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/30 to-indigo-500/30 ${team.logo_url ? 'hidden' : 'flex'}`}>
-                  <Shield className="w-10 h-10 text-white/70" />
+                  {getLeagueLogo(team.sport, team.league) ? (
+                    <img 
+                      src={getLeagueLogo(team.sport, team.league)} 
+                      alt={team.league || team.sport}
+                      className="w-12 h-12 object-contain"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                  ) : null}
+                  <Shield className={`w-10 h-10 text-white/70 ${getLeagueLogo(team.sport, team.league) ? 'hidden' : 'block'}`} />
                 </div>
               </div>
               
