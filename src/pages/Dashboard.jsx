@@ -68,64 +68,64 @@ const TrophyIcon = () => (
 );
 
 const menuItems = [
-  {
-    id: "analysis",
-    title: "ANALYSIS HUB",
-    subtitle: "AI-Powered Predictions",
-    description: "Match analysis, player stats, team insights",
-    SportIcon: FootballIcon,
-    page: "AnalysisHub",
-    gradient: "from-purple-600 to-indigo-700",
-    borderColor: "border-purple-400",
-    tag: "MOST POPULAR",
-    tagColor: "bg-yellow-500"
-  },
-  {
-    id: "betting",
-    title: "BETTING TOOLS",
-    subtitle: "Track & Optimize",
-    description: "Bet tracker, parlays, calculators, live odds",
-    SportIcon: BasketballIcon,
-    page: "BettingHub",
-    gradient: "from-emerald-600 to-teal-700",
-    borderColor: "border-emerald-400",
-    tag: "NEW",
-    tagColor: "bg-red-500"
-  },
-  {
-    id: "community",
-    title: "COMMUNITY",
-    subtitle: "Learn & Connect",
-    description: "Daily briefs, learning center, picks",
-    SportIcon: BaseballIcon,
-    page: "CommunityHub",
-    gradient: "from-orange-600 to-red-700",
-    borderColor: "border-orange-400",
-    tag: null
-  },
-  {
-    id: "account",
-    title: "MY ACCOUNT",
-    subtitle: "Profile & Settings",
-    description: "Saved results, preferences, subscription",
-    SportIcon: SoccerIcon,
-    page: "MyAccount",
-    gradient: "from-blue-600 to-cyan-700",
-    borderColor: "border-blue-400",
-    tag: null
-  },
-  {
-    id: "pricing",
-    title: "PRICING",
-    subtitle: "Unlock Full Power",
-    description: "View plans and upgrade your account",
-    SportIcon: TrophyIcon,
-    page: "Pricing",
-    gradient: "from-yellow-600 to-amber-700",
-    borderColor: "border-yellow-400",
-    tag: "BEST VALUE"
-  },
-];
+        {
+          id: "analysis",
+          title: "ANALYSIS HUB",
+          subtitle: "AI-Powered Insights",
+          description: "Match analysis, player stats, team insights",
+          SportIcon: FootballIcon,
+          page: "AnalysisHub",
+          gradient: "from-purple-600 to-indigo-700",
+          borderColor: "border-purple-400",
+          tag: "MOST POPULAR",
+          tagColor: "bg-yellow-500"
+        },
+        {
+          id: "betting",
+          title: "TRACKING TOOLS",
+          subtitle: "Track & Analyze",
+          description: "Performance tracker, calculators, odds comparison",
+          SportIcon: BasketballIcon,
+          page: "BettingHub",
+          gradient: "from-emerald-600 to-teal-700",
+          borderColor: "border-emerald-400",
+          tag: "NEW",
+          tagColor: "bg-red-500"
+        },
+        {
+          id: "community",
+          title: "COMMUNITY",
+          subtitle: "Learn & Connect",
+          description: "Daily briefs, learning center, discussions",
+          SportIcon: BaseballIcon,
+          page: "CommunityHub",
+          gradient: "from-orange-600 to-red-700",
+          borderColor: "border-orange-400",
+          tag: null
+        },
+        {
+          id: "account",
+          title: "MY ACCOUNT",
+          subtitle: "Profile & Settings",
+          description: "Saved results, preferences, subscription",
+          SportIcon: SoccerIcon,
+          page: "MyAccount",
+          gradient: "from-blue-600 to-cyan-700",
+          borderColor: "border-blue-400",
+          tag: null
+        },
+        {
+          id: "pricing",
+          title: "PRICING",
+          subtitle: "Unlock Full Power",
+          description: "View plans and upgrade your account",
+          SportIcon: TrophyIcon,
+          page: "Pricing",
+          gradient: "from-yellow-600 to-amber-700",
+          borderColor: "border-yellow-400",
+          tag: "BEST VALUE"
+        },
+      ];
 
 export default function Dashboard() {
   const [hoveredItem, setHoveredItem] = useState(null);
@@ -192,7 +192,7 @@ export default function Dashboard() {
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-2">
             SPORTS WAGER HELPER
           </h1>
-          <p className="text-white/70 text-lg">AI-Powered Sports Betting Analysis</p>
+          <p className="text-white/70 text-lg">AI-Powered Sports Analytics & Insights</p>
 
           {/* User Welcome & Status */}
           {currentUser && (
@@ -406,7 +406,7 @@ export default function Dashboard() {
           
           <div className="mt-6 pt-4 border-t border-white/10 text-center">
             <p className="text-white/40 text-xs">
-              © {new Date().getFullYear()} Sports Wager Helper • ⚠️ Always gamble responsibly
+              © {new Date().getFullYear()} Sports Wager Helper • For entertainment & informational purposes only
             </p>
           </div>
         </motion.div>

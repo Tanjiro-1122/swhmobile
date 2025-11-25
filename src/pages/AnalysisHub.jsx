@@ -22,7 +22,7 @@ function AnalysisHubContent() {
           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
             ⚡ ANALYSIS HUB
           </h1>
-          <p className="text-white/70 text-lg">AI-powered insights for players, teams, and predictions</p>
+          <p className="text-white/70 text-lg">AI-powered sports statistics, analytics, and performance insights</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

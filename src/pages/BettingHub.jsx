@@ -22,9 +22,9 @@ function BettingHubContent() {
         {/* Header */}
         <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
-            🎯 BETTING TOOLS
+            🎯 TRACKING TOOLS
           </h1>
-          <p className="text-white/70 text-lg">Track bets, build parlays, and manage your bankroll</p>
+          <p className="text-white/70 text-lg">Track performance, analyze odds, and manage your analytics</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

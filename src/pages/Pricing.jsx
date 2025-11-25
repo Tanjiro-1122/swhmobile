@@ -164,7 +164,7 @@ export default function Pricing() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get unlimited AI-powered sports betting analysis and smart tools to win more bets
+            Get unlimited AI-powered sports analytics and smart tools for better insights
           </p>
         </div>
 
@@ -563,8 +563,8 @@ export default function Pricing() {
         {/* Disclaimer */}
         <div className="mt-12 p-6 bg-amber-50 border-2 border-amber-200 rounded-xl mb-24">
           <p className="text-sm text-amber-900 text-center">
-            <strong>⚠️ Responsible Gambling:</strong> Must be 18+ (21+ where required). Predictions are for informational purposes only. 
-            Never bet more than you can afford to lose. National Gambling Helpline: 1-800-522-4700
+            <strong>⚠️ Important Notice:</strong> Must be 18+ (21+ where required). All analytics and insights are for informational and entertainment purposes only. 
+            This app does not facilitate real-money wagering. If you or someone you know has a gambling problem, call 1-800-522-4700.
           </p>
         </div>
       </div>
