@@ -172,7 +172,7 @@ export default function AgeGate() {
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <p>
-                    <strong>This app provides sports analytics and statistical insights.</strong> It is intended for informational and entertainment purposes only.
+                    <strong>This app provides sports analytics and statistical insights.</strong> It is intended for informational and entertainment purposes only. It does not facilitate or encourage real-money wagering.
                   </p>
                 </div>
                 
