@@ -228,7 +228,6 @@ export default function Layout({ children, currentPageName }) {
             )}
           </div>
         </div>
-      </div>
 
         {/* Main Content */}
         <main className="flex-1 pb-24">
