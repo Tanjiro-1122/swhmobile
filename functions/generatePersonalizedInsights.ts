@@ -74,7 +74,7 @@ ${playerStats.slice(0, 5).map(p => `- ${p.player_name} (${p.team}, ${p.sport})`)
 RECENT SAVED TEAMS (sample):
 ${teamStats.slice(0, 5).map(t => `- ${t.team_name} (${t.sport}, ${t.league})`).join('\n')}
 
-TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+CURRENT DATE/TIME: ${new Date().toISOString()} (${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-US')})
 
 YOUR TASK:
 Generate personalized insights and recommendations based on this user's profile and behavior. Return a JSON object with:
@@ -108,12 +108,14 @@ Generate personalized insights and recommendations based on this user's profile 
 5. personalized_message: A friendly, encouraging message (2-3 sentences) summarizing their betting journey and next steps.
 
 CRITICAL REQUIREMENTS:
-- Use REAL, CURRENT data from ESPN.com, StatMuse.com, and official league websites
-- All suggested matches must be UPCOMING (today or future), not past games
-- Be specific with dates, teams, and statistics
+- Use REAL-TIME, LIVE data from ESPN.com, StatMuse.com, and official league websites
+- All suggested matches must be UPCOMING games happening TODAY or in the next 7 days
+- Include specific game times and dates for all suggestions
+- Use the most recent statistics (last 5-10 games, not season averages from months ago)
 - Tailor recommendations to their ${bettingStyle} betting style
 - If they have favorite teams/players, prioritize those in suggestions
 - Be encouraging and educational, not just promotional
+- For player stats, use data from the last 2 weeks maximum
 
 Return valid JSON only.`;
 

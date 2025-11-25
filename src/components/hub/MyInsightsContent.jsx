@@ -139,8 +139,12 @@ export default function MyInsightsContent() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Refresh Button */}
-          <div className="flex justify-end">
+          {/* Refresh Button & Timestamp */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-white/70">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Generated: {insights.generated_at ? new Date(insights.generated_at).toLocaleString() : 'Just now'}
+            </div>
             <Button
               onClick={generateInsights}
               disabled={isGenerating}
@@ -189,6 +193,131 @@ export default function MyInsightsContent() {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Suggested Matches */}
+          {insights.insights.suggested_matches && insights.insights.suggested_matches.length > 0 && (
+            <Card className="border-2 border-green-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200">
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-6 h-6 text-green-600" />
+                  Suggested Matches for You
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {insights.insights.suggested_matches.map((match, idx) => (
+                    <div key={idx} className="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-green-300 transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{match.match_description}</h3>
+                          <p className="text-sm text-gray-500">{match.sport} • {match.league}</p>
+                        </div>
+                        <Badge className={getConfidenceBadge(match.confidence_level)}>
+                          {match.confidence_level} confidence
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        <Calendar className="w-4 h-4 inline mr-1" />
+                        {match.date}
+                      </p>
+                      <p className="text-sm text-green-700 bg-green-50 p-2 rounded-lg">
+                        <ArrowRight className="w-4 h-4 inline mr-1" />
+                        {match.why_recommended}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Players to Watch */}
+          {insights.insights.players_to_watch && insights.insights.players_to_watch.length > 0 && (
+            <Card className="border-2 border-blue-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-6 h-6 text-blue-600" />
+                  Players to Watch
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  {insights.insights.players_to_watch.map((player, idx) => (
+                    <div key={idx} className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900">{player.player_name}</h3>
+                          <p className="text-sm text-gray-500">{player.team} • {player.sport}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{player.reason}</p>
+                      <p className="text-xs text-blue-600 font-medium">
+                        <Calendar className="w-3 h-3 inline mr-1" />
+                        Next: {player.next_game}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Betting Trends */}
+          {insights.insights.betting_trends && (
+            <Card className="border-2 border-purple-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b-2 border-purple-200">
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                  Your Betting Trends
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                {insights.insights.betting_trends.win_rate_analysis && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 className="font-bold text-gray-900 mb-2">📊 Win Rate Analysis</h4>
+                    <p className="text-sm text-gray-700">{insights.insights.betting_trends.win_rate_analysis}</p>
+                  </div>
+                )}
+                {insights.insights.betting_trends.favorite_bet_types && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 className="font-bold text-gray-900 mb-2">🎯 Favorite Bet Types</h4>
+                    <p className="text-sm text-gray-700">{insights.insights.betting_trends.favorite_bet_types}</p>
+                  </div>
+                )}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {insights.insights.betting_trends.strengths?.length > 0 && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-bold text-green-800 mb-2">💪 Your Strengths</h4>
+                      <ul className="space-y-1">
+                        {insights.insights.betting_trends.strengths.map((s, i) => (
+                          <li key={i} className="text-sm text-green-700 flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {insights.insights.betting_trends.areas_to_improve?.length > 0 && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                      <h4 className="font-bold text-orange-800 mb-2">📈 Areas to Explore</h4>
+                      <ul className="space-y-1">
+                        {insights.insights.betting_trends.areas_to_improve.map((a, i) => (
+                          <li key={i} className="text-sm text-orange-700 flex items-start gap-2">
+                            <TrendingUp className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Strategy Recommendations */}
