@@ -49,14 +49,18 @@ Deno.serve(async (req) => {
           const subscription = await stripe.subscriptions.retrieve(session.subscription);
           const priceId = subscription.items.data[0]?.price.id;
           
-          // Map price IDs to subscription types (you'll need to set these based on your Stripe prices)
-          if (priceId?.includes('monthly') || priceId?.includes('premium')) {
-            subscriptionType = 'premium_monthly';
-          } else if (priceId?.includes('annual') || priceId?.includes('vip')) {
-            subscriptionType = 'vip_annual';
+          // Map actual Stripe price IDs to subscription types
+          if (priceId === 'price_1SN2OGRrQjRM0rB2u6TnCiP8') {
+            subscriptionType = 'premium_monthly'; // Premium Monthly $19.99
+          } else if (priceId === 'price_1SLWkwRrQjRM0rB2hOHUHCfz' || priceId === 'price_1SLWmORrQjRM0rB2ZxC103An') {
+            subscriptionType = 'vip_annual'; // Annual plans
+          } else if (priceId === 'price_1SLWz5RrQjRM0rB2IgtxQQY2') {
+            subscriptionType = 'premium_monthly'; // Basic $4.99
+          } else if (priceId === 'price_1SLWWiRrQjRM0rB2N4m1b3Hy') {
+            subscriptionType = 'premium_monthly'; // Unlimited Monthly $9.99
           }
         } else if (session.mode === 'payment') {
-          // One-time payment for VIP
+          // One-time payment for VIP ($149.99)
           subscriptionType = 'vip_annual';
         }
 
