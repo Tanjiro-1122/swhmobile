@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -34,13 +33,13 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 relative">
             <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-pulse" />
             <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
           </div>
-          <p className="text-gray-700 font-semibold text-lg">Checking authentication...</p>
+          <p className="text-white font-semibold text-lg">Checking authentication...</p>
         </div>
       </div>
     );
@@ -48,7 +47,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center p-6">
+      <div className="flex items-center justify-center p-6 py-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
