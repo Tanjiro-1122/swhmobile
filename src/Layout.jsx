@@ -123,6 +123,27 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.redirectToLogin(window.location.pathname);
   };
 
+  // Stadium background component for consistent styling
+  const StadiumBackground = () => (
+    <div className="fixed inset-0 z-0 bg-gradient-to-b from-green-900 via-green-800 to-green-900">
+      {/* Field Lines */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-4 border-white rounded-full" />
+        <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white transform -translate-x-1/2" />
+        <div className="absolute top-1/4 left-0 right-0 h-1 bg-white" />
+        <div className="absolute top-3/4 left-0 right-0 h-1 bg-white" />
+        <div className="absolute inset-8 border-4 border-white rounded-lg" />
+      </div>
+      {/* Stadium Lights */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      {/* Grass Texture */}
+      <div className="absolute inset-0 opacity-30" style={{
+        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)`
+      }} />
+    </div>
+  );
+
   // Dashboard has its own full layout with header built in
   if (currentPageName === "Dashboard") {
     return (
@@ -135,36 +156,39 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
-      <AgeGate />
-      <DomainChangeBanner />
-      
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 dark:bg-slate-950 border-b border-slate-700 dark:border-slate-800 shadow-lg">
-        <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-              alt="SWH Logo"
-              className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
-            />
-            <span className="text-xl font-black text-white hidden sm:inline">
-              Sports Wager Helper
-            </span>
-            <span className="text-xl font-black text-white sm:hidden">
-              SWH
-            </span>
-          </Link>
+    <div className="min-h-screen relative">
+      <StadiumBackground />
+      <div className="relative z-10">
+        <AgeGate />
+        <DomainChangeBanner />
+        
+        {/* Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/10 shadow-lg">
+          <div className="flex items-center justify-between px-4 py-3 lg:px-6">
+            <div className="flex items-center gap-4">
+              {/* Back/Home Button */}
+              <Link to={createPageUrl("Dashboard")}>
+                <Button className="bg-white/10 hover:bg-white/20 text-white border border-white/20 gap-2 font-bold">
+                  <Home className="w-5 h-5" />
+                  <span className="hidden sm:inline">Back to Home</span>
+                  <span className="sm:hidden">Home</span>
+                </Button>
+              </Link>
+              
+              <div className="hidden md:flex items-center gap-3">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                  alt="SWH Logo"
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+                <span className="text-lg font-bold text-white">
+                  Sports Wager Helper
+                </span>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="ghost" className="text-white hover:bg-slate-800 gap-2">
-                <Home className="w-5 h-5" />
-                <span className="hidden sm:inline">Home</span>
-              </Button>
-            </Link>
-
-            {isAuthenticated && currentUser ? (
+            <div className="flex items-center gap-3">
+              {isAuthenticated && currentUser ? (
               <>
                 {isLegacy && (
                   <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
@@ -213,11 +237,12 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Content */}
-      <main className="pt-20 min-h-screen">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
-          {children}
-        </div>
-      </main>
+        <main className="pt-20 min-h-screen">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
