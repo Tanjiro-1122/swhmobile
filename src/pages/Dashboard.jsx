@@ -314,6 +314,16 @@ export default function Dashboard() {
             );
           })}
 
+          {/* AI Prediction Widget */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="sm:col-span-2 lg:col-span-3"
+          >
+            <DashboardPredictionsWidget />
+          </motion.div>
+
           {/* Admin Panel - Only for admins */}
           {isAdmin && (
             <motion.div
