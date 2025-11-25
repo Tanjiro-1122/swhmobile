@@ -147,25 +147,25 @@ export default function ROITrackerContent() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-3xl font-black text-gray-900 mb-2">ROI Tracker</CardTitle>
-              <p className="text-gray-600">Track your bets and analyze performance</p>
+              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Performance Tracker</CardTitle>
+              <p className="text-gray-600">Track your selections and analyze performance</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 h-12 px-6">
                   <Plus className="w-5 h-5 mr-2" />
-                  Add Bet
+                  Add Selection
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl">Add New Bet</DialogTitle>
+                  <DialogTitle className="text-2xl">Add New Selection</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Bet Type
+                        Selection Type
                       </label>
                       <Select value={newBet.bet_type} onValueChange={(value) => setNewBet({...newBet, bet_type: value})}>
                         <SelectTrigger>
@@ -175,8 +175,8 @@ export default function ROITrackerContent() {
                           <SelectItem value="spread">Spread</SelectItem>
                           <SelectItem value="moneyline">Moneyline</SelectItem>
                           <SelectItem value="over_under">Over/Under</SelectItem>
-                          <SelectItem value="parlay">Parlay</SelectItem>
-                          <SelectItem value="prop">Prop Bet</SelectItem>
+                          <SelectItem value="parlay">Multi-Pick</SelectItem>
+                          <SelectItem value="prop">Prop Prediction</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -254,7 +254,7 @@ export default function ROITrackerContent() {
                     className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
                     disabled={!newBet.match_description || !newBet.odds || !newBet.stake_amount || isNaN(parseFloat(newBet.stake_amount)) || isNaN(parseFloat(newBet.odds))}
                   >
-                    Add Bet
+                    Add Selection
                   </Button>
                 </div>
               </DialogContent>
@@ -268,7 +268,7 @@ export default function ROITrackerContent() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-2 border-gray-200 bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-700 font-bold">Total Bets</CardTitle>
+              <CardTitle className="text-sm text-gray-700 font-bold">Total Selections</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-black text-gray-900">{stats.totalBets}</div>
@@ -331,23 +331,23 @@ export default function ROITrackerContent() {
       {/* Bets List */}
       <Card className="border-2 border-gray-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Betting History</CardTitle>
+          <CardTitle className="text-2xl font-bold">Selection History</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto" />
-              <p className="text-gray-600 mt-4">Loading your bets...</p>
+              <p className="text-gray-600 mt-4">Loading your selections...</p>
             </div>
           ) : bets.length === 0 ? (
             <div className="text-center py-12">
               <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Bets Yet</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Selections Yet</h3>
               <p className="text-gray-600 mb-6">
-                Start tracking your bets to analyze your performance
+                Start tracking your selections to analyze your performance
               </p>
               <Button onClick={() => setDialogOpen(true)} className="bg-gradient-to-r from-emerald-600 to-green-600">
-                Add Your First Bet
+                Add Your First Selection
               </Button>
             </div>
           ) : (

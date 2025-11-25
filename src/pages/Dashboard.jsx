@@ -82,7 +82,7 @@ const menuItems = [
           tagColor: "bg-yellow-500"
         },
         {
-          id: "betting",
+          id: "tracking",
           title: "TRACKING TOOLS",
           subtitle: "Track & Analyze",
           description: "Performance tracker, calculators, odds comparison",

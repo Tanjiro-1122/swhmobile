@@ -132,24 +132,24 @@ export default function ParlayBuilderContent() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Parlay Builder</CardTitle>
-              <p className="text-gray-600">Build and track your multi-leg parlays</p>
+              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Multi-Pick Analyzer</CardTitle>
+              <p className="text-gray-600">Build and track your multi-pick combinations</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 h-12 px-6">
                   <Plus className="w-5 h-5 mr-2" />
-                  New Parlay
+                  New Multi-Pick
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl">Build Your Parlay</DialogTitle>
+                  <DialogTitle className="text-2xl">Build Your Multi-Pick</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Parlay Name
+                      Combination Name
                     </label>
                     <Input
                       placeholder="Sunday NBA 3-Leg"
@@ -160,10 +160,10 @@ export default function ParlayBuilderContent() {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-gray-900">Parlay Legs</h3>
+                      <h3 className="font-bold text-gray-900">Picks</h3>
                       <Button onClick={addLeg} size="sm" variant="outline">
                         <Plus className="w-4 h-4 mr-1" />
-                        Add Leg
+                        Add Pick
                       </Button>
                     </div>
 
@@ -171,7 +171,7 @@ export default function ParlayBuilderContent() {
                       <Card key={index} className="bg-gray-50 border-2 border-gray-200">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between mb-3">
-                            <Badge>Leg {index + 1}</Badge>
+                            <Badge>Pick {index + 1}</Badge>
                             {newParlay.legs.length > 1 && (
                               <Button
                                 variant="ghost"
@@ -249,7 +249,7 @@ export default function ParlayBuilderContent() {
                     disabled={!newParlay.parlay_name || !newParlay.stake_amount || newParlay.legs.some(leg => !leg.odds)}
                   >
                     <Calculator className="w-5 h-5 mr-2" />
-                    Create Parlay
+                    Create Multi-Pick
                   </Button>
                 </div>
               </DialogContent>
@@ -269,12 +269,12 @@ export default function ParlayBuilderContent() {
           <Card className="border-2 border-dashed border-gray-300">
             <CardContent className="p-12 text-center">
               <Calculator className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Parlays Yet</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Multi-Picks Yet</h3>
               <p className="text-gray-600 mb-6">
-                Build your first parlay to track multiple bets together
+                Build your first multi-pick to track combinations together
               </p>
               <Button onClick={() => setDialogOpen(true)} className="bg-gradient-to-r from-purple-600 to-indigo-600">
-                Create Your First Parlay
+                Create Your First Multi-Pick
               </Button>
             </CardContent>
           </Card>
@@ -292,7 +292,7 @@ export default function ParlayBuilderContent() {
                     <div>
                       <CardTitle className="text-2xl font-bold text-gray-900">{parlay.parlay_name}</CardTitle>
                       <div className="flex items-center gap-3 mt-2">
-                        <Badge className="bg-purple-600 text-white">{parlay.legs.length} Legs</Badge>
+                        <Badge className="bg-purple-600 text-white">{parlay.legs.length} Picks</Badge>
                         <Badge className={`${
                           parlay.result === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                           parlay.result === 'won' ? 'bg-green-100 text-green-800' :

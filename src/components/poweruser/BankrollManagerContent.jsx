@@ -129,7 +129,7 @@ export default function BankrollManagerContent() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Bankroll Manager</CardTitle>
+              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Budget Manager</CardTitle>
               <p className="text-gray-600">Track deposits, withdrawals, wins, and losses</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

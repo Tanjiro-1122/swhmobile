@@ -106,8 +106,8 @@ export default function BettingCalculatorContent() {
     <div className="space-y-6">
       <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
         <CardHeader>
-          <CardTitle className="text-3xl font-black text-gray-900">Betting Calculator</CardTitle>
-          <p className="text-gray-600">Calculate potential payouts for single bets and parlays</p>
+          <CardTitle className="text-3xl font-black text-gray-900">Odds Calculator</CardTitle>
+          <p className="text-gray-600">Calculate potential payouts for single selections and multi-picks</p>
         </CardHeader>
       </Card>
 
@@ -115,15 +115,15 @@ export default function BettingCalculatorContent() {
         <TabsList className="grid w-full grid-cols-2 h-14 bg-white/80 backdrop-blur-sm border-2 border-blue-200">
           <TabsTrigger value="single" className="text-lg font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white">
             <DollarSign className="w-5 h-5 mr-2" />
-            Single Bet
+            Single Selection
           </TabsTrigger>
           <TabsTrigger value="parlay" className="text-lg font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
             <TrendingUp className="w-5 h-5 mr-2" />
-            Parlay
+            Multi-Pick
           </TabsTrigger>
         </TabsList>
 
-        {/* Single Bet Calculator */}
+        {/* Single Selection Calculator */}
         <TabsContent value="single">
           <Card className="border-2 border-blue-200 bg-white">
             <CardContent className="p-8 space-y-6">
@@ -215,7 +215,7 @@ export default function BettingCalculatorContent() {
           </Card>
         </TabsContent>
 
-        {/* Parlay Calculator */}
+        {/* Multi-Pick Calculator */}
         <TabsContent value="parlay">
           <Card className="border-2 border-indigo-200 bg-white">
             <CardContent className="p-8 space-y-6">
@@ -233,13 +233,13 @@ export default function BettingCalculatorContent() {
               </div>
 
               <div className="space-y-4">
-                <h4 className="font-bold text-gray-900 text-lg">Parlay Legs:</h4>
+                <h4 className="font-bold text-gray-900 text-lg">Multi-Pick Selections:</h4>
                 {parlayLegs.map((leg, index) => (
                   <div key={index} className="flex gap-3">
                     <div className="flex-1">
                       <Input
                         type="text"
-                        placeholder={`Leg ${index + 1} Odds (e.g., -110)`}
+                        placeholder={`Pick ${index + 1} Odds (e.g., -110)`}
                         value={leg.odds}
                         onChange={(e) => updateParlayLeg(index, e.target.value)}
                         className="h-12 border-2 border-gray-300"
@@ -261,7 +261,7 @@ export default function BettingCalculatorContent() {
                   onClick={addParlayLeg}
                   className="w-full h-12 border-2 border-indigo-300 hover:bg-indigo-50"
                 >
-                  + Add Another Leg
+                  + Add Another Pick
                 </Button>
               </div>
 
@@ -270,8 +270,8 @@ export default function BettingCalculatorContent() {
                 className="w-full h-14 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               >
                 <Zap className="w-5 h-5 mr-2" />
-                Calculate Parlay Payout
-              </Button>
+                Calculate Multi-Pick Payout
+                </Button>
 
               {parlayResult && (
                 <motion.div
@@ -279,10 +279,10 @@ export default function BettingCalculatorContent() {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200"
                 >
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Parlay Results</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Multi-Pick Results</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-800 font-semibold">Number of Legs:</span>
+                      <span className="text-gray-800 font-semibold">Number of Picks:</span>
                       <Badge className="bg-indigo-600 text-white text-lg px-4 py-1">
                         {parlayLegs.length}
                       </Badge>
@@ -320,21 +320,21 @@ export default function BettingCalculatorContent() {
                   </div>
                   <div className="mt-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-3">
                     <p className="text-sm text-yellow-900 font-semibold">
-                      ⚠️ <strong>Remember:</strong> ALL legs must win for the parlay to pay out. 
-                      Risk increases significantly with more legs.
+                      ⚠️ <strong>Remember:</strong> ALL picks must be correct for the multi-pick to pay out. 
+                      Risk increases significantly with more picks.
                     </p>
                   </div>
                 </motion.div>
               )}
 
-              {/* Parlay Info */}
+              {/* Multi-Pick Info */}
               <div className="bg-indigo-50 rounded-lg p-4 border-2 border-indigo-200">
-                <h4 className="font-bold text-gray-900 mb-2">💡 Parlay Tips:</h4>
+                <h4 className="font-bold text-gray-900 mb-2">💡 Multi-Pick Tips:</h4>
                 <ul className="text-sm text-gray-800 space-y-1">
-                  <li>• <strong>2-leg parlay:</strong> Both must win (~3:1 payout typical)</li>
-                  <li>• <strong>3-leg parlay:</strong> All three must win (~6:1 payout)</li>
-                  <li>• <strong>4-leg parlay:</strong> All four must win (~12:1 payout)</li>
-                  <li>• Higher risk, higher reward - use responsibly!</li>
+                  <li>• <strong>2-pick combo:</strong> Both must be correct (~3:1 payout typical)</li>
+                  <li>• <strong>3-pick combo:</strong> All three must be correct (~6:1 payout)</li>
+                  <li>• <strong>4-pick combo:</strong> All four must be correct (~12:1 payout)</li>
+                  <li>• Higher risk, higher reward - analyze carefully!</li>
                 </ul>
               </div>
             </CardContent>

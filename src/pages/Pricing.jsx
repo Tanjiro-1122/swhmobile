@@ -117,7 +117,7 @@ export default function Pricing() {
       "5 free match predictions",
       "5 free player stats lookups",
       "5 free team analysis",
-      "Basic betting calculator",
+      "Basic odds calculator",
       "Community access",
       "30-day saved results retention"
     ],
@@ -126,11 +126,11 @@ export default function Pricing() {
       "✅ Unlimited player stats",
       "✅ Unlimited team analysis",
       "✅ Live odds comparison",
-      "✅ Today's Best Bets (AI picks)",
-      "✅ Parlay builder",
-      "✅ ROI tracker",
-      "✅ Bankroll manager",
-      "✅ Betting alerts",
+      "✅ Today's Top Predictions (AI picks)",
+      "✅ Multi-pick analyzer",
+      "✅ Performance tracker",
+      "✅ Budget manager",
+      "✅ Insight alerts",
       "✅ Save & track results",
       "✅ Priority support",
       "✅ 30-day saved results retention"
@@ -140,7 +140,7 @@ export default function Pricing() {
       "🏆 Annual billing ($149.99/year)",
       "🏆 Save $90/year vs monthly",
       "🏆 VIP MEMBER badge",
-      "🏆 Daily AI Betting Briefs",
+      "🏆 Daily AI Insight Briefs",
       "🏆 Sharp vs Public Money indicators",
       "🏆 Early access to new features",
       "🏆 Priority AI processing",
@@ -385,37 +385,37 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Basic Betting Calculator</td>
+                    <td className="py-4 px-4">Basic Odds Calculator</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Today's Best Bets (AI picks)</td>
+                    <td className="py-4 px-4">Today's Top Predictions (AI picks)</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Parlay Builder</td>
+                    <td className="py-4 px-4">Multi-Pick Analyzer</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">ROI Tracker</td>
+                    <td className="py-4 px-4">Performance Tracker</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Bankroll Manager</td>
+                    <td className="py-4 px-4">Budget Manager</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Betting Alerts</td>
+                    <td className="py-4 px-4">Insight Alerts</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">✅</td>
                     <td className="text-center py-4 px-4">✅</td>
@@ -433,7 +433,7 @@ export default function Pricing() {
                     <td className="text-center py-4 px-4">✅✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Daily AI Betting Briefs</td>
+                    <td className="py-4 px-4">Daily AI Insight Briefs</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4">❌</td>
                     <td className="text-center py-4 px-4 text-yellow-600 font-bold">✅ VIP Only</td>
@@ -511,7 +511,7 @@ export default function Pricing() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What's the difference between Premium and VIP?</h3>
-                <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Betting Briefs, Sharp vs Public Money indicators, VIP Discord access, unlimited saved results retention, and a VIP badge.</p>
+                <p className="text-gray-600">Both have unlimited access to all core features. VIP Annual saves you 37% ($90/year) vs Premium Monthly, PLUS you get exclusive perks: Daily AI Insight Briefs, Sharp vs Public Money indicators, VIP Discord access, unlimited saved results retention, and a VIP badge.</p>
               </div>
 
               <div>
@@ -564,7 +564,7 @@ export default function Pricing() {
         <div className="mt-12 p-6 bg-amber-50 border-2 border-amber-200 rounded-xl mb-24">
           <p className="text-sm text-amber-900 text-center">
             <strong>⚠️ Important Notice:</strong> Must be 18+ (21+ where required). All analytics and insights are for informational and entertainment purposes only. 
-            This app does not facilitate real-money wagering. If you or someone you know has a gambling problem, call 1-800-522-4700.
+            This app does not facilitate or encourage real-money wagering. If you or someone you know has a problem with gambling, call 1-800-522-4700.
           </p>
         </div>
       </div>
