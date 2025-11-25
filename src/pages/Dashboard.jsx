@@ -161,26 +161,16 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Stadium Field Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-green-900 via-green-800 to-green-900">
-        {/* Field Lines */}
-        <div className="absolute inset-0 opacity-20">
-          {/* Center Circle */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-4 border-white rounded-full" />
-          {/* Center Line */}
-          <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white transform -translate-x-1/2" />
-          {/* Horizontal Lines */}
-          <div className="absolute top-1/4 left-0 right-0 h-1 bg-white" />
-          <div className="absolute top-3/4 left-0 right-0 h-1 bg-white" />
-          {/* Border */}
-          <div className="absolute inset-8 border-4 border-white rounded-lg" />
-        </div>
-        {/* Stadium Lights Effect */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        {/* Grass Texture Overlay */}
-        <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px)`
+      {/* Modern Dark Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Subtle gradient orbs */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-0 w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl" />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px'
         }} />
       </div>
 
