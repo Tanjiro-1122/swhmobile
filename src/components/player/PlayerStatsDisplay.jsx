@@ -355,11 +355,25 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Trophy className="w-8 h-8" />
+              <div className="flex items-center gap-4 mb-2">
+                {/* Player Photo */}
+                {player.player_image_url ? (
+                  <img 
+                    src={player.player_image_url} 
+                    alt={player.player_name}
+                    className="w-20 h-20 rounded-full object-cover border-4 border-white/30 shadow-lg bg-white/10"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-20 h-20 rounded-full bg-white/20 flex items-center justify-center border-4 border-white/30 ${player.player_image_url ? 'hidden' : ''}`}>
+                  <Trophy className="w-10 h-10" />
+                </div>
                 <div>
                   <CardTitle className="text-3xl font-black">{player.player_name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge className="bg-white/20 text-white border-white/30">
                       {player.team}
                     </Badge>
