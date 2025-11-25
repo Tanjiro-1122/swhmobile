@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import DashboardPredictionsWidget from "@/components/predictions/DashboardPredictionsWidget";
 
 // Sport-themed icons as SVG components
 const FootballIcon = () => (
