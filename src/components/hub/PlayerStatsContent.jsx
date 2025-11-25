@@ -34,11 +34,14 @@ export default function PlayerStatsContent() {
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
 Get comprehensive stats including:
+- Player headshot/photo URL (search ESPN, NBA.com, NFL.com, MLB.com etc for official player photo)
 - Season averages (sport-specific stats)
 - Last 5 games with detailed per-game stats
 - Next game prediction with specific numbers
 - Betting insights (over/under, hot streak, consistency)
 - Injury status
+
+IMPORTANT: For image_url, find the official player headshot from ESPN, NBA.com, NFL.com, MLB.com, NHL.com or similar sports sites. The URL should be a direct link to the player's photo.
 
 Return complete JSON with all fields populated.`,
         add_context_from_internet: true,
@@ -46,6 +49,7 @@ Return complete JSON with all fields populated.`,
           type: "object",
           properties: {
             player_name: { type: "string" },
+            image_url: { type: "string", description: "Direct URL to player headshot/photo from ESPN or official league site" },
             sport: { type: "string" },
             team: { type: "string" },
             position: { type: "string" },

@@ -34,6 +34,7 @@ export default function TeamStatsContent() {
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
 
 Get comprehensive team stats including:
+- Team logo URL (search ESPN, official league sites for the team logo)
 - Current record and standings
 - Season averages
 - Last 5 games with scores
@@ -41,12 +42,15 @@ Get comprehensive team stats including:
 - Strengths and weaknesses
 - Injury report
 
+IMPORTANT: For logo_url, find the official team logo from ESPN, NBA.com, NFL.com, MLB.com, NHL.com or similar sports sites. The URL should be a direct link to the team's logo image.
+
 Return complete JSON with all fields populated.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
             team_name: { type: "string" },
+            logo_url: { type: "string", description: "Direct URL to team logo from ESPN or official league site" },
             sport: { type: "string" },
             league: { type: "string" },
             current_record: { type: "object" },
