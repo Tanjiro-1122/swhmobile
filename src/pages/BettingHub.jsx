@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList } from "lucide-react";
+import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 // Import content components
@@ -11,6 +11,7 @@ import BankrollManagerContent from "@/components/poweruser/BankrollManagerConten
 import LiveOddsContent from "@/components/hub/LiveOddsContent";
 import AlertsContent from "@/components/hub/AlertsContent";
 import BetTrackerContent from "@/components/hub/BetTrackerContent";
+import ValueBetFinderContent from "@/components/hub/ValueBetFinderContent";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 function BettingHubContent() {
@@ -28,7 +29,7 @@ function BettingHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 mb-8 bg-black/40 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white/10 h-auto">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1 mb-8 bg-black/40 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white/10 h-auto">
             <TabsTrigger 
               value="tracker" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
@@ -78,6 +79,13 @@ function BettingHubContent() {
               <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
               <span className="truncate">Bank</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="value" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white text-[10px] sm:text-xs md:text-sm py-2 px-1 sm:px-2"
+            >
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1 flex-shrink-0" />
+              <span className="truncate">Value</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tracker">
@@ -106,6 +114,10 @@ function BettingHubContent() {
 
           <TabsContent value="bankroll">
             <BankrollManagerContent />
+          </TabsContent>
+
+          <TabsContent value="value">
+            <ValueBetFinderContent />
           </TabsContent>
         </Tabs>
       </div>
