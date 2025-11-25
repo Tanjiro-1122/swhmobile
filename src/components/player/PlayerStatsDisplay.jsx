@@ -391,26 +391,35 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          {/* Injury Status */}
-          {player.injury_status && (
+          {/* Health Status */}
+          {(player.health_status || player.injury_status) && (
             <div className={`p-4 rounded-xl border-2 ${
-              player.injury_status.toLowerCase() === 'healthy' 
+              (player.health_status || player.injury_status)?.toLowerCase() === 'healthy' 
                 ? 'bg-green-50 border-green-200' 
+                : (player.health_status || player.injury_status)?.toLowerCase().includes('day-to-day')
+                ? 'bg-yellow-50 border-yellow-200'
                 : 'bg-red-50 border-red-200'
             }`}>
               <div className="flex items-center gap-2">
-                {player.injury_status.toLowerCase() === 'healthy' ? (
+                {(player.health_status || player.injury_status)?.toLowerCase() === 'healthy' ? (
                   <CheckCircle className="w-5 h-5 text-green-600" />
+                ) : (player.health_status || player.injury_status)?.toLowerCase().includes('day-to-day') ? (
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
                 ) : (
                   <AlertCircle className="w-5 h-5 text-red-600" />
                 )}
                 <span className={`font-bold ${
-                  player.injury_status.toLowerCase() === 'healthy' 
+                  (player.health_status || player.injury_status)?.toLowerCase() === 'healthy' 
                     ? 'text-green-900' 
+                    : (player.health_status || player.injury_status)?.toLowerCase().includes('day-to-day')
+                    ? 'text-yellow-900'
                     : 'text-red-900'
                 }`}>
-                  Injury Status: {player.injury_status}
+                  Health Status: {player.health_status || player.injury_status}
                 </span>
+                {player.injury_details && (
+                  <span className="text-gray-600 ml-2">— {player.injury_details}</span>
+                )}
               </div>
             </div>
           )}
