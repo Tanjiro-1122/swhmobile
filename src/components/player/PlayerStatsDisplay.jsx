@@ -8,37 +8,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Sport/League logos
-const LEAGUE_LOGOS = {
-  nba: "https://cdn.nba.com/logos/leagues/logo-nba.svg",
-  nfl: "https://static.www.nfl.com/image/private/t_q-best/league/nvwvzyamxilflxmnhqsa",
-  mlb: "https://www.mlbstatic.com/team-logos/league-on-dark/1.svg",
-  nhl: "https://www-league.nhlstatic.com/images/logos/league-dark/133-flat.svg",
-  mls: "https://images.mlssoccer.com/image/private/t_q-best/mls-logos/mls-logo-primary",
-  premier_league: "https://www.premierleague.com/resources/rebrand/v7/i/elements/pl-main-logo.png",
-  la_liga: "https://assets.laliga.com/assets/logos/laliga-v/laliga-v-1200x1200.png",
-  serie_a: "https://upload.wikimedia.org/wikipedia/en/e/e1/Serie_A_logo_%282019%29.svg",
-  bundesliga: "https://upload.wikimedia.org/wikipedia/en/d/df/Bundesliga_logo_%282017%29.svg",
-  ncaa: "https://upload.wikimedia.org/wikipedia/commons/d/dd/NCAA_logo.svg",
-};
 
-const getLeagueLogo = (sport, league) => {
-  const sportLower = sport?.toLowerCase() || '';
-  const leagueLower = league?.toLowerCase() || '';
-  
-  if (leagueLower.includes('nba') || sportLower.includes('nba')) return LEAGUE_LOGOS.nba;
-  if (leagueLower.includes('nfl') || sportLower.includes('nfl')) return LEAGUE_LOGOS.nfl;
-  if (leagueLower.includes('mlb') || sportLower.includes('mlb') || sportLower.includes('baseball')) return LEAGUE_LOGOS.mlb;
-  if (leagueLower.includes('nhl') || sportLower.includes('nhl') || sportLower.includes('hockey')) return LEAGUE_LOGOS.nhl;
-  if (leagueLower.includes('mls') || (sportLower.includes('soccer') && leagueLower.includes('major'))) return LEAGUE_LOGOS.mls;
-  if (leagueLower.includes('premier') || leagueLower.includes('epl')) return LEAGUE_LOGOS.premier_league;
-  if (leagueLower.includes('la liga') || leagueLower.includes('laliga')) return LEAGUE_LOGOS.la_liga;
-  if (leagueLower.includes('serie a')) return LEAGUE_LOGOS.serie_a;
-  if (leagueLower.includes('bundesliga')) return LEAGUE_LOGOS.bundesliga;
-  if (leagueLower.includes('ncaa') || leagueLower.includes('college')) return LEAGUE_LOGOS.ncaa;
-  
-  return null;
-};
 
 export default function PlayerStatsDisplay({ player, onDelete }) {
   const formatDate = (dateString) => {
@@ -387,34 +357,9 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4 flex-1">
-              {/* Player Photo with optimized loading */}
-              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden flex-shrink-0 relative">
-                {player.image_url && (
-                  <img 
-                    src={player.image_url} 
-                    alt={player.player_name}
-                    className="w-full h-full object-cover transition-opacity duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                )}
-                <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-500/30 to-pink-500/30 ${player.image_url ? 'hidden' : 'flex'}`}>
-                  {getLeagueLogo(player.sport, player.league) ? (
-                    <img 
-                      src={getLeagueLogo(player.sport, player.league)} 
-                      alt={player.league || player.sport}
-                      className="w-12 h-12 object-contain"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                    />
-                  ) : null}
-                  <Trophy className={`w-10 h-10 text-white/70 ${getLeagueLogo(player.sport, player.league) ? 'hidden' : 'block'}`} />
-                </div>
+              {/* Player Icon */}
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-8 h-8 text-white" />
               </div>
               
               <div>
