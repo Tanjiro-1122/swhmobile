@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Lock, Crown } from "lucide-react";
+import { TrendingUp, Lock, Crown, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-
-const ODDS_API_KEY = "224417b8b53239d049559bbba6ba98ff";
 
 export default function LiveOddsContent() {
   const [selectedSport, setSelectedSport] = useState("basketball_nba");
@@ -25,6 +23,19 @@ export default function LiveOddsContent() {
   });
 
   const hasAccess = currentUser?.subscription_type === 'legacy' || currentUser?.subscription_type === 'vip_annual';
+
+  // Fetch the API key from the backend for VIP users
+  const { data: apiKeyData, isLoading: isLoadingKey, error: keyError } = useQuery({
+    queryKey: ['oddsApiKey'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getOddsApiKey');
+      return response.data;
+    },
+    enabled: hasAccess,
+    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+  });
+
+  const apiKey = apiKeyData?.apiKey;
 
   const sportOptions = [
     { key: "basketball_nba", label: "NBA" },
@@ -63,6 +74,49 @@ export default function LiveOddsContent() {
     );
   }
 
+  // Show loading state while fetching API key
+  if (isLoadingKey) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Crown className="w-6 h-6 text-yellow-500" />
+          <p className="text-white/80 font-semibold">
+            VIP Access • Real-time odds comparison from top sportsbooks
+          </p>
+        </div>
+        <Card className="border-2 border-white/20 bg-black/40 backdrop-blur-sm">
+          <CardContent className="p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-white/70">Loading odds data...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state if API key fetch failed
+  if (keyError || !apiKey) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Crown className="w-6 h-6 text-yellow-500" />
+          <p className="text-white/80 font-semibold">
+            VIP Access • Real-time odds comparison from top sportsbooks
+          </p>
+        </div>
+        <Card className="border-2 border-orange-300 bg-orange-50">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-orange-500" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Odds Temporarily Unavailable</h3>
+            <p className="text-gray-600">
+              We're experiencing issues loading live odds. Please try again later or contact support if the issue persists.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -95,7 +149,7 @@ export default function LiveOddsContent() {
                 <iframe
                   title={`${sport.label} Odds Widget`}
                   style={{ width: '100%', height: '600px', border: 'none' }}
-                  src={`https://widget.the-odds-api.com/v1/sports/${sport.key}/events/?accessKey=${ODDS_API_KEY}&bookmakerKeys=draftkings,fanduel,betmgm,pointsbet,caesars&oddsFormat=american&markets=h2h,spreads,totals&marketNames=h2h:Moneyline,spreads:Spreads,totals:Over/Under`}
+                  src={`https://widget.the-odds-api.com/v1/sports/${sport.key}/events/?accessKey=${apiKey}&bookmakerKeys=draftkings,fanduel,betmgm,pointsbet,caesars&oddsFormat=american&markets=h2h,spreads,totals&marketNames=h2h:Moneyline,spreads:Spreads,totals:Over/Under`}
                 />
               </CardContent>
             </Card>
