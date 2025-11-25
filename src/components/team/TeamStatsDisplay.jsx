@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Trophy, TrendingUp, TrendingDown, AlertCircle, Activity, 
-  Target, Award, Calendar, Trash2, Users, Shield 
+  TrendingUp, TrendingDown, AlertCircle, Activity, 
+  Target, Calendar, Trash2, Users, Shield 
 } from "lucide-react";
 import { motion } from "framer-motion";
 
