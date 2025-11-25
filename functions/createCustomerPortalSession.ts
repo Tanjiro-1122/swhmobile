@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: customer.id,
-      return_url: `${origin}/Profile`,
+      return_url: `https://sportswagerhelper.com/MyAccount`,
     });
 
     return Response.json({ 
