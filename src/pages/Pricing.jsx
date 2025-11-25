@@ -153,8 +153,8 @@ export default function Pricing() {
   const currentPlan = currentUser?.subscription_type || 'free';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4 sm:p-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-16">
           <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm px-4 py-2 mb-4">
@@ -192,7 +192,7 @@ export default function Pricing() {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-16">
           {/* Free Plan */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -344,135 +344,123 @@ export default function Pricing() {
         </div>
 
         {/* Comparison Table */}
-        <Card className="border-2 border-gray-200 mb-16">
+        <Card className="border-2 border-gray-200 mb-16 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-            <CardTitle className="text-2xl font-bold text-center">Feature Comparison</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">Feature Comparison</CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <CardContent className="p-4 sm:p-8">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="w-full min-w-[500px]">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-4 px-4 font-bold text-gray-900">Feature</th>
-                    <th className="text-center py-4 px-4 font-bold text-gray-900">Free</th>
-                    <th className="text-center py-4 px-4 font-bold text-purple-600">Premium</th>
-                    <th className="text-center py-4 px-4 font-bold text-yellow-600">VIP Annual</th>
+                    <th className="text-left py-3 sm:py-4 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">Feature</th>
+                    <th className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">Free</th>
+                    <th className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold text-purple-600 text-xs sm:text-sm">Premium</th>
+                    <th className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold text-yellow-600 text-xs sm:text-sm">VIP</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-xs sm:text-sm">
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Match Predictions</td>
-                    <td className="text-center py-4 px-4">5 free</td>
-                    <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Match Predictions</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">5 free</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-purple-600 font-bold">Unlimited</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Player & Team Stats</td>
-                    <td className="text-center py-4 px-4">5 free each</td>
-                    <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Player & Team Stats</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">5 free</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-purple-600 font-bold">Unlimited</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100 bg-yellow-50">
-                    <td className="py-4 px-4 font-bold">📁 Saved Results Retention</td>
-                    <td className="text-center py-4 px-4">30 days</td>
-                    <td className="text-center py-4 px-4">30 days</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">♾️ UNLIMITED (Forever!)</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4 font-bold">📁 Saved Results</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">30 days</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">30 days</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">♾️ Forever</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Live Odds Comparison</td>
-                    <td className="text-center py-4 px-4">5 free checks</td>
-                    <td className="text-center py-4 px-4 text-purple-600 font-bold">Unlimited</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">Unlimited</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Live Odds</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">5 free</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-purple-600 font-bold">Unlimited</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">Unlimited</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Basic Odds Calculator</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Odds Calculator</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Today's Top Predictions (AI picks)</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">AI Predictions</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Multi-Pick Analyzer</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Multi-Pick Analyzer</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Performance Tracker</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Performance Tracker</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Budget Manager</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Budget Manager</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Insight Alerts</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Insight Alerts</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Save & Track Results</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Priority Support</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Priority Support</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                    <td className="text-center py-4 px-4">✅✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">AI Insight Briefs</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">VIP</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Daily AI Insight Briefs</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">✅ VIP Only</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Sharp Money Indicators</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 text-yellow-600 font-bold">VIP</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Sharp vs Public Money Indicators</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4 text-yellow-600 font-bold">✅ VIP Only</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">VIP Badge</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">VIP Member Badge</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">Early Access</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Early Access to New Features</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Priority AI Processing</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-4">Exclusive Discord Channel</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">❌</td>
-                    <td className="text-center py-4 px-4">✅</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4">VIP Discord</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">❌</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4">✅</td>
                   </tr>
                   <tr>
-                    <td className="py-4 px-4">Annual Cost</td>
-                    <td className="text-center py-4 px-4 font-bold">$0</td>
-                    <td className="text-center py-4 px-4 font-bold text-purple-600">$239.88</td>
-                    <td className="text-center py-4 px-4 font-bold text-yellow-600">$149.99 💰</td>
+                    <td className="py-3 sm:py-4 px-2 sm:px-4 font-bold">Annual Cost</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold">$0</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold text-purple-600">$239.88</td>
+                    <td className="text-center py-3 sm:py-4 px-2 sm:px-4 font-bold text-yellow-600">$149.99</td>
                   </tr>
                 </tbody>
               </table>

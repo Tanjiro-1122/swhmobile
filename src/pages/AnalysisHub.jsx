@@ -15,8 +15,8 @@ function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">

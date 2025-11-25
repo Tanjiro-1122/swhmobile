@@ -175,7 +175,7 @@ export default function Dashboard() {
         }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 box-border">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 box-border overflow-x-hidden">
         {/* Header Section */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -235,7 +235,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Main Menu Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 px-1 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 w-full">
           {menuItems.map((item, index) => {
             const isHovered = hoveredItem === item.id;
             const SportIcon = item.SportIcon;
