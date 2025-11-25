@@ -26,7 +26,7 @@ export default function AIPredictionCard({ prediction, type = "game" }) {
       >
         <Card className="overflow-hidden border-2 border-purple-300 bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
           <CardHeader className="bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 text-white p-4 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"30\" height=\"30\" viewBox=\"0 0 30 30\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 0h30v30H0z\" fill=\"none\"/%3E%3Ccircle cx=\"15\" cy=\"15\" r=\"2\" fill=\"rgba(255,255,255,0.1)\"/%3E%3C/svg%3E')] opacity-50" />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
@@ -143,7 +143,7 @@ export default function AIPredictionCard({ prediction, type = "game" }) {
       >
         <Card className="overflow-hidden border-2 border-emerald-300 bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
           <CardHeader className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 text-white p-4 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"30\" height=\"30\" viewBox=\"0 0 30 30\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 0h30v30H0z\" fill=\"none\"/%3E%3Ccircle cx=\"15\" cy=\"15\" r=\"2\" fill=\"rgba(255,255,255,0.1)\"/%3E%3C/svg%3E')] opacity-50" />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
             <div className="relative flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                 <Target className="w-5 h-5" />
@@ -212,7 +212,7 @@ export default function AIPredictionCard({ prediction, type = "game" }) {
     >
       <Card className="overflow-hidden border-2 border-orange-400 bg-gradient-to-br from-orange-50 via-red-50 to-orange-50 shadow-lg hover:shadow-2xl transition-all duration-300">
         <CardHeader className="bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 text-white p-4 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"30\" height=\"30\" viewBox=\"0 0 30 30\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 0h30v30H0z\" fill=\"none\"/%3E%3Cpath d=\"M15 5L25 25H5z\" fill=\"rgba(255,255,255,0.1)\"/%3E%3C/svg%3E')] opacity-50" />
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
           <div className="relative flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 animate-pulse" />
