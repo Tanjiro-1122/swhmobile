@@ -14,9 +14,16 @@ import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import TeamStatsDisplay from "../components/team/TeamStatsDisplay";
 import RequireAuth from "../components/auth/RequireAuth";
 
+const ITEMS_PER_PAGE = 20;
+
 function SavedResultsContent() {
   const [activeTab, setActiveTab] = useState("matches");
   const queryClient = useQueryClient();
+
+  // Pagination states
+  const [matchesDisplayed, setMatchesDisplayed] = useState(ITEMS_PER_PAGE);
+  const [playersDisplayed, setPlayersDisplayed] = useState(ITEMS_PER_PAGE);
+  const [teamsDisplayed, setTeamsDisplayed] = useState(ITEMS_PER_PAGE);
 
   // Filter states
   const [sportFilter, setSportFilter] = useState("all");
@@ -288,9 +295,26 @@ function SavedResultsContent() {
     setDateRange("all");
     setConfidenceFilter("all");
     setSortBy("date_desc");
+    // Reset pagination when filters change
+    setMatchesDisplayed(ITEMS_PER_PAGE);
+    setPlayersDisplayed(ITEMS_PER_PAGE);
+    setTeamsDisplayed(ITEMS_PER_PAGE);
   };
 
   const hasActiveFilters = sportFilter !== "all" || leagueFilter !== "all" || searchQuery !== "" || dateRange !== "all" || confidenceFilter !== "all" || sortBy !== "date_desc";
+
+  // Paginated data
+  const paginatedMatches = filteredMatches.slice(0, matchesDisplayed);
+  const paginatedPlayerStats = filteredPlayerStats.slice(0, playersDisplayed);
+  const paginatedTeamStats = filteredTeamStats.slice(0, teamsDisplayed);
+
+  const hasMoreMatches = filteredMatches.length > matchesDisplayed;
+  const hasMorePlayers = filteredPlayerStats.length > playersDisplayed;
+  const hasMoreTeams = filteredTeamStats.length > teamsDisplayed;
+
+  const loadMoreMatches = () => setMatchesDisplayed(prev => prev + ITEMS_PER_PAGE);
+  const loadMorePlayers = () => setPlayersDisplayed(prev => prev + ITEMS_PER_PAGE);
+  const loadMoreTeams = () => setTeamsDisplayed(prev => prev + ITEMS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -563,16 +587,32 @@ function SavedResultsContent() {
                 <p className="text-gray-600">Loading matches...</p>
               </div>
             ) : filteredMatches.length > 0 ? (
-              <div className="grid lg:grid-cols-2 gap-6">
-                {filteredMatches.map((match, index) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    onDelete={deleteMatchMutation.mutate}
-                    index={index}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid lg:grid-cols-2 gap-6">
+                  {paginatedMatches.map((match, index) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      onDelete={deleteMatchMutation.mutate}
+                      index={index}
+                    />
+                  ))}
+                </div>
+                {hasMoreMatches && (
+                  <div className="text-center mt-8">
+                    <p className="text-sm text-gray-500 mb-3">
+                      Showing {paginatedMatches.length} of {filteredMatches.length} matches
+                    </p>
+                    <Button
+                      onClick={loadMoreMatches}
+                      variant="outline"
+                      className="border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                    >
+                      Load More Matches
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <Card className="border-2 border-gray-200">
                 <CardContent className="p-12 text-center">
@@ -609,18 +649,34 @@ function SavedResultsContent() {
                 <p className="text-gray-600">Loading player stats...</p>
               </div>
             ) : filteredPlayerStats.length > 0 ? (
-              <div className="space-y-6">
-                {filteredPlayerStats.map((player, index) => (
-                  <motion.div
-                    key={player.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <PlayerStatsDisplay player={player} onDelete={deletePlayerMutation.mutate} />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="space-y-6">
+                  {paginatedPlayerStats.map((player, index) => (
+                    <motion.div
+                      key={player.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                    >
+                      <PlayerStatsDisplay player={player} onDelete={deletePlayerMutation.mutate} />
+                    </motion.div>
+                  ))}
+                </div>
+                {hasMorePlayers && (
+                  <div className="text-center mt-8">
+                    <p className="text-sm text-gray-500 mb-3">
+                      Showing {paginatedPlayerStats.length} of {filteredPlayerStats.length} players
+                    </p>
+                    <Button
+                      onClick={loadMorePlayers}
+                      variant="outline"
+                      className="border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                    >
+                      Load More Players
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <Card className="border-2 border-gray-200">
                 <CardContent className="p-12 text-center">
@@ -657,18 +713,34 @@ function SavedResultsContent() {
                 <p className="text-gray-600">Loading team stats...</p>
               </div>
             ) : filteredTeamStats.length > 0 ? (
-              <div className="space-y-6">
-                {filteredTeamStats.map((team, index) => (
-                  <motion.div
-                    key={team.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <TeamStatsDisplay team={team} onDelete={deleteTeamMutation.mutate} />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="space-y-6">
+                  {paginatedTeamStats.map((team, index) => (
+                    <motion.div
+                      key={team.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                    >
+                      <TeamStatsDisplay team={team} onDelete={deleteTeamMutation.mutate} />
+                    </motion.div>
+                  ))}
+                </div>
+                {hasMoreTeams && (
+                  <div className="text-center mt-8">
+                    <p className="text-sm text-gray-500 mb-3">
+                      Showing {paginatedTeamStats.length} of {filteredTeamStats.length} teams
+                    </p>
+                    <Button
+                      onClick={loadMoreTeams}
+                      variant="outline"
+                      className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                    >
+                      Load More Teams
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <Card className="border-2 border-gray-200">
                 <CardContent className="p-12 text-center">
