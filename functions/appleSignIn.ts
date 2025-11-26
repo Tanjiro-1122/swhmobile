@@ -85,9 +85,25 @@ Deno.serve(async (req) => {
 
     if (action === 'getClientId') {
       // Return client ID for frontend initialization
+      // Also log config status for debugging (without exposing secrets)
+      console.log('Apple Sign In Config Check:', {
+        hasClientId: !!APPLE_CLIENT_ID,
+        hasTeamId: !!APPLE_TEAM_ID,
+        hasKeyId: !!APPLE_KEY_ID,
+        hasPrivateKey: !!APPLE_PRIVATE_KEY,
+        privateKeyLength: APPLE_PRIVATE_KEY?.length || 0,
+        clientId: APPLE_CLIENT_ID
+      });
+      
       return Response.json({ 
         clientId: APPLE_CLIENT_ID,
-        redirectUri: `${req.headers.get('origin')}/apple-auth-callback`
+        redirectUri: `${req.headers.get('origin')}/apple-auth-callback`,
+        configStatus: {
+          hasClientId: !!APPLE_CLIENT_ID,
+          hasTeamId: !!APPLE_TEAM_ID,
+          hasKeyId: !!APPLE_KEY_ID,
+          hasPrivateKey: !!APPLE_PRIVATE_KEY
+        }
       }, {
         headers: { 'Access-Control-Allow-Origin': '*' }
       });
