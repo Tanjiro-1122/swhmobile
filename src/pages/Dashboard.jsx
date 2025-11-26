@@ -133,19 +133,28 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuthenticated);
+    base44.auth.isAuthenticated()
+      .then(setIsAuthenticated)
+      .catch((err) => {
+        console.error('Auth check error:', err);
+        setIsAuthenticated(false);
+      });
   }, []);
 
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, error: userError } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       try {
+        const authenticated = await base44.auth.isAuthenticated();
+        if (!authenticated) return null;
         return await base44.auth.me();
-      } catch {
+      } catch (err) {
+        console.error('Error fetching user:', err);
         return null;
       }
     },
     refetchOnWindowFocus: true,
+    retry: 1,
   });
 
   const isVIP = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
