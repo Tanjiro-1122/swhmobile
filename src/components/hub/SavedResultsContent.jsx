@@ -29,31 +29,46 @@ export default function SavedResultsContent() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { data: allMatches = [], isLoading: matchesLoading } = useQuery({
+  const { data: allMatches = [], isLoading: matchesLoading, error: matchesError } = useQuery({
     queryKey: ['savedMatches', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Match.filter({ created_by: currentUser.email }, '-created_date');
+      try {
+        return await base44.entities.Match.filter({ created_by: currentUser.email }, '-created_date');
+      } catch (err) {
+        console.error('Error fetching matches:', err);
+        return [];
+      }
     },
     enabled: !!currentUser?.email,
     refetchOnWindowFocus: true,
   });
 
-  const { data: allPlayerStats = [], isLoading: playersLoading } = useQuery({
+  const { data: allPlayerStats = [], isLoading: playersLoading, error: playersError } = useQuery({
     queryKey: ['savedPlayerStats', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date');
+      try {
+        return await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date');
+      } catch (err) {
+        console.error('Error fetching player stats:', err);
+        return [];
+      }
     },
     enabled: !!currentUser?.email,
     refetchOnWindowFocus: true,
   });
 
-  const { data: allTeamStats = [], isLoading: teamsLoading } = useQuery({
+  const { data: allTeamStats = [], isLoading: teamsLoading, error: teamsError } = useQuery({
     queryKey: ['savedTeamStats', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.TeamStats.filter({ created_by: currentUser.email }, '-created_date');
+      try {
+        return await base44.entities.TeamStats.filter({ created_by: currentUser.email }, '-created_date');
+      } catch (err) {
+        console.error('Error fetching team stats:', err);
+        return [];
+      }
     },
     enabled: !!currentUser?.email,
     refetchOnWindowFocus: true,
