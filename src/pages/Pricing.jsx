@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3, Star, Loader2 } from "lucide-react";
+import { Crown, Sparkles, Check, Zap, Shield, TrendingUp, Target, BarChart3, Star, Loader2, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { createPageUrl } from "@/utils";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isIOSApp, setIsIOSApp] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -18,6 +21,9 @@ export default function Pricing() {
       setIsAuthenticated(authenticated);
     };
     checkAuth();
+    
+    // Check if we're in the iOS app
+    setIsIOSApp(typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase);
   }, []);
 
   const { data: currentUser } = useQuery({
@@ -518,7 +524,11 @@ export default function Pricing() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
-                <p className="text-gray-600">We accept all major credit cards (Visa, Mastercard, Amex, Discover) through Stripe's secure payment processing.</p>
+                <p className="text-gray-600">
+                  {isIOSApp 
+                    ? "Payments are processed securely through Apple's App Store using your Apple ID payment method." 
+                    : "We accept all major credit cards (Visa, Mastercard, Amex, Discover) through Stripe's secure payment processing."}
+                </p>
               </div>
               
               <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
@@ -543,6 +553,58 @@ export default function Pricing() {
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What is a Legacy Member?</h3>
                 <p className="text-gray-600">Legacy Members are our original supporters who received lifetime unlimited access. This tier is no longer available for new users.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subscription Details - Required for Apple App Store */}
+        <Card className="border-2 border-gray-200 mb-8">
+          <CardHeader className="bg-gray-50">
+            <CardTitle className="text-xl font-bold text-center">Subscription Information</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4 text-sm text-gray-700">
+              <div>
+                <h4 className="font-bold text-gray-900">Sports Wager Helper - Premium Monthly</h4>
+                <ul className="list-disc pl-6 mt-2 space-y-1">
+                  <li><strong>Price:</strong> $19.99 per month</li>
+                  <li><strong>Duration:</strong> 1 month (auto-renewing)</li>
+                  <li><strong>Content:</strong> Unlimited AI predictions, player/team stats, live odds, multi-pick analyzer, performance tracker, budget manager, and insight alerts</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900">Sports Wager Helper - VIP Annual</h4>
+                <ul className="list-disc pl-6 mt-2 space-y-1">
+                  <li><strong>Price:</strong> $149.99 per year ($12.50/month)</li>
+                  <li><strong>Duration:</strong> 1 year (auto-renewing)</li>
+                  <li><strong>Content:</strong> Everything in Premium plus Daily AI Insight Briefs, Sharp Money indicators, VIP Discord access, unlimited saved results retention, and early access to new features</li>
+                </ul>
+              </div>
+              <div className="border-t pt-4 mt-4">
+                <p className="text-xs text-gray-600">
+                  • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
+                  • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
+                  • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
+                  • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.<br/>
+                  • Any unused portion of a free trial period will be forfeited when you purchase a subscription.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-4 justify-center pt-4 border-t">
+                <Link 
+                  to={createPageUrl("TermsOfService")} 
+                  className="text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Terms of Use (EULA)
+                </Link>
+                <Link 
+                  to={createPageUrl("PrivacyPolicy")} 
+                  className="text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Privacy Policy
+                </Link>
               </div>
             </div>
           </CardContent>
