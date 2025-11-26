@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, UserPlus, Sparkles, Zap, Crown, Check } from "lucide-react";
+import { Lock, Sparkles, Crown, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -11,8 +11,13 @@ export function useFreeLookupTracker() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userTier, setUserTier] = useState('free');
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
+    // Check if running in mobile app
+    const mobileApp = typeof window.WTN !== 'undefined';
+    setIsMobileApp(mobileApp);
+
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
@@ -41,12 +46,15 @@ export function useFreeLookupTracker() {
             setLookupsRemaining(Math.max(0, 5 - used));
           }
         } else {
-          // Not authenticated - check localStorage
+          // Not authenticated - check localStorage for free lookups
           const used = parseInt(localStorage.getItem('freeLookups') || '0');
           setLookupsRemaining(Math.max(0, 5 - used));
         }
       } catch (error) {
         console.error('Auth check error:', error);
+        // Fallback to localStorage
+        const used = parseInt(localStorage.getItem('freeLookups') || '0');
+        setLookupsRemaining(Math.max(0, 5 - used));
       } finally {
         setIsLoading(false);
       }
@@ -61,7 +69,7 @@ export function useFreeLookupTracker() {
       return true;
     }
     
-    // For free users only
+    // For free users (authenticated or not)
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     if (used >= 5) return false;
     
@@ -71,33 +79,85 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
-    // ALWAYS allow paid tiers - this is the critical fix
+    // ALWAYS allow paid tiers
     if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
       return true;
     }
     
-    // Check free lookups only for free users
+    // Check free lookups for free users
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     return used < 5;
   };
 
-  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading };
+  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
 }
 
 export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isMobileApp, setIsMobileApp] = useState(false);
+
+  useEffect(() => {
+    setIsMobileApp(typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase);
+  }, []);
+
   if (!show) return null;
-
-  const handleSignup = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
-  };
-
-  const handleViewPricing = () => {
-    window.location.href = '/Pricing';
-  };
 
   const handleClose = () => {
     if (typeof onClose === 'function') {
       onClose();
+    }
+  };
+
+  const handleSubscribe = async (plan) => {
+    setIsProcessing(true);
+
+    try {
+      // Check if we're in the iOS/Android app with IAP support
+      if (typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase) {
+        let productId;
+        
+        if (plan === 'premium') {
+          productId = 'com.sportswagerhelper.premium.monthly';
+        } else if (plan === 'vip') {
+          productId = 'com.sportswagerhelper.vip.annual';
+        }
+
+        window.WTN.inAppPurchase({
+          productId: productId,
+          callback: async function(data) {
+            if (data.isSuccess && data.receiptData) {
+              try {
+                const response = await base44.functions.invoke('handleAppleIAP', {
+                  receipt: data.receiptData,
+                  productId: productId
+                });
+
+                if (response.data.success) {
+                  alert('🎉 Subscription successful! Your account has been upgraded.');
+                  // Clear free lookup restrictions
+                  localStorage.removeItem('freeLookups');
+                  window.location.reload();
+                } else {
+                  alert('Receipt verification failed. Please contact support.');
+                }
+              } catch (error) {
+                console.error('IAP verification error:', error);
+                alert('Failed to verify purchase. Please contact support.');
+              }
+            } else {
+              alert('Purchase was not completed.');
+            }
+            setIsProcessing(false);
+          }
+        });
+      } else {
+        // Web user - redirect to pricing page for Stripe
+        window.location.href = '/Pricing';
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('Failed to start checkout. Please try again.');
+      setIsProcessing(false);
     }
   };
 
@@ -115,82 +175,105 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="modal-ipad px-4"
+          className="modal-ipad px-4 w-full max-w-lg"
         >
-          <Card className="max-w-lg w-full border-2 border-red-500 shadow-2xl shadow-red-500/20 dark:bg-slate-900 dark:border-red-600">
-            <CardHeader className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white p-8">
+          <Card className="w-full border-2 border-red-500 shadow-2xl shadow-red-500/20 dark:bg-slate-900 dark:border-red-600">
+            <CardHeader className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white p-6 sm:p-8">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <Lock className="w-8 h-8" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <Lock className="w-7 h-7 sm:w-8 sm:h-8" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-black mb-2">🔒 Account Locked</CardTitle>
-                  <p className="text-lg text-red-100">Subscribe to continue using the app</p>
+                  <CardTitle className="text-2xl sm:text-3xl font-black mb-1">🔒 Limit Reached</CardTitle>
+                  <p className="text-sm sm:text-base text-red-100">Subscribe to continue</p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
-                <div className="relative inline-block mb-4">
-                  <div className="text-8xl font-black text-gray-200">0/5</div>
+            <CardContent className="p-6 sm:p-8">
+              <div className="text-center mb-6">
+                <div className="relative inline-block mb-3">
+                  <div className="text-6xl sm:text-7xl font-black text-gray-200">0/5</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Lock className="w-16 h-16 text-red-500 animate-pulse" />
+                    <Lock className="w-12 h-12 sm:w-14 sm:h-14 text-red-500 animate-pulse" />
                   </div>
                 </div>
-                <p className="text-xl text-gray-900 font-bold mb-2">
+                <p className="text-lg sm:text-xl text-gray-900 font-bold mb-1">
                   You've used all 5 free lookups!
                 </p>
-                <p className="text-gray-600">
-                  Subscribe now to unlock unlimited access to all features
+                <p className="text-sm sm:text-base text-gray-600">
+                  Subscribe for unlimited searches + data storage
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 text-center">
-                  <div className="text-3xl font-black text-purple-600 mb-1">$19.99</div>
-                  <div className="text-sm font-semibold text-gray-900">Premium Monthly</div>
-                  <div className="text-xs text-gray-500 mt-1">Cancel anytime</div>
-                </div>
-                <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-300 text-center relative">
-                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              {/* Pricing Options */}
+              <div className="space-y-3 mb-6">
+                <button
+                  onClick={() => handleSubscribe('premium')}
+                  disabled={isProcessing}
+                  className="w-full p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300 hover:border-purple-500 transition-all text-left flex items-center justify-between group disabled:opacity-70"
+                >
+                  <div>
+                    <div className="text-2xl font-black text-purple-600">$19.99<span className="text-sm font-semibold text-gray-500">/month</span></div>
+                    <div className="text-sm font-semibold text-gray-900">Premium Monthly</div>
+                    <div className="text-xs text-gray-500">Cancel anytime</div>
+                  </div>
+                  {isProcessing ? (
+                    <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => handleSubscribe('vip')}
+                  disabled={isProcessing}
+                  className="w-full p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 hover:border-yellow-500 transition-all text-left flex items-center justify-between group relative disabled:opacity-70"
+                >
+                  <div className="absolute -top-2 left-4 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     SAVE 37%
                   </div>
-                  <div className="text-3xl font-black text-yellow-600 mb-1">$149.99</div>
-                  <div className="text-sm font-semibold text-gray-900">VIP Annual</div>
-                  <div className="text-xs text-gray-500 mt-1">Billed yearly</div>
-                </div>
+                  <div>
+                    <div className="text-2xl font-black text-yellow-600">$149.99<span className="text-sm font-semibold text-gray-500">/year</span></div>
+                    <div className="text-sm font-semibold text-gray-900">VIP Annual</div>
+                    <div className="text-xs text-gray-500">Best value • Unlimited storage</div>
+                  </div>
+                  {isProcessing ? (
+                    <Loader2 className="w-6 h-6 text-yellow-600 animate-spin" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Crown className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                </button>
               </div>
 
+              {/* Features */}
               <div className="space-y-2 mb-6 bg-gray-50 rounded-lg p-4">
-                <div className="font-bold text-gray-900 mb-2">With Premium or VIP:</div>
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Unlimited match predictions</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Unlimited player & team stats</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Live odds comparison</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>AI betting insights & alerts</span>
+                <div className="font-bold text-gray-900 text-sm mb-2">What you get:</div>
+                <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span>Unlimited searches</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span>Save & track results</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span>AI predictions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span>Live odds</span>
+                  </div>
                 </div>
               </div>
 
-              <Button
-                onClick={handleViewPricing}
-                className="w-full bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 hover:from-red-700 hover:via-orange-700 hover:to-yellow-700 text-white text-xl py-8 font-bold shadow-lg shadow-red-500/30 transition-all hover:shadow-xl hover:shadow-red-500/40 mb-3"
-              >
-                <Crown className="w-6 h-6 mr-3" />
-                View Plans & Subscribe
-              </Button>
-
-              <p className="text-center text-sm text-gray-500">
-                ✅ 14-day money-back guarantee • Cancel anytime
+              <p className="text-center text-xs text-gray-500">
+                ✅ 14-day money-back guarantee • Secure payment
               </p>
             </CardContent>
           </Card>
@@ -201,6 +284,12 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
 }
 
 export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
+  const [isMobileApp, setIsMobileApp] = useState(false);
+
+  useEffect(() => {
+    setIsMobileApp(typeof window.WTN !== 'undefined');
+  }, []);
+
   // Legacy members - original lifetime VIP
   if (userTier === 'legacy') {
     return (
@@ -250,17 +339,11 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
     );
   }
 
-  // IMPORTANT: If user is on any paid tier, don't show free user banner
-  // This prevents the "999 free lookups" bug for paid users
-  if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
-    return null;
-  }
-
   // Don't show banner if user has all lookups remaining (hasn't used any yet)
   if (lookupsRemaining === 5) return null;
 
-  const handleSignup = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+  const handleUpgrade = () => {
+    window.location.href = '/Pricing';
   };
 
   const getColorScheme = () => {
@@ -292,38 +375,27 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
       animate={{ opacity: 1, y: 0 }}
       className={`${colors.bg} border-b-4 ${colors.border} shadow-lg`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Badge className={`${colors.badge} ${colors.text} text-xl font-black px-6 py-3 shadow-lg ${lookupsRemaining <= 2 ? 'animate-pulse' : ''}`}>
-                {lookupsRemaining} FREE {lookupsRemaining === 1 ? 'LOOKUP' : 'LOOKUPS'} LEFT!
-              </Badge>
-              {lookupsRemaining === 0 && (
-                <div className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-1 rounded-full animate-bounce">
-                  LOCKED
-                </div>
-              )}
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Badge className={`${colors.badge} ${colors.text} text-base sm:text-xl font-black px-3 sm:px-6 py-2 sm:py-3 shadow-lg ${lookupsRemaining <= 2 ? 'animate-pulse' : ''}`}>
+              {lookupsRemaining} FREE LEFT
+            </Badge>
             <div className={colors.text}>
-              <p className="text-lg font-bold">
+              <p className="text-sm sm:text-lg font-bold">
                 {lookupsRemaining === 0 
-                  ? "Account locked! Subscribe to continue" 
+                  ? "Limit reached! Subscribe to continue" 
                   : `${lookupsRemaining} free ${lookupsRemaining === 1 ? 'lookup' : 'lookups'} remaining`}
-              </p>
-              <p className="text-sm opacity-90 flex items-center gap-1">
-                <Crown className="w-4 h-4" />
-                {lookupsRemaining === 0 ? 'Choose a plan to unlock all features' : 'Subscribe for unlimited access'}
               </p>
             </div>
           </div>
           <Button
-            onClick={handleSignup}
-            size="lg"
-            className="bg-white hover:bg-gray-100 text-gray-900 font-bold text-lg px-8 py-6 shadow-xl hover:scale-105 transition-all"
+            onClick={handleUpgrade}
+            size="sm"
+            className="bg-white hover:bg-gray-100 text-gray-900 font-bold text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-4 shadow-xl hover:scale-105 transition-all"
           >
-            <Crown className="w-5 h-5 mr-2" />
-            {lookupsRemaining === 0 ? 'Subscribe Now' : 'Upgrade to Premium'}
+            <Crown className="w-4 h-4 mr-1 sm:mr-2" />
+            {lookupsRemaining === 0 ? 'Subscribe' : 'Upgrade'}
           </Button>
         </div>
       </div>
