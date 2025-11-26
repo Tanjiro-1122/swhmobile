@@ -552,7 +552,7 @@ export default function Pricing() {
         <div className="mt-12 p-6 bg-amber-50 border-2 border-amber-200 rounded-xl mb-24">
           <p className="text-sm text-amber-900 text-center">
             <strong>⚠️ Important Notice:</strong> Must be 18+ (21+ where required). All analytics and insights are for informational and entertainment purposes only. 
-            This app does not facilitate or encourage real-money wagering. If you or someone you know has a problem with gambling, call 1-800-522-4700.
+            This app does not facilitate or encourage taking chances. If you or someone you know has a problem with gambling, call 1-800-522-4700.
           </p>
         </div>
       </div>
