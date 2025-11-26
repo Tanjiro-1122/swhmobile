@@ -1,10 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { GoogleAuth } from 'npm:google-auth-library@9.4.1';
 
 // Map Google Play Product IDs to subscription types
 const PRODUCT_MAPPING = {
   'com.sportswagerhelper.premium.monthly': 'premium_monthly',
   'com.sportswagerhelper.vip.annual': 'vip_annual'
 };
+
+// Get service account credentials from environment
+const getServiceAccountCredentials = () => {
+  const keyJson = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY');
+  if (!keyJson) {
+    throw new Error('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY not configured');
+  }
+  return JSON.parse(keyJson);
+};
+
+// Get authenticated Google API client
+const getAuthenticatedClient = async () => {
+  const credentials = getServiceAccountCredentials();
+  const auth = new GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/androidpublisher']
+  });
+  return await auth.getClient();
+};
+
+// Package name for your app
+const PACKAGE_NAME = 'com.sportswagerhelper.app';
 
 Deno.serve(async (req) => {
   try {
@@ -53,7 +76,7 @@ async function handleSubscriptionNotification(base44, notification) {
     return;
   }
 
-  // Find user by order ID or email stored in obfuscatedExternalAccountId
+  // Find user by purchase token
   const users = await base44.asServiceRole.entities.User.filter({
     google_play_purchase_token: purchaseToken
   });
@@ -158,26 +181,42 @@ async function handleOneTimeProductNotification(base44, notification) {
 }
 
 async function verifySubscription(subscriptionId, purchaseToken) {
-  // TODO: Implement Google Play Developer API verification
-  // This requires Google Play Developer API credentials
-  
-  // For now, return a mock response
-  // You'll need to implement actual API verification using googleapis
-  console.warn('Subscription verification not implemented - using mock data');
-  
-  return {
-    orderId: 'mock-order-id',
-    expiryTimeMillis: String(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    obfuscatedExternalAccountId: null
-  };
+  try {
+    const client = await getAuthenticatedClient();
+    
+    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/subscriptions/${subscriptionId}/tokens/${purchaseToken}`;
+    
+    const response = await client.request({ url });
+    
+    console.log('Subscription verification response:', response.data);
+    
+    return {
+      orderId: response.data.orderId,
+      expiryTimeMillis: response.data.expiryTimeMillis,
+      obfuscatedExternalAccountId: response.data.obfuscatedExternalAccountId
+    };
+  } catch (error) {
+    console.error('Error verifying subscription:', error);
+    return null;
+  }
 }
 
 async function verifyOneTimePurchase(productId, purchaseToken) {
-  // TODO: Implement Google Play Developer API verification
-  console.warn('One-time purchase verification not implemented - using mock data');
-  
-  return {
-    orderId: 'mock-order-id',
-    obfuscatedExternalAccountId: null
-  };
+  try {
+    const client = await getAuthenticatedClient();
+    
+    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}`;
+    
+    const response = await client.request({ url });
+    
+    console.log('One-time purchase verification response:', response.data);
+    
+    return {
+      orderId: response.data.orderId,
+      obfuscatedExternalAccountId: response.data.obfuscatedExternalAccountId
+    };
+  } catch (error) {
+    console.error('Error verifying one-time purchase:', error);
+    return null;
+  }
 }
