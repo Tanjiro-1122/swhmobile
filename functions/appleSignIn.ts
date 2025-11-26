@@ -10,6 +10,12 @@ const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY");
 function generateClientSecret() {
   const now = Math.floor(Date.now() / 1000);
   
+  // Handle private key format - replace literal \n with actual newlines
+  let privateKey = APPLE_PRIVATE_KEY;
+  if (privateKey && privateKey.includes('\\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  
   const payload = {
     iss: APPLE_TEAM_ID,
     iat: now,
@@ -23,7 +29,7 @@ function generateClientSecret() {
     kid: APPLE_KEY_ID,
   };
 
-  return jwt.sign(payload, APPLE_PRIVATE_KEY, { algorithm: 'ES256', header });
+  return jwt.sign(payload, privateKey, { algorithm: 'ES256', header });
 }
 
 // Verify Apple identity token
