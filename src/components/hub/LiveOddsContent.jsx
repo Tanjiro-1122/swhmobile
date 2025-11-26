@@ -22,7 +22,9 @@ export default function LiveOddsContent() {
     },
   });
 
-  const hasAccess = currentUser?.subscription_type === 'legacy' || currentUser?.subscription_type === 'vip_annual';
+  const hasAccess = currentUser?.subscription_type === 'legacy' || 
+                   currentUser?.subscription_type === 'vip_annual' || 
+                   currentUser?.subscription_type === 'premium_monthly';
 
   // Fetch the API key from the backend for VIP users
   const { data: apiKeyData, isLoading: isLoadingKey, error: keyError } = useQuery({

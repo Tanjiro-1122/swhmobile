@@ -71,7 +71,7 @@ export default function MyInsightsContent() {
               Set your favorite sports, leagues, and teams to receive more personalized insights.
             </p>
             <Button
-              onClick={() => window.location.href = '/MyAccount'}
+              onClick={() => window.location.href = '/MyAccount?tab=preferences'}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Heart className="w-4 h-4 mr-2" />

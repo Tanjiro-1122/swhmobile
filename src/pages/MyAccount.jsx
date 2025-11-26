@@ -16,10 +16,21 @@ function MyAccountContent() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    
+    // Handle tab parameter
+    const tabParam = params.get('tab');
+    if (tabParam && ['profile', 'subscription', 'preferences', 'saved'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+    
+    // Handle payment success
     if (params.get('payment_success') === 'true') {
       setPaymentSuccess(true);
       setActiveTab("subscription");
-      // Clean URL
+    }
+    
+    // Clean URL
+    if (params.toString()) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);

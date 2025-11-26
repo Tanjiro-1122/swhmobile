@@ -121,6 +121,7 @@ Be realistic and base predictions on actual current season data, injuries, match
       setPredictions(result);
     } catch (error) {
       console.error("Failed to generate predictions:", error);
+      setPredictions(null);
     }
     setIsGenerating(false);
   };
