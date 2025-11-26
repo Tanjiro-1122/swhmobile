@@ -485,10 +485,10 @@ export default function Pricing() {
                 <div className="text-amber-800 space-y-2">
                   <p><strong>Free & Premium Monthly users:</strong> Your saved results (match predictions, player stats, team analysis) are automatically deleted after 30 days. This keeps your saved results page clean and focused on recent activity.</p>
                   <p className="font-bold text-amber-900">
-                    <span className="text-yellow-600">👑 VIP Annual & Legacy members:</span> Enjoy UNLIMITED retention! Your saved results are stored forever, allowing you to track long-term trends, analyze betting performance over seasons, and access your complete betting history anytime.
+                    <span className="text-yellow-600">👑 VIP Annual & Legacy members:</span> Enjoy UNLIMITED retention! Your saved results are stored forever, allowing you to track long-term trends, analyze performance over seasons, and access your complete history anytime.
                   </p>
                   <p className="mt-2 text-sm">
-                    💡 <strong>Why this matters:</strong> Serious bettors need historical data to refine strategies, track ROI over time, and identify long-term patterns. VIP Annual gives you that edge.
+                    💡 <strong>Why this matters:</strong> Serious sports enthusiasts need historical data to refine strategies, track ROI over time, and identify long-term patterns. VIP Annual gives you that edge.
                   </p>
                 </div>
               </div>
@@ -506,7 +506,7 @@ export default function Pricing() {
                 <h3 className="text-lg font-bold text-gray-900 mb-2">What is the VIP Discord channel?</h3>
                 <p className="text-gray-600 mb-2">VIP Annual and Legacy members get exclusive access to our private Discord community where you can:</p>
                 <ul className="list-disc pl-6 space-y-1 text-gray-600">
-                  <li>Share advanced betting strategies with other serious bettors</li>
+                  <li>Share advanced strategies with other serious sports enthusiasts</li>
                   <li>Get priority support from our team</li>
                   <li>Receive exclusive picks and insights</li>
                   <li>Network with experienced members</li>
