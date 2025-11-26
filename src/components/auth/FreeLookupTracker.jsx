@@ -95,6 +95,12 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
     window.location.href = '/Pricing';
   };
 
+  const handleClose = () => {
+    if (typeof onClose === 'function') {
+      onClose();
+    }
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -102,7 +108,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={onClose}
+        onClick={handleClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}

@@ -108,12 +108,20 @@ Deno.serve(async (req) => {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
-        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-        const userEmail = subscription.metadata?.user_email;
+        
+        if (invoice.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+            const userEmail = subscription.metadata?.user_email;
 
-        if (userEmail) {
-          console.log(`⚠️ Payment failed for user ${userEmail}`);
-          // You could send an email notification here
+            if (userEmail) {
+              console.log(`⚠️ Payment failed for user ${userEmail}`);
+            }
+          } catch (subError) {
+            console.error('❌ Error retrieving subscription for failed payment:', subError.message);
+          }
+        } else {
+          console.log(`⚠️ Payment failed for invoice ${invoice.id} (no subscription attached)`);
         }
         break;
       }

@@ -194,7 +194,7 @@ If no next game scheduled, say TBD.`,
             <PlayerStatsDisplay player={currentPlayer} />
             <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
               <AlertDescription className="text-blue-900">
-                ✅ Player analysis saved! View in <a href="/MyAccount" className="underline font-bold">Saved Results</a>
+                ✅ Player analysis saved! View in <a href="/MyAccount?tab=saved" className="underline font-bold">Saved Results</a>
               </AlertDescription>
             </Alert>
           </motion.div>
