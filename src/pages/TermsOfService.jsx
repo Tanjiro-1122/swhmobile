@@ -21,10 +21,10 @@ export default function TermsOfService() {
               <section className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
                 <h2 className="text-2xl font-bold text-red-900 mb-3">⚠️ IMPORTANT DISCLAIMERS</h2>
                 <ul className="list-disc pl-6 space-y-2 text-red-800">
-                  <li><strong>NOT A LICENSED BETTING ADVISOR:</strong> We are NOT a licensed gambling advisor, bookmaker, or financial advisor</li>
+                  <li><strong>NOT A LICENSED ADVISOR:</strong> We are NOT a licensed gaming advisor, bookmaker, or financial advisor</li>
                   <li><strong>EDUCATIONAL PURPOSES:</strong> All analysis and insights are for informational and educational purposes ONLY</li>
-                  <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports betting involves risk</li>
-                  <li><strong>BET RESPONSIBLY:</strong> Never bet more than you can afford to lose. If you have a gambling problem, seek help immediately</li>
+                  <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports analysis involves risk</li>
+                  <li><strong>PLAY RESPONSIBLY:</strong> Never risk more than you can afford to lose. If you have a gambling problem, seek help immediately</li>
                   <li><strong>AGE RESTRICTION:</strong> You must be 18+ (or 21+ where legally required) to use this app</li>
                 </ul>
               </section>
@@ -46,8 +46,8 @@ export default function TermsOfService() {
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>AI-Powered Analysis:</strong> Match analysis, player statistics, and team performance data</li>
                   <li><strong>Live Odds Comparison:</strong> Real-time odds from multiple sportsbooks</li>
-                  <li><strong>Betting Tools:</strong> Calculators, bankroll management, ROI tracking, parlay builders</li>
-                  <li><strong>Educational Content:</strong> Betting strategies, terminology, and responsible gambling resources</li>
+                  <li><strong>Tracking Tools:</strong> Calculators, bankroll management, ROI tracking, multi-pick builders</li>
+                  <li><strong>Educational Content:</strong> Sports strategies, terminology, and responsible gaming resources</li>
                   <li><strong>Community Features:</strong> Discussion forums and bet sharing (optional)</li>
                 </ul>
               </section>
@@ -56,14 +56,14 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">3. User Eligibility</h2>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">3.1 Age Requirements</h3>
                 <p>
-                  You must be at least <strong>18 years old</strong> (or <strong>21 years old</strong> in jurisdictions where that is the legal gambling age) 
+                  You must be at least <strong>18 years old</strong> (or <strong>21 years old</strong> in jurisdictions where that is the legal age) 
                   to use this app. By using our services, you confirm that you meet this age requirement.
                 </p>
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">3.2 Legal Compliance</h3>
                 <p>
                   You are responsible for ensuring that your use of the app complies with all applicable laws in your jurisdiction. 
-                  Sports betting is illegal in some regions - it is YOUR responsibility to know and follow local laws.
+                  Sports gaming is restricted in some regions - it is YOUR responsibility to know and follow local laws.
                 </p>
               </section>
 
@@ -132,7 +132,7 @@ export default function TermsOfService() {
                     <li>Each match prediction/analysis</li>
                     <li>Each player stats lookup</li>
                     <li>Each team stats lookup</li>
-                    <li>Each "Today's Best Bets" generation</li>
+                    <li>Each "Today's Top Picks" generation</li>
                   </ul>
                   <p className="text-blue-800 mt-2">
                     <strong>Example:</strong> If you've searched 10 matches, looked up 5 players, and 3 teams, your total count is 18 searches (eligible for refund if within 14 days).
@@ -162,14 +162,14 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">6. Prohibited Uses</h2>
                 <p>You agree NOT to:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>❌ Use the app if you're under the legal gambling age</li>
+                  <li>❌ Use the app if you're under the legal age</li>
                   <li>❌ Share your account credentials with others</li>
                   <li>❌ Scrape, copy, or redistribute our AI predictions commercially</li>
                   <li>❌ Reverse engineer or attempt to hack the app</li>
                   <li>❌ Use bots or automated systems to abuse free lookups</li>
                   <li>❌ Post illegal, offensive, or harmful content in community forums</li>
                   <li>❌ Claim our predictions as your own work</li>
-                  <li>❌ Use the app for any illegal gambling activities</li>
+                  <li>❌ Use the app for any illegal activities</li>
                 </ul>
               </section>
 
@@ -183,7 +183,7 @@ export default function TermsOfService() {
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">7.2 Your Content</h3>
                 <p>
-                  When you post in community forums or share bets, you grant us a license to display and distribute that content within the app. 
+                  When you post in community forums or share picks, you grant us a license to display and distribute that content within the app. 
                   You retain ownership of your posts.
                 </p>
               </section>
@@ -209,11 +209,11 @@ export default function TermsOfService() {
                     <strong>WE ARE NOT LIABLE FOR:</strong>
                     </p>
                     <ul className="list-disc pl-6 space-y-1 text-yellow-800">
-                    <li>Any financial losses from bets placed based on our analysis</li>
+                    <li>Any financial losses from selections made based on our analysis</li>
                     <li>Incorrect analysis or data errors</li>
                     <li>Technical issues, downtime, or data loss</li>
                     <li>Third-party services (sportsbooks, odds providers) failures</li>
-                    <li>Gambling addiction or related harm</li>
+                    <li>Gaming-related issues or related harm</li>
                     </ul>
                   
                   <p className="text-yellow-800 font-bold mt-4">
@@ -239,10 +239,10 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">10. Responsible Gambling</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">10. Responsible Gaming</h2>
                 <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
                   <p className="text-red-800 font-bold mb-3">
-                    We are committed to promoting responsible gambling. If you or someone you know has a gambling problem:
+                    We are committed to promoting responsible gaming. If you or someone you know has a gambling problem:
                   </p>
                   <ul className="list-none space-y-2 text-red-800">
                     <li>🇺🇸 <strong>National Gambling Helpline:</strong> 1-800-522-4700</li>
@@ -250,7 +250,7 @@ export default function TermsOfService() {
                     <li>💬 <strong>Crisis Text Line:</strong> Text "HELP" to 741741</li>
                   </ul>
                   <p className="text-red-800 mt-4">
-                    <strong>Warning Signs:</strong> Chasing losses, betting more than you can afford, hiding betting from family, feeling anxious about betting
+                    <strong>Warning Signs:</strong> Chasing losses, risking more than you can afford, hiding activity from family, feeling anxious
                   </p>
                 </div>
               </section>
@@ -313,11 +313,11 @@ export default function TermsOfService() {
               <section className="bg-green-50 p-6 rounded-lg border-2 border-green-200 mt-8">
                 <h2 className="text-xl font-bold text-green-900 mb-3">✅ By Using This App, You Agree That:</h2>
                 <ul className="list-disc pl-6 space-y-2 text-green-800">
-                  <li>You are of legal gambling age in your jurisdiction</li>
-                  <li>You understand that sports betting involves financial risk</li>
+                  <li>You are of legal age in your jurisdiction</li>
+                  <li>You understand that sports analysis involves financial risk</li>
                   <li>Our AI analysis is educational, not guaranteed to be accurate</li>
-                  <li>You are solely responsible for your betting decisions</li>
-                  <li>You will gamble responsibly and within your means</li>
+                  <li>You are solely responsible for your decisions</li>
+                  <li>You will play responsibly and within your means</li>
                 </ul>
               </section>
             </div>

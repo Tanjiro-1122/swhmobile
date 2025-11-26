@@ -42,19 +42,19 @@ export default function PrivacyPolicy() {
                   <li><strong>Saved Predictions:</strong> AI-generated match predictions, win probabilities, confidence scores, key factors, player projections</li>
                   <li><strong>Prediction Outcomes:</strong> User-recorded actual results of predictions, correctness tracking (won/lost), outcome dates</li>
                   <li><strong>AI Calibration Data:</strong> Historical accuracy metrics, confidence calibration scores, prediction performance by sport/league</li>
-                  <li><strong>Betting Tools Data:</strong> User-entered bets, parlays, bankroll transactions, ROI calculations, alerts, odds tracking (all optional features)</li>
+                  <li><strong>Tracking Tools Data:</strong> User-entered selections, multi-picks, bankroll transactions, ROI calculations, alerts, odds tracking (all optional features)</li>
                 </ul>
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">2.3 Community & Interaction Data</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Community Posts:</strong> Posts, comments, upvotes, shared betting picks (if you choose to participate)</li>
+                  <li><strong>Community Posts:</strong> Posts, comments, upvotes, shared sports picks (if you choose to participate)</li>
                   <li><strong>Social Interactions:</strong> Replies to other users, community reputation scores</li>
                 </ul>
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">2.4 Automatically Collected Data</h3>
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>Device Information:</strong> Device type, operating system, browser type, screen resolution</li>
-                  <li><strong>Location Data:</strong> Approximate location based on IP address (to comply with gambling laws and regional restrictions)</li>
+                  <li><strong>Location Data:</strong> Approximate location based on IP address (to comply with gaming laws and regional restrictions)</li>
                   <li><strong>Usage Analytics:</strong> Pages visited, features used, time spent in app, button clicks, navigation patterns</li>
                   <li><strong>Cookies & Local Storage:</strong> Session cookies, authentication tokens, preference cookies, free lookup counters, tutorial completion status</li>
                   <li><strong>Performance Data:</strong> App load times, error logs, crash reports (to improve app stability)</li>
@@ -75,8 +75,8 @@ export default function PrivacyPolicy() {
                   <li><strong>Personalization:</strong> Recommend relevant matches based on your search history, remember favorite sports/teams, customize your feed</li>
                   <li><strong>Analytics & Performance Monitoring:</strong> Track AI prediction accuracy, calibrate confidence scores, measure feature usage, identify bugs and crashes</li>
                   <li><strong>Communication:</strong> Send important app updates, subscription renewal notices, new feature announcements, promotional emails (opt-out available), responsible gambling reminders</li>
-                  <li><strong>Security & Fraud Prevention:</strong> Detect suspicious betting patterns, prevent multiple free account abuse, protect user accounts from unauthorized access</li>
-                  <li><strong>Legal Compliance:</strong> Verify gambling age restrictions (18+/21+), comply with regional gambling laws, respond to legal requests, enforce Terms of Service</li>
+                  <li><strong>Security & Fraud Prevention:</strong> Detect suspicious activity patterns, prevent multiple free account abuse, protect user accounts from unauthorized access</li>
+                  <li><strong>Legal Compliance:</strong> Verify age restrictions (18+/21+), comply with regional gaming laws, respond to legal requests, enforce Terms of Service</li>
                   <li><strong>Payment Processing:</strong> Process subscription payments via Stripe, manage billing, handle refunds, track subscription status</li>
                 </ul>
               </section>
@@ -106,7 +106,7 @@ export default function PrivacyPolicy() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">4.3 What We DON'T Share</h3>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>❌ We NEVER sell your personal information to advertisers or data brokers</li>
-                  <li>❌ We DON'T share your betting history, predictions, or analysis with sportsbooks</li>
+                  <li>❌ We DON'T share your selection history, predictions, or analysis with sportsbooks</li>
                   <li>❌ We DON'T sell your email to marketing companies or third-party lists</li>
                   <li>❌ We DON'T share your community posts publicly outside the app without consent</li>
                   <li>❌ We DON'T provide raw user data to AI training companies (only aggregated, anonymized insights)</li>
@@ -222,7 +222,7 @@ export default function PrivacyPolicy() {
                   <li><strong>Saved Predictions (Free Users):</strong> Automatically deleted after 30 days</li>
                   <li><strong>Saved Predictions (VIP/Premium):</strong> Unlimited retention - kept forever unless you delete your account</li>
                   <li><strong>Community Posts:</strong> Retained indefinitely unless you delete them or your account</li>
-                  <li><strong>Betting History:</strong> Retained as long as your account is active (optional feature)</li>
+                  <li><strong>Selection History:</strong> Retained as long as your account is active (optional feature)</li>
                 </ul>
 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">7.2 Deleted Account Data</h3>
@@ -246,7 +246,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">8. Children's Privacy</h2>
                 <p className="font-semibold text-red-600 mb-2">
-                  ⚠️ Our app is NOT for users under 18 years old (or 21+ where legally required for gambling content).
+                  ⚠️ Our app is NOT for users under 18 years old (or 21+ where legally required for gaming content).
                 </p>
                 <p>
                   We do not knowingly collect data from minors. If you believe a minor has provided us with personal information, 
@@ -299,7 +299,7 @@ export default function PrivacyPolicy() {
                   odds changes, game starts, and betting insights. You can disable these anytime in your device settings or app preferences.
                 </p>
                 <p className="text-blue-800 mb-3">
-                  <strong>Camera Access:</strong> Only requested if you use features like scanning betting slips (optional feature). 
+                  <strong>Camera Access:</strong> Only requested if you use features like scanning pick slips (optional feature). 
                   We never access your camera without explicit permission.
                 </p>
                 <p className="text-blue-800">
