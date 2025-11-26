@@ -58,7 +58,7 @@ export default function LiveOddsContent() {
             🔒 VIP Feature
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Live odds comparison is an exclusive feature for <strong>Legacy</strong> and <strong>VIP Annual</strong> members.
+            Live odds comparison is an exclusive feature for <strong>Premium</strong>, <strong>VIP Annual</strong>, and <strong>Legacy</strong> members.
             Upgrade to get real-time odds from top sportsbooks!
           </p>
           <div className="flex items-center justify-center gap-3 mb-6">
