@@ -38,7 +38,15 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       // Initialize Apple Sign In
       // Use the exact redirect URI registered in Apple Developer Console
-      const redirectURI = 'https://sportswagerhelper.app.base44.com';
+      // Detect which domain we're on and use the correct redirect
+      const currentHost = window.location.hostname;
+      let redirectURI;
+      
+      if (currentHost.includes('sportswagerhelper.com')) {
+        redirectURI = 'https://sportswagerhelper.com';
+      } else {
+        redirectURI = 'https://sportswagerhelper.app.base44.com';
+      }
       
       window.AppleID.auth.init({
         clientId: clientId,
