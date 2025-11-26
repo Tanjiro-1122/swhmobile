@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
-import AppleSignInButton from "./AppleSignInButton";
+
 
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
