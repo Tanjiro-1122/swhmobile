@@ -18,8 +18,9 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
       } catch (error) {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     checkAuth();
   }, []);
