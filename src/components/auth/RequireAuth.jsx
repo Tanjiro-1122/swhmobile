@@ -104,8 +104,6 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                   Sign In with Email
                 </Button>
 
-                <AppleSignInButton className="w-full py-6 text-lg" />
-
                 <Button
                   onClick={handleViewPricing}
                   variant="outline"
