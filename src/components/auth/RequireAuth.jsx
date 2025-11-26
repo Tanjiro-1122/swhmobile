@@ -9,8 +9,13 @@ import { motion } from "framer-motion";
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
+    // Check if running in a mobile app environment
+    const mobileApp = typeof window.WTN !== 'undefined';
+    setIsMobileApp(mobileApp);
+
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
@@ -41,12 +46,19 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
             <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-pulse" />
             <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
           </div>
-          <p className="text-white font-semibold text-lg">Checking authentication...</p>
+          <p className="text-white font-semibold text-lg">Loading...</p>
         </div>
       </div>
     );
   }
 
+  // If it's a mobile app, do not require authentication at this stage.
+  // The individual components or pages will handle free lookups and paywalls.
+  if (isMobileApp) {
+    return children;
+  }
+
+  // For web app, require authentication as usual
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center p-6 py-12">
@@ -92,7 +104,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                   <Crown className="w-6 h-6 text-orange-600 flex-shrink-0" />
                   <div>
                     <div className="font-bold text-gray-900">Upgrade to Premium</div>
-                    <div className="text-sm text-gray-600">$19.99/month or $149.99/year</div>
+                    <div className="text-sm text-gray-600">Free lookups exhausted</div>
                   </div>
                 </div>
               </div>
