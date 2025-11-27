@@ -21,10 +21,10 @@ export default function TermsOfService() {
               <section className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
                 <h2 className="text-2xl font-bold text-red-900 mb-3">⚠️ IMPORTANT DISCLAIMERS</h2>
                 <ul className="list-disc pl-6 space-y-2 text-red-800">
-                  <li><strong>NOT A LICENSED ADVISOR:</strong> We are NOT a licensed gaming advisor, bookmaker, or financial advisor</li>
-                  <li><strong>EDUCATIONAL PURPOSES:</strong> All analysis and insights are for informational and educational purposes ONLY</li>
-                  <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports analysis involves risk</li>
-                  <li><strong>PLAY RESPONSIBLY:</strong> Never risk more than you can afford to lose. If you have a gambling problem, seek help immediately</li>
+                  <li><strong>NOT A LICENSED ADVISOR:</strong> We are NOT a licensed sports analyst or financial advisor</li>
+                  <li><strong>ENTERTAINMENT PURPOSES:</strong> All analysis and insights are for informational and entertainment purposes ONLY</li>
+                  <li><strong>NO GUARANTEES:</strong> Past performance does NOT guarantee future results. All sports analysis is probabilistic</li>
+                  <li><strong>USE RESPONSIBLY:</strong> This app provides sports data and analysis for entertainment</li>
                   <li><strong>AGE RESTRICTION:</strong> You must be 18+ (or 21+ where legally required) to use this app</li>
                 </ul>
               </section>
@@ -45,10 +45,10 @@ export default function TermsOfService() {
                 <p>Sports Wager Helper provides:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>AI-Powered Analysis:</strong> Match analysis, player statistics, and team performance data</li>
-                  <li><strong>Live Odds Comparison:</strong> Real-time odds from multiple sportsbooks</li>
-                  <li><strong>Tracking Tools:</strong> Calculators, bankroll management, ROI tracking, multi-pick builders</li>
-                  <li><strong>Educational Content:</strong> Sports strategies, terminology, and responsible gaming resources</li>
-                  <li><strong>Community Features:</strong> Discussion forums and bet sharing (optional)</li>
+                  <li><strong>Live Odds Comparison:</strong> Real-time odds information from multiple sources</li>
+                  <li><strong>Tracking Tools:</strong> Calculators, budget management, performance tracking, multi-pick builders</li>
+                  <li><strong>Educational Content:</strong> Sports strategies, terminology, and educational resources</li>
+                  <li><strong>Community Features:</strong> Discussion forums and pick sharing (optional)</li>
                 </ul>
               </section>
 
@@ -63,7 +63,7 @@ export default function TermsOfService() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">3.2 Legal Compliance</h3>
                 <p>
                   You are responsible for ensuring that your use of the app complies with all applicable laws in your jurisdiction. 
-                  Sports gaming is restricted in some regions - it is YOUR responsibility to know and follow local laws.
+                  It is YOUR responsibility to know and follow local laws regarding sports analysis services.
                 </p>
               </section>
 
@@ -209,11 +209,11 @@ export default function TermsOfService() {
                     <strong>WE ARE NOT LIABLE FOR:</strong>
                     </p>
                     <ul className="list-disc pl-6 space-y-1 text-yellow-800">
-                    <li>Any financial losses from selections made based on our analysis</li>
+                    <li>Any decisions made based on our analysis</li>
                     <li>Incorrect analysis or data errors</li>
                     <li>Technical issues, downtime, or data loss</li>
-                    <li>Third-party services (sportsbooks, odds providers) failures</li>
-                    <li>Gaming-related issues or related harm</li>
+                    <li>Third-party services or data provider failures</li>
+                    <li>Any consequences arising from use of our analysis</li>
                     </ul>
                   
                   <p className="text-yellow-800 font-bold mt-4">
@@ -229,28 +229,29 @@ export default function TermsOfService() {
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>AI analysis is 100% correct (it's probabilistic and educational, not certain)</li>
-                  <li>Odds from third-party APIs are real-time (slight delays possible)</li>
+                  <li>Odds information from third-party APIs is real-time (slight delays possible)</li>
                   <li>Injury reports are instantly updated (check official team sources)</li>
                   <li>Weather data is perfectly accurate</li>
                 </ul>
-                <p className="mt-4 font-semibold text-red-600">
-                  ⚠️ ALWAYS verify critical information (odds, injury status) directly with sportsbooks before placing bets.
+                <p className="mt-4 font-semibold text-gray-600">
+                  ⚠️ ALWAYS verify critical information directly with official sources.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">10. Responsible Gaming</h2>
-                <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
-                  <p className="text-red-800 font-bold mb-3">
-                    We are committed to promoting responsible gaming. If you or someone you know has a gambling problem:
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">10. Responsible Use</h2>
+                <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+                  <p className="text-blue-800 font-bold mb-3">
+                    We are committed to promoting responsible use of our sports analysis tools.
                   </p>
-                  <ul className="list-none space-y-2 text-red-800">
-                    <li>🇺🇸 <strong>National Gambling Helpline:</strong> 1-800-522-4700</li>
-                    <li>🌐 <strong>Gamblers Anonymous:</strong> www.gamblersanonymous.org</li>
-                    <li>💬 <strong>Crisis Text Line:</strong> Text "HELP" to 741741</li>
+                  <ul className="list-disc pl-6 space-y-2 text-blue-800">
+                    <li>Use our analysis as one of many sources of information</li>
+                    <li>Remember that all sports predictions are probabilistic, not guaranteed</li>
+                    <li>Our AI insights are for entertainment and educational purposes</li>
+                    <li>Always verify information with official sources before making decisions</li>
                   </ul>
-                  <p className="text-red-800 mt-4">
-                    <strong>Warning Signs:</strong> Chasing losses, risking more than you can afford, hiding activity from family, feeling anxious
+                  <p className="text-blue-800 mt-4">
+                    <strong>Support Resources:</strong> If you need assistance, contact our support team at support@sportswagerhelper.com
                   </p>
                 </div>
               </section>
@@ -314,10 +315,10 @@ export default function TermsOfService() {
                 <h2 className="text-xl font-bold text-green-900 mb-3">✅ By Using This App, You Agree That:</h2>
                 <ul className="list-disc pl-6 space-y-2 text-green-800">
                   <li>You are of legal age in your jurisdiction</li>
-                  <li>You understand that sports analysis involves financial risk</li>
-                  <li>Our AI analysis is educational, not guaranteed to be accurate</li>
+                  <li>You understand that sports analysis is probabilistic</li>
+                  <li>Our AI analysis is for entertainment and educational purposes</li>
                   <li>You are solely responsible for your decisions</li>
-                  <li>You will play responsibly and within your means</li>
+                  <li>You will use this service responsibly</li>
                 </ul>
               </section>
             </div>
