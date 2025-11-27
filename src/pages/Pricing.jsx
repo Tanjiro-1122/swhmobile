@@ -50,15 +50,15 @@ export default function Pricing() {
     setIsProcessing(true);
 
     try {
-      // Check if we're in the iOS app with IAP support
+      // Check if we're in the iOS app with IAP support - ONLY use Apple IAP in iOS app
       if (typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase) {
-        // Use Apple In-App Purchase for iOS mobile app
+        // Use Apple In-App Purchase for iOS mobile app - updated to v3 product IDs
         let productId;
         
         if (plan === 'premium') {
-          productId = 'com.sportswagerhelper.premium.monthly';
+          productId = 'com.sportswagerhelper.premium.monthly.v3';
         } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.vip.annual';
+          productId = 'com.sportswagerhelper.premium.annual.v3';
         }
 
         window.WTN.inAppPurchase({
@@ -87,8 +87,8 @@ export default function Pricing() {
             setIsProcessing(false);
           }
         });
-      } else {
-        // Use Stripe for web users only
+      } else if (!isIOSApp) {
+        // Use Stripe for web users ONLY - never show in iOS app
         let priceId;
         let mode;
         
@@ -110,6 +110,10 @@ export default function Pricing() {
         } else {
           throw new Error('No checkout URL returned');
         }
+      } else {
+        // iOS app without IAP support - show error
+        alert('In-App Purchase is not available. Please update your app or try again later.');
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
