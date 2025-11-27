@@ -75,12 +75,16 @@ Deno.serve(async (req) => {
 // Validate receipt with Apple servers
 async function validateReceipt(receiptData) {
   try {
+    // Get shared secret from environment
+    const sharedSecret = Deno.env.get('APPLE_SHARED_SECRET');
+    
     // Try production first
     let response = await fetch(PRODUCTION_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         'receipt-data': receiptData,
+        'password': sharedSecret, // Required for auto-renewable subscriptions
         'exclude-old-transactions': true
       })
     });
@@ -94,6 +98,7 @@ async function validateReceipt(receiptData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           'receipt-data': receiptData,
+          'password': sharedSecret,
           'exclude-old-transactions': true
         })
       });
