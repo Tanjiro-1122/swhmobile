@@ -184,7 +184,7 @@ export default function Dashboard() {
         }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 box-border overflow-x-hidden">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border overflow-x-hidden">
         {/* Header Section */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -243,8 +243,8 @@ export default function Dashboard() {
 
         </motion.div>
 
-        {/* Main Menu Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 w-full">
+        {/* Main Menu Grid - iPad optimized */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-10 w-full max-w-4xl mx-auto">
           {menuItems.map((item, index) => {
             const isHovered = hoveredItem === item.id;
             const SportIcon = item.SportIcon;
@@ -370,7 +370,7 @@ export default function Dashboard() {
           transition={{ delay: 0.7 }}
           className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 p-6"
         >
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+          <div className="grid grid-cols-2 gap-6 sm:gap-8 text-center">
             <div>
               <h4 className="text-white/50 text-xs font-bold mb-3 uppercase">Support</h4>
               <div className="space-y-2">
