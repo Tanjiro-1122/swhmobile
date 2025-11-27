@@ -8,7 +8,9 @@ const SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
 // WebToNative will create these product IDs in App Store Connect
 const PRODUCT_MAPPING = {
   'com.sportswagerhelper.premium.monthly': 'premium_monthly',
-  'com.sportswagerhelper.vip.annual': 'vip_annual'
+  'com.sportswagerhelper.vip.annual': 'vip_annual',
+  'com.sportswagerhelper.premium.monthly.v3': 'premium_monthly',
+  'com.sportswagerhelper.premium.annual.v3': 'vip_annual'
 };
 
 Deno.serve(async (req) => {
