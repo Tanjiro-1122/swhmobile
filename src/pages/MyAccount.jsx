@@ -36,8 +36,8 @@ function MyAccountContent() {
   }, []);
 
   return (
-        <div className="min-h-screen">
-          <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen overflow-x-hidden">
+          <div className="max-w-5xl mx-auto px-2 sm:px-4">
             {/* Header */}
             <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
               <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
@@ -56,34 +56,34 @@ function MyAccountContent() {
             )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+          <TabsList className="grid w-full grid-cols-4 gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 sm:p-3 rounded-xl border border-white/10 min-h-[56px]">
             <TabsTrigger 
               value="profile" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-sm py-3 min-h-[44px]"
             >
               <User className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Profile</span>
+              <span>Profile</span>
             </TabsTrigger>
             <TabsTrigger 
               value="subscription" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-sm py-3 min-h-[44px]"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Subscription</span>
+              <span>Plan</span>
             </TabsTrigger>
             <TabsTrigger 
               value="preferences" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-sm py-3 min-h-[44px]"
             >
               <Heart className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Preferences</span>
+              <span>Prefs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="saved" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-sm py-3 min-h-[44px]"
             >
               <Trophy className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Saved</span>
+              <span>Saved</span>
             </TabsTrigger>
           </TabsList>
 

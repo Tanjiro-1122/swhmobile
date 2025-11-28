@@ -16,7 +16,7 @@ function AnalysisHubContent() {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      <div className="max-w-7xl mx-auto w-full">
+      <div className="max-w-5xl mx-auto w-full px-2 sm:px-4">
         {/* Header */}
         <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
@@ -26,41 +26,41 @@ function AnalysisHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-8 bg-black/40 backdrop-blur-sm p-1.5 sm:p-2 rounded-xl border border-white/10 h-auto">
+          <TabsList className="grid w-full grid-cols-5 gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 sm:p-3 rounded-xl border border-white/10 h-auto min-h-[56px]">
             <TabsTrigger 
               value="predictions" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-xs sm:text-sm py-2 px-1 sm:px-3"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-sm py-3 px-2 min-h-[44px]"
             >
-              <Brain className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-              <span className="truncate">AI</span>
+              <Brain className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>AI</span>
             </TabsTrigger>
             <TabsTrigger 
               value="insights" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white text-xs sm:text-sm py-2 px-1 sm:px-3"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white text-sm py-3 px-2 min-h-[44px]"
             >
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-              <span className="truncate">Insights</span>
+              <Sparkles className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Insights</span>
             </TabsTrigger>
             <TabsTrigger 
               value="players" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-xs sm:text-sm py-2 px-1 sm:px-3"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-sm py-3 px-2 min-h-[44px]"
             >
-              <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-              <span className="truncate">Players</span>
+              <User className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Players</span>
             </TabsTrigger>
             <TabsTrigger 
               value="teams" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs sm:text-sm py-2 px-1 sm:px-3"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-sm py-3 px-2 min-h-[44px]"
             >
-              <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-              <span className="truncate">Teams</span>
+              <Users className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Teams</span>
             </TabsTrigger>
             <TabsTrigger 
               value="performance" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-xs sm:text-sm py-2 px-1 sm:px-3 col-span-3 sm:col-span-1"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-sm py-3 px-2 min-h-[44px]"
             >
-              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-              <span className="truncate">Stats</span>
+              <Target className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span>Stats</span>
             </TabsTrigger>
           </TabsList>
 
