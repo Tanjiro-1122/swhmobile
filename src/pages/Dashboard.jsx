@@ -206,7 +206,7 @@ export default function Dashboard() {
           <p className="text-white/70 text-lg">AI-Powered Sports Analytics & Insights</p>
 
           {/* User Welcome & Status */}
-          {currentUser && (
+          {currentUser ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -239,8 +239,17 @@ export default function Dashboard() {
               >
                 <LogOut className="w-5 h-5" />
               </Button>
-              </motion.div>
-              )}
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
+            >
+              <ThemeToggle />
+            </motion.div>
+          )}
 
 
         </motion.div>

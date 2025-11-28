@@ -56,36 +56,38 @@ function MyAccountContent() {
             )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 gap-2 mb-8 bg-slate-800/80 backdrop-blur-sm p-2 sm:p-3 rounded-xl border border-white/10">
-            <TabsTrigger 
-              value="profile" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <User className="w-4 h-4" />
-              <span>Profile</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="subscription" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>Plan</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="preferences" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Heart className="w-4 h-4" />
-              <span>Prefs</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="saved" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Trophy className="w-4 h-4" />
-              <span>Saved</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="mb-6 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
+            <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
+              <TabsTrigger 
+                value="profile" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span>Profile</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="subscription" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <CreditCard className="w-4 h-4 flex-shrink-0" />
+                <span>Plan</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="preferences" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <Heart className="w-4 h-4 flex-shrink-0" />
+                <span>Prefs</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="saved" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <Trophy className="w-4 h-4 flex-shrink-0" />
+                <span>Saved</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="profile">
             <ProfileContent />
