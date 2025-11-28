@@ -102,6 +102,30 @@ export default function Layout({ children, currentPageName }) {
     refetchOnWindowFocus: true,
   });
 
+  // Save current page to localStorage for "resume where you left off"
+  useEffect(() => {
+    if (currentPageName && currentPageName !== 'Dashboard') {
+      localStorage.setItem('lastVisitedPage', currentPageName);
+    }
+  }, [currentPageName]);
+
+  // On app load, redirect to last visited page if on Dashboard
+  useEffect(() => {
+    const lastPage = localStorage.getItem('lastVisitedPage');
+    if (currentPageName === 'Dashboard' && lastPage && lastPage !== 'Dashboard') {
+      const currentPath = window.location.pathname;
+      const dashboardPath = createPageUrl('Dashboard');
+      // Only redirect if we're actually on dashboard (not just loading)
+      if (currentPath === dashboardPath || currentPath === '/' || currentPath === '') {
+        // Small delay to ensure app is ready
+        const timer = setTimeout(() => {
+          window.location.href = createPageUrl(lastPage);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentPageName]);
+
   const isLegacy = currentUser?.subscription_type === 'legacy';
   const isVIP = currentUser?.subscription_type === 'vip_annual';
   const isPremium = currentUser?.subscription_type === 'premium_monthly';
@@ -175,31 +199,33 @@ export default function Layout({ children, currentPageName }) {
             </div>
 
             <div className="flex items-center gap-3">
-              {isAuthenticated && currentUser ? (
+              {isAuthenticated ? (
                 <>
-                  {isLegacy && (
+                  {currentUser && isLegacy && (
                     <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1.5 rounded-full">
                       <Crown className="w-4 h-4 text-white" />
                       <span className="text-xs font-bold text-white">LEGACY</span>
                     </div>
                   )}
-                  {isVIP && (
+                  {currentUser && isVIP && (
                     <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-1.5 rounded-full">
                       <Crown className="w-4 h-4 text-white" />
                       <span className="text-xs font-bold text-white">VIP</span>
                     </div>
                   )}
-                  {isPremium && (
+                  {currentUser && isPremium && (
                     <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 rounded-full">
                       <Crown className="w-4 h-4 text-white" />
                       <span className="text-xs font-bold text-white">PREMIUM</span>
                     </div>
                   )}
-                  <Avatar className="w-9 h-9">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                      {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  {currentUser && (
+                    <Avatar className="w-9 h-9">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                        {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -209,8 +235,8 @@ export default function Layout({ children, currentPageName }) {
                   >
                     <LogOut className="w-5 h-5" />
                   </Button>
-                        </>
-                      ) : (
+                </>
+              ) : (
                         <Button
                           onClick={handleLogin}
                           className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
