@@ -26,44 +26,46 @@ function AnalysisHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* iPad optimized: 5 tabs in single row with proper touch targets */}
-          <TabsList className="grid w-full grid-cols-5 gap-1.5 md:gap-3 mb-6 md:mb-8 bg-black/40 backdrop-blur-sm p-2 md:p-3 rounded-xl border border-white/10">
-            <TabsTrigger 
-              value="predictions" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1 md:px-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Brain className="w-4 h-4 flex-shrink-0" />
-              <span>AI</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="insights" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1 md:px-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-4 h-4 flex-shrink-0" />
-              <span>Insights</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="players" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1 md:px-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <User className="w-4 h-4 flex-shrink-0" />
-              <span>Players</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="teams" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1 md:px-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Users className="w-4 h-4 flex-shrink-0" />
-              <span>Teams</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="performance" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1 md:px-3 min-h-[48px] flex items-center justify-center gap-2"
-            >
-              <Target className="w-4 h-4 flex-shrink-0" />
-              <span>Stats</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Horizontally scrollable tabs */}
+          <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            <TabsList className="inline-flex w-max min-w-full gap-1 bg-transparent p-0">
+              <TabsTrigger 
+                value="predictions" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+              >
+                <Brain className="w-4 h-4 flex-shrink-0" />
+                <span>AI</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="insights" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+              >
+                <Sparkles className="w-4 h-4 flex-shrink-0" />
+                <span>Insights</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="players" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+              >
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span>Players</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="teams" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+              >
+                <Users className="w-4 h-4 flex-shrink-0" />
+                <span>Teams</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="performance" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+              >
+                <Target className="w-4 h-4 flex-shrink-0" />
+                <span>Stats</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="predictions">
             <TodaysPredictions />
