@@ -78,29 +78,15 @@ export default function Pricing() {
       
       // If on iOS device, ONLY use Apple IAP - never Stripe
       if (isIOSDevice || isIOSApp) {
-        // Wait for WTN IAP to be available (up to 3 seconds)
-        const waitForIAP = () => {
-          return new Promise((resolve) => {
-            let attempts = 0;
-            const maxAttempts = 30; // 3 seconds total
-            
-            const check = () => {
-              if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
-                resolve(true);
-              } else if (attempts < maxAttempts) {
-                attempts++;
-                setTimeout(check, 100);
-              } else {
-                resolve(false);
-              }
-            };
-            check();
-          });
-        };
+        // Wait a moment for WTN to initialize, then check
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        const iapReady = await waitForIAP();
+        const hasWTN = typeof window.WTN !== 'undefined';
+        const hasIAP = hasWTN && typeof window.WTN.inAppPurchase === 'function';
         
-        if (iapReady) {
+        console.log('IAP Check:', { hasWTN, hasIAP, WTN: window.WTN });
+        
+        if (hasIAP) {
           // Use Apple In-App Purchase - v3 product IDs
           let productId;
           
@@ -110,33 +96,39 @@ export default function Pricing() {
             productId = 'com.sportswagerhelper.premium.annual.v3';
           }
 
-          window.WTN.inAppPurchase({
-            productId: productId,
-            callback: async function(data) {
-              if (data.isSuccess && data.receiptData) {
-                try {
-                  // Store receipt data temporarily for after login
-                  localStorage.setItem('pending_iap_receipt', data.receiptData);
-                  localStorage.setItem('pending_iap_product', productId);
-                  
-                  // Redirect to login page after successful purchase
-                  alert('Purchase successful! Please sign in to activate your subscription.');
-                  base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
-                } catch (error) {
-                  console.error('IAP error:', error);
-                  alert('Purchase completed. Please sign in to activate.');
-                  base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+          try {
+            window.WTN.inAppPurchase({
+              productId: productId,
+              callback: async function(data) {
+                if (data.isSuccess && data.receiptData) {
+                  try {
+                    // Store receipt data temporarily for after login
+                    localStorage.setItem('pending_iap_receipt', data.receiptData);
+                    localStorage.setItem('pending_iap_product', productId);
+                    
+                    // Redirect to login page after successful purchase
+                    alert('Purchase successful! Please sign in to activate your subscription.');
+                    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+                  } catch (error) {
+                    console.error('IAP error:', error);
+                    alert('Purchase completed. Please sign in to activate.');
+                    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+                  }
+                } else {
+                  alert('Purchase was not completed.');
                 }
-              } else {
-                alert('Purchase was not completed.');
+                setIsProcessing(false);
               }
-              setIsProcessing(false);
-            }
-          });
+            });
+          } catch (iapError) {
+            console.error('IAP call error:', iapError);
+            setIsProcessing(false);
+            alert('Unable to start purchase. Please try again.');
+          }
         } else {
-          // iOS device but IAP not available after waiting
-          alert('In-App Purchase is not available. Please close and reopen the app, then try again.');
+          // IAP not available - give clearer instructions
           setIsProcessing(false);
+          alert('In-App Purchase is loading. Please wait a few seconds and try again.\n\nIf this keeps happening, try closing and reopening the app.');
         }
       } else {
         // Web users ONLY - use Stripe
