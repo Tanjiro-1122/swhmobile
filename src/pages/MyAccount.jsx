@@ -37,8 +37,8 @@ function MyAccountContent() {
 
   return (
         <div className="min-h-screen overflow-x-hidden">
-          <div className="max-w-5xl mx-auto px-2 sm:px-4">
-            {/* Header - 8-point grid spacing */}
+          <div className="max-w-5xl mx-auto">
+            {/* Header - 8-point grid: 32px bottom margin, 24px padding */}
             <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
                 👤 MY ACCOUNT
