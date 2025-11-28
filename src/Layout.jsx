@@ -158,9 +158,9 @@ export default function Layout({ children, currentPageName }) {
         <DomainChangeBanner />
         <AgeGate />
 
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-xl">
-          <div className="flex items-center justify-between px-4 py-3 lg:px-6">
+        {/* Header - 56px height (8-point grid: 7 units) */}
+        <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-xl">
+          <div className="flex items-center justify-between h-14 px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
                 <img
@@ -209,19 +209,19 @@ export default function Layout({ children, currentPageName }) {
                   >
                     <LogOut className="w-5 h-5" />
                   </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleLogin}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In with Email
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+                        </>
+                      ) : (
+                        <Button
+                          onClick={handleLogin}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
+                        >
+                          <LogIn className="w-4 h-4 mr-2" />
+                          Sign In with Email
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  </header>
 
         {/* Main Content - 8-point grid system: 16px horizontal, 24px vertical */}
           <main className="flex-1">
