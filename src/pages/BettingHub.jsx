@@ -30,59 +30,59 @@ function BettingHubContent() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Mobile: 4 cols x 2 rows, Tablet/iPad: 8 cols single row for better use of screen width */}
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1.5 md:gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 md:p-3 rounded-xl border border-white/10 h-auto">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1.5 md:gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 md:p-3 rounded-xl border border-white/10">
             <TabsTrigger 
               value="tracker" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <ClipboardList className="w-4 h-4 flex-shrink-0" />
               <span>Track</span>
             </TabsTrigger>
             <TabsTrigger 
               value="parlay" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <Zap className="w-4 h-4 flex-shrink-0" />
               <span>Multi</span>
             </TabsTrigger>
             <TabsTrigger 
               value="odds" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <BarChart3 className="w-4 h-4 flex-shrink-0" />
               <span>Odds</span>
             </TabsTrigger>
             <TabsTrigger 
               value="calculator" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <Calculator className="w-4 h-4 flex-shrink-0" />
               <span>Calc</span>
             </TabsTrigger>
             <TabsTrigger 
               value="alerts" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <Bell className="w-4 h-4 flex-shrink-0" />
               <span>Alerts</span>
             </TabsTrigger>
             <TabsTrigger 
               value="roi" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <TrendingUp className="w-4 h-4 flex-shrink-0" />
               <span>Perf</span>
             </TabsTrigger>
             <TabsTrigger 
               value="bankroll" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <Wallet className="w-4 h-4 flex-shrink-0" />
               <span>Budget</span>
             </TabsTrigger>
             <TabsTrigger 
               value="value" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white text-xs md:text-sm py-2.5 md:py-3 px-1.5 md:px-2 min-h-[44px] flex flex-col md:flex-row items-center justify-center gap-1 md:gap-1.5"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
             >
               <Target className="w-4 h-4 flex-shrink-0" />
               <span>Value</span>
