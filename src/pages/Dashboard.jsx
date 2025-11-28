@@ -212,7 +212,7 @@ export default function Dashboard() {
             transition={{ delay: 0.2 }}
             className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
           >
-            {currentUser && (
+            {currentUser ? (
               <>
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                   {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
@@ -227,6 +227,8 @@ export default function Dashboard() {
                 </div>
                 {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
               </>
+            ) : (
+              <div className="text-white/70 text-sm">Loading...</div>
             )}
             <ThemeToggle />
             <Button
