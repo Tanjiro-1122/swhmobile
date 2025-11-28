@@ -22,8 +22,23 @@ export default function Pricing() {
     };
     checkAuth();
     
-    // Check if we're in the iOS app
-    setIsIOSApp(typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase);
+    // Check if we're in the iOS app - check multiple indicators
+    const checkIOSApp = () => {
+      // WebToNative detection methods
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const hasWTNIAP = hasWTN && window.WTN.inAppPurchase;
+      // Also check user agent for iOS WebView indicators
+      const ua = navigator.userAgent || '';
+      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      const isStandalone = window.navigator.standalone === true;
+      
+      console.log('iOS Detection:', { hasWTN, hasWTNIAP, isIOSWebView, isStandalone, ua });
+      
+      // Consider it iOS app if WTN exists OR if it's an iOS WebView
+      return hasWTN || isIOSWebView || isStandalone;
+    };
+    
+    setIsIOSApp(checkIOSApp());
   }, []);
 
   const { data: currentUser } = useQuery({
@@ -50,45 +65,59 @@ export default function Pricing() {
     setIsProcessing(true);
 
     try {
-      // Check if we're in the iOS app with IAP support - ONLY use Apple IAP in iOS app
-      if (typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase) {
-        // Use Apple In-App Purchase for iOS mobile app - updated to v3 product IDs
-        let productId;
-        
-        if (plan === 'premium') {
-          productId = 'com.sportswagerhelper.premium.monthly.v3';
-        } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.premium.annual.v3';
-        }
-
-        window.WTN.inAppPurchase({
-          productId: productId,
-          callback: async function(data) {
-            if (data.isSuccess && data.receiptData) {
-              try {
-                const response = await base44.functions.invoke('handleAppleIAP', {
-                  receipt: data.receiptData,
-                  productId: productId
-                });
-
-                if (response.data.success) {
-                  alert('Subscription successful! Your account has been upgraded.');
-                  window.location.href = '/MyAccount';
-                } else {
-                  alert('Receipt verification failed. Please contact support.');
-                }
-              } catch (error) {
-                console.error('IAP verification error:', error);
-                alert('Failed to verify purchase. Please contact support.');
-              }
-            } else {
-              alert('Purchase was not completed.');
-            }
-            setIsProcessing(false);
+      // Detect iOS environment more reliably
+      const ua = navigator.userAgent || '';
+      const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const hasWTNIAP = hasWTN && typeof window.WTN.inAppPurchase === 'function';
+      
+      console.log('Subscribe clicked:', { plan, isIOSDevice, hasWTN, hasWTNIAP, isIOSApp });
+      
+      // If on iOS device, ONLY use Apple IAP - never Stripe
+      if (isIOSDevice || isIOSApp) {
+        if (hasWTNIAP) {
+          // Use Apple In-App Purchase - v3 product IDs
+          let productId;
+          
+          if (plan === 'premium') {
+            productId = 'com.sportswagerhelper.premium.monthly.v3';
+          } else if (plan === 'vip') {
+            productId = 'com.sportswagerhelper.premium.annual.v3';
           }
-        });
-      } else if (!isIOSApp) {
-        // Use Stripe for web users ONLY - never show in iOS app
+
+          window.WTN.inAppPurchase({
+            productId: productId,
+            callback: async function(data) {
+              if (data.isSuccess && data.receiptData) {
+                try {
+                  const response = await base44.functions.invoke('handleAppleIAP', {
+                    receipt: data.receiptData,
+                    productId: productId
+                  });
+
+                  if (response.data.success) {
+                    alert('Subscription successful! Your account has been upgraded.');
+                    window.location.href = '/MyAccount';
+                  } else {
+                    alert('Receipt verification failed. Please contact support.');
+                  }
+                } catch (error) {
+                  console.error('IAP verification error:', error);
+                  alert('Failed to verify purchase. Please contact support.');
+                }
+              } else {
+                alert('Purchase was not completed.');
+              }
+              setIsProcessing(false);
+            }
+          });
+        } else {
+          // iOS device but IAP not available yet - show message
+          alert('In-App Purchase is loading. Please wait a moment and try again.');
+          setIsProcessing(false);
+        }
+      } else {
+        // Web users ONLY - use Stripe
         let priceId;
         let mode;
         
@@ -110,10 +139,6 @@ export default function Pricing() {
         } else {
           throw new Error('No checkout URL returned');
         }
-      } else {
-        // iOS app without IAP support - show error
-        alert('In-App Purchase is not available. Please update your app or try again later.');
-        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
