@@ -132,8 +132,35 @@ export default function Pricing() {
             }
           });
         } else {
-          // iOS device but IAP not available after waiting
-          alert('In-App Purchase is not available. Please close and reopen the app, then try again.');
+          // iOS device but IAP not available after waiting - fall back to Stripe web checkout
+          console.log('iOS IAP not available, falling back to Stripe');
+          
+          let priceId;
+          let mode;
+          
+          if (plan === 'premium') {
+            priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8';
+            mode = 'subscription';
+          } else if (plan === 'vip') {
+            priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp';
+            mode = 'payment';
+          }
+
+          try {
+            const response = await base44.functions.invoke('createCheckoutSession', {
+              priceId,
+              mode
+            });
+
+            if (response.data?.url) {
+              window.location.href = response.data.url;
+            } else {
+              throw new Error('No checkout URL returned');
+            }
+          } catch (stripeError) {
+            console.error('Stripe fallback error:', stripeError);
+            alert('Unable to process payment. Please try again later or contact support.');
+          }
           setIsProcessing(false);
         }
       } else {
