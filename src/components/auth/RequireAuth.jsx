@@ -12,9 +12,19 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
-    // Check if running in a mobile app environment
-    const mobileApp = typeof window.WTN !== 'undefined';
-    setIsMobileApp(mobileApp);
+    // Check if running in a mobile app environment - multiple detection methods
+    const checkMobileApp = () => {
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const ua = navigator.userAgent || '';
+      // iOS WebView: has iPhone/iPad but NOT Safari (Safari is stripped in WebViews)
+      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      // Standalone mode (added to home screen)
+      const isStandalone = window.navigator.standalone === true;
+      
+      return hasWTN || isIOSWebView || isStandalone;
+    };
+    
+    setIsMobileApp(checkMobileApp());
 
     const checkAuth = async () => {
       try {
