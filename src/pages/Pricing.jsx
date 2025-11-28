@@ -68,14 +68,34 @@ export default function Pricing() {
       // Detect iOS environment more reliably
       const ua = navigator.userAgent || '';
       const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
-      const hasWTN = typeof window.WTN !== 'undefined';
-      const hasWTNIAP = hasWTN && typeof window.WTN.inAppPurchase === 'function';
       
-      console.log('Subscribe clicked:', { plan, isIOSDevice, hasWTN, hasWTNIAP, isIOSApp });
+      console.log('Subscribe clicked:', { plan, isIOSDevice, isIOSApp });
       
       // If on iOS device, ONLY use Apple IAP - never Stripe
       if (isIOSDevice || isIOSApp) {
-        if (hasWTNIAP) {
+        // Wait for WTN IAP to be available (up to 3 seconds)
+        const waitForIAP = () => {
+          return new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 30; // 3 seconds total
+            
+            const check = () => {
+              if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+                resolve(true);
+              } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(check, 100);
+              } else {
+                resolve(false);
+              }
+            };
+            check();
+          });
+        };
+        
+        const iapReady = await waitForIAP();
+        
+        if (iapReady) {
           // Use Apple In-App Purchase - v3 product IDs
           let productId;
           
@@ -112,8 +132,8 @@ export default function Pricing() {
             }
           });
         } else {
-          // iOS device but IAP not available yet - show message
-          alert('In-App Purchase is loading. Please wait a moment and try again.');
+          // iOS device but IAP not available after waiting
+          alert('In-App Purchase is not available. Please close and reopen the app, then try again.');
           setIsProcessing(false);
         }
       } else {
