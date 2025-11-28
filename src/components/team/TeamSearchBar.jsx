@@ -33,9 +33,9 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for any team (e.g., 'Los Angeles Lakers' or 'Manchester City')"
+            placeholder="Search for any team..."
             disabled={isSearching}
-            className="w-full h-14 pl-12 pr-24 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
+            className="w-full h-14 pl-12 pr-32 text-base border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
           />
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           {query && !isSearching && (

@@ -28,38 +28,38 @@ function AnalysisHubContent() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Horizontally scrollable tabs */}
           <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-            <TabsList className="inline-flex w-max min-w-full gap-1 bg-transparent p-0">
+            <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
               <TabsTrigger 
                 value="predictions" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-black text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Brain className="w-4 h-4 flex-shrink-0" />
                 <span>AI</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="insights" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white text-black text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Sparkles className="w-4 h-4 flex-shrink-0" />
                 <span>Insights</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="players" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-black text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <User className="w-4 h-4 flex-shrink-0" />
                 <span>Players</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="teams" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-black text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Users className="w-4 h-4 flex-shrink-0" />
                 <span>Teams</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="performance" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white bg-white/10 text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-black text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Target className="w-4 h-4 flex-shrink-0" />
                 <span>Stats</span>
