@@ -57,7 +57,12 @@ export default function Pricing() {
   };
 
   const handleSubscribe = async (plan) => {
-    if (!isAuthenticated) {
+    // For iOS, don't require auth first - let them purchase, then login
+    const ua = navigator.userAgent || '';
+    const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
+    
+    // Only require auth for non-iOS (web Stripe)
+    if (!isAuthenticated && !isIOSDevice && !isIOSApp) {
       handleLogin();
       return;
     }
@@ -110,20 +115,17 @@ export default function Pricing() {
             callback: async function(data) {
               if (data.isSuccess && data.receiptData) {
                 try {
-                  const response = await base44.functions.invoke('handleAppleIAP', {
-                    receipt: data.receiptData,
-                    productId: productId
-                  });
-
-                  if (response.data.success) {
-                    alert('Subscription successful! Your account has been upgraded.');
-                    window.location.href = '/MyAccount';
-                  } else {
-                    alert('Receipt verification failed. Please contact support.');
-                  }
+                  // Store receipt data temporarily for after login
+                  localStorage.setItem('pending_iap_receipt', data.receiptData);
+                  localStorage.setItem('pending_iap_product', productId);
+                  
+                  // Redirect to login page after successful purchase
+                  alert('Purchase successful! Please sign in to activate your subscription.');
+                  base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
                 } catch (error) {
-                  console.error('IAP verification error:', error);
-                  alert('Failed to verify purchase. Please contact support.');
+                  console.error('IAP error:', error);
+                  alert('Purchase completed. Please sign in to activate.');
+                  base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
                 }
               } else {
                 alert('Purchase was not completed.');
