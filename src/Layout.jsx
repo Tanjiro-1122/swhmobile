@@ -158,8 +158,8 @@ export default function Layout({ children, currentPageName }) {
         <DomainChangeBanner />
         <AgeGate />
 
-        {/* Header - 56px height (8-point grid: 7 units) */}
-        <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-xl">
+        {/* Fixed Header - 56px height, respects iOS safe area */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex items-center justify-between h-14 px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
@@ -223,8 +223,8 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                   </header>
 
-        {/* Main Content - 8-point grid system: 16px horizontal, 24px vertical */}
-          <main className="flex-1">
+        {/* Main Content - offset for fixed header (56px + safe area) */}
+          <main className="flex-1 pt-14" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
               {children}
             </div>
