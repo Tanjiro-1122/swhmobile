@@ -225,6 +225,7 @@ export default function Dashboard() {
                 </div>
               </div>
               {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="icon"
@@ -238,8 +239,8 @@ export default function Dashboard() {
               >
                 <LogOut className="w-5 h-5" />
               </Button>
-            </motion.div>
-          )}
+              </motion.div>
+              )}
 
 
         </motion.div>
