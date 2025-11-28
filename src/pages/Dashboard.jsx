@@ -229,7 +229,7 @@ export default function Dashboard() {
               </>
             )}
             <ThemeToggle />
-            {currentUser && (
+            {isAuthenticated && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -238,7 +238,7 @@ export default function Dashboard() {
                   await base44.auth.logout();
                   window.location.href = createPageUrl("Dashboard");
                 }}
-                className="ml-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
+                className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
                 title="Sign Out"
               >
                 <LogOut className="w-5 h-5" />
