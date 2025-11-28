@@ -130,9 +130,7 @@ If no next game scheduled, say TBD.`,
         lookupsRemaining={lookupsRemaining}
       />
 
-      <Card className="p-6 border-2 border-purple-200 bg-white shadow-xl">
-        <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
-      </Card>
+      <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
 
       {error && (
         <Alert variant="destructive" className="bg-red-50 border-2 border-red-200">
