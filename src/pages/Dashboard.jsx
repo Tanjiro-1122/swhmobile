@@ -229,7 +229,7 @@ export default function Dashboard() {
               </>
             )}
             <ThemeToggle />
-            {isAuthenticated && (
+            {currentUser && (
               <Button
                 variant="ghost"
                 size="icon"
