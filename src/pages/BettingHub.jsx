@@ -29,8 +29,8 @@ function BettingHubContent() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* Horizontally scrollable tabs on mobile */}
-          <div className="mb-6 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+                {/* Horizontally scrollable tabs on mobile */}
+                <div className="mb-6 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
             <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
               <TabsTrigger 
                 value="tracker" 
