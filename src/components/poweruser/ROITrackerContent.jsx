@@ -145,14 +145,14 @@ export default function ROITrackerContent() {
       {/* Header Card */}
       <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4">
             <div>
-              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Performance Tracker</CardTitle>
-              <p className="text-gray-600">Track your selections and analyze performance</p>
+              <CardTitle className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Performance Tracker</CardTitle>
+              <p className="text-gray-600 text-sm md:text-base">Track your selections and analyze performance</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 h-12 px-6">
+                <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 h-12 px-6 w-full md:w-auto md:self-start">
                   <Plus className="w-5 h-5 mr-2" />
                   Add Selection
                 </Button>

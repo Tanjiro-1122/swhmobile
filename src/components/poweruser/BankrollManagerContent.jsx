@@ -127,14 +127,14 @@ export default function BankrollManagerContent() {
       {/* Header Card */}
       <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4">
             <div>
-              <CardTitle className="text-3xl font-black text-gray-900 mb-2">Budget Manager</CardTitle>
-              <p className="text-gray-600">Track deposits, withdrawals, wins, and losses</p>
+              <CardTitle className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Budget Manager</CardTitle>
+              <p className="text-gray-600 text-sm md:text-base">Track deposits, withdrawals, wins, and losses</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-12 px-6">
+                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-12 px-6 w-full md:w-auto md:self-start">
                   <Plus className="w-5 h-5 mr-2" />
                   Add Transaction
                 </Button>
