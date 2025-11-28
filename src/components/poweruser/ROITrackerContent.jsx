@@ -141,7 +141,7 @@ export default function ROITrackerContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       {/* Header Card */}
       <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
         <CardHeader>

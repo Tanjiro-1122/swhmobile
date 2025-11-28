@@ -123,7 +123,7 @@ export default function BankrollManagerContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       {/* Header Card */}
       <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
         <CardHeader>

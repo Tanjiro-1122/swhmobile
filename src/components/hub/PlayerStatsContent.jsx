@@ -122,7 +122,7 @@ If no next game scheduled, say TBD.`,
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 

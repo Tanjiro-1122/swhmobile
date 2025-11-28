@@ -127,7 +127,7 @@ Be realistic and base predictions on actual current season data, injuries, match
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       {/* Header */}
       <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
         <CardContent className="p-6">
