@@ -170,7 +170,7 @@ export default function Dashboard() {
   const subscription = getSubscriptionBadge();
 
   return (
-    <div className="min-h-screen relative overflow-x-auto">
+    <div className="min-h-screen relative overflow-x-hidden">
       {/* Modern Dark Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Subtle gradient orbs */}
