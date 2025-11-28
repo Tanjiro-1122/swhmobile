@@ -229,21 +229,19 @@ export default function Dashboard() {
               </>
             )}
             <ThemeToggle />
-            {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={async () => {
-                  localStorage.clear();
-                  await base44.auth.logout();
-                  window.location.href = createPageUrl("Dashboard");
-                }}
-                className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
-                title="Sign Out"
-              >
-                <LogOut className="w-5 h-5" />
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                localStorage.clear();
+                await base44.auth.logout();
+                window.location.href = createPageUrl("Dashboard");
+              }}
+              className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
+              title="Sign Out"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
           </motion.div>
 
 
