@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Heart, Trophy, CreditCard, CheckCircle } from "lucide-react";
+import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { base44 } from "@/api/base44Client";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 import ProfileContent from "@/components/hub/ProfileContent";
@@ -13,6 +14,7 @@ import FloatingDashboardButton from "@/components/navigation/FloatingDashboardBu
 function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [activatingIAP, setActivatingIAP] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -29,11 +31,46 @@ function MyAccountContent() {
       setActiveTab("subscription");
     }
     
+    // Handle pending IAP activation after login
+    if (params.get('activate_iap') === 'true') {
+      activatePendingIAP();
+    }
+    
     // Clean URL
     if (params.toString()) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
+
+  const activatePendingIAP = async () => {
+    const receipt = localStorage.getItem('pending_iap_receipt');
+    const productId = localStorage.getItem('pending_iap_product');
+    
+    if (receipt && productId) {
+      setActivatingIAP(true);
+      try {
+        const response = await base44.functions.invoke('handleAppleIAP', {
+          receipt,
+          productId
+        });
+
+        if (response.data.success) {
+          setPaymentSuccess(true);
+          setActiveTab("subscription");
+          // Clear stored data
+          localStorage.removeItem('pending_iap_receipt');
+          localStorage.removeItem('pending_iap_product');
+        } else {
+          alert('Failed to activate subscription. Please contact support.');
+        }
+      } catch (error) {
+        console.error('IAP activation error:', error);
+        alert('Failed to activate subscription. Please contact support.');
+      } finally {
+        setActivatingIAP(false);
+      }
+    }
+  };
 
   return (
         <div className="min-h-screen overflow-x-hidden">
@@ -45,6 +82,15 @@ function MyAccountContent() {
               </h1>
               <p className="text-white/70 text-base md:text-lg">Manage your profile, preferences, and saved results</p>
             </div>
+
+            {activatingIAP && (
+              <Alert className="mb-6 bg-blue-50 border-2 border-blue-300">
+                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                <AlertDescription className="text-blue-800 font-semibold">
+                  Activating your subscription... Please wait.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {paymentSuccess && (
               <Alert className="mb-6 bg-green-50 border-2 border-green-300">
