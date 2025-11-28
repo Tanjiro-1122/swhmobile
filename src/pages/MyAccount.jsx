@@ -39,11 +39,11 @@ function MyAccountContent() {
         <div className="min-h-screen overflow-x-hidden">
           <div className="max-w-5xl mx-auto px-2 sm:px-4">
             {/* Header */}
-            <div className="mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <h1 className="text-4xl font-black text-white mb-2 tracking-tight">
+            <div className="mt-2 mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
                 👤 MY ACCOUNT
               </h1>
-              <p className="text-white/70 text-lg">Manage your profile, preferences, and saved results</p>
+              <p className="text-white/70 text-base md:text-lg">Manage your profile, preferences, and saved results</p>
             </div>
 
             {paymentSuccess && (

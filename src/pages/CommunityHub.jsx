@@ -15,7 +15,7 @@ function CommunityHubPage() {
     <div className="min-h-screen overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full px-3 sm:px-4 md:px-6">
         {/* Header - iPad optimized */}
-        <div className="mb-6 md:mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
+        <div className="mt-2 mb-6 md:mb-8 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
             💬 COMMUNITY & LEARNING
           </h1>
