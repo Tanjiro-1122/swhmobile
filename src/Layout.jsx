@@ -223,9 +223,9 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
 
-        {/* Main Content - 8-point grid system spacing */}
+        {/* Main Content - 8-point grid system: 16px horizontal, 24px vertical */}
           <main className="flex-1">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
+            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
               {children}
             </div>
           </main>
