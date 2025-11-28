@@ -14,6 +14,7 @@ export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isIOSApp, setIsIOSApp] = useState(false);
+  const [iapReady, setIapReady] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,21 +25,30 @@ export default function Pricing() {
     
     // Check if we're in the iOS app - check multiple indicators
     const checkIOSApp = () => {
-      // WebToNative detection methods
-      const hasWTN = typeof window.WTN !== 'undefined';
-      const hasWTNIAP = hasWTN && window.WTN.inAppPurchase;
-      // Also check user agent for iOS WebView indicators
       const ua = navigator.userAgent || '';
       const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
       const isStandalone = window.navigator.standalone === true;
-      
-      console.log('iOS Detection:', { hasWTN, hasWTNIAP, isIOSWebView, isStandalone, ua });
-      
-      // Consider it iOS app if WTN exists OR if it's an iOS WebView
-      return hasWTN || isIOSWebView || isStandalone;
+      return isIOSWebView || isStandalone;
     };
     
     setIsIOSApp(checkIOSApp());
+    
+    // Continuously check for IAP readiness
+    const checkIAPReady = () => {
+      const ready = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
+      setIapReady(ready);
+      return ready;
+    };
+    
+    // Check immediately and then periodically
+    checkIAPReady();
+    const interval = setInterval(() => {
+      if (checkIAPReady()) {
+        clearInterval(interval);
+      }
+    }, 500);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const { data: currentUser } = useQuery({
