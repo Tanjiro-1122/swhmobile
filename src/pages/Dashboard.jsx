@@ -206,26 +206,30 @@ export default function Dashboard() {
           <p className="text-white/70 text-lg">AI-Powered Sports Analytics & Insights</p>
 
           {/* User Welcome & Status */}
-          {currentUser ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
-            >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
-              </div>
-              <div className="text-left">
-                <div className="text-white font-semibold">
-                  Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
+          >
+            {currentUser && (
+              <>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                  {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
                 </div>
-                <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
-                  {subscription.label} MEMBER
+                <div className="text-left">
+                  <div className="text-white font-semibold">
+                    Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
+                  </div>
+                  <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
+                    {subscription.label} MEMBER
+                  </div>
                 </div>
-              </div>
-              {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
-              <ThemeToggle />
+                {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
+              </>
+            )}
+            <ThemeToggle />
+            {isAuthenticated && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -234,22 +238,13 @@ export default function Dashboard() {
                   await base44.auth.logout();
                   window.location.href = createPageUrl("Dashboard");
                 }}
-                className="ml-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full"
+                className="ml-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
                 title="Sign Out"
               >
                 <LogOut className="w-5 h-5" />
               </Button>
-            </motion.div>
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
-            >
-              <ThemeToggle />
-            </motion.div>
-          )}
+            )}
+          </motion.div>
 
 
         </motion.div>
