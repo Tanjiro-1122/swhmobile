@@ -20,7 +20,7 @@ function BettingHubContent() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full">
-        {/* Header - 8-point grid: 24px bottom margin, 16/24px padding */}
+        {/* Header */}
         <div className="mb-6 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
             🎯 TRACKING TOOLS
@@ -30,7 +30,7 @@ function BettingHubContent() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Mobile: 4 cols x 2 rows, Tablet/iPad: 8 cols single row for better use of screen width */}
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1.5 md:gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 md:p-3 rounded-xl border border-white/10">
+          <TabsList className="grid w-full grid-cols-8 gap-1 md:gap-2 mb-6 bg-black/40 backdrop-blur-sm p-1.5 md:p-2 rounded-xl border border-white/10 overflow-x-auto">
             <TabsTrigger 
               value="tracker" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-xs md:text-sm py-3 px-1.5 md:px-2 min-h-[48px] flex items-center justify-center gap-1.5"
