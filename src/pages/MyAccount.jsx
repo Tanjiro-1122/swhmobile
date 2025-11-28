@@ -56,31 +56,31 @@ function MyAccountContent() {
             )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 gap-2 mb-8 bg-black/40 backdrop-blur-sm p-2 sm:p-3 rounded-xl border border-white/10">
+          <TabsList className="grid w-full grid-cols-4 gap-2 mb-8 bg-slate-800/80 backdrop-blur-sm p-2 sm:p-3 rounded-xl border border-white/10">
             <TabsTrigger 
               value="profile" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
             >
               <User className="w-4 h-4" />
               <span>Profile</span>
             </TabsTrigger>
             <TabsTrigger 
               value="subscription" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
             >
               <CreditCard className="w-4 h-4" />
               <span>Plan</span>
             </TabsTrigger>
             <TabsTrigger 
               value="preferences" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
             >
               <Heart className="w-4 h-4" />
               <span>Prefs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="saved" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-white/70 text-sm py-3 min-h-[48px] flex items-center justify-center gap-2"
             >
               <Trophy className="w-4 h-4" />
               <span>Saved</span>
