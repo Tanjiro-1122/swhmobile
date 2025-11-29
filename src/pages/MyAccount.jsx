@@ -45,13 +45,18 @@ function MyAccountContent() {
   const activatePendingIAP = async () => {
     const receipt = localStorage.getItem('pending_iap_receipt');
     const productId = localStorage.getItem('pending_iap_product');
+    const platform = localStorage.getItem('pending_iap_platform') || 'ios';
     
     if (receipt && productId) {
       setActivatingIAP(true);
       try {
-        const response = await base44.functions.invoke('handleAppleIAP', {
+        // Use the appropriate handler based on platform
+        const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
+        
+        const response = await base44.functions.invoke(functionName, {
           receipt,
-          productId
+          productId,
+          purchaseToken: receipt // Android uses purchaseToken
         });
 
         if (response.data.success) {
@@ -60,6 +65,7 @@ function MyAccountContent() {
           // Clear stored data
           localStorage.removeItem('pending_iap_receipt');
           localStorage.removeItem('pending_iap_product');
+          localStorage.removeItem('pending_iap_platform');
         } else {
           alert('Failed to activate subscription. Please contact support.');
         }
