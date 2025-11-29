@@ -32,7 +32,7 @@ STATISTICAL ANALYSIS FRAMEWORK:
 1. ADVANCED METRICS (sport-specific):
    Basketball: TS%, eFG%, PER, BPM, VORP, Net Rating, Pace
    Football: DVOA, EPA, Success Rate, Pressure Rate, YAC
-   Soccer: xG, xA, PPDA, Field Tilt, Pass Completion %
+   Soccer: xG, xA, PPDA, Field Tilt, Pass Completion %, Shots per Game, Shots on Target %, Key Passes per Game, Crosses per Game
    Baseball: wOBA, FIP, WAR, wRC+, Hard Hit %
 
 2. REGRESSION ANALYSIS:
