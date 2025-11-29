@@ -71,8 +71,12 @@ export default function Pricing() {
     const ua = navigator.userAgent || '';
     const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
     
-    // Only require auth for non-iOS (web Stripe)
-    if (!isAuthenticated && !isIOSDevice && !isIOSApp) {
+    // For native apps, don't require auth first - let them purchase, then login
+    const isAndroidDevice = /Android/.test(ua);
+    const isNativeApp = isIOSDevice || isIOSApp || isAndroidDevice;
+
+    // Only require auth for web (Stripe)
+    if (!isAuthenticated && !isNativeApp) {
       handleLogin();
       return;
     }
