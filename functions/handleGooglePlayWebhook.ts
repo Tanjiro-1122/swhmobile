@@ -27,7 +27,7 @@ const getAuthenticatedClient = async () => {
 };
 
 // Package name for your app
-const PACKAGE_NAME = 'com.sportswagerhelper.app';
+const PACKAGE_NAME = 'com.wnapp.id1761803023263';
 
 Deno.serve(async (req) => {
   try {
