@@ -185,7 +185,7 @@ export default function Pricing() {
             'Tap OK to contact support for help, or Cancel to try again later.'
           );
           if (contactSupport) {
-            window.location.href = `mailto:sportswagerhelper@gmail.com?subject=IAP Issue&body=I am having trouble with In-App Purchase on ${platform}.`;
+            window.location.href = `mailto:support@sportswagerhelper.com?subject=IAP Issue&body=I am having trouble with In-App Purchase on ${platform}.`;
           }
         }
       } else {
