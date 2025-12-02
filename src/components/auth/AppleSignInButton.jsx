@@ -61,14 +61,33 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
   }, [sdkLoaded, appleConfig]);
 
   const handleAppleSignIn = async () => {
-    if (!sdkLoaded || !appleConfig) {
-      alert('Apple Sign In is not ready yet. Please try again.');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
+      // Check if SDK is loaded
+      if (!window.AppleID) {
+        throw new Error('Apple SDK not loaded. Please refresh the page.');
+      }
+
+      // Get config if not already loaded
+      if (!appleConfig) {
+        const response = await base44.functions.invoke('appleSignIn', {
+          action: 'getClientId'
+        });
+        if (!response.data?.clientId) {
+          throw new Error('Could not get Apple configuration. Please try again.');
+        }
+        setAppleConfig(response.data);
+        
+        // Initialize Apple Sign In
+        window.AppleID.auth.init({
+          clientId: response.data.clientId,
+          scope: 'name email',
+          redirectURI: response.data.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+          usePopup: true
+        });
+      }
+
       // Trigger Apple Sign In popup
       const response = await window.AppleID.auth.signIn();
       
