@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       
       return Response.json({ 
         clientId: APPLE_CLIENT_ID,
-        redirectUri: `${req.headers.get('origin')}/apple-auth-callback`,
+        redirectUri: 'https://sportswagerhelper.com/apple-auth-callback',
         configStatus: {
           hasClientId: !!APPLE_CLIENT_ID,
           hasTeamId: !!APPLE_TEAM_ID,
