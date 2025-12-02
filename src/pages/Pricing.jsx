@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Crown, Sparkles, Check, Star, Loader2, ExternalLink } from "lucide-react";
+import { Crown, Sparkles, Check, Star, Loader2, ExternalLink, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,6 +132,49 @@ export default function Pricing() {
     }
   };
 
+  const handleBuyCredits = async (pack) => {
+    setIsProcessing(true);
+
+    try {
+      const ua = navigator.userAgent || '';
+      const isAndroidDevice = /Android/.test(ua);
+
+      const iapConfig = {
+        productId: pack.productId,
+        productType: isAndroidDevice ? 'INAPP' : undefined, // Consumable for Android
+        isConsumable: true,
+        callback: (data) => {
+          if (data.isSuccess && data.receiptData) {
+            localStorage.setItem('pending_iap_receipt', data.receiptData);
+            localStorage.setItem('pending_iap_product', pack.productId);
+            localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
+            localStorage.setItem('pending_iap_credits', pack.credits.toString());
+            window.location.href = '/PostPurchaseSignIn';
+          } else {
+            alert('Purchase was not completed.');
+          }
+          setIsProcessing(false);
+        }
+      };
+
+      const hasIAP = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
+      if (!hasIAP) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+        window.WTN.inAppPurchase(iapConfig);
+      } else {
+        alert('In-app purchases are initializing. Please try again in a moment.');
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error('Credit purchase error:', error);
+      alert('Failed to start purchase. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
   const features = {
     free: [
       "5 free match predictions",
@@ -168,7 +211,13 @@ export default function Pricing() {
       "Lifetime feature updates",
       "UNLIMITED saved results retention"
     ]
-  };
+    };
+
+    const creditPacks = [
+    { id: 'small', credits: 25, price: 4.99, productId: 'com.sportswagerhelper.credits.25' },
+    { id: 'medium', credits: 60, price: 9.99, productId: 'com.sportswagerhelper.credits.60' },
+    { id: 'large', credits: 100, price: 14.99, productId: 'com.sportswagerhelper.credits.100' }
+    ];
 
   const currentPlan = currentUser?.subscription_type || 'free';
 
@@ -419,6 +468,49 @@ export default function Pricing() {
                 </tbody>
               </table>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Search Credit Packs */}
+        <Card className="border-2 border-cyan-200 mb-12 lg:mb-16">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
+            <CardTitle className="text-xl lg:text-2xl font-bold text-center flex items-center justify-center gap-2">
+              <Zap className="w-6 h-6" />
+              Search Credit Packs
+            </CardTitle>
+            <p className="text-center text-white/90 text-sm mt-2">
+              Not ready for a subscription? Buy credits as you go!
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 lg:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+              {creditPacks.map((pack) => (
+                <Card key={pack.id} className="border-2 border-cyan-100 hover:border-cyan-300 transition-all">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl font-black text-cyan-600 mb-2">{pack.credits}</div>
+                    <div className="text-gray-600 font-semibold mb-4">Search Credits</div>
+                    <div className="text-2xl font-bold text-gray-900 mb-4">${pack.price.toFixed(2)}</div>
+                    <div className="text-xs text-gray-500 mb-4">
+                      ${(pack.price / pack.credits).toFixed(2)} per search
+                    </div>
+                    <Button
+                      onClick={() => handleBuyCredits(pack)}
+                      disabled={isProcessing}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        `Buy ${pack.credits} Credits`
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <p className="text-center text-gray-500 text-sm mt-6">
+              Credits never expire • Use anytime • No subscription required
+            </p>
           </CardContent>
         </Card>
 
