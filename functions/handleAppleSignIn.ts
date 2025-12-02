@@ -10,10 +10,31 @@ const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY");
 function generateClientSecret() {
   const now = Math.floor(Date.now() / 1000);
   
-  // Handle private key format - replace literal \n with actual newlines
-  let privateKey = APPLE_PRIVATE_KEY;
-  if (privateKey && privateKey.includes('\\n')) {
-    privateKey = privateKey.replace(/\\n/g, '\n');
+  // Robust Private Key Formatting
+  let privateKey = APPLE_PRIVATE_KEY || "";
+  
+  // 1. Handle literal newlines (common env var issue)
+  privateKey = privateKey.replace(/\\n/g, '\n');
+  
+  // 2. If the key doesn't have headers, add them (common copy-paste issue)
+  if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    // Strip any existing whitespace to be safe
+    const cleanContent = privateKey.replace(/\s/g, '');
+    // Reconstruct standard PEM format
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${cleanContent}\n-----END PRIVATE KEY-----`;
+  } else {
+    // Even if it has headers, sometimes the content is squashed into one line
+    // Best practice: Extract content, clean it, and re-wrap
+    try {
+        const contentMatch = privateKey.match(/-----BEGIN PRIVATE KEY-----([\s\S]*)-----END PRIVATE KEY-----/);
+        if (contentMatch && contentMatch[1]) {
+            const cleanContent = contentMatch[1].replace(/\s/g, '');
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${cleanContent}\n-----END PRIVATE KEY-----`;
+        }
+    } catch (e) {
+        // If regex fails, fallback to original (unlikely)
+        console.error("Failed to normalize key format, using original", e);
+    }
   }
   
   const payload = {
