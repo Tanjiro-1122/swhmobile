@@ -427,11 +427,7 @@ export default function Dashboard() {
                 <Link to={createPageUrl("LearningCenter")} className="block text-white/70 hover:text-white text-sm transition-colors">
                   Learning Center
                 </Link>
-                {isAdmin && (
-                   <Link to={createPageUrl("AppleKeyTester")} className="block text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center gap-1 justify-center sm:justify-start">
-                    <Key className="w-3 h-3" /> Test Apple Key
-                   </Link>
-                )}
+
               </div>
             </div>
           </div>
