@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
   Sparkles, Zap, MessageSquare, User, Crown, 
-  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut
+  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut, Key
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppleSignInButton from "@/components/auth/AppleSignInButton";
