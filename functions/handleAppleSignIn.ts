@@ -131,6 +131,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === 'getSSOConfig') {
+      if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
+         throw new Error("Missing Apple secrets. Please set them in the dashboard first.");
+      }
+      
+      const clientSecret = await generateClientSecret();
+      const appId = Deno.env.get("BASE44_APP_ID");
+      
+      return Response.json({
+        success: true,
+        config: {
+            clientId: APPLE_CLIENT_ID,
+            clientSecret: clientSecret,
+            discoveryUrl: 'https://appleid.apple.com/.well-known/openid-configuration',
+            redirectUri: `https://app.base44.com/api/apps/${appId}/auth/sso/callback`,
+            appId: appId
+        }
+      }, { headers: { 'Access-Control-Allow-Origin': '*' }});
+    }
+
     if (action === 'testManualKey') {
         const { manualKey } = await req.json();
         
