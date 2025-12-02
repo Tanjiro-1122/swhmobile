@@ -102,29 +102,7 @@ export default function Layout({ children, currentPageName }) {
     refetchOnWindowFocus: true,
   });
 
-  // Save current page to localStorage for "resume where you left off"
-  useEffect(() => {
-    if (currentPageName && currentPageName !== 'Dashboard') {
-      localStorage.setItem('lastVisitedPage', currentPageName);
-    }
-  }, [currentPageName]);
 
-  // On app load, redirect to last visited page if on Dashboard
-  useEffect(() => {
-    const lastPage = localStorage.getItem('lastVisitedPage');
-    if (currentPageName === 'Dashboard' && lastPage && lastPage !== 'Dashboard') {
-      const currentPath = window.location.pathname;
-      const dashboardPath = createPageUrl('Dashboard');
-      // Only redirect if we're actually on dashboard (not just loading)
-      if (currentPath === dashboardPath || currentPath === '/' || currentPath === '') {
-        // Small delay to ensure app is ready
-        const timer = setTimeout(() => {
-          window.location.href = createPageUrl(lastPage);
-        }, 100);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [currentPageName]);
 
   const isLegacy = currentUser?.subscription_type === 'legacy';
   const isVIP = currentUser?.subscription_type === 'vip_annual';
