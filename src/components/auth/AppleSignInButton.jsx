@@ -147,7 +147,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
     } catch (error) {
       console.error('Apple Sign In error:', error);
       if (error.error !== 'popup_closed_by_user') {
-        alert('Apple Sign In failed. Please try again or use email sign in.');
+        // Show specific error for debugging
+        const errorMessage = error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+        alert(`Sign In Error: ${errorMessage}`);
       }
     } finally {
       setIsLoading(false);
