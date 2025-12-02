@@ -245,30 +245,13 @@ export default function Dashboard() {
                   </>
                 ) : (
                   <>
-                    {/* On iOS/Android native apps, show "Get Started" button that goes to Pricing for IAP */}
-                    {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
-                      <>
-                        <Link to={createPageUrl("Pricing")}>
-                          <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
-                            Get Started
-                          </Button>
-                        </Link>
-                        <ThemeToggle />
-                      </>
-                    ) : (
-                      <>
-                        {/* Web users see sign-in options */}
-                        <AppleSignInButton className="rounded-full px-4" />
-                        <GoogleSignInButton className="rounded-full px-4" />
-                        <Button
-                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                        >
-                          Email
-                        </Button>
-                        <ThemeToggle />
-                      </>
-                    )}
+                    {/* All users on mobile go to Pricing for IAP first */}
+                    <Link to={createPageUrl("Pricing")}>
+                      <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
+                        Get Started
+                      </Button>
+                    </Link>
+                    <ThemeToggle />
                   </>
                 )}
           </motion.div>
