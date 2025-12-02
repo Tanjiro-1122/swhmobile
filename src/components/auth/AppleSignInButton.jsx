@@ -153,7 +153,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       if (error.error !== 'popup_closed_by_user') {
         // Show specific error for debugging
         const errorMessage = error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-        alert(`Sign In Error: ${errorMessage}`);
+        alert(`Sign In Error (v2): ${errorMessage}`);
       }
     } finally {
       setIsLoading(false);
