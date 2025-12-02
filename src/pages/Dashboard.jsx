@@ -244,7 +244,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <Button
-                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                  onClick={() => base44.auth.redirectToLogin(window.location.href)}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
                 >
                   Sign In
