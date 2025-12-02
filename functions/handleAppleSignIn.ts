@@ -36,6 +36,11 @@ function generateClientSecret() {
         console.error("Failed to normalize key format, using original", e);
     }
   }
+
+  // SANITY CHECK: Ensure key looks roughly valid before passing to JWT
+  if (!privateKey || privateKey.length < 50) {
+     throw new Error("APPLE_PRIVATE_KEY is too short. Please ensure you pasted the FULL content of the .p8 file (including BEGIN/END headers).");
+  }
   
   const payload = {
     iss: APPLE_TEAM_ID,
