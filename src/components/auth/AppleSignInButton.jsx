@@ -163,9 +163,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           errorMessage = error.response.data.error;
         }
 
-        alert(`Sign In Error (v3): ${errorMessage}`);
-      }
-      } finally {
+        alert(`Sign In Error (v4): ${errorMessage}`);
+        }
+        } finally {
       setIsLoading(false);
     }
   };
