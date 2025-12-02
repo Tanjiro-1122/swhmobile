@@ -16,31 +16,27 @@ function generateClientSecret() {
   // 1. Normalize newlines first
   privateKey = privateKey.replace(/\\n/g, '\n');
 
-  // 2. Robust formatting: Find the body, clean it, and chunk it properly
+  // 2. Robust formatting: Strip everything and rebuild
   try {
-    // Flexible regex to find the key content between headers (ignoring minor header variations)
-    const match = privateKey.match(/-----BEGIN\s+PRIVATE\s+KEY-----([\s\S]+?)-----END\s+PRIVATE\s+KEY-----/);
+    if (!privateKey) throw new Error("Key is empty");
     
-    if (match && match[1]) {
-        // We found headers. Clean the body and re-format strictly.
-        const rawBody = match[1].replace(/\s/g, ''); // Remove ALL whitespace/newlines from body
+    // Remove existing headers, footers, and all whitespace to get pure base64
+    const rawBody = privateKey
+        .replace(/[-]+BEGIN\s+PRIVATE\s+KEY[-]+/g, '')
+        .replace(/[-]+END\s+PRIVATE\s+KEY[-]+/g, '')
+        .replace(/\s/g, ''); // removes \n, \r, spaces, tabs
         
-        // Chunk into 64-character lines (Standard PEM format)
-        const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
-        
-        if (chunkedBody) {
-            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----\n`;
-        }
-    } else if (!privateKey.includes('PRIVATE KEY')) {
-        // No headers found? Assume it's just the base64 body.
-        const rawBody = privateKey.replace(/\s/g, '');
-        const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
-        if (chunkedBody) {
-            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----\n`;
-        }
+    // Chunk into 64-character lines (Standard PEM format)
+    const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
+    
+    if (chunkedBody) {
+        privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----`;
+    } else {
+        throw new Error("Could not extract base64 body from key");
     }
   } catch (e) {
     console.error("Key formatting error:", e);
+    // Fallback to original if something went wrong, but log it
   }
 
   // SANITY CHECK & DEBUG
