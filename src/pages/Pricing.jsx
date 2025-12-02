@@ -355,28 +355,20 @@ export default function Pricing() {
                     Current Plan
                   </Button>
                 ) : (
-                  // On iOS, only show button when IAP is ready
-                  (isIOSApp && !iapReady) ? (
-                    <Button disabled className="w-full bg-gray-300 text-gray-500 py-6 text-base">
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Loading...
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => handleSubscribe('premium')}
-                      disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                    >
-                      {isProcessing ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Processing...
-                        </div>
-                      ) : (
-                        isAuthenticated ? 'Subscribe Now' : 'Sign Up & Subscribe'
-                      )}
-                    </Button>
-                  )
+                  <Button 
+                    onClick={() => handleSubscribe('premium')}
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      'Subscribe Now'
+                    )}
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -420,28 +412,20 @@ export default function Pricing() {
                     ⭐ You're a VIP Member!
                   </Button>
                 ) : (
-                  // On iOS, only show button when IAP is ready
-                  (isIOSApp && !iapReady) ? (
-                    <Button disabled className="w-full bg-gray-300 text-gray-500 py-6 text-base">
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Loading...
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => handleSubscribe('vip')}
-                      disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                    >
-                      {isProcessing ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Processing...
-                        </div>
-                      ) : (
-                        isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'
-                      )}
-                    </Button>
-                  )
+                  <Button 
+                    onClick={() => handleSubscribe('vip')}
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing...
+                      </div>
+                    ) : (
+                      'Upgrade to VIP'
+                    )}
+                  </Button>
                 )}
               </CardContent>
             </Card>
