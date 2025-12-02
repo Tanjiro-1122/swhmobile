@@ -118,8 +118,25 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'exchangeCode') {
+      console.log('Starting exchangeCode action');
+      
+      if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
+        const missing = [];
+        if (!APPLE_PRIVATE_KEY) missing.push('APPLE_PRIVATE_KEY');
+        if (!APPLE_TEAM_ID) missing.push('APPLE_TEAM_ID');
+        if (!APPLE_KEY_ID) missing.push('APPLE_KEY_ID');
+        if (!APPLE_CLIENT_ID) missing.push('APPLE_CLIENT_ID');
+        throw new Error(`Missing required secrets for Apple Sign In: ${missing.join(', ')}`);
+      }
+
       // Exchange authorization code for tokens
-      const clientSecret = generateClientSecret();
+      let clientSecret;
+      try {
+        clientSecret = generateClientSecret();
+      } catch (err) {
+        console.error('Error generating client secret:', err);
+        throw new Error(`Failed to generate client secret: ${err.message}`);
+      }
 
       console.log('Exchanging code with Apple:', {
         client_id: APPLE_CLIENT_ID,
@@ -148,7 +165,7 @@ Deno.serve(async (req) => {
 
       if (tokenData.error) {
         console.error('Apple token error:', tokenData);
-        throw new Error(tokenData.error_description || tokenData.error);
+        throw new Error(`Apple API Error: ${tokenData.error_description || tokenData.error}`);
       }
 
       // Decode the id_token to get user info
@@ -179,8 +196,13 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Apple Sign In error:', error);
-    return Response.json({ error: error.message }, { 
+    console.error('Apple Sign In CRITICAL error:', error);
+    console.error('Stack:', error.stack);
+    return Response.json({ 
+      error: error.message, 
+      stack: error.stack,
+      details: 'Check backend logs for more info'
+    }, { 
       status: 500,
       headers: { 'Access-Control-Allow-Origin': '*' }
     });
