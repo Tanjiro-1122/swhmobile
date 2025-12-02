@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, Sparkles, Crown, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
 
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
@@ -14,9 +15,16 @@ export function useFreeLookupTracker() {
   const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
-    // Check if running in mobile app
-    const mobileApp = typeof window.WTN !== 'undefined';
-    setIsMobileApp(mobileApp);
+    // Check if running in mobile app - comprehensive detection
+    const checkMobileApp = () => {
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const ua = navigator.userAgent || '';
+      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
+      const isStandalone = window.navigator.standalone === true;
+      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
+    };
+    setIsMobileApp(checkMobileApp());
 
     const checkAuth = async () => {
       try {
@@ -152,7 +160,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
         });
       } else {
         // Web user - redirect to pricing page for Stripe
-        window.location.href = '/Pricing';
+        window.location.href = createPageUrl("Pricing");
       }
     } catch (error) {
       console.error('Subscription error:', error);
@@ -343,7 +351,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
   if (lookupsRemaining === 5) return null;
 
   const handleUpgrade = () => {
-    window.location.href = '/Pricing';
+    window.location.href = createPageUrl("Pricing");
   };
 
   const getColorScheme = () => {

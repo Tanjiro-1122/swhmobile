@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import { createPageUrl } from "@/utils";
 
 
 export default function RequireAuth({ children, pageName = "this feature" }) {
@@ -18,10 +19,12 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
       const ua = navigator.userAgent || '';
       // iOS WebView: has iPhone/iPad but NOT Safari (Safari is stripped in WebViews)
       const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      // Android WebView detection
+      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
       // Standalone mode (added to home screen)
       const isStandalone = window.navigator.standalone === true;
       
-      return hasWTN || isIOSWebView || isStandalone;
+      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
     };
     
     setIsMobileApp(checkMobileApp());
@@ -41,11 +44,11 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
   }, []);
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+    base44.auth.redirectToLogin(createPageUrl(pageName) || createPageUrl("Dashboard"));
   };
 
   const handleViewPricing = () => {
-    window.location.href = '/Pricing';
+    window.location.href = createPageUrl("Pricing");
   };
 
   if (isLoading) {
