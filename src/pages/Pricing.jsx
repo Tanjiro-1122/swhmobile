@@ -63,7 +63,8 @@ export default function Pricing() {
   });
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+    // Use full URL for redirect after login
+    base44.auth.redirectToLogin(createPageUrl("Pricing"));
   };
 
   const handleSubscribe = async (plan) => {
