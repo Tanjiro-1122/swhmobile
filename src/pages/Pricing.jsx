@@ -68,135 +68,66 @@ export default function Pricing() {
   };
 
   const handleSubscribe = async (plan) => {
-    // For iOS, don't require auth first - let them purchase, then login
-    const ua = navigator.userAgent || '';
-    const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
-    
-    // For native apps, don't require auth first - let them purchase, then login
-    const isAndroidDevice = /Android/.test(ua);
-    const isNativeApp = isIOSDevice || isIOSApp || isAndroidDevice;
-
-    // Only require auth for web (Stripe)
-    if (!isAuthenticated && !isNativeApp) {
-      handleLogin();
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
-      // Detect iOS environment more reliably
       const ua = navigator.userAgent || '';
-      const isIOSDevice = /iPhone|iPad|iPod/.test(ua);
-      
-      console.log('Subscribe clicked:', { plan, isIOSDevice, isIOSApp });
-      
-      // Check if we're in a native app (iOS or Android)
       const isAndroidDevice = /Android/.test(ua);
-      const isNativeApp = isIOSDevice || isIOSApp || isAndroidDevice;
 
-      // If in native app, use In-App Purchase
-      if (isNativeApp) {
-        // Check if IAP is ready now
-        const hasIAP = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
+      let productId;
+      let iapConfig;
 
-        if (!hasIAP) {
-          // Wait a bit more for IAP to initialize
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-
-        const iapAvailable = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
-
-        // IAP must be available on native apps - buttons are only shown when ready
-        let productId;
-        let iapConfig;
-
-        if (isAndroidDevice && !isIOSDevice) {
-          // Android - Google Play product IDs with additional params
-          if (plan === 'premium') {
-            productId = 'com.sportswagerhelper.premium.monthly';
-            iapConfig = {
-              productId: productId,
-              productType: 'SUBS', // Subscription
-              isConsumable: false,
-              callback: handleIAPCallback
-            };
-          } else if (plan === 'vip') {
-            productId = 'com.sportswagerhelper.vip.annual';
-            iapConfig = {
-              productId: productId,
-              productType: 'SUBS', // Subscription
-              isConsumable: false,
-              callback: handleIAPCallback
-            };
-          }
-        } else {
-          // iOS - Apple product IDs (simpler API)
-          if (plan === 'premium') {
-            productId = 'com.sportswagerhelper.premium.monthly.v3';
-          } else if (plan === 'vip') {
-            productId = 'com.sportswagerhelper.premium.annual.v3';
-          }
-          iapConfig = {
-            productId: productId,
-            callback: handleIAPCallback
-          };
-        }
-
-        function handleIAPCallback(data) {
-          if (data.isSuccess && data.receiptData) {
-            try {
-              // Store receipt data temporarily for after login
-              localStorage.setItem('pending_iap_receipt', data.receiptData);
-              localStorage.setItem('pending_iap_product', productId);
-              localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
-
-              // Redirect to custom post-purchase sign-in page
-              window.location.href = '/PostPurchaseSignIn';
-            } catch (error) {
-              console.error('IAP error:', error);
-              window.location.href = '/PostPurchaseSignIn';
-            }
-          } else {
-            alert('Purchase was not completed.');
-          }
-          setIsProcessing(false);
-        }
-
-        try {
-          window.WTN.inAppPurchase(iapConfig);
-        } catch (err) {
-          console.error('IAP call failed:', err);
-          alert('Unable to start purchase. Please try again.');
-          setIsProcessing(false);
-        }
-      } else {
-        // Web users ONLY - use Stripe
-        let priceId;
-        let mode;
-        
+      if (isAndroidDevice) {
         if (plan === 'premium') {
-          priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
-          mode = 'subscription';
+          productId = 'com.sportswagerhelper.premium.monthly';
         } else if (plan === 'vip') {
-          priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99
-          mode = 'payment';
+          productId = 'com.sportswagerhelper.vip.annual';
         }
+        iapConfig = {
+          productId: productId,
+          productType: 'SUBS',
+          isConsumable: false,
+          callback: handleIAPCallback
+        };
+      } else {
+        if (plan === 'premium') {
+          productId = 'com.sportswagerhelper.premium.monthly.v3';
+        } else if (plan === 'vip') {
+          productId = 'com.sportswagerhelper.premium.annual.v3';
+        }
+        iapConfig = {
+          productId: productId,
+          callback: handleIAPCallback
+        };
+      }
 
-        const response = await base44.functions.invoke('createCheckoutSession', {
-          priceId,
-          mode
-        });
-
-        if (response.data?.url) {
-          window.location.href = response.data.url;
+      function handleIAPCallback(data) {
+        if (data.isSuccess && data.receiptData) {
+          localStorage.setItem('pending_iap_receipt', data.receiptData);
+          localStorage.setItem('pending_iap_product', productId);
+          localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
+          window.location.href = '/PostPurchaseSignIn';
         } else {
-          throw new Error('No checkout URL returned');
+          alert('Purchase was not completed.');
         }
+        setIsProcessing(false);
+      }
+
+      // Check if IAP is available
+      const hasIAP = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
+      if (!hasIAP) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+        window.WTN.inAppPurchase(iapConfig);
+      } else {
+        alert('In-app purchases are initializing. Please try again in a moment.');
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      alert('Failed to start checkout. Please try again or contact support.');
+      alert('Failed to start purchase. Please try again.');
       setIsProcessing(false);
     }
   };
