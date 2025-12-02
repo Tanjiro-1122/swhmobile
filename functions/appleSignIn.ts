@@ -131,7 +131,14 @@ Deno.serve(async (req) => {
     if (action === 'exchangeCode') {
       // Exchange authorization code for tokens
       const clientSecret = generateClientSecret();
-      
+
+      console.log('Exchanging code with Apple:', {
+        client_id: APPLE_CLIENT_ID,
+        hasClientSecret: !!clientSecret,
+        hasCode: !!authorizationCode,
+        codeLength: authorizationCode?.length
+      });
+
       const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
         method: 'POST',
         headers: {
@@ -142,12 +149,16 @@ Deno.serve(async (req) => {
           client_secret: clientSecret,
           code: authorizationCode,
           grant_type: 'authorization_code',
+          redirect_uri: 'https://sportswagerhelper.com/apple-auth-callback',
         }),
       });
 
       const tokenData = await tokenResponse.json();
-      
+
+      console.log('Apple token response:', JSON.stringify(tokenData));
+
       if (tokenData.error) {
+        console.error('Apple token error:', tokenData);
         throw new Error(tokenData.error_description || tokenData.error);
       }
 
