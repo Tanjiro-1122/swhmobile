@@ -13,34 +13,46 @@ function generateClientSecret() {
   // Robust Private Key Formatting
   let privateKey = APPLE_PRIVATE_KEY || "";
   
-  // 1. Handle literal newlines (common env var issue)
+  // 1. Normalize newlines first
   privateKey = privateKey.replace(/\\n/g, '\n');
-  
-  // 2. If the key doesn't have headers, add them (common copy-paste issue)
-  if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    // Strip any existing whitespace to be safe
-    const cleanContent = privateKey.replace(/\s/g, '');
-    // Reconstruct standard PEM format
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${cleanContent}\n-----END PRIVATE KEY-----`;
-  } else {
-    // Even if it has headers, sometimes the content is squashed into one line
-    // Best practice: Extract content, clean it, and re-wrap
-    try {
-        const contentMatch = privateKey.match(/-----BEGIN PRIVATE KEY-----([\s\S]*)-----END PRIVATE KEY-----/);
-        if (contentMatch && contentMatch[1]) {
-            const cleanContent = contentMatch[1].replace(/\s/g, '');
-            privateKey = `-----BEGIN PRIVATE KEY-----\n${cleanContent}\n-----END PRIVATE KEY-----`;
+
+  // 2. Robust formatting: Find the body, clean it, and chunk it properly
+  try {
+    // Flexible regex to find the key content between headers (ignoring minor header variations)
+    const match = privateKey.match(/-----BEGIN\s+PRIVATE\s+KEY-----([\s\S]+?)-----END\s+PRIVATE\s+KEY-----/);
+    
+    if (match && match[1]) {
+        // We found headers. Clean the body and re-format strictly.
+        const rawBody = match[1].replace(/\s/g, ''); // Remove ALL whitespace/newlines from body
+        
+        // Chunk into 64-character lines (Standard PEM format)
+        const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
+        
+        if (chunkedBody) {
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----\n`;
         }
-    } catch (e) {
-        // If regex fails, fallback to original (unlikely)
-        console.error("Failed to normalize key format, using original", e);
+    } else if (!privateKey.includes('PRIVATE KEY')) {
+        // No headers found? Assume it's just the base64 body.
+        const rawBody = privateKey.replace(/\s/g, '');
+        const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
+        if (chunkedBody) {
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----\n`;
+        }
     }
+  } catch (e) {
+    console.error("Key formatting error:", e);
   }
 
-  // SANITY CHECK: Ensure key looks roughly valid before passing to JWT
-  console.log("Formatting key, length:", privateKey?.length); // Debug log
+  // SANITY CHECK & DEBUG
+  console.log("Formatted Key Debug:", {
+      length: privateKey?.length,
+      startsWithHeader: privateKey?.startsWith('-----BEGIN PRIVATE KEY-----'),
+      firstLine: privateKey?.split('\n')[0],
+      hasNewlines: privateKey?.includes('\n')
+  });
+
   if (!privateKey || privateKey.length < 50) {
-     throw new Error("APPLE_PRIVATE_KEY is too short. Please ensure you pasted the FULL content of the .p8 file (including BEGIN/END headers).");
+     throw new Error("APPLE_PRIVATE_KEY is invalid/empty after formatting.");
   }
   
   const payload = {
