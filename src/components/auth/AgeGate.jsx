@@ -13,20 +13,8 @@ export default function AgeGate() {
 
   useEffect(() => {
     const verified = localStorage.getItem('age_verified');
-    const verifiedTimestamp = localStorage.getItem('age_verified_timestamp');
     
-    // Re-verify every 30 days for compliance
-    if (verified && verifiedTimestamp) {
-      const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-      if (parseInt(verifiedTimestamp) < thirtyDaysAgo) {
-        localStorage.removeItem('age_verified');
-        localStorage.removeItem('age_verified_timestamp');
-        setIsVerified(false);
-        setShowGate(true);
-        return;
-      }
-    }
-    
+    // Once verified, stay verified permanently
     if (!verified) {
       setIsVerified(false);
       setShowGate(true);
