@@ -138,11 +138,21 @@ Deno.serve(async (req) => {
         throw new Error(`Failed to generate client secret: ${err.message}`);
       }
 
+      // Log key format details (safely)
+      const keyDebug = APPLE_PRIVATE_KEY ? {
+        length: APPLE_PRIVATE_KEY.length,
+        hasHeader: APPLE_PRIVATE_KEY.includes('BEGIN PRIVATE KEY'),
+        hasFooter: APPLE_PRIVATE_KEY.includes('END PRIVATE KEY'),
+        hasNewlines: APPLE_PRIVATE_KEY.includes('\n') || APPLE_PRIVATE_KEY.includes('\\n')
+      } : 'MISSING';
+
       console.log('Exchanging code with Apple:', {
         client_id: APPLE_CLIENT_ID,
+        team_id: APPLE_TEAM_ID,
+        key_id: APPLE_KEY_ID,
         hasClientSecret: !!clientSecret,
         hasCode: !!authorizationCode,
-        codeLength: authorizationCode?.length
+        keyDebug
       });
 
       const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
