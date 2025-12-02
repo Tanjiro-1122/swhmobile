@@ -6,24 +6,8 @@ import { Loader2 } from "lucide-react";
 export default function AppleSignInButton({ onSuccess, className = "" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [appleConfig, setAppleConfig] = useState(null);
-  const [sdkLoaded, setSdkLoaded] = useState(false);
 
   useEffect(() => {
-    const loadAppleSDK = () => {
-      if (window.AppleID) {
-        setSdkLoaded(true);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-      script.async = true;
-      script.onload = () => setSdkLoaded(true);
-      document.head.appendChild(script);
-    };
-
-    loadAppleSDK();
-
     const getConfig = async () => {
       try {
         const response = await base44.functions.invoke('handleAppleSignIn', {
@@ -36,29 +20,64 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         console.error('Failed to get Apple config:', error);
       }
     };
-
     getConfig();
   }, []);
-
-  useEffect(() => {
-    if (sdkLoaded && appleConfig && window.AppleID) {
-      try {
-        window.AppleID.auth.init({
-          clientId: appleConfig.clientId,
-          scope: 'name email',
-          redirectURI: appleConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
-          usePopup: true
-        });
-      } catch (error) {
-        console.error('Apple Sign In init error:', error);
-      }
-    }
-  }, [sdkLoaded, appleConfig]);
 
   const handleAppleSignIn = async () => {
     setIsLoading(true);
 
     try {
+      // Check if WebToNative's native Apple Sign In is available
+      if (typeof window.WTN !== 'undefined' && typeof window.WTN.appleSignIn === 'function') {
+        console.log('Using WebToNative native Apple Sign In');
+        
+        window.WTN.appleSignIn({
+          callback: async (data) => {
+            console.log('WTN Apple Sign In response:', data);
+            
+            if (data.isSuccess && data.authorizationCode) {
+              // Exchange code with our backend
+              const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
+                action: 'exchangeCode',
+                authorizationCode: data.authorizationCode,
+                user: data.user
+              });
+
+              if (verifyResponse.data?.success) {
+                const { appleUser } = verifyResponse.data;
+                localStorage.setItem('apple_auth_user', JSON.stringify(appleUser));
+
+                if (appleUser.email) {
+                  try {
+                    await navigator.clipboard.writeText(appleUser.email);
+                  } catch (e) {
+                    console.log('Could not copy email');
+                  }
+                }
+
+                if (onSuccess) {
+                  onSuccess(appleUser);
+                } else {
+                  base44.auth.redirectToLogin(window.location.href);
+                }
+              } else {
+                throw new Error(verifyResponse.data?.error || 'Verification failed');
+              }
+            } else {
+              if (data.error !== 'user_cancelled') {
+                alert('Apple Sign In failed: ' + (data.error || 'Unknown error'));
+              }
+            }
+            setIsLoading(false);
+          }
+        });
+        return; // Exit - callback will handle the rest
+      }
+
+      // Fallback to web-based Apple Sign In
+      console.log('Using web-based Apple Sign In');
+      
+      // Load Apple SDK if needed
       if (!window.AppleID) {
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
@@ -68,10 +87,6 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           script.onerror = () => reject(new Error('Failed to load Apple SDK'));
           document.head.appendChild(script);
         });
-      }
-
-      if (!window.AppleID) {
-        throw new Error('Apple SDK could not be loaded.');
       }
 
       let currentConfig = appleConfig;
@@ -86,18 +101,12 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         currentConfig = response.data;
       }
 
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      try {
-        window.AppleID.auth.init({
-          clientId: currentConfig.clientId,
-          scope: 'name email',
-          redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
-          usePopup: !isMobile
-        });
-      } catch (initError) {
-        console.warn("Init error:", initError);
-      }
+      window.AppleID.auth.init({
+        clientId: currentConfig.clientId,
+        scope: 'name email',
+        redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+        usePopup: true
+      });
 
       const response = await window.AppleID.auth.signIn();
 
@@ -117,11 +126,12 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           } catch (e) {
             console.log('Could not copy email');
           }
-          base44.auth.redirectToLogin(window.location.href);
         }
 
         if (onSuccess) {
           onSuccess(appleUser);
+        } else {
+          base44.auth.redirectToLogin(window.location.href);
         }
       } else {
         throw new Error(verifyResponse.data?.error || 'Verification failed');
