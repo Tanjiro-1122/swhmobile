@@ -4,9 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
-import { createPageUrl } from "@/utils";
-
-
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,11 +41,12 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
   }, []);
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(createPageUrl(pageName) || createPageUrl("Dashboard"));
+    // Use current URL for redirect back after login
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   const handleViewPricing = () => {
-    window.location.href = createPageUrl("Pricing");
+    window.location.href = '/Pricing';
   };
 
   if (isLoading) {

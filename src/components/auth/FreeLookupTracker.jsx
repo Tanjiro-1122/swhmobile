@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, Sparkles, Crown, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
+
 
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
@@ -168,7 +168,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
         });
       } else {
         // Web user - redirect to pricing page for Stripe
-        window.location.href = createPageUrl("Pricing");
+        window.location.href = '/Pricing';
       }
     } catch (error) {
       console.error('Subscription error:', error);
@@ -367,7 +367,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
   if (lookupsRemaining === 5) return null;
 
   const handleUpgrade = () => {
-    window.location.href = createPageUrl("Pricing");
+    window.location.href = '/Pricing';
   };
 
   const getColorScheme = () => {
