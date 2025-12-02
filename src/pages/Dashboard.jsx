@@ -215,52 +215,62 @@ export default function Dashboard() {
             className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
           >
             {currentUser ? (
-              <>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                  {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
-                </div>
-                <div className="text-left">
-                  <div className="text-white font-semibold">
-                    Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
-                  </div>
-                  <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
-                    {subscription.label} MEMBER
-                  </div>
-                </div>
-                {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={async () => {
-                    localStorage.clear();
-                    await base44.auth.logout();
-                    window.location.href = createPageUrl("Dashboard");
-                  }}
-                  className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
-                  title="Sign Out"
-                >
-                  <LogOut className="w-5 h-5" />
-                </Button>
-              </>
-            ) : (
-              <>
-                            {/* Apple/Google sign-in only shown on web, not mobile (mobile users sign in after purchase) */}
-                            {!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
-                              <>
-                                <AppleSignInButton className="rounded-full px-4" />
-                                <GoogleSignInButton className="rounded-full px-4" />
-                              </>
-                            )}
-                            <Button
-                              onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                            >
-                              {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'Sign In' : 'Email'}
-                            </Button>
-                            <ThemeToggle />
-                          </>
-            )}
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                      {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-white font-semibold">
+                        Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
+                      </div>
+                      <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
+                        {subscription.label} MEMBER
+                      </div>
+                    </div>
+                    {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
+                    <ThemeToggle />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={async () => {
+                        localStorage.clear();
+                        await base44.auth.logout();
+                        window.location.href = createPageUrl("Dashboard");
+                      }}
+                      className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
+                      title="Sign Out"
+                    >
+                      <LogOut className="w-5 h-5" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {/* On iOS/Android native apps, show "Get Started" button that goes to Pricing for IAP */}
+                    {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
+                      <>
+                        <Link to={createPageUrl("Pricing")}>
+                          <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
+                            Get Started
+                          </Button>
+                        </Link>
+                        <ThemeToggle />
+                      </>
+                    ) : (
+                      <>
+                        {/* Web users see sign-in options */}
+                        <AppleSignInButton className="rounded-full px-4" />
+                        <GoogleSignInButton className="rounded-full px-4" />
+                        <Button
+                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                        >
+                          Email
+                        </Button>
+                        <ThemeToggle />
+                      </>
+                    )}
+                  </>
+                )}
           </motion.div>
 
 
