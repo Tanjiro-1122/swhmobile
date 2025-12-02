@@ -136,11 +136,15 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         // Store Apple user info temporarily
         localStorage.setItem('apple_auth_user', JSON.stringify(appleUser));
 
-        // Now redirect to Base44 login with the Apple email pre-filled
-        // This creates/links the account in Base44's system
+        // Copy email to clipboard automatically so user can paste on login screen
         if (appleUser.email) {
-          // Use Base44's magic link flow with the Apple email
-          alert(`Apple Sign In successful! Email: ${appleUser.email}\n\nPlease complete sign in with this email.`);
+          try {
+            await navigator.clipboard.writeText(appleUser.email);
+          } catch (e) {
+            console.log('Could not auto-copy email');
+          }
+          
+          // Redirect to Base44 login - email is in clipboard ready to paste
           base44.auth.redirectToLogin(window.location.href);
         }
 
