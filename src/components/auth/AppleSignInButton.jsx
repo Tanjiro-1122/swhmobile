@@ -128,12 +128,14 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         user: response.user // Only available on first sign in
       });
 
+      console.log("Apple backend response:", verifyResponse);
+
       if (verifyResponse.data?.success) {
         const { appleUser } = verifyResponse.data;
-        
+
         // Store Apple user info temporarily
         localStorage.setItem('apple_auth_user', JSON.stringify(appleUser));
-        
+
         // Now redirect to Base44 login with the Apple email pre-filled
         // This creates/links the account in Base44's system
         if (appleUser.email) {
@@ -141,21 +143,29 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           alert(`Apple Sign In successful! Email: ${appleUser.email}\n\nPlease complete sign in with this email.`);
           base44.auth.redirectToLogin(window.location.href);
         }
-        
+
         if (onSuccess) {
           onSuccess(appleUser);
         }
       } else {
-        throw new Error('Verification failed');
+        // Extract error from backend response
+        const backendError = verifyResponse.data?.error || 'Verification failed';
+        throw new Error(backendError);
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Apple Sign In error:', error);
       if (error.error !== 'popup_closed_by_user') {
         // Show specific error for debugging
-        const errorMessage = error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-        alert(`Sign In Error (v2): ${errorMessage}`);
+        let errorMessage = error.message || String(error);
+
+        // Try to extract response error if available (for 500s etc)
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+
+        alert(`Sign In Error (v3): ${errorMessage}`);
       }
-    } finally {
+      } finally {
       setIsLoading(false);
     }
   };

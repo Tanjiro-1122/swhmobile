@@ -190,8 +190,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ error: 'Invalid action' }, { 
-      status: 400,
+    return Response.json({ success: false, error: 'Invalid action' }, { 
+      status: 200,
       headers: { 'Access-Control-Allow-Origin': '*' }
     });
 
@@ -199,11 +199,12 @@ Deno.serve(async (req) => {
     console.error('Apple Sign In CRITICAL error:', error);
     console.error('Stack:', error.stack);
     return Response.json({ 
+      success: false,
       error: error.message, 
       stack: error.stack,
       details: 'Check backend logs for more info'
     }, { 
-      status: 500,
+      status: 200,
       headers: { 'Access-Control-Allow-Origin': '*' }
     });
   }
