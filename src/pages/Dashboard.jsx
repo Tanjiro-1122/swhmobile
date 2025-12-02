@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppleSignInButton from "@/components/auth/AppleSignInButton";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -244,15 +245,16 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                      <AppleSignInButton className="rounded-full px-4" />
-                      <Button
-                        onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                      >
-                        Email
-                      </Button>
-                      <ThemeToggle />
-                    </>
+                            <AppleSignInButton className="rounded-full px-4" />
+                            <GoogleSignInButton className="rounded-full px-4" />
+                            <Button
+                              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                            >
+                              Email
+                            </Button>
+                            <ThemeToggle />
+                          </>
             )}
           </motion.div>
 

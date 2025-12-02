@@ -10,6 +10,7 @@ import {
   LogIn
 } from "lucide-react";
 import AppleSignInButton from "./components/auth/AppleSignInButton";
+import GoogleSignInButton from "./components/auth/GoogleSignInButton";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "./components/DomainChangeBanner";
@@ -218,15 +219,16 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                                     <div className="flex items-center gap-2">
-                                      <AppleSignInButton className="rounded-full px-4" />
-                                      <Button
-                                        onClick={handleLogin}
-                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-                                      >
-                                        <LogIn className="w-4 h-4 mr-2" />
-                                        Email
-                                      </Button>
-                                    </div>
+                                                          <AppleSignInButton className="rounded-full px-4" />
+                                                          <GoogleSignInButton className="rounded-full px-4" />
+                                                          <Button
+                                                            onClick={handleLogin}
+                                                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
+                                                          >
+                                                            <LogIn className="w-4 h-4 mr-2" />
+                                                            Email
+                                                          </Button>
+                                                        </div>
                                   )}
                     </div>
                   </div>
