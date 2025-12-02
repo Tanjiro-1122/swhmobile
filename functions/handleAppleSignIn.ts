@@ -1,70 +1,49 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import jwt from 'npm:jsonwebtoken@9.0.2';
+import * as jose from 'npm:jose@5.2.3';
 
 const APPLE_CLIENT_ID = Deno.env.get("APPLE_CLIENT_ID");
 const APPLE_TEAM_ID = Deno.env.get("APPLE_TEAM_ID");
 const APPLE_KEY_ID = Deno.env.get("APPLE_KEY_ID");
 const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY");
 
-// Generate Apple client secret JWT
-function generateClientSecret() {
+// Generate Apple client secret JWT using jose
+async function generateClientSecret() {
   const now = Math.floor(Date.now() / 1000);
   
-  // Robust Private Key Formatting
+  // Simple Key Formatting - Handle newlines only
   let privateKey = APPLE_PRIVATE_KEY || "";
-  
-  // 1. Normalize newlines first
-  privateKey = privateKey.replace(/\\n/g, '\n');
+  if (privateKey.includes("\\n")) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
 
-  // 2. Robust formatting: Strip everything and rebuild
+  // If user pasted just the blob without headers, add them
+  if (!privateKey.includes("BEGIN PRIVATE KEY")) {
+      const rawBody = privateKey.replace(/\s/g, ''); // Clean up
+      const chunked = rawBody.match(/.{1,64}/g)?.join('\n');
+      privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
+  }
+
   try {
-    if (!privateKey) throw new Error("Key is empty");
+    const alg = 'ES256';
+    const ecPrivateKey = await jose.importPKCS8(privateKey, alg);
     
-    // Remove existing headers, footers, and all whitespace to get pure base64
-    const rawBody = privateKey
-        .replace(/[-]+BEGIN\s+PRIVATE\s+KEY[-]+/g, '')
-        .replace(/[-]+END\s+PRIVATE\s+KEY[-]+/g, '')
-        .replace(/\s/g, ''); // removes \n, \r, spaces, tabs
-        
-    // Chunk into 64-character lines (Standard PEM format)
-    const chunkedBody = rawBody.match(/.{1,64}/g)?.join('\n');
-    
-    if (chunkedBody) {
-        privateKey = `-----BEGIN PRIVATE KEY-----\n${chunkedBody}\n-----END PRIVATE KEY-----`;
-    } else {
-        throw new Error("Could not extract base64 body from key");
+    const jwt = await new jose.SignJWT({})
+      .setProtectedHeader({ alg, kid: APPLE_KEY_ID })
+      .setIssuedAt(now)
+      .setIssuer(APPLE_TEAM_ID)
+      .setAudience('https://appleid.apple.com')
+      .setSubject(APPLE_CLIENT_ID)
+      .setExpirationTime(now + 86400 * 180) // 180 days
+      .sign(ecPrivateKey);
+      
+    return jwt;
+  } catch (err) {
+    console.error("JOSE Sign Error:", err);
+    if (err.message && (err.message.includes("requires curve") || err.message.includes("curve"))) {
+         throw new Error(`Invalid Key Curve: The provided APPLE_PRIVATE_KEY is not a P-256 Elliptic Curve key. Please ensure you downloaded the .p8 file from the Apple Developer Portal (Keys section) and it is specifically for "Sign in with Apple". Error details: ${err.message}`);
     }
-  } catch (e) {
-    console.error("Key formatting error:", e);
-    // Fallback to original if something went wrong, but log it
+    throw new Error(`Failed to sign Apple client secret: ${err.message}`);
   }
-
-  // SANITY CHECK & DEBUG
-  console.log("Formatted Key Debug:", {
-      length: privateKey?.length,
-      startsWithHeader: privateKey?.startsWith('-----BEGIN PRIVATE KEY-----'),
-      firstLine: privateKey?.split('\n')[0],
-      hasNewlines: privateKey?.includes('\n')
-  });
-
-  if (!privateKey || privateKey.length < 50) {
-     throw new Error("APPLE_PRIVATE_KEY is invalid/empty after formatting.");
-  }
-  
-  const payload = {
-    iss: APPLE_TEAM_ID,
-    iat: now,
-    exp: now + 86400 * 180, // 180 days
-    aud: 'https://appleid.apple.com',
-    sub: APPLE_CLIENT_ID,
-  };
-
-  const header = {
-    alg: 'ES256',
-    kid: APPLE_KEY_ID,
-  };
-
-  return jwt.sign(payload, privateKey, { algorithm: 'ES256', header });
 }
 
 // Verify Apple identity token
@@ -152,6 +131,59 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === 'testManualKey') {
+        const { manualKey } = await req.json();
+        
+        // 1. Basic Cleanup
+        let cleanKey = manualKey || "";
+        if (cleanKey.includes("\\n")) cleanKey = cleanKey.replace(/\\n/g, '\n');
+        
+        // 2. Add headers if missing
+        if (!cleanKey.includes("BEGIN PRIVATE KEY")) {
+            const rawBody = cleanKey.replace(/\s/g, '');
+            const chunked = rawBody.match(/.{1,64}/g)?.join('\n');
+            cleanKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
+        }
+
+        try {
+          // Test 1: Is it a valid ES256 (P-256) key? (What Apple needs)
+          await jose.importPKCS8(cleanKey, 'ES256');
+          
+          return Response.json({ 
+            success: true, 
+            message: "Success! This is a valid Elliptic Curve (P-256) key compatible with Apple Sign In.",
+            details: {
+                algorithm: "ES256",
+                format: "PKCS8",
+                readyForSecrets: true
+            }
+          }, { headers: { 'Access-Control-Allow-Origin': '*' }});
+
+        } catch (esError) {
+          // Test 2: Is it an RSA key? (Common mistake, e.g. Google keys)
+          try {
+            await jose.importPKCS8(cleanKey, 'RS256');
+            return Response.json({ 
+                success: false, 
+                error: "WRONG KEY TYPE: This is an RSA key (commonly used by Google). Apple Sign In requires an Elliptic Curve (EC) P-256 key.",
+                details: {
+                    detectedType: "RSA (RS256)",
+                    requiredType: "Elliptic Curve (ES256)"
+                }
+            }, { headers: { 'Access-Control-Allow-Origin': '*' }});
+          } catch (rsaError) {
+            // Test 3: Generic failure
+            return Response.json({ 
+                success: false, 
+                error: `Key Parsing Failed: ${esError.message}`,
+                details: {
+                    originalError: esError.message
+                }
+            }, { headers: { 'Access-Control-Allow-Origin': '*' }});
+          }
+        }
+      }
+
     if (action === 'exchangeCode') {
       console.log('Starting exchangeCode action');
       
@@ -167,7 +199,7 @@ Deno.serve(async (req) => {
       // Exchange authorization code for tokens
       let clientSecret;
       try {
-        clientSecret = generateClientSecret();
+        clientSecret = await generateClientSecret();
       } catch (err) {
         console.error('Error generating client secret:', err);
         throw new Error(`Failed to generate client secret: ${err.message}`);

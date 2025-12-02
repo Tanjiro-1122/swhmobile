@@ -26,6 +26,7 @@ import AnalysisHub from './pages/AnalysisHub';
 import BettingHub from './pages/BettingHub';
 import CommunityHub from './pages/CommunityHub';
 import MyAccount from './pages/MyAccount';
+import AppleKeyTester from './pages/AppleKeyTester';
 import __Layout from './Layout.jsx';
 
 
@@ -58,6 +59,7 @@ export const PAGES = {
     "BettingHub": BettingHub,
     "CommunityHub": CommunityHub,
     "MyAccount": MyAccount,
+    "AppleKeyTester": AppleKeyTester,
 }
 
 export const pagesConfig = {
