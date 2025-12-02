@@ -39,10 +39,10 @@ export default function ProfileContent() {
   return (
     <div className="space-y-6">
       {/* Profile Card */}
-      <Card className="border-2 border-gray-200">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b-2 border-gray-200">
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-6 h-6 text-blue-600" />
+      <Card className="border-2 border-blue-500/30 bg-slate-800/50">
+        <CardHeader className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-b border-blue-500/30">
+          <CardTitle className="flex items-center gap-2 text-white">
+            <User className="w-6 h-6 text-blue-400" />
             Profile Information
           </CardTitle>
         </CardHeader>
@@ -52,10 +52,10 @@ export default function ProfileContent() {
               {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">
+              <h2 className="text-2xl font-bold text-white mb-1">
                 {currentUser?.full_name || 'User'}
               </h2>
-              <div className="flex items-center gap-2 text-gray-600 mb-4">
+              <div className="flex items-center gap-2 text-gray-300 mb-4">
                 <Mail className="w-4 h-4" />
                 {currentUser?.email}
               </div>
@@ -70,11 +70,11 @@ export default function ProfileContent() {
 
       {/* Account Stats */}
       <div className="grid md:grid-cols-3 gap-4">
-        <Card className="border-2 border-blue-200">
+        <Card className="border-2 border-blue-500/30 bg-slate-800/50">
           <CardContent className="p-6 text-center">
-            <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-            <div className="text-sm text-gray-600">Member Since</div>
-            <div className="text-lg font-bold text-gray-900">
+            <Calendar className="w-8 h-8 mx-auto mb-2 text-blue-400" />
+            <div className="text-sm text-gray-300">Member Since</div>
+            <div className="text-lg font-bold text-blue-400">
               {currentUser?.created_date 
                 ? new Date(currentUser.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                 : 'N/A'}
@@ -82,30 +82,30 @@ export default function ProfileContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-purple-200">
+        <Card className="border-2 border-purple-500/30 bg-slate-800/50">
           <CardContent className="p-6 text-center">
-            <Sparkles className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-            <div className="text-sm text-gray-600">Subscription</div>
-            <div className="text-lg font-bold text-gray-900">{subscription.label}</div>
+            <Sparkles className="w-8 h-8 mx-auto mb-2 text-purple-400" />
+            <div className="text-sm text-gray-300">Subscription</div>
+            <div className="text-lg font-bold text-purple-400">{subscription.label}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-green-200">
+        <Card className="border-2 border-green-500/30 bg-slate-800/50">
           <CardContent className="p-6 text-center">
-            <Settings className="w-8 h-8 mx-auto mb-2 text-green-600" />
-            <div className="text-sm text-gray-600">Account Status</div>
-            <div className="text-lg font-bold text-green-600">Active</div>
+            <Settings className="w-8 h-8 mx-auto mb-2 text-green-400" />
+            <div className="text-sm text-gray-300">Account Status</div>
+            <div className="text-lg font-bold text-green-400">Active</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Subscription Actions */}
       {currentUser?.subscription_type !== 'legacy' && currentUser?.subscription_type !== 'vip_annual' && (
-        <Card className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
+        <Card className="border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-900/30 to-orange-900/30">
           <CardContent className="p-6 text-center">
-            <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Upgrade Your Account</h3>
-            <p className="text-gray-600 mb-4">Get unlimited access and exclusive features with VIP Annual</p>
+            <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
+            <h3 className="text-xl font-bold text-white mb-2">Upgrade Your Account</h3>
+            <p className="text-gray-300 mb-4">Get unlimited access and exclusive features with VIP Annual</p>
             <Button 
               onClick={() => window.location.href = '/Pricing'}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"
