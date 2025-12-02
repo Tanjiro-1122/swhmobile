@@ -101,12 +101,16 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       // Initialize Apple Sign In
       console.log("Initializing Apple Sign In...");
       try {
-          window.AppleID.auth.init({
-            clientId: currentConfig.clientId,
-            scope: 'name email',
-            redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
-            usePopup: true
-          });
+        // Determine if we should use popup (desktop) or redirect (mobile)
+        // Mobile browsers/webviews often block popups or have issues with them
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        
+        window.AppleID.auth.init({
+          clientId: currentConfig.clientId,
+          scope: 'name email',
+          redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+          usePopup: !isMobile // Use redirect on mobile to avoid popup blocker issues
+        });
       } catch (initError) {
           console.warn("Init error (might be already initialized):", initError);
       }
