@@ -38,6 +38,7 @@ function generateClientSecret() {
   }
 
   // SANITY CHECK: Ensure key looks roughly valid before passing to JWT
+  console.log("Formatting key, length:", privateKey?.length); // Debug log
   if (!privateKey || privateKey.length < 50) {
      throw new Error("APPLE_PRIVATE_KEY is too short. Please ensure you pasted the FULL content of the .p8 file (including BEGIN/END headers).");
   }

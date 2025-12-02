@@ -163,7 +163,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           errorMessage = error.response.data.error;
         }
 
-        alert(`Sign In Error (v6): ${errorMessage}`);
+        alert(`Sign In Error (v7): ${errorMessage}`);
         }
         } finally {
       setIsLoading(false);
