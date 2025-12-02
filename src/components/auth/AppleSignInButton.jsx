@@ -51,7 +51,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         window.AppleID.auth.init({
           clientId: appleConfig.clientId,
           scope: 'name email',
-          redirectURI: window.location.origin + '/apple-auth-callback',
+          redirectURI: 'https://sportswagerhelper.com/apple-auth-callback',
           usePopup: true
         });
       } catch (error) {
