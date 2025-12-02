@@ -100,7 +100,9 @@ Deno.serve(async (req) => {
     if (action === 'getClientId') {
       return Response.json({ 
         clientId: APPLE_CLIENT_ID,
-        redirectUri: 'https://sportswagerhelper.com/apple-auth-callback',
+        // Let frontend determine the redirect URI based on current window.location
+        // or use a specific one if needed.
+        redirectUri: null, 
         configStatus: {
           hasClientId: !!APPLE_CLIENT_ID,
           hasTeamId: !!APPLE_TEAM_ID,
@@ -185,8 +187,9 @@ Deno.serve(async (req) => {
       }
 
     if (action === 'exchangeCode') {
-      console.log('Starting exchangeCode action');
-      
+      const { redirectUri } = await req.json();
+      console.log('Starting exchangeCode action with redirectUri:', redirectUri);
+
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
         const missing = [];
         if (!APPLE_PRIVATE_KEY) missing.push('APPLE_PRIVATE_KEY');
@@ -232,7 +235,7 @@ Deno.serve(async (req) => {
           client_secret: clientSecret,
           code: authorizationCode,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://sportswagerhelper.com/apple-auth-callback',
+          redirect_uri: redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
         }),
       });
 

@@ -99,13 +99,18 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         currentConfig = response.data;
       }
         
+      // Construct redirect URI dynamically to match current domain
+      // Apple requires this to match exactly what is registered in the developer portal
+      // Using window.location.origin is safer than hardcoding for dev/preview environments
+      const redirectURI = currentConfig.redirectUri || `${window.location.origin}/`;
+
       // Initialize Apple Sign In
       try {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         window.AppleID.auth.init({
           clientId: currentConfig.clientId,
           scope: 'name email',
-          redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+          redirectURI: redirectURI,
           usePopup: !isMobile 
         });
       } catch (initError) {
@@ -119,7 +124,8 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
         action: 'exchangeCode',
         authorizationCode: response.authorization.code,
-        user: response.user 
+        user: response.user,
+        redirectUri: redirectURI // Send the same URI used for init
       });
 
       if (verifyResponse.data?.success) {
