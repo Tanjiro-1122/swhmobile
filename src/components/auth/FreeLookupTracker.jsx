@@ -105,7 +105,15 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
   const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
-    setIsMobileApp(typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase);
+    const checkMobileApp = () => {
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const ua = navigator.userAgent || '';
+      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
+      const isStandalone = window.navigator.standalone === true;
+      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
+    };
+    setIsMobileApp(checkMobileApp());
   }, []);
 
   if (!show) return null;
@@ -295,7 +303,15 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
   const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
-    setIsMobileApp(typeof window.WTN !== 'undefined');
+    const checkMobileApp = () => {
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const ua = navigator.userAgent || '';
+      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
+      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
+      const isStandalone = window.navigator.standalone === true;
+      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
+    };
+    setIsMobileApp(checkMobileApp());
   }, []);
 
   // Legacy members - original lifetime VIP
