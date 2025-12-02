@@ -62,33 +62,57 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
   const handleAppleSignIn = async () => {
     setIsLoading(true);
+    console.log("Starting Apple Sign In flow...");
 
     try {
-      // Check if SDK is loaded
+      // Ensure SDK is loaded
       if (!window.AppleID) {
-        throw new Error('Apple SDK not loaded. Please refresh the page.');
+        console.log("Apple SDK not found, loading script...");
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Failed to load Apple SDK script'));
+            document.head.appendChild(script);
+        });
+        console.log("Apple SDK loaded manually");
+      }
+
+      if (!window.AppleID) {
+        throw new Error('Apple SDK could not be loaded. Please disable content blockers and refresh.');
       }
 
       // Get config if not already loaded
-      if (!appleConfig) {
+      let currentConfig = appleConfig;
+      if (!currentConfig) {
+        console.log("Fetching Apple config...");
         const response = await base44.functions.invoke('appleSignIn', {
           action: 'getClientId'
         });
         if (!response.data?.clientId) {
-          throw new Error('Could not get Apple configuration. Please try again.');
+          throw new Error('Could not retrieve Apple configuration.');
         }
         setAppleConfig(response.data);
+        currentConfig = response.data;
+        console.log("Apple config retrieved");
+      }
         
-        // Initialize Apple Sign In
-        window.AppleID.auth.init({
-          clientId: response.data.clientId,
-          scope: 'name email',
-          redirectURI: response.data.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
-          usePopup: true
-        });
+      // Initialize Apple Sign In
+      console.log("Initializing Apple Sign In...");
+      try {
+          window.AppleID.auth.init({
+            clientId: currentConfig.clientId,
+            scope: 'name email',
+            redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+            usePopup: true
+          });
+      } catch (initError) {
+          console.warn("Init error (might be already initialized):", initError);
       }
 
       // Trigger Apple Sign In popup
+      console.log("Calling signIn()...");
       const response = await window.AppleID.auth.signIn();
       
       console.log('Apple Sign In response:', response);
