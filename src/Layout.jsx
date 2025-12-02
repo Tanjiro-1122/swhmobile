@@ -80,12 +80,17 @@ export default function Layout({ children, currentPageName }) {
     document.head.appendChild(manifestLink);
 
     return () => {
-      document.head.removeChild(jqueryScript);
-      document.head.removeChild(firebaseScript);
-      document.head.removeChild(web2appScript);
-      document.head.removeChild(manifestLink);
-      document.head.removeChild(appleCapable);
-      document.head.removeChild(appleStatus);
+      // Safe cleanup - only remove if element still exists in head
+      try {
+        if (jqueryScript.parentNode) document.head.removeChild(jqueryScript);
+        if (firebaseScript.parentNode) document.head.removeChild(firebaseScript);
+        if (web2appScript.parentNode) document.head.removeChild(web2appScript);
+        if (manifestLink.parentNode) document.head.removeChild(manifestLink);
+        if (appleCapable.parentNode) document.head.removeChild(appleCapable);
+        if (appleStatus.parentNode) document.head.removeChild(appleStatus);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
       darkModeQuery.removeEventListener('change', updateThemeColor);
     };
   }, []);
@@ -109,22 +114,8 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [currentPageName]);
 
-  // On app load, redirect to last visited page if on Dashboard
-  useEffect(() => {
-    const lastPage = localStorage.getItem('lastVisitedPage');
-    if (currentPageName === 'Dashboard' && lastPage && lastPage !== 'Dashboard') {
-      const currentPath = window.location.pathname;
-      const dashboardPath = createPageUrl('Dashboard');
-      // Only redirect if we're actually on dashboard (not just loading)
-      if (currentPath === dashboardPath || currentPath === '/' || currentPath === '') {
-        // Small delay to ensure app is ready
-        const timer = setTimeout(() => {
-          window.location.href = createPageUrl(lastPage);
-        }, 100);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [currentPageName]);
+  // Disabled auto-redirect feature to prevent white screen issues
+  // Users will always start at Dashboard
 
   const isLegacy = currentUser?.subscription_type === 'legacy';
   const isVIP = currentUser?.subscription_type === 'vip_annual';
