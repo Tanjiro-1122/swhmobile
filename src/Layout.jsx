@@ -144,7 +144,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+    base44.auth.redirectToLogin(createPageUrl(currentPageName || "Dashboard"));
   };
 
   // Stadium background component for consistent styling
