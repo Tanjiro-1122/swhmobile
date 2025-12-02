@@ -8,6 +8,7 @@ import {
   TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import AppleSignInButton from "@/components/auth/AppleSignInButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
