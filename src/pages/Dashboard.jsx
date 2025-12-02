@@ -131,14 +131,19 @@ const menuItems = [
 
 export default function Dashboard() {
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated()
-      .then(setIsAuthenticated)
+      .then((result) => {
+        setIsAuthenticated(result);
+        setAuthChecked(true);
+      })
       .catch((err) => {
         console.error('Auth check error:', err);
         setIsAuthenticated(false);
+        setAuthChecked(true);
       });
   }, []);
 
@@ -156,6 +161,7 @@ export default function Dashboard() {
     },
     refetchOnWindowFocus: true,
     retry: 1,
+    enabled: authChecked && isAuthenticated, // Only run query if auth check complete and user is authenticated
   });
 
   const isVIP = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
@@ -212,7 +218,10 @@ export default function Dashboard() {
             transition={{ delay: 0.2 }}
             className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
           >
-            {isAuthenticated && currentUser ? (
+            {!authChecked ? (
+              // Still checking auth - show nothing or minimal UI
+              <ThemeToggle />
+            ) : isAuthenticated && currentUser ? (
               <>
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                   {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
@@ -241,7 +250,11 @@ export default function Dashboard() {
                   <LogOut className="w-5 h-5" />
                 </Button>
               </>
+            ) : isAuthenticated && !currentUser ? (
+              // Auth confirmed but still loading user data
+              <ThemeToggle />
             ) : (
+              // Not authenticated - show sign in
               <>
                 <Button
                   onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
