@@ -107,85 +107,68 @@ export default function Pricing() {
 
         const iapAvailable = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
 
-        if (iapAvailable) {
-          let productId;
-          let iapConfig;
+        // IAP must be available on native apps - buttons are only shown when ready
+        let productId;
+        let iapConfig;
 
-          if (isAndroidDevice && !isIOSDevice) {
-            // Android - Google Play product IDs with additional params
-            if (plan === 'premium') {
-              productId = 'com.sportswagerhelper.premium.monthly';
-              iapConfig = {
-                productId: productId,
-                productType: 'SUBS', // Subscription
-                isConsumable: false,
-                callback: handleIAPCallback
-              };
-            } else if (plan === 'vip') {
-              productId = 'com.sportswagerhelper.vip.annual';
-              iapConfig = {
-                productId: productId,
-                productType: 'SUBS', // Subscription
-                isConsumable: false,
-                callback: handleIAPCallback
-              };
-            }
-          } else {
-            // iOS - Apple product IDs (simpler API)
-            if (plan === 'premium') {
-              productId = 'com.sportswagerhelper.premium.monthly.v3';
-            } else if (plan === 'vip') {
-              productId = 'com.sportswagerhelper.premium.annual.v3';
-            }
+        if (isAndroidDevice && !isIOSDevice) {
+          // Android - Google Play product IDs with additional params
+          if (plan === 'premium') {
+            productId = 'com.sportswagerhelper.premium.monthly';
             iapConfig = {
               productId: productId,
+              productType: 'SUBS', // Subscription
+              isConsumable: false,
+              callback: handleIAPCallback
+            };
+          } else if (plan === 'vip') {
+            productId = 'com.sportswagerhelper.vip.annual';
+            iapConfig = {
+              productId: productId,
+              productType: 'SUBS', // Subscription
+              isConsumable: false,
               callback: handleIAPCallback
             };
           }
-
-          function handleIAPCallback(data) {
-          if (data.isSuccess && data.receiptData) {
-          try {
-            // Store receipt data temporarily for after login
-            localStorage.setItem('pending_iap_receipt', data.receiptData);
-            localStorage.setItem('pending_iap_product', productId);
-            localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
-
-            // Redirect to custom post-purchase sign-in page
-            window.location.href = '/PostPurchaseSignIn';
-          } catch (error) {
-            console.error('IAP error:', error);
-            window.location.href = '/PostPurchaseSignIn';
-          }
-          } else {
-          alert('Purchase was not completed.');
-          }
-          setIsProcessing(false);
-          }
-
-          try {
-            window.WTN.inAppPurchase(iapConfig);
-          } catch (err) {
-            console.error('IAP call failed:', err);
-            alert('Unable to start purchase. Please try again.');
-            setIsProcessing(false);
-          }
         } else {
-          // Native app but IAP not available - offer email option
-          setIsProcessing(false);
-          const platform = isAndroidDevice ? 'Android' : 'iOS';
-          const contactSupport = confirm(
-            'In-App Purchase is temporarily unavailable.\n\n' +
-            'This can happen if the app store connection is slow.\n\n' +
-            'Try these steps:\n' +
-            '1. Close this app completely\n' +
-            '2. Wait 10 seconds\n' +
-            '3. Reopen the app and try again\n\n' +
-            'Tap OK to contact support for help, or Cancel to try again later.'
-          );
-          if (contactSupport) {
-            window.location.href = `mailto:support@sportswagerhelper.com?subject=IAP Issue&body=I am having trouble with In-App Purchase on ${platform}.`;
+          // iOS - Apple product IDs (simpler API)
+          if (plan === 'premium') {
+            productId = 'com.sportswagerhelper.premium.monthly.v3';
+          } else if (plan === 'vip') {
+            productId = 'com.sportswagerhelper.premium.annual.v3';
           }
+          iapConfig = {
+            productId: productId,
+            callback: handleIAPCallback
+          };
+        }
+
+        function handleIAPCallback(data) {
+          if (data.isSuccess && data.receiptData) {
+            try {
+              // Store receipt data temporarily for after login
+              localStorage.setItem('pending_iap_receipt', data.receiptData);
+              localStorage.setItem('pending_iap_product', productId);
+              localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
+
+              // Redirect to custom post-purchase sign-in page
+              window.location.href = '/PostPurchaseSignIn';
+            } catch (error) {
+              console.error('IAP error:', error);
+              window.location.href = '/PostPurchaseSignIn';
+            }
+          } else {
+            alert('Purchase was not completed.');
+          }
+          setIsProcessing(false);
+        }
+
+        try {
+          window.WTN.inAppPurchase(iapConfig);
+        } catch (err) {
+          console.error('IAP call failed:', err);
+          alert('Unable to start purchase. Please try again.');
+          setIsProcessing(false);
         }
       } else {
         // Web users ONLY - use Stripe
@@ -372,20 +355,28 @@ export default function Pricing() {
                     Current Plan
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={() => handleSubscribe('premium')}
-                    disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                  >
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      isAuthenticated ? 'Subscribe Now' : 'Sign Up & Subscribe'
-                    )}
-                  </Button>
+                  // On iOS, only show button when IAP is ready
+                  (isIOSApp && !iapReady) ? (
+                    <Button disabled className="w-full bg-gray-300 text-gray-500 py-6 text-base">
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Loading...
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe('premium')}
+                      disabled={isProcessing}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                    >
+                      {isProcessing ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Processing...
+                        </div>
+                      ) : (
+                        isAuthenticated ? 'Subscribe Now' : 'Sign Up & Subscribe'
+                      )}
+                    </Button>
+                  )
                 )}
               </CardContent>
             </Card>
@@ -429,20 +420,28 @@ export default function Pricing() {
                     ⭐ You're a VIP Member!
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={() => handleSubscribe('vip')}
-                    disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                  >
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'
-                    )}
-                  </Button>
+                  // On iOS, only show button when IAP is ready
+                  (isIOSApp && !iapReady) ? (
+                    <Button disabled className="w-full bg-gray-300 text-gray-500 py-6 text-base">
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Loading...
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe('vip')}
+                      disabled={isProcessing}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                    >
+                      {isProcessing ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Processing...
+                        </div>
+                      ) : (
+                        isAuthenticated ? 'Upgrade to VIP' : 'Sign Up & Get VIP'
+                      )}
+                    </Button>
+                  )
                 )}
               </CardContent>
             </Card>
@@ -533,9 +532,7 @@ export default function Pricing() {
               <div>
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
-                  {isIOSApp 
-                    ? "Payments are processed securely through Apple's App Store using your Apple ID payment method." 
-                    : "Payments are processed securely through Apple's App Store (iOS) or Stripe (web)."}
+                  Payments are processed securely through Apple's App Store using your Apple ID payment method.
                 </p>
               </div>
             </div>
