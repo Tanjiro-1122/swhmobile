@@ -111,17 +111,13 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
     }
   };
 
-  // Only show on iOS devices or when SDK is available
-  const isAppleDevice = /iPhone|iPad|iPod|Mac/.test(navigator.userAgent);
-  
-  if (!isAppleDevice && !sdkLoaded) {
-    return null;
-  }
+  // Always show the button - don't hide it
+  const isReady = sdkLoaded && appleConfig;
 
   return (
     <Button
       onClick={handleAppleSignIn}
-      disabled={isLoading || !sdkLoaded || !appleConfig}
+      disabled={isLoading}
       className={`bg-black hover:bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 min-h-[44px] ${className}`}
     >
       {isLoading ? (
