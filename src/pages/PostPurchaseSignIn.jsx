@@ -1,0 +1,111 @@
+import React, { useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle, Mail, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import AppleSignInButton from "@/components/auth/AppleSignInButton";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+
+export default function PostPurchaseSignIn() {
+  const [pendingPurchase, setPendingPurchase] = useState(null);
+
+  useEffect(() => {
+    // Check for pending IAP purchase data
+    const receipt = localStorage.getItem('pending_iap_receipt');
+    const product = localStorage.getItem('pending_iap_product');
+    const platform = localStorage.getItem('pending_iap_platform');
+    
+    if (receipt && product) {
+      setPendingPurchase({ receipt, product, platform });
+    }
+  }, []);
+
+  const handleEmailSignIn = () => {
+    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+  };
+
+  const handleAppleSuccess = (appleUser) => {
+    // After Apple auth, redirect to activate subscription
+    window.location.href = '/MyAccount?activate_iap=true';
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-green-600/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <Card className="bg-black/60 backdrop-blur-xl border-2 border-green-500/50 shadow-2xl">
+          <CardContent className="p-8">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                <CheckCircle className="w-10 h-10 text-white" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-2xl font-black text-white text-center mb-2">
+              Payment Successful! 🎉
+            </h1>
+            <p className="text-white/70 text-center mb-8">
+              Sign in to activate your subscription and start using all premium features.
+            </p>
+
+            {/* Sign In Options */}
+            <div className="space-y-4">
+              {/* Apple Sign In - Primary for iOS */}
+              <AppleSignInButton 
+                onSuccess={handleAppleSuccess}
+                className="w-full py-4 text-lg rounded-xl"
+              />
+
+              {/* Google Sign In */}
+              <GoogleSignInButton 
+                className="w-full py-4 text-lg rounded-xl"
+              />
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-white/20" />
+                <span className="text-white/50 text-sm">or</span>
+                <div className="flex-1 h-px bg-white/20" />
+              </div>
+
+              {/* Email Sign In */}
+              <Button
+                onClick={handleEmailSignIn}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-xl"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Sign in with Email
+              </Button>
+            </div>
+
+            {/* Pending purchase info */}
+            {pendingPurchase && (
+              <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                <p className="text-green-400 text-sm text-center">
+                  ✓ Your {pendingPurchase.platform === 'ios' ? 'Apple' : 'Google Play'} purchase is ready to activate
+                </p>
+              </div>
+            )}
+
+            {/* Help text */}
+            <p className="text-white/40 text-xs text-center mt-6">
+              Your subscription will be activated immediately after sign in.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}

@@ -27,6 +27,7 @@ import BettingHub from './pages/BettingHub';
 import CommunityHub from './pages/CommunityHub';
 import MyAccount from './pages/MyAccount';
 import AppleKeyTester from './pages/AppleKeyTester';
+import PostPurchaseSignIn from './pages/PostPurchaseSignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -60,6 +61,7 @@ export const PAGES = {
     "CommunityHub": CommunityHub,
     "MyAccount": MyAccount,
     "AppleKeyTester": AppleKeyTester,
+    "PostPurchaseSignIn": PostPurchaseSignIn,
 }
 
 export const pagesConfig = {
