@@ -70,12 +70,12 @@ export default function PreferencesContent() {
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="border border-purple-500/30 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm">
         <CardContent className="p-6 flex items-center gap-4">
-          <Sparkles className="w-10 h-10 text-purple-600 flex-shrink-0" />
+          <Sparkles className="w-10 h-10 text-purple-400 flex-shrink-0" />
           <div>
-            <h3 className="font-bold text-gray-900">Personalize Your Experience</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-white">Personalize Your Experience</h3>
+            <p className="text-sm text-white/70">
               Set your favorite sports, leagues, and teams to get tailored recommendations and insights.
             </p>
           </div>
@@ -83,10 +83,10 @@ export default function PreferencesContent() {
       </Card>
 
       {/* Favorite Sports */}
-      <Card className="border-2 border-gray-200">
+      <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Heart className="w-5 h-5 text-red-400" />
             Favorite Sports
           </CardTitle>
         </CardHeader>
@@ -99,7 +99,7 @@ export default function PreferencesContent() {
                 className={`cursor-pointer px-4 py-2 text-sm transition-all ${
                   favoriteSports.includes(sport)
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'hover:bg-gray-100'
+                    : 'bg-white/10 text-white/80 border-white/30 hover:bg-white/20'
                 }`}
                 onClick={() => toggleSport(sport)}
               >
@@ -112,10 +112,10 @@ export default function PreferencesContent() {
       </Card>
 
       {/* Favorite Leagues */}
-      <Card className="border-2 border-gray-200">
+      <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Heart className="w-5 h-5 text-red-400" />
             Favorite Leagues
           </CardTitle>
         </CardHeader>
@@ -128,7 +128,7 @@ export default function PreferencesContent() {
                 className={`cursor-pointer px-4 py-2 text-sm transition-all ${
                   favoriteLeagues.includes(league)
                     ? 'bg-purple-600 text-white border-purple-600'
-                    : 'hover:bg-gray-100'
+                    : 'bg-white/10 text-white/80 border-white/30 hover:bg-white/20'
                 }`}
                 onClick={() => toggleLeague(league)}
               >
@@ -141,10 +141,10 @@ export default function PreferencesContent() {
       </Card>
 
       {/* Favorite Teams */}
-      <Card className="border-2 border-gray-200">
+      <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Heart className="w-5 h-5 text-red-400" />
             Favorite Teams
           </CardTitle>
         </CardHeader>
@@ -154,13 +154,13 @@ export default function PreferencesContent() {
             placeholder="Enter teams separated by commas (e.g., Lakers, Patriots, Yankees)"
             value={favoriteTeams}
             onChange={(e) => setFavoriteTeams(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+            className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder:text-white/50 focus:border-blue-500 focus:outline-none"
           />
           {favoriteTeams && (
             <div className="flex flex-wrap gap-2 mt-3">
               {favoriteTeams.split(",").map((team, idx) => (
                 team.trim() && (
-                  <Badge key={idx} className="bg-green-100 text-green-800">
+                  <Badge key={idx} className="bg-green-500/20 text-green-300 border border-green-500/30">
                     {team.trim()}
                   </Badge>
                 )

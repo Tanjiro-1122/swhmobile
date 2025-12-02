@@ -96,26 +96,26 @@ export default function SavedResultsContent() {
   return (
     <div className="space-y-6">
       {!hasUnlimitedRetention && (
-        <Card className="border-2 border-orange-200 bg-orange-50">
+        <Card className="border border-orange-500/30 bg-orange-500/20 backdrop-blur-sm">
           <CardContent className="p-4">
-            <p className="text-sm text-orange-900">
-              📅 <strong>30-Day History Limit:</strong> Upgrade to VIP Annual for unlimited retention.
+            <p className="text-sm text-orange-200">
+              📅 <strong className="text-orange-100">30-Day History Limit:</strong> Upgrade to VIP Annual for unlimited retention.
             </p>
           </CardContent>
         </Card>
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 bg-white p-2 rounded-xl shadow-md">
-          <TabsTrigger value="matches" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/20">
+          <TabsTrigger value="matches" className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white">
             <Trophy className="w-4 h-4 mr-2" />
             Matches ({filteredMatches.length})
           </TabsTrigger>
-          <TabsTrigger value="players" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+          <TabsTrigger value="players" className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white">
             <User className="w-4 h-4 mr-2" />
             Players ({filteredPlayerStats.length})
           </TabsTrigger>
-          <TabsTrigger value="teams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white">
+          <TabsTrigger value="teams" className="text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white">
             <Users className="w-4 h-4 mr-2" />
             Teams ({filteredTeamStats.length})
           </TabsTrigger>
@@ -142,10 +142,10 @@ export default function SavedResultsContent() {
               )}
             </>
           ) : (
-            <Card className="border-2 border-gray-200">
+            <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <Trophy className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No saved matches</h3>
+                <Trophy className="w-16 h-16 mx-auto text-white/30 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No saved matches</h3>
                 <Button onClick={() => window.location.href = '/Dashboard'}>Go to Dashboard</Button>
               </CardContent>
             </Card>
@@ -175,10 +175,10 @@ export default function SavedResultsContent() {
               )}
             </>
           ) : (
-            <Card className="border-2 border-gray-200">
+            <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <User className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No saved player stats</h3>
+                <User className="w-16 h-16 mx-auto text-white/30 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No saved player stats</h3>
               </CardContent>
             </Card>
           )}
@@ -207,10 +207,10 @@ export default function SavedResultsContent() {
               )}
             </>
           ) : (
-            <Card className="border-2 border-gray-200">
+            <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No saved team stats</h3>
+                <Users className="w-16 h-16 mx-auto text-white/30 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">No saved team stats</h3>
               </CardContent>
             </Card>
           )}

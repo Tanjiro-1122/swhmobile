@@ -64,7 +64,7 @@ export default function SubscriptionContent() {
   return (
     <div className="space-y-6">
       {/* Current Plan Card */}
-      <Card className="overflow-hidden border-2 border-purple-200 shadow-xl">
+      <Card className="overflow-hidden border border-white/20 bg-white/10 backdrop-blur-sm shadow-xl">
         <CardHeader className={`bg-gradient-to-r ${plan.color} text-white p-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -82,11 +82,11 @@ export default function SubscriptionContent() {
         <CardContent className="p-6">
           <div className="space-y-4">
             <div>
-              <h4 className="font-bold text-gray-900 mb-3">Plan Features:</h4>
+              <h4 className="font-bold text-white mb-3">Plan Features:</h4>
               <ul className="space-y-2">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2 text-gray-700">
-                    <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <li key={i} className="flex items-center gap-2 text-white/80">
+                    <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
@@ -94,7 +94,7 @@ export default function SubscriptionContent() {
             </div>
 
             {hasPaidPlan && !isLegacy && (
-              <div className="pt-4 border-t">
+              <div className="pt-4 border-t border-white/20">
                 <Button
                   onClick={handleManageBilling}
                   disabled={isLoadingPortal}
@@ -108,18 +108,18 @@ export default function SubscriptionContent() {
                   Manage Billing & Subscription
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
-                <p className="text-center text-sm text-gray-500 mt-2">
+                <p className="text-center text-sm text-white/60 mt-2">
                   Update payment method, view invoices, or cancel subscription
                 </p>
               </div>
             )}
 
             {isLegacy && (
-              <div className="pt-4 border-t">
-                <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 text-center">
-                  <Crown className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                  <p className="font-bold text-yellow-800">Legacy VIP Status</p>
-                  <p className="text-sm text-yellow-700">You have lifetime access - no billing needed!</p>
+              <div className="pt-4 border-t border-white/20">
+                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4 text-center">
+                  <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                  <p className="font-bold text-yellow-300">Legacy VIP Status</p>
+                  <p className="text-sm text-yellow-200/80">You have lifetime access - no billing needed!</p>
                 </div>
               </div>
             )}
@@ -129,12 +129,12 @@ export default function SubscriptionContent() {
 
       {/* Upgrade Card - Only show for free users */}
       {isFree && (
-        <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl">
+        <Card className="border border-green-500/30 bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm shadow-xl">
           <CardContent className="p-6">
             <div className="text-center">
-              <Zap className="w-12 h-12 text-green-600 mx-auto mb-3" />
-              <h3 className="text-xl font-black text-gray-900 mb-2">Upgrade Your Experience</h3>
-              <p className="text-gray-600 mb-4">
+              <Zap className="w-12 h-12 text-green-400 mx-auto mb-3" />
+              <h3 className="text-xl font-black text-white mb-2">Upgrade Your Experience</h3>
+              <p className="text-white/70 mb-4">
                 Get unlimited searches and access to all premium features
               </p>
               <Link to={createPageUrl("Pricing")}>
@@ -149,14 +149,14 @@ export default function SubscriptionContent() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4 border border-gray-200">
+        <Card className="p-4 border border-white/20 bg-white/10 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Member Since</p>
-              <p className="font-bold text-gray-900">
+              <p className="text-sm text-white/60">Member Since</p>
+              <p className="font-bold text-white">
                 {currentUser?.created_date 
                   ? new Date(currentUser.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                   : 'N/A'}
@@ -165,14 +165,14 @@ export default function SubscriptionContent() {
           </div>
         </Card>
 
-        <Card className="p-4 border border-gray-200">
+        <Card className="p-4 border border-white/20 bg-white/10 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-purple-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Lookups</p>
-              <p className="font-bold text-gray-900">
+              <p className="text-sm text-white/60">Lookups</p>
+              <p className="font-bold text-white">
                 {hasPaidPlan ? "Unlimited" : `${5 - (currentUser?.lookups_used || 0)} remaining`}
               </p>
             </div>
