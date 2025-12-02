@@ -144,7 +144,8 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(createPageUrl(currentPageName || "Dashboard"));
+    // Use current full URL for redirect back after login
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   // Stadium background component for consistent styling

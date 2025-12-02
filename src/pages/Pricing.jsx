@@ -63,8 +63,8 @@ export default function Pricing() {
   });
 
   const handleLogin = () => {
-    // Use full URL for redirect after login
-    base44.auth.redirectToLogin(createPageUrl("Pricing"));
+    // Use current full URL for redirect after login
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   const handleSubscribe = async (plan) => {
@@ -153,11 +153,11 @@ export default function Pricing() {
 
                 // Redirect to login page after successful purchase
                 alert('Purchase successful! Please sign in to activate your subscription.');
-                base44.auth.redirectToLogin(createPageUrl("MyAccount") + '?activate_iap=true');
+                base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
               } catch (error) {
                 console.error('IAP error:', error);
                 alert('Purchase completed. Please sign in to activate.');
-                base44.auth.redirectToLogin(createPageUrl("MyAccount") + '?activate_iap=true');
+                base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
               }
             } else {
               alert('Purchase was not completed.');
