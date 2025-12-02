@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check, Copy, ArrowRight, ShieldCheck } from "lucide-react";
+import { Loader2, Check, Copy, ArrowRight, ShieldCheck, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppleSignInButton({ onSuccess, className = "" }) {
@@ -194,53 +195,61 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         {isLoading ? 'Signing in...' : 'Continue with Apple'}
       </Button>
 
-      <AnimatePresence>
-          {showSuccessModal && (
-              <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                  <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
-                  >
-                      <div className="bg-green-50 p-6 text-center border-b border-green-100">
-                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <ShieldCheck className="w-6 h-6 text-green-600" />
-                          </div>
-                          <h3 className="text-xl font-bold text-green-800">Apple Verified!</h3>
-                          <p className="text-green-600 text-sm mt-1">Your identity has been confirmed.</p>
-                      </div>
-                      
-                      <div className="p-6 space-y-6">
-                          <div className="space-y-2">
-                              <p className="text-sm text-gray-600 font-medium">
-                                  For security, please confirm this email on the next screen to access your account:
-                              </p>
-                              <div 
-                                  onClick={copyEmail}
-                                  className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors group"
-                              >
-                                  <code className="text-sm font-mono text-gray-800 break-all">{verifiedEmail}</code>
-                                  <div className="pl-3 text-gray-400 group-hover:text-blue-500">
-                                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                                  </div>
-                              </div>
-                              <p className="text-xs text-gray-400 text-center">
-                                  {copied ? "✓ Email copied to clipboard" : "Click to copy email"}
-                              </p>
-                          </div>
+      {showSuccessModal && createPortal(
+        <AnimatePresence>
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+                >
+                    <div className="bg-green-50 p-6 text-center border-b border-green-100">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <ShieldCheck className="w-6 h-6 text-green-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-green-800">Apple Verified!</h3>
+                        <p className="text-green-600 text-sm mt-1">Your identity has been confirmed.</p>
+                    </div>
+                    
+                    <div className="p-6 space-y-6">
+                        <div className="space-y-2">
+                            <p className="text-sm text-gray-600 font-medium">
+                                <strong>Action Required:</strong> We've copied your Apple email. Please <strong>paste it</strong> on the next screen to log in.
+                            </p>
+                            <div 
+                                onClick={copyEmail}
+                                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors group"
+                            >
+                                <code className="text-sm font-mono text-gray-800 break-all select-all">{verifiedEmail}</code>
+                                <div className="pl-3 text-gray-400 group-hover:text-blue-500">
+                                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-400 text-center">
+                                {copied ? "✓ Email copied to clipboard" : "Tap box to copy email again"}
+                            </p>
+                        </div>
 
-                          <Button 
-                              onClick={handleContinue}
-                              className="w-full bg-black hover:bg-gray-800 text-white h-12 text-lg font-semibold"
-                          >
-                              Continue to Secure Login <ArrowRight className="w-5 h-5 ml-2" />
-                          </Button>
-                      </div>
-                  </motion.div>
-              </div>
-          )}
-      </AnimatePresence>
+                        <div className="bg-blue-50 p-3 rounded-lg flex gap-2 items-start">
+                            <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                            <p className="text-xs text-blue-700">
+                                <strong>Note:</strong> Apple does not share your password. If this is your first time, create a new password on the next screen. If you're returning, enter your existing password.
+                            </p>
+                        </div>
+
+                        <Button 
+                            onClick={handleContinue}
+                            className="w-full bg-black hover:bg-gray-800 text-white h-12 text-lg font-semibold"
+                        >
+                            Continue to Login Screen <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                    </div>
+                </motion.div>
+            </div>
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
