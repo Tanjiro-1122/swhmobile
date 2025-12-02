@@ -30,7 +30,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
     // Get Apple client config from backend
     const getConfig = async () => {
       try {
-        const response = await base44.functions.invoke('appleSignIn', {
+        const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
         if (response.data?.clientId) {
@@ -87,7 +87,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       let currentConfig = appleConfig;
       if (!currentConfig) {
         console.log("Fetching Apple config...");
-        const response = await base44.functions.invoke('appleSignIn', {
+        const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
         if (!response.data?.clientId) {
@@ -122,7 +122,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       console.log('Apple Sign In response:', response);
 
       // Exchange the authorization code for tokens
-      const verifyResponse = await base44.functions.invoke('appleSignIn', {
+      const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
         action: 'exchangeCode',
         authorizationCode: response.authorization.code,
         user: response.user // Only available on first sign in
