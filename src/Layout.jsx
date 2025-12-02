@@ -9,6 +9,7 @@ import {
   Crown,
   LogIn
 } from "lucide-react";
+import AppleSignInButton from "./components/auth/AppleSignInButton";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "./components/DomainChangeBanner";
