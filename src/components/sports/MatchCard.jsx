@@ -107,33 +107,10 @@ export default function MatchCard({ match, onDelete, index }) {
             </div>
           </div>
 
-          {/* Home vs Away Display */}
+          {/* Away @ Home Display (standard sports notation) */}
           <div className="relative bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
             <div className="grid grid-cols-3 gap-4 items-center">
-              {/* Home Team */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Home className="w-5 h-5 text-green-400" />
-                  <Badge className="bg-green-500/20 text-green-300 border-green-400/30 font-bold">
-                    HOME
-                  </Badge>
-                </div>
-                <div className="text-2xl font-black text-white mb-1">
-                  {match.home_team}
-                </div>
-                <div className="text-3xl font-black text-green-400">
-                  {match.home_win_probability?.toFixed(0)}%
-                </div>
-              </div>
-
-              {/* VS or @ */}
-              <div className="text-center">
-                <div className="text-4xl font-black text-white/50">
-                  {match.sport === 'NBA' || match.sport === 'Basketball' ? '@' : 'VS'}
-                </div>
-              </div>
-
-              {/* Away Team */}
+              {/* Away Team (listed first in standard notation) */}
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Plane className="w-5 h-5 text-blue-400" />
@@ -146,6 +123,27 @@ export default function MatchCard({ match, onDelete, index }) {
                 </div>
                 <div className="text-3xl font-black text-blue-400">
                   {match.away_win_probability?.toFixed(0)}%
+                </div>
+              </div>
+
+              {/* @ or VS */}
+              <div className="text-center">
+                <div className="text-4xl font-black text-white/50">@</div>
+              </div>
+
+              {/* Home Team (listed second in standard notation) */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Home className="w-5 h-5 text-green-400" />
+                  <Badge className="bg-green-500/20 text-green-300 border-green-400/30 font-bold">
+                    HOME
+                  </Badge>
+                </div>
+                <div className="text-2xl font-black text-white mb-1">
+                  {match.home_team}
+                </div>
+                <div className="text-3xl font-black text-green-400">
+                  {match.home_win_probability?.toFixed(0)}%
                 </div>
               </div>
             </div>
