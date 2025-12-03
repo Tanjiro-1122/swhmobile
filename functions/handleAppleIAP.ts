@@ -5,12 +5,18 @@ const PRODUCTION_URL = 'https://buy.itunes.apple.com/verifyReceipt';
 const SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
 
 // Map Apple Product IDs to subscription types
-// WebToNative will create these product IDs in App Store Connect
 const PRODUCT_MAPPING = {
   'com.sportswagerhelper.premium.monthly': 'premium_monthly',
   'com.sportswagerhelper.vip.annual': 'vip_annual',
   'com.sportswagerhelper.premium.monthly.v3': 'premium_monthly',
   'com.sportswagerhelper.premium.annual.v3': 'vip_annual'
+};
+
+// Map consumable product IDs to credit amounts
+const CREDIT_PACK_MAPPING = {
+  'com.sportswagerhelper.credits.25': 25,
+  'com.sportswagerhelper.credits.60': 60,
+  'com.sportswagerhelper.credits.100': 100
 };
 
 Deno.serve(async (req) => {
@@ -41,8 +47,26 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Get subscription type from product ID
+    // Check if this is a consumable (credit pack) or subscription
+    const creditsToAdd = CREDIT_PACK_MAPPING[validationResult.productId];
     const subscriptionType = PRODUCT_MAPPING[validationResult.productId];
+    
+    if (creditsToAdd) {
+      // Handle consumable credit pack purchase
+      const currentCredits = user.search_credits || 0;
+      const newCredits = currentCredits + creditsToAdd;
+      
+      await base44.asServiceRole.entities.User.update(user.id, {
+        search_credits: newCredits
+      });
+
+      return Response.json({
+        success: true,
+        type: 'credits',
+        creditsAdded: creditsToAdd,
+        totalCredits: newCredits
+      });
+    }
     
     if (!subscriptionType) {
       return Response.json({ 
@@ -62,6 +86,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
+      type: 'subscription',
       subscriptionType,
       expiresDate: validationResult.expiresDate
     });
