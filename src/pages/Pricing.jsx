@@ -83,28 +83,19 @@ export default function Pricing() {
     base44.auth.redirectToLogin(window.location.href);
   };
 
-  // Stripe checkout for web users
-  const handleStripeCheckout = async (plan) => {
-    // Check if user is authenticated first
-    if (!isAuthenticated) {
-      // Store the plan they want, then redirect to login
-      localStorage.setItem('pending_stripe_plan', plan);
-      base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
-    
+  // Helper function to start Stripe checkout (used after login redirect)
+  const startStripeCheckout = async (plan) => {
     setIsProcessing(true);
     
     try {
-      // Map plan to Stripe price ID
       let priceId;
       let mode;
       
       if (plan === 'premium') {
-        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
+        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8';
         mode = 'subscription';
       } else if (plan === 'vip') {
-        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99 (one-time)
+        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp';
         mode = 'payment';
       }
       
@@ -124,6 +115,19 @@ export default function Pricing() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Stripe checkout for web users
+  const handleStripeCheckout = async (plan) => {
+    // If not authenticated, store plan and redirect to login
+    if (!isAuthenticated) {
+      localStorage.setItem('pending_stripe_plan', plan);
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    
+    // Already authenticated - go directly to Stripe
+    await startStripeCheckout(plan);
   };
 
   // IAP for mobile users
