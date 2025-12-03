@@ -98,7 +98,7 @@ export default function Pricing() {
         if (plan === 'premium') {
           productId = 'com.sportswagerhelper.premium.monthly.v3';
         } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.premium.annual.v3';
+          productId = 'com.sportswagerhelper.vip.annual.v3';
         }
         iapConfig = {
           productId: productId,
