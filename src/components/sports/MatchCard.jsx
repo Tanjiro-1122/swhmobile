@@ -126,9 +126,11 @@ export default function MatchCard({ match, onDelete, index }) {
                 </div>
               </div>
 
-              {/* VS */}
+              {/* VS or @ */}
               <div className="text-center">
-                <div className="text-4xl font-black text-white/50">VS</div>
+                <div className="text-4xl font-black text-white/50">
+                  {match.sport === 'NBA' || match.sport === 'Basketball' ? '@' : 'VS'}
+                </div>
               </div>
 
               {/* Away Team */}
