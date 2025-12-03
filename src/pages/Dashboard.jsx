@@ -119,14 +119,25 @@ const menuItems = [
           tag: null
         },
         {
+          id: "topstats",
+          title: "TOP STATS",
+          subtitle: "League Leaders",
+          description: "Top 10 teams & players across all sports",
+          SportIcon: TrophyIcon,
+          page: "TopStats",
+          gradient: "from-yellow-600 to-amber-700",
+          borderColor: "border-yellow-400",
+          tag: "NEW"
+        },
+        {
           id: "pricing",
           title: "PRICING",
           subtitle: "Unlock Full Power",
           description: "View plans and upgrade your account",
-          SportIcon: TrophyIcon,
+          SportIcon: HockeyIcon,
           page: "Pricing",
-          gradient: "from-yellow-600 to-amber-700",
-          borderColor: "border-yellow-400",
+          gradient: "from-pink-600 to-rose-700",
+          borderColor: "border-pink-400",
           tag: "BEST VALUE"
         },
       ];
