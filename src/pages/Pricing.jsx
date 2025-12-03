@@ -17,22 +17,6 @@ export default function Pricing() {
   const [iapReady, setIapReady] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      
-      // Check if user just logged in and has a pending Stripe plan
-      if (authenticated && !isMobileDevice) {
-        const pendingPlan = localStorage.getItem('pending_stripe_plan');
-        if (pendingPlan === 'premium' || pendingPlan === 'vip') {
-          localStorage.removeItem('pending_stripe_plan');
-          // Small delay to ensure state is set
-          setTimeout(() => handleStripeCheckout(pendingPlan), 500);
-        }
-      }
-    };
-    checkAuth();
-    
     // Check if we're on a mobile device (iOS or Android)
     const checkMobileDevice = () => {
       const ua = navigator.userAgent || '';
@@ -40,10 +24,27 @@ export default function Pricing() {
       return isMobile;
     };
     
-    setIsMobileDevice(checkMobileDevice());
+    const isMobile = checkMobileDevice();
+    setIsMobileDevice(isMobile);
+
+    const checkAuth = async () => {
+      const authenticated = await base44.auth.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      
+      // Check if user just logged in and has a pending Stripe plan (web only)
+      if (authenticated && !isMobile) {
+        const pendingPlan = localStorage.getItem('pending_stripe_plan');
+        if (pendingPlan === 'premium' || pendingPlan === 'vip') {
+          localStorage.removeItem('pending_stripe_plan');
+          // Trigger Stripe checkout directly
+          startStripeCheckout(pendingPlan);
+        }
+      }
+    };
+    checkAuth();
     
     // Only check for IAP readiness on mobile devices
-    if (checkMobileDevice()) {
+    if (isMobile) {
       const checkIAPReady = () => {
         const wtnExists = typeof window.WTN !== 'undefined';
         const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
