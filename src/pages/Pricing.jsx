@@ -13,7 +13,7 @@ import FloatingDashboardButton from "@/components/navigation/FloatingDashboardBu
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isIOSApp, setIsIOSApp] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [iapReady, setIapReady] = useState(false);
 
   useEffect(() => {
@@ -23,37 +23,37 @@ export default function Pricing() {
     };
     checkAuth();
     
-    // Check if we're in the iOS app - check multiple indicators
-    const checkIOSApp = () => {
+    // Check if we're on a mobile device (iOS or Android)
+    const checkMobileDevice = () => {
       const ua = navigator.userAgent || '';
-      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
-      const isStandalone = window.navigator.standalone === true;
-      return isIOSWebView || isStandalone;
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+      return isMobile;
     };
     
-    setIsIOSApp(checkIOSApp());
+    setIsMobileDevice(checkMobileDevice());
     
-    // Continuously check for IAP readiness
-    const checkIAPReady = () => {
-      const wtnExists = typeof window.WTN !== 'undefined';
-      const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
-      console.log('IAP Check - WTN exists:', wtnExists, 'IAP exists:', iapExists, 'WTN object:', window.WTN);
-      setIapReady(iapExists);
-      return iapExists;
-    };
-    
-    // Check immediately and then periodically for longer
-    checkIAPReady();
-    let attempts = 0;
-    const maxAttempts = 30; // 15 seconds total
-    const interval = setInterval(() => {
-      attempts++;
-      if (checkIAPReady() || attempts >= maxAttempts) {
-        clearInterval(interval);
-      }
-    }, 500);
-    
-    return () => clearInterval(interval);
+    // Only check for IAP readiness on mobile devices
+    if (checkMobileDevice()) {
+      const checkIAPReady = () => {
+        const wtnExists = typeof window.WTN !== 'undefined';
+        const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
+        console.log('IAP Check - WTN exists:', wtnExists, 'IAP exists:', iapExists, 'WTN object:', window.WTN);
+        setIapReady(iapExists);
+        return iapExists;
+      };
+      
+      checkIAPReady();
+      let attempts = 0;
+      const maxAttempts = 30;
+      const interval = setInterval(() => {
+        attempts++;
+        if (checkIAPReady() || attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }, 500);
+      
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const { data: currentUser } = useQuery({
@@ -72,7 +72,43 @@ export default function Pricing() {
     base44.auth.redirectToLogin(window.location.href);
   };
 
-  const handleSubscribe = async (plan) => {
+  // Stripe checkout for web users
+  const handleStripeCheckout = async (plan) => {
+    setIsProcessing(true);
+    
+    try {
+      // Map plan to Stripe price ID
+      let priceId;
+      let mode;
+      
+      if (plan === 'premium') {
+        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8'; // Premium Monthly $19.99
+        mode = 'subscription';
+      } else if (plan === 'vip') {
+        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp'; // VIP Annual $149.99 (one-time)
+        mode = 'payment';
+      }
+      
+      const response = await base44.functions.invoke('createCheckoutSession', {
+        priceId,
+        mode
+      });
+      
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        alert('Failed to create checkout session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Stripe checkout error:', error);
+      alert('Failed to start checkout. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // IAP for mobile users
+  const handleIAPSubscribe = async (plan) => {
     setIsProcessing(true);
 
     try {
@@ -118,26 +154,21 @@ export default function Pricing() {
         setIsProcessing(false);
       }
 
-      // Try multiple methods to access IAP
       const tryIAP = () => {
-        // Method 1: window.WTN
         if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
           return window.WTN.inAppPurchase;
         }
-        // Method 2: webkit message handler (iOS)
         if (window.webkit?.messageHandlers?.inAppPurchase) {
           return (config) => {
             window.webkit.messageHandlers.inAppPurchase.postMessage(config);
           };
         }
-        // Method 3: Android bridge
         if (window.Android?.inAppPurchase) {
           return window.Android.inAppPurchase;
         }
         return null;
       };
 
-      // Wait for IAP with multiple retries
       const waitForIAP = async (maxAttempts = 20, interval = 500) => {
         for (let i = 0; i < maxAttempts; i++) {
           const iapFunc = tryIAP();
@@ -166,7 +197,22 @@ export default function Pricing() {
     }
   };
 
+  // Main subscribe handler - routes to Stripe or IAP based on device
+  const handleSubscribe = async (plan) => {
+    if (isMobileDevice) {
+      await handleIAPSubscribe(plan);
+    } else {
+      await handleStripeCheckout(plan);
+    }
+  };
+
   const handleBuyCredits = async (pack) => {
+    // Credit packs are only available on mobile via IAP
+    if (!isMobileDevice) {
+      alert('Credit packs are only available in the mobile app. Please download the app from the App Store or Google Play.');
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
@@ -175,7 +221,7 @@ export default function Pricing() {
 
       const iapConfig = {
         productId: pack.productId,
-        productType: isAndroidDevice ? 'INAPP' : undefined, // Consumable for Android
+        productType: isAndroidDevice ? 'INAPP' : undefined,
         isConsumable: true,
         callback: (data) => {
           if (data.isSuccess && data.receiptData) {
@@ -191,7 +237,6 @@ export default function Pricing() {
         }
       };
 
-      // Try multiple methods to access IAP
       const tryIAP = () => {
         if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
           return window.WTN.inAppPurchase;
@@ -529,48 +574,50 @@ export default function Pricing() {
           </CardContent>
         </Card>
 
-        {/* Search Credit Packs */}
-        <Card className="border-2 border-cyan-200 mb-12 lg:mb-16">
-          <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
-            <CardTitle className="text-xl lg:text-2xl font-bold text-center flex items-center justify-center gap-2">
-              <Zap className="w-6 h-6" />
-              Search Credit Packs
-            </CardTitle>
-            <p className="text-center text-white/90 text-sm mt-2">
-              Not ready for a subscription? Buy credits as you go!
-            </p>
-          </CardHeader>
-          <CardContent className="p-6 lg:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-              {creditPacks.map((pack) => (
-                <Card key={pack.id} className="border-2 border-cyan-100 hover:border-cyan-300 transition-all">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl font-black text-cyan-600 mb-2">{pack.credits}</div>
-                    <div className="text-gray-600 font-semibold mb-4">Search Credits</div>
-                    <div className="text-2xl font-bold text-gray-900 mb-4">${pack.price.toFixed(2)}</div>
-                    <div className="text-xs text-gray-500 mb-4">
-                      ${(pack.price / pack.credits).toFixed(2)} per search
-                    </div>
-                    <Button
-                      onClick={() => handleBuyCredits(pack)}
-                      disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        `Buy ${pack.credits} Credits`
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <p className="text-center text-gray-500 text-sm mt-6">
-              Credits never expire • Use anytime • No subscription required
-            </p>
-          </CardContent>
-        </Card>
+        {/* Search Credit Packs - Only show on mobile */}
+        {isMobileDevice && (
+          <Card className="border-2 border-cyan-200 mb-12 lg:mb-16">
+            <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
+              <CardTitle className="text-xl lg:text-2xl font-bold text-center flex items-center justify-center gap-2">
+                <Zap className="w-6 h-6" />
+                Search Credit Packs
+              </CardTitle>
+              <p className="text-center text-white/90 text-sm mt-2">
+                Not ready for a subscription? Buy credits as you go!
+              </p>
+            </CardHeader>
+            <CardContent className="p-6 lg:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                {creditPacks.map((pack) => (
+                  <Card key={pack.id} className="border-2 border-cyan-100 hover:border-cyan-300 transition-all">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl font-black text-cyan-600 mb-2">{pack.credits}</div>
+                      <div className="text-gray-600 font-semibold mb-4">Search Credits</div>
+                      <div className="text-2xl font-bold text-gray-900 mb-4">${pack.price.toFixed(2)}</div>
+                      <div className="text-xs text-gray-500 mb-4">
+                        ${(pack.price / pack.credits).toFixed(2)} per search
+                      </div>
+                      <Button
+                        onClick={() => handleBuyCredits(pack)}
+                        disabled={isProcessing}
+                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          `Buy ${pack.credits} Credits`
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <p className="text-center text-gray-500 text-sm mt-6">
+                Credits never expire • Use anytime • No subscription required
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* FAQs - Improved readability */}
         <Card className="border-2 border-gray-200 mb-8">
@@ -597,14 +644,17 @@ export default function Pricing() {
               <div>
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
-                  Payments are processed securely through Apple's App Store or Google Play Store using your respective account payment methods.
+                  {isMobileDevice 
+                    ? "Payments are processed securely through Apple's App Store or Google Play Store using your respective account payment methods."
+                    : "Web payments are processed securely through Stripe. You can pay with credit card, debit card, or other supported payment methods."
+                  }
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Subscription Details - Required for Apple App Store */}
+        {/* Subscription Details */}
         <Card className="border-2 border-gray-200 mb-8">
           <CardHeader className="bg-gray-50">
             <CardTitle className="text-lg lg:text-xl font-bold text-center">Subscription Information</CardTitle>
@@ -622,16 +672,25 @@ export default function Pricing() {
                 <h4 className="font-bold text-gray-900">Sports Wager Helper - VIP Annual</h4>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
                   <li><strong>Price:</strong> $149.99 per year</li>
-                  <li><strong>Duration:</strong> 1 year (auto-renewing)</li>
+                  <li><strong>Duration:</strong> 1 year {isMobileDevice ? '(auto-renewing)' : '(one-time payment)'}</li>
                 </ul>
               </div>
               <div className="border-t pt-4 mt-4">
-                <p className="text-xs lg:text-sm text-gray-600">
-                  • Payment will be charged to your Apple ID / Google Play account at confirmation of purchase.<br/>
-                  • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
-                  • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
-                  • You can manage and cancel your subscriptions by going to your App Store / Google Play Store account settings after purchase.
-                </p>
+                {isMobileDevice ? (
+                  <p className="text-xs lg:text-sm text-gray-600">
+                    • Payment will be charged to your Apple ID / Google Play account at confirmation of purchase.<br/>
+                    • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
+                    • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
+                    • You can manage and cancel your subscriptions by going to your App Store / Google Play Store account settings after purchase.
+                  </p>
+                ) : (
+                  <p className="text-xs lg:text-sm text-gray-600">
+                    • Payment is processed securely via Stripe.<br/>
+                    • Premium Monthly subscriptions automatically renew each month until canceled.<br/>
+                    • VIP Annual is a one-time payment for 12 months of access.<br/>
+                    • You can manage your subscription from your account settings.
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap gap-4 justify-center pt-4 border-t">
                 <Link 
