@@ -256,13 +256,30 @@ export default function Dashboard() {
                   </>
                 ) : (
                   <>
-                    {/* All users on mobile go to Pricing for IAP first */}
-                    <Link to={createPageUrl("Pricing")}>
-                      <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
-                        Get Started
-                      </Button>
-                    </Link>
-                    <ThemeToggle />
+                    {/* Mobile users go to Pricing for IAP, web users sign in here */}
+                    {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
+                      <>
+                        <Link to={createPageUrl("Pricing")}>
+                          <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
+                            Get Started
+                          </Button>
+                        </Link>
+                        <ThemeToggle />
+                      </>
+                    ) : (
+                      <>
+                        <AppleSignInButton className="rounded-full px-4" />
+                        <GoogleSignInButton className="rounded-full px-4" />
+                        <Button 
+                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Email
+                        </Button>
+                        <ThemeToggle />
+                      </>
+                    )}
                   </>
                 )}
           </motion.div>
