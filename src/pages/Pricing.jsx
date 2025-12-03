@@ -113,16 +113,23 @@ export default function Pricing() {
         setIsProcessing(false);
       }
 
-      // Check if IAP is available
-      const hasIAP = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
-      if (!hasIAP) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+      // Check if IAP is available with multiple retries
+      const waitForIAP = async (maxAttempts = 10, interval = 500) => {
+        for (let i = 0; i < maxAttempts; i++) {
+          if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+            return true;
+          }
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+        return false;
+      };
+
+      const iapAvailable = await waitForIAP();
       
-      if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+      if (iapAvailable) {
         window.WTN.inAppPurchase(iapConfig);
       } else {
-        alert('In-app purchases are initializing. Please try again in a moment.');
+        alert('In-app purchases are not available. Please make sure you are using the app (not a browser) and try again.');
         setIsProcessing(false);
       }
     } catch (error) {
@@ -157,15 +164,23 @@ export default function Pricing() {
         }
       };
 
-      const hasIAP = typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function';
-      if (!hasIAP) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+      // Check if IAP is available with multiple retries
+      const waitForIAP = async (maxAttempts = 10, interval = 500) => {
+        for (let i = 0; i < maxAttempts; i++) {
+          if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+            return true;
+          }
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+        return false;
+      };
+
+      const iapAvailable = await waitForIAP();
       
-      if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+      if (iapAvailable) {
         window.WTN.inAppPurchase(iapConfig);
       } else {
-        alert('In-app purchases are initializing. Please try again in a moment.');
+        alert('In-app purchases are not available. Please make sure you are using the app (not a browser) and try again.');
         setIsProcessing(false);
       }
     } catch (error) {
