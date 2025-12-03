@@ -20,6 +20,17 @@ export default function Pricing() {
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
+      
+      // Check if user just logged in and needs to subscribe
+      if (authenticated) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pendingPlan = urlParams.get('subscribe');
+        if (pendingPlan === 'premium' || pendingPlan === 'vip') {
+          // Clear the URL parameter and trigger checkout
+          window.history.replaceState({}, '', window.location.pathname);
+          handleStripeCheckout(pendingPlan);
+        }
+      }
     };
     checkAuth();
     
