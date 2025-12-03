@@ -114,6 +114,11 @@ Be accurate with real current statistics.`,
           <p className="text-white/70">
             Top 10 teams and players across major sports leagues
           </p>
+          <div className="mt-4">
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-2">
+              🎁 FREE FOR ALL USERS - A Gift From Us!
+            </Badge>
+          </div>
         </div>
 
         {/* Sport Tabs */}
