@@ -19,34 +19,44 @@ const SPORTS = [
 export default function TopStats() {
   const [selectedSport, setSelectedSport] = useState('nfl');
 
+  const getPromptForSport = (sport) => {
+    const prompts = {
+      nfl: `You are a sports statistics expert. Using data from official NFL sources and ESPN, provide the current top 10 NFL teams by win-loss record for the 2024-2025 season, and the top 10 NFL players by overall performance.
+
+For teams: Rank, Team name, Wins, Losses, Win%, Points For per game, Points Against per game, Current streak (W3/L2), Division.
+For players: Include QBs (passing yards, TDs, passer rating), RBs (rushing yards, TDs), WRs (receiving yards, TDs). Mix of positions based on impact.`,
+
+      nba: `You are a sports statistics expert. Using data from official NBA sources and ESPN, provide the current top 10 NBA teams by win-loss record for the 2024-2025 season, and the top 10 NBA players by overall performance.
+
+For teams: Rank, Team name, Wins, Losses, Win%, Points per game, Points allowed per game, Current streak, Conference.
+For players: Points per game, Assists per game, Rebounds per game. Rank by overall impact/stats.`,
+
+      mlb: `You are a sports statistics expert. Using data from MLB.com/standings, provide the top 10 MLB teams by win-loss record for the 2024 season (or 2025 if available), and the top 10 MLB players.
+
+For teams: Rank, Team name, Wins, Losses, Win%, Runs scored per game, Runs allowed per game, Current streak, Division.
+For players: Batting average, Home runs, RBIs for hitters. Include top pitchers with ERA, Wins, Strikeouts.`,
+
+      nhl: `You are a sports statistics expert. Using data from official NHL sources, provide the current top 10 NHL teams by points/win record for the 2024-2025 season, and the top 10 NHL players.
+
+For teams: Rank, Team name, Wins, Losses (include OT losses), Win%, Goals For per game, Goals Against per game, Current streak, Division.
+For players: Goals, Assists, Plus/Minus. Mix of forwards and defensemen.`,
+
+      soccer: `You are a sports statistics expert. Using data from UEFA rankings (uefa.com/nationalassociations/uefarankings) and FIFA World Rankings (inside.fifa.com/fifa-world-ranking/men), provide:
+
+For teams: Top 10 national teams from the current FIFA Men's World Rankings with their ranking points and confederation.
+For players: Top 10 players from top European leagues (Premier League, La Liga, Bundesliga, Serie A, Ligue 1) by goals and assists this season.`
+    };
+    return prompts[sport] || prompts.nfl;
+  };
+
   const { data: statsData, isLoading, error } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a sports statistics expert. Provide the current top 10 teams and top 10 players for ${selectedSport.toUpperCase()} based on the 2024-2025 season (or most recent completed season if current season hasn't started).
+        prompt: getPromptForSport(selectedSport) + `
 
-For teams, rank by win-loss record and include:
-- Rank
-- Team name
-- Wins
-- Losses
-- Win percentage
-- Points/runs scored per game (or goals for hockey/soccer)
-- Points/runs allowed per game (or goals against)
-- Current streak (e.g., "W3" or "L2")
-- Division/Conference
-
-For players, rank by overall performance/impact and include:
-- Rank
-- Player name
-- Team
-- Position
-- Key stat 1 (sport-specific: passing yards for NFL QB, points for NBA, batting avg for MLB, goals for NHL/Soccer)
-- Key stat 2 (sport-specific: touchdowns for NFL, assists for NBA, home runs for MLB, assists for NHL/Soccer)
-- Key stat 3 (sport-specific: passer rating for NFL, rebounds for NBA, RBIs for MLB, plus/minus for NHL)
-- Games played
-
-Be accurate with real current statistics.`,
+Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
+For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
