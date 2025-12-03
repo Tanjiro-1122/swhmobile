@@ -21,14 +21,13 @@ export default function Pricing() {
       const authenticated = await base44.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
       
-      // Check if user just logged in and needs to subscribe
-      if (authenticated) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pendingPlan = urlParams.get('subscribe');
+      // Check if user just logged in and has a pending Stripe plan
+      if (authenticated && !isMobileDevice) {
+        const pendingPlan = localStorage.getItem('pending_stripe_plan');
         if (pendingPlan === 'premium' || pendingPlan === 'vip') {
-          // Clear the URL parameter and trigger checkout
-          window.history.replaceState({}, '', window.location.pathname);
-          handleStripeCheckout(pendingPlan);
+          localStorage.removeItem('pending_stripe_plan');
+          // Small delay to ensure state is set
+          setTimeout(() => handleStripeCheckout(pendingPlan), 500);
         }
       }
     };
