@@ -118,29 +118,45 @@ export default function Pricing() {
         setIsProcessing(false);
       }
 
-      // Check if IAP is available with multiple retries
+      // Try multiple methods to access IAP
+      const tryIAP = () => {
+        // Method 1: window.WTN
+        if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+          return window.WTN.inAppPurchase;
+        }
+        // Method 2: webkit message handler (iOS)
+        if (window.webkit?.messageHandlers?.inAppPurchase) {
+          return (config) => {
+            window.webkit.messageHandlers.inAppPurchase.postMessage(config);
+          };
+        }
+        // Method 3: Android bridge
+        if (window.Android?.inAppPurchase) {
+          return window.Android.inAppPurchase;
+        }
+        return null;
+      };
+
+      // Wait for IAP with multiple retries
       const waitForIAP = async (maxAttempts = 20, interval = 500) => {
         for (let i = 0; i < maxAttempts; i++) {
-          console.log(`IAP wait attempt ${i + 1}/${maxAttempts}`, {
-            WTN: typeof window.WTN,
-            inAppPurchase: window.WTN?.inAppPurchase ? 'exists' : 'missing'
-          });
-          if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
-            return true;
+          const iapFunc = tryIAP();
+          if (iapFunc) {
+            return iapFunc;
           }
           await new Promise(resolve => setTimeout(resolve, interval));
         }
-        return false;
+        return null;
       };
 
-      const iapAvailable = await waitForIAP();
+      const iapFunction = await waitForIAP();
       
-      if (iapAvailable) {
+      if (iapFunction) {
         console.log('Starting IAP purchase with config:', iapConfig);
-        window.WTN.inAppPurchase(iapConfig);
+        iapFunction(iapConfig);
       } else {
-        console.error('IAP not available after waiting. WTN:', window.WTN);
-        alert('In-app purchases are not available. Please close and reopen the app, then try again.');
+        console.error('IAP not available. window.WTN:', window.WTN, 'webkit:', window.webkit);
+        alert('In-app purchases are not available. Please make sure you downloaded the app from the App Store and try again.');
         setIsProcessing(false);
       }
     } catch (error) {
@@ -175,29 +191,39 @@ export default function Pricing() {
         }
       };
 
-      // Check if IAP is available with multiple retries
-      const waitForIAP = async (maxAttempts = 20, interval = 500) => {
-        for (let i = 0; i < maxAttempts; i++) {
-          console.log(`Credits IAP wait attempt ${i + 1}/${maxAttempts}`, {
-            WTN: typeof window.WTN,
-            inAppPurchase: window.WTN?.inAppPurchase ? 'exists' : 'missing'
-          });
-          if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
-            return true;
-          }
-          await new Promise(resolve => setTimeout(resolve, interval));
+      // Try multiple methods to access IAP
+      const tryIAP = () => {
+        if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
+          return window.WTN.inAppPurchase;
         }
-        return false;
+        if (window.webkit?.messageHandlers?.inAppPurchase) {
+          return (config) => {
+            window.webkit.messageHandlers.inAppPurchase.postMessage(config);
+          };
+        }
+        if (window.Android?.inAppPurchase) {
+          return window.Android.inAppPurchase;
+        }
+        return null;
       };
 
-      const iapAvailable = await waitForIAP();
+      const waitForIAP = async (maxAttempts = 20, interval = 500) => {
+        for (let i = 0; i < maxAttempts; i++) {
+          const iapFunc = tryIAP();
+          if (iapFunc) return iapFunc;
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+        return null;
+      };
+
+      const iapFunction = await waitForIAP();
       
-      if (iapAvailable) {
+      if (iapFunction) {
         console.log('Starting credits IAP purchase with config:', iapConfig);
-        window.WTN.inAppPurchase(iapConfig);
+        iapFunction(iapConfig);
       } else {
-        console.error('Credits IAP not available after waiting. WTN:', window.WTN);
-        alert('In-app purchases are not available. Please close and reopen the app, then try again.');
+        console.error('Credits IAP not available. window.WTN:', window.WTN);
+        alert('In-app purchases are not available. Please make sure you downloaded the app from the App Store and try again.');
         setIsProcessing(false);
       }
     } catch (error) {
