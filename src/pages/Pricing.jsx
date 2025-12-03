@@ -539,7 +539,7 @@ export default function Pricing() {
               <div>
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
-                  Payments are processed securely through Apple's App Store using your Apple ID payment method.
+                  Payments are processed securely through Apple's App Store or Google Play Store using your respective account payment methods.
                 </p>
               </div>
             </div>
@@ -569,10 +569,10 @@ export default function Pricing() {
               </div>
               <div className="border-t pt-4 mt-4">
                 <p className="text-xs lg:text-sm text-gray-600">
-                  • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
+                  • Payment will be charged to your Apple ID / Google Play account at confirmation of purchase.<br/>
                   • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
                   • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
-                  • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
+                  • You can manage and cancel your subscriptions by going to your App Store / Google Play Store account settings after purchase.
                 </p>
               </div>
               <div className="flex flex-wrap gap-4 justify-center pt-4 border-t">

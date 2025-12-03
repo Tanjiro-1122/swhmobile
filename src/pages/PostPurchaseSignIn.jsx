@@ -30,6 +30,11 @@ export default function PostPurchaseSignIn() {
     window.location.href = '/MyAccount?activate_iap=true';
   };
 
+  const handleGoogleSuccess = () => {
+    // After Google auth, redirect to activate subscription
+    window.location.href = '/MyAccount?activate_iap=true';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       {/* Background effects */}
@@ -70,6 +75,7 @@ export default function PostPurchaseSignIn() {
 
               {/* Google Sign In */}
               <GoogleSignInButton 
+                onSuccess={handleGoogleSuccess}
                 className="w-full py-4 text-lg rounded-xl"
               />
 
