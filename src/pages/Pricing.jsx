@@ -76,8 +76,8 @@ export default function Pricing() {
   const handleStripeCheckout = async (plan) => {
     // Check if user is authenticated first
     if (!isAuthenticated) {
-      // Redirect to login, then come back to pricing page
-      base44.auth.redirectToLogin(window.location.href);
+      // Redirect to login, then come back to pricing page with plan info
+      base44.auth.redirectToLogin(`${window.location.origin}/Pricing?subscribe=${plan}`);
       return;
     }
     
