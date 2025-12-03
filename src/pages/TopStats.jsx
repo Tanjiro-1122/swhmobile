@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Star, TrendingUp, Loader2 } from "lucide-react";
+import { Trophy, Users, Star, TrendingUp, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
@@ -153,10 +154,17 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
                   <p className="text-white/70">Loading {sport.name} stats...</p>
                 </div>
-              ) : error ? (
+              ) : error || !statsData || !statsData.teams?.length ? (
                 <Card className="bg-red-500/20 border-red-500/50">
                   <CardContent className="p-6 text-center">
-                    <p className="text-red-400">Failed to load stats. Please try again.</p>
+                    <p className="text-red-400 mb-4">Failed to load stats or no results found.</p>
+                    <Button 
+                      onClick={() => window.location.reload()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Try Again
+                    </Button>
                   </CardContent>
                 </Card>
               ) : statsData ? (
@@ -208,17 +216,17 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                                   )}
                                 </td>
                                 <td className="py-3 px-2 text-white font-semibold">{team.name}</td>
-                                <td className="py-3 px-2 text-center text-green-400 font-bold">{team.wins}</td>
-                                <td className="py-3 px-2 text-center text-red-400 font-bold">{team.losses}</td>
-                                <td className="py-3 px-2 text-center text-white">{team.winPct}</td>
-                                <td className="py-3 px-2 text-center text-blue-400">{team.pointsFor}</td>
-                                <td className="py-3 px-2 text-center text-orange-400">{team.pointsAgainst}</td>
+                                <td className="py-3 px-2 text-center text-green-300 font-bold">{team.wins}</td>
+                                <td className="py-3 px-2 text-center text-red-300 font-bold">{team.losses}</td>
+                                <td className="py-3 px-2 text-center text-white font-semibold">{team.winPct}</td>
+                                <td className="py-3 px-2 text-center text-cyan-300 font-semibold">{team.pointsFor}</td>
+                                <td className="py-3 px-2 text-center text-orange-300 font-semibold">{team.pointsAgainst}</td>
                                 <td className="py-3 px-2 text-center">
-                                  <Badge className={team.streak?.startsWith('W') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}>
+                                  <Badge className={team.streak?.startsWith('W') ? 'bg-green-600/40 text-green-200 font-bold' : 'bg-red-600/40 text-red-200 font-bold'}>
                                     {team.streak}
                                   </Badge>
                                 </td>
-                                <td className="py-3 px-2 text-white/60 text-sm">{team.division}</td>
+                                <td className="py-3 px-2 text-white/80 text-sm font-medium">{team.division}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -278,10 +286,10 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                                     {player.position}
                                   </Badge>
                                 </td>
-                                <td className="py-3 px-2 text-center text-green-400 font-bold">{player.stat1Value}</td>
-                                <td className="py-3 px-2 text-center text-purple-400 font-bold">{player.stat2Value}</td>
-                                <td className="py-3 px-2 text-center text-cyan-400 font-bold">{player.stat3Value}</td>
-                                <td className="py-3 px-2 text-center text-white/60">{player.gamesPlayed}</td>
+                                <td className="py-3 px-2 text-center text-green-300 font-bold">{player.stat1Value}</td>
+                                <td className="py-3 px-2 text-center text-purple-300 font-bold">{player.stat2Value}</td>
+                                <td className="py-3 px-2 text-center text-cyan-300 font-bold">{player.stat3Value}</td>
+                                <td className="py-3 px-2 text-center text-white/80 font-semibold">{player.gamesPlayed}</td>
                               </tr>
                             ))}
                           </tbody>
