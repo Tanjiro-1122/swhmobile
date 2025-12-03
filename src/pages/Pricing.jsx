@@ -74,6 +74,13 @@ export default function Pricing() {
 
   // Stripe checkout for web users
   const handleStripeCheckout = async (plan) => {
+    // Check if user is authenticated first
+    if (!isAuthenticated) {
+      // Redirect to login, then come back to pricing page
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    
     setIsProcessing(true);
     
     try {
