@@ -7,6 +7,13 @@ const PRODUCT_MAPPING = {
   'com.sportswagerhelper.vip.annual': 'vip_annual'
 };
 
+// Map credit product IDs to credit amounts
+const CREDIT_MAPPING = {
+  'com.sportswagerhelper.credits.25': 25,
+  'com.sportswagerhelper.credits.60': 60,
+  'com.sportswagerhelper.credits.100': 100
+};
+
 // Package name for your app
 const PACKAGE_NAME = 'com.wnapp.id1761803023263';
 
@@ -51,8 +58,9 @@ Deno.serve(async (req) => {
 
     console.log('Processing Google Play IAP:', { productId, userEmail: user.email });
 
-    // Determine if this is a subscription or one-time purchase
+    // Determine purchase type
     const isSubscription = productId.includes('monthly') || productId.includes('annual');
+    const isCredits = productId.includes('credits');
     
     let purchaseData;
     
@@ -69,7 +77,43 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Map product ID to subscription type
+    // Handle credit purchases (consumables)
+    if (isCredits) {
+      const creditsToAdd = CREDIT_MAPPING[productId];
+      
+      if (!creditsToAdd) {
+        return Response.json({ 
+          success: false, 
+          error: 'Unknown credit product ID' 
+        }, { status: 400 });
+      }
+
+      // Get current credits and add new ones
+      const currentCredits = user.search_credits || 0;
+      const newCredits = currentCredits + creditsToAdd;
+
+      await base44.asServiceRole.entities.User.update(user.id, {
+        search_credits: newCredits
+      });
+
+      // Acknowledge the purchase (consume it) so it can be purchased again
+      await acknowledgePurchase(productId, purchaseToken);
+
+      console.log('Google Play credits purchase successful:', { 
+        userId: user.id, 
+        creditsAdded: creditsToAdd,
+        newBalance: newCredits,
+        orderId: purchaseData.orderId 
+      });
+
+      return Response.json({ 
+        success: true, 
+        credits_added: creditsToAdd,
+        new_balance: newCredits
+      });
+    }
+
+    // Handle subscription purchases
     const subscriptionType = PRODUCT_MAPPING[productId];
     
     if (!subscriptionType) {
@@ -163,5 +207,25 @@ async function verifyOneTimePurchase(productId, purchaseToken) {
   } catch (error) {
     console.error('Error verifying one-time purchase:', error);
     return null;
+  }
+}
+
+async function acknowledgePurchase(productId, purchaseToken) {
+  try {
+    const client = await getAuthenticatedClient();
+    
+    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}:acknowledge`;
+    
+    await client.request({ 
+      url, 
+      method: 'POST',
+      data: {}
+    });
+    
+    console.log('Purchase acknowledged successfully');
+    return true;
+  } catch (error) {
+    console.error('Error acknowledging purchase:', error);
+    return false;
   }
 }
