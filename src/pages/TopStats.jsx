@@ -155,15 +155,17 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   <p className="text-white/70">Loading {sport.name} stats...</p>
                 </div>
               ) : error || !statsData || !statsData.teams?.length ? (
-                <Card className="bg-red-500/20 border-red-500/50">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-red-400 mb-4">Failed to load stats or no results found.</p>
+                <Card className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/30">
+                  <CardContent className="p-8 text-center">
+                    <div className="text-6xl mb-4">🏟️</div>
+                    <h3 className="text-xl font-bold text-white mb-2">Warming Up the Stats Engine!</h3>
+                    <p className="text-white/70 mb-6">Our stats crew is still gathering the latest data. Give it another shot!</p>
                     <Button 
                       onClick={() => window.location.reload()}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-6"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Try Again
+                      Let's Go Again!
                     </Button>
                   </CardContent>
                 </Card>
