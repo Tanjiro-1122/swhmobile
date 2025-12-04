@@ -50,7 +50,7 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
     return prompts[sport] || prompts.nfl;
   };
 
-  const { data: statsData, isLoading, error } = useQuery({
+  const { data: statsData, isLoading, error, refetch } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
       const response = await base44.integrations.Core.InvokeLLM({
@@ -155,13 +155,13 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   <p className="text-white/70">Loading {sport.name} stats...</p>
                 </div>
               ) : error || !statsData || !statsData.teams?.length ? (
-                <Card className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-400/30">
+                <Card className="bg-black border-amber-400/30">
                   <CardContent className="p-8 text-center">
                     <div className="text-6xl mb-4">⚾🏃‍♂️💨</div>
                     <h3 className="text-xl font-bold text-white mb-2">Swing and a Miss!</h3>
                     <p className="text-white/70 mb-6">Our stats batter whiffed on that one. Step back up to the plate and try again!</p>
                     <Button 
-                      onClick={() => window.location.reload()}
+                      onClick={() => refetch()}
                       className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold px-6"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
