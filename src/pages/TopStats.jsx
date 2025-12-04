@@ -50,7 +50,7 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
     return prompts[sport] || prompts.nfl;
   };
 
-  const CACHE_HOURS = 24; // Cache data for 24 hours (once daily) to minimize LLM credit usage
+  const CACHE_HOURS = 6; // Cache data for 6 hours
 
   const { data: statsData, isLoading, error, refetch } = useQuery({
     queryKey: ['topStats', selectedSport],
@@ -164,7 +164,7 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-2">
               🎁 FREE FOR ALL USERS - A Gift From Us!
             </Badge>
-            <p className="text-white/60 text-xs italic mt-2">📅 Data refreshed once daily at midnight • Last update may be up to 24 hours old</p>
+            <p className="text-white/60 text-xs italic mt-2">⏱️ Data refreshed every 6 hours for accuracy</p>
           </div>
         </div>
 

@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Check cache first (24 hour cache - once daily)
-        const CACHE_HOURS = 24;
+        // Check cache first (6 hour cache)
+        const CACHE_HOURS = 6;
         const todayDate = new Date().toISOString().split('T')[0];
         const cacheKey = `${sport}_${risk_level}_${todayDate}`;
         
