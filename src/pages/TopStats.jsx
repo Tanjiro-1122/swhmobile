@@ -129,6 +129,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-2">
               🎁 FREE FOR ALL USERS - A Gift From Us!
             </Badge>
+            <p className="text-white/60 text-xs italic mt-2">⏱️ Live data - may take a few seconds to load</p>
           </div>
         </div>
 
@@ -179,7 +180,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   </div>
 
                   {/* Top Teams Section */}
-                  <Card className="bg-black/40 backdrop-blur-xl border-white/10">
+                  <Card className="bg-black/80 backdrop-blur-xl border-white/10">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Users className="w-6 h-6 text-blue-400" />
@@ -238,7 +239,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   </Card>
 
                   {/* Top Players Section */}
-                  <Card className="bg-black/40 backdrop-blur-xl border-white/10">
+                  <Card className="bg-black/80 backdrop-blur-xl border-white/10">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Star className="w-6 h-6 text-yellow-400" />
