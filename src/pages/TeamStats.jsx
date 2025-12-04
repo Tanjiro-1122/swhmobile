@@ -29,6 +29,8 @@ export default function TeamStats() {
     },
   });
 
+  const CACHE_HOURS = 4; // Cache team stats for 4 hours
+
   const handleSearch = async (query) => {
     if (!canLookup()) {
       setShowLimitModal(true);
@@ -40,6 +42,24 @@ export default function TeamStats() {
     setCurrentTeam(null);
 
     try {
+      // Check cache first
+      const cacheKey = query.toLowerCase().trim();
+      const cached = await base44.entities.CachedTeamStats.filter({ team_query: cacheKey });
+      const now = new Date();
+      
+      if (cached.length > 0) {
+        const cacheEntry = cached[0];
+        const expiresAt = new Date(cacheEntry.expires_at);
+        
+        if (expiresAt > now && cacheEntry.stats_data) {
+          console.log('Using cached team stats for', query);
+          setCurrentTeam(cacheEntry.stats_data);
+          recordLookup();
+          setIsSearching(false);
+          return;
+        }
+      }
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a professional sports analyst with REAL-TIME INTERNET ACCESS. You MUST fetch LIVE, CURRENT data from StatMuse.com, ESPN, and official league websites.
 
@@ -262,6 +282,18 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
 
       // Save to database for historical tracking
       await base44.entities.TeamStats.create(result);
+      
+      // Cache the result for 4 hours
+      const expiresAt = new Date(now.getTime() + CACHE_HOURS * 60 * 60 * 1000);
+      if (cached.length > 0) {
+        await base44.entities.CachedTeamStats.delete(cached[0].id);
+      }
+      await base44.entities.CachedTeamStats.create({
+        team_query: cacheKey,
+        stats_data: result,
+        expires_at: expiresAt.toISOString()
+      });
+      
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       
