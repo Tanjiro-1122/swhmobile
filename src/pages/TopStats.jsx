@@ -50,14 +50,33 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
     return prompts[sport] || prompts.nfl;
   };
 
+  const CACHE_HOURS = 6; // Cache data for 6 hours to reduce LLM credit usage
+
   const { data: statsData, isLoading, error, refetch } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
+      // First, check if we have valid cached data
+      const cached = await base44.entities.CachedStats.filter({ sport: selectedSport });
+      const now = new Date();
+
+      if (cached.length > 0) {
+        const cacheEntry = cached[0];
+        const expiresAt = new Date(cacheEntry.expires_at);
+
+        if (expiresAt > now && cacheEntry.stats_data) {
+          // Return cached data - NO LLM CREDIT USED
+          console.log('Using cached stats for', selectedSport);
+          return cacheEntry.stats_data;
+        }
+      }
+
+      // Cache expired or doesn't exist - make LLM call
+      console.log('Fetching fresh stats for', selectedSport);
       const response = await base44.integrations.Core.InvokeLLM({
         prompt: getPromptForSport(selectedSport) + `
 
-Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
-For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
+  Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
+  For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -103,9 +122,25 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
           }
         }
       });
+
+      // Save to cache for next 6 hours
+      const expiresAt = new Date(now.getTime() + CACHE_HOURS * 60 * 60 * 1000);
+
+      // Delete old cache entry if exists
+      if (cached.length > 0) {
+        await base44.entities.CachedStats.delete(cached[0].id);
+      }
+
+      // Create new cache entry
+      await base44.entities.CachedStats.create({
+        sport: selectedSport,
+        stats_data: response,
+        expires_at: expiresAt.toISOString()
+      });
+
       return response;
     },
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+    staleTime: 1000 * 60 * 30, // React Query cache for 30 minutes
   });
 
   const currentSportConfig = SPORTS.find(s => s.id === selectedSport);
