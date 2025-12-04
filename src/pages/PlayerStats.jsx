@@ -29,7 +29,7 @@ export default function PlayerStats() {
     },
   });
 
-  const CACHE_HOURS = 4; // Cache player stats for 4 hours
+  const CACHE_HOURS = 24; // Cache player stats for 24 hours (once daily)
 
   const handleSearch = async (query) => {
     if (!canLookup()) {
@@ -465,6 +465,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             <div>
               <h1 className="text-4xl font-black text-gray-900">Player Stats & Predictions</h1>
               <p className="text-gray-600">Analyze any player's performance and get AI-powered predictions</p>
+              <p className="text-amber-600 text-xs mt-1">📅 Data refreshed once daily • For real-time stats, check official league sources</p>
             </div>
           </div>
         </div>

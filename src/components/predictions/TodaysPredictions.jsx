@@ -14,7 +14,7 @@ export default function TodaysPredictions() {
   const [predictions, setPredictions] = useState(null);
   const [activeTab, setActiveTab] = useState("games");
 
-  const CACHE_HOURS = 6; // Cache predictions for 6 hours
+  const CACHE_HOURS = 24; // Cache predictions for 24 hours (once daily)
 
   const generatePredictions = async () => {
     setIsGenerating(true);
@@ -168,7 +168,8 @@ Be realistic and base predictions on actual current season data, injuries, match
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">AI Predictions</h2>
-                <p className="text-gray-600">Real-time game outcomes & player performance forecasts</p>
+                <p className="text-gray-600">Game outcomes & player performance forecasts</p>
+                <p className="text-amber-600 text-xs">📅 Predictions refreshed once daily</p>
               </div>
             </div>
             <Button

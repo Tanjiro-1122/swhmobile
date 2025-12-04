@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split('T')[0];
     const now = new Date();
-    const CACHE_HOURS = 12; // Only generate 1-2 briefs per day
+    const CACHE_HOURS = 24; // Only generate 1 brief per day
 
     // Check if brief already exists for today and is still valid
     const existingBriefs = await base44.entities.BettingBrief.filter(

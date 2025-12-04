@@ -29,7 +29,7 @@ export default function TeamStats() {
     },
   });
 
-  const CACHE_HOURS = 4; // Cache team stats for 4 hours
+  const CACHE_HOURS = 24; // Cache team stats for 24 hours (once daily)
 
   const handleSearch = async (query) => {
     if (!canLookup()) {
@@ -326,6 +326,7 @@ Return complete JSON with ALL fields populated using VERIFIED LIVE DATA.`,
             <div>
               <h1 className="text-4xl font-black text-gray-900">Team Stats & Analysis</h1>
               <p className="text-gray-600">Analyze any team's performance and get insights</p>
+              <p className="text-amber-600 text-xs mt-1">📅 Data refreshed once daily • For real-time stats, check official league sources</p>
             </div>
           </div>
         </div>
