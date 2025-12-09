@@ -14,7 +14,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-<script src="https://unpkg.com/webtonative@1.0.81/webtonative.min.js"></script>
 
 // Sport-themed icons as SVG components
 const FootballIcon = () => (
