@@ -16,8 +16,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "./components/DomainChangeBanner";
 import AgeGate from "./components/auth/AgeGate";
 
-<script src="https://unpkg.com/webtonative@1.0.81/webtonative.min.js"></script>
-
 export default function Layout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
