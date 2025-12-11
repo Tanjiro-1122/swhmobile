@@ -137,6 +137,21 @@
     max-width: 100%;
     overflow: hidden;
   }
+
+  /* Safe area insets for iOS */
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+
+  .app-root {
+    padding-top: calc(var(--safe-top) + 1rem);
+    padding-bottom: calc(var(--safe-bottom) + 1rem);
+    padding-left: calc(var(--safe-left) + 1rem);
+    padding-right: calc(var(--safe-right) + 1rem);
+  }
   }
 
 @layer utilities {

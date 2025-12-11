@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -139,7 +140,6 @@ export default function Pricing() {
       const isAndroidDevice = /Android/.test(ua);
 
       let productId;
-      let iapConfig;
 
       if (isAndroidDevice) {
         if (plan === 'premium') {
@@ -147,75 +147,51 @@ export default function Pricing() {
         } else if (plan === 'vip') {
           productId = 'com.sportswagerhelper.vip.annual';
         }
-        iapConfig = {
-          productId: productId,
-          productType: 'SUBS',
-          isConsumable: false,
-          callback: handleIAPCallback
-        };
       } else {
         if (plan === 'premium') {
           productId = 'com.sportswagerhelper.premium.monthly.v3';
         } else if (plan === 'vip') {
           productId = 'com.sportswagerhelper.vip.annual.v3';
         }
-        iapConfig = {
-          productId: productId,
-          callback: handleIAPCallback
-        };
       }
+
+      const iapConfig = {
+        productId: productId,
+        productType: isAndroidDevice ? 'SUBS' : undefined,
+        isConsumable: false
+      };
 
       function handleIAPCallback(data) {
-        if (data.isSuccess && data.receiptData) {
-          localStorage.setItem('pending_iap_receipt', data.receiptData);
-          localStorage.setItem('pending_iap_product', productId);
-          localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
+        if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
+          // Immediately submit to server for verification
+          if (data.receiptData) {
+            submitReceiptToServer({
+              receipt: data.receiptData,
+              productId: data.productId || productId,
+              platform: 'ios'
+            });
+          } else if (data.purchaseToken) {
+            submitReceiptToServer({
+              purchaseToken: data.purchaseToken,
+              productId: data.productId || productId,
+              platform: 'android'
+            });
+          }
+          
+          // Keep small marker only (avoid large base64 in localStorage)
+          localStorage.setItem('pending_iap_product', data.productId || productId);
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          alert('Purchase was not completed.');
+          alert(data.error || 'Purchase was not completed.');
         }
         setIsProcessing(false);
       }
 
-      const tryIAP = () => {
-        if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
-          return window.WTN.inAppPurchase;
-        }
-        if (window.webkit?.messageHandlers?.inAppPurchase) {
-          return (config) => {
-            window.webkit.messageHandlers.inAppPurchase.postMessage(config);
-          };
-        }
-        if (window.Android?.inAppPurchase) {
-          return window.Android.inAppPurchase;
-        }
-        return null;
-      };
-
-      const waitForIAP = async (maxAttempts = 20, interval = 500) => {
-        for (let i = 0; i < maxAttempts; i++) {
-          const iapFunc = tryIAP();
-          if (iapFunc) {
-            return iapFunc;
-          }
-          await new Promise(resolve => setTimeout(resolve, interval));
-        }
-        return null;
-      };
-
-      const iapFunction = await waitForIAP();
-      
-      if (iapFunction) {
-        console.log('Starting IAP purchase with config:', iapConfig);
-        iapFunction(iapConfig);
-      } else {
-        console.error('IAP not available. window.WTN:', window.WTN, 'webkit:', window.webkit);
-        alert('In-app purchases are not available. Please make sure you downloaded the app from the App Store and try again.');
-        setIsProcessing(false);
-      }
+      await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
       console.error('Subscription error:', error);
-      alert('Failed to start purchase. Please try again.');
+      alert('In-app purchases are not available. Please use the mobile app.');
       setIsProcessing(false);
     }
   };
@@ -245,58 +221,41 @@ export default function Pricing() {
       const iapConfig = {
         productId: pack.productId,
         productType: isAndroidDevice ? 'INAPP' : undefined,
-        isConsumable: true,
-        callback: (data) => {
-          if (data.isSuccess && data.receiptData) {
-            localStorage.setItem('pending_iap_receipt', data.receiptData);
-            localStorage.setItem('pending_iap_product', pack.productId);
-            localStorage.setItem('pending_iap_platform', isAndroidDevice ? 'android' : 'ios');
-            localStorage.setItem('pending_iap_credits', pack.credits.toString());
-            window.location.href = '/PostPurchaseSignIn';
-          } else {
-            alert('Purchase was not completed.');
+        isConsumable: true
+      };
+
+      function handleIAPCallback(data) {
+        if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
+          // Immediately submit to server for verification
+          if (data.receiptData) {
+            submitReceiptToServer({
+              receipt: data.receiptData,
+              productId: data.productId || pack.productId,
+              platform: 'ios'
+            });
+          } else if (data.purchaseToken) {
+            submitReceiptToServer({
+              purchaseToken: data.purchaseToken,
+              productId: data.productId || pack.productId,
+              platform: 'android'
+            });
           }
-          setIsProcessing(false);
+          
+          // Keep small marker only (avoid large base64 in localStorage)
+          localStorage.setItem('pending_iap_product', data.productId || pack.productId);
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_credits', pack.credits.toString());
+          window.location.href = '/PostPurchaseSignIn';
+        } else {
+          alert(data.error || 'Purchase was not completed.');
         }
-      };
-
-      const tryIAP = () => {
-        if (typeof window.WTN !== 'undefined' && typeof window.WTN.inAppPurchase === 'function') {
-          return window.WTN.inAppPurchase;
-        }
-        if (window.webkit?.messageHandlers?.inAppPurchase) {
-          return (config) => {
-            window.webkit.messageHandlers.inAppPurchase.postMessage(config);
-          };
-        }
-        if (window.Android?.inAppPurchase) {
-          return window.Android.inAppPurchase;
-        }
-        return null;
-      };
-
-      const waitForIAP = async (maxAttempts = 20, interval = 500) => {
-        for (let i = 0; i < maxAttempts; i++) {
-          const iapFunc = tryIAP();
-          if (iapFunc) return iapFunc;
-          await new Promise(resolve => setTimeout(resolve, interval));
-        }
-        return null;
-      };
-
-      const iapFunction = await waitForIAP();
-      
-      if (iapFunction) {
-        console.log('Starting credits IAP purchase with config:', iapConfig);
-        iapFunction(iapConfig);
-      } else {
-        console.error('Credits IAP not available. window.WTN:', window.WTN);
-        alert('In-app purchases are not available. Please make sure you downloaded the app from the App Store and try again.');
         setIsProcessing(false);
       }
+
+      await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
       console.error('Credit purchase error:', error);
-      alert('Failed to start purchase. Please try again.');
+      alert('In-app purchases are not available. Please use the mobile app.');
       setIsProcessing(false);
     }
   };

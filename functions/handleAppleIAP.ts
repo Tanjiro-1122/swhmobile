@@ -47,6 +47,25 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Check if receipt/transaction already processed (idempotency)
+    const existing = await base44.asServiceRole.entities.Receipt.filter({
+      transaction_id: validationResult.transactionId
+    });
+    
+    if (existing.length > 0) {
+      return Response.json({ success: true, message: 'Receipt already processed' });
+    }
+
+    // Create audit record (Receipt entity)
+    await base44.asServiceRole.entities.Receipt.create({
+      transaction_id: validationResult.transactionId,
+      original_transaction_id: validationResult.originalTransactionId,
+      product_id: validationResult.productId,
+      user_id: user.id,
+      platform: 'apple',
+      raw: JSON.stringify(validationResult.raw || {})
+    });
+
     // Check if this is a consumable (credit pack) or subscription
     const creditsToAdd = CREDIT_PACK_MAPPING[validationResult.productId];
     const subscriptionType = PRODUCT_MAPPING[validationResult.productId];
@@ -102,69 +121,81 @@ Deno.serve(async (req) => {
 // Validate receipt with Apple servers
 async function validateReceipt(receiptData) {
   try {
-    // Get shared secret from environment
     const sharedSecret = Deno.env.get('APPLE_SHARED_SECRET');
-    
-    // Try production first
-    let response = await fetch(PRODUCTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        'receipt-data': receiptData,
-        'password': sharedSecret, // Required for auto-renewable subscriptions
-        'exclude-old-transactions': true
-      })
-    });
+    const expectedBundleId = Deno.env.get('APPLE_BUNDLE_ID') || 'com.SportsWagerHelper.app';
 
-    let result = await response.json();
+    if (!sharedSecret) {
+      return { success: false, error: 'APPLE_SHARED_SECRET not configured' };
+    }
 
-    // If production returns sandbox receipt error, try sandbox
-    if (result.status === 21007) {
-      response = await fetch(SANDBOX_URL, {
+    async function callApple(url) {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           'receipt-data': receiptData,
-          'password': sharedSecret,
-          'exclude-old-transactions': true
+          password: sharedSecret,
+          'exclude-old-transactions': false
         })
       });
-      result = await response.json();
+      return res.json();
     }
 
-    // Check if validation succeeded
+    let result = await callApple(PRODUCTION_URL);
+
+    // Fallback to sandbox if needed
+    if (result.status === 21007) {
+      result = await callApple(SANDBOX_URL);
+    }
+
     if (result.status !== 0) {
-      return {
-        success: false,
-        error: `Apple validation failed with status ${result.status}`
+      return { 
+        success: false, 
+        error: `Apple validation failed with status ${result.status}` 
       };
     }
 
-    // Extract purchase info
-    const latestReceipt = result.latest_receipt_info?.[0] || result.receipt?.in_app?.[0];
-    
-    if (!latestReceipt) {
-      return {
-        success: false,
-        error: 'No purchase information found in receipt'
+    const receipt = result.receipt;
+    if (!receipt) {
+      return { success: false, error: 'No receipt returned', raw: result };
+    }
+
+    // Validate bundle ID
+    if (expectedBundleId && receipt.bundle_id && receipt.bundle_id !== expectedBundleId) {
+      return { 
+        success: false, 
+        error: 'Receipt bundle_id mismatch', 
+        bundle_id: receipt.bundle_id 
       };
     }
+
+    // Get all purchases and sort by most recent
+    const purchases = [...(result.latest_receipt_info || []), ...(receipt.in_app || [])];
+    if (!purchases.length) {
+      return { success: false, error: 'No in_app purchases found', raw: result };
+    }
+
+    purchases.sort((a, b) => {
+      const aTime = parseInt(a.expires_date_ms || a.purchase_date_ms || '0', 10);
+      const bTime = parseInt(b.expires_date_ms || b.purchase_date_ms || '0', 10);
+      return bTime - aTime;
+    });
+
+    const matched = purchases[0];
 
     return {
       success: true,
-      productId: latestReceipt.product_id,
-      transactionId: latestReceipt.transaction_id,
-      originalTransactionId: latestReceipt.original_transaction_id,
-      expiresDate: latestReceipt.expires_date_ms 
-        ? new Date(parseInt(latestReceipt.expires_date_ms)).toISOString()
-        : null
+      productId: matched.product_id,
+      transactionId: matched.transaction_id,
+      originalTransactionId: matched.original_transaction_id,
+      expiresDate: matched.expires_date_ms 
+        ? new Date(parseInt(matched.expires_date_ms, 10)).toISOString()
+        : null,
+      raw: matched
     };
 
   } catch (error) {
-    return {
-      success: false,
-      error: error.message
-    };
+    return { success: false, error: error.message };
   }
 }
 

@@ -76,6 +76,11 @@ export default function Layout({ children, currentPageName }) {
     web2appScript.async = true;
     document.head.appendChild(web2appScript);
 
+    const webToNativeScript = document.createElement("script");
+    webToNativeScript.src = "https://unpkg.com/webtonative@1.0.81/webtonative.min.js";
+    webToNativeScript.async = true;
+    document.head.appendChild(webToNativeScript);
+
     const manifestLink = document.createElement("link");
     manifestLink.rel = "manifest";
     manifestLink.href = "/manifest.json";
@@ -85,6 +90,7 @@ export default function Layout({ children, currentPageName }) {
       document.head.removeChild(jqueryScript);
       document.head.removeChild(firebaseScript);
       document.head.removeChild(web2appScript);
+      document.head.removeChild(webToNativeScript);
       document.head.removeChild(manifestLink);
       document.head.removeChild(appleCapable);
       document.head.removeChild(appleStatus);

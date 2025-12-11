@@ -15,7 +15,7 @@ const CREDIT_MAPPING = {
 };
 
 // Package name for your app
-const PACKAGE_NAME = 'com.wnapp.id1761803023263';
+const PACKAGE_NAME = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME') || 'com.wnapp.id1761803023263';
 
 // Get service account credentials from environment
 const getServiceAccountCredentials = () => {
@@ -76,6 +76,25 @@ Deno.serve(async (req) => {
         error: 'Failed to verify purchase with Google Play' 
       }, { status: 400 });
     }
+
+    // Check if purchase already processed (idempotency)
+    const existing = await base44.asServiceRole.entities.Receipt.filter({
+      google_play_order_id: purchaseData.orderId
+    });
+    
+    if (existing.length > 0) {
+      return Response.json({ success: true, message: 'Purchase already processed' });
+    }
+
+    // Create audit record (Receipt entity)
+    await base44.asServiceRole.entities.Receipt.create({
+      google_play_order_id: purchaseData.orderId,
+      purchase_token: purchaseToken,
+      product_id: productId,
+      user_id: user.id,
+      platform: 'android',
+      raw: JSON.stringify(purchaseData.raw || purchaseData)
+    });
 
     // Handle credit purchases (consumables)
     if (isCredits) {
@@ -160,26 +179,24 @@ Deno.serve(async (req) => {
 async function verifySubscription(subscriptionId, purchaseToken) {
   try {
     const client = await getAuthenticatedClient();
-    
     const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/subscriptions/${subscriptionId}/tokens/${purchaseToken}`;
-    
     const response = await client.request({ url });
-    
-    console.log('Subscription verification response:', response.data);
-    
-    // Check if subscription is active
-    if (response.data.paymentState !== 1 && response.data.paymentState !== 2) {
-      console.error('Subscription not paid');
-      return null;
+    const data = response.data;
+
+    // Check if subscription is active (paymentState: 1 = Payment received, 2 = Free trial)
+    if (data && (data.paymentState === 1 || data.paymentState === 2)) {
+      return {
+        orderId: data.orderId,
+        expiryTimeMillis: data.expiryTimeMillis,
+        purchaseToken,
+        raw: data
+      };
     }
-    
-    return {
-      orderId: response.data.orderId,
-      expiryTimeMillis: response.data.expiryTimeMillis,
-      paymentState: response.data.paymentState
-    };
-  } catch (error) {
-    console.error('Error verifying subscription:', error);
+
+    console.error('Subscription invalid or not paid:', data);
+    return null;
+  } catch (err) {
+    console.error('Error verifying subscription:', err);
     return null;
   }
 }
@@ -187,25 +204,23 @@ async function verifySubscription(subscriptionId, purchaseToken) {
 async function verifyOneTimePurchase(productId, purchaseToken) {
   try {
     const client = await getAuthenticatedClient();
-    
     const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}`;
-    
     const response = await client.request({ url });
+    const data = response.data;
     
-    console.log('One-time purchase verification response:', response.data);
-    
-    // Check if purchase is completed
-    if (response.data.purchaseState !== 0) {
-      console.error('Purchase not completed');
-      return null;
+    // purchaseState 0 = purchased
+    if (data && data.purchaseState === 0) {
+      return { 
+        orderId: data.orderId, 
+        purchaseState: data.purchaseState, 
+        raw: data 
+      };
     }
     
-    return {
-      orderId: response.data.orderId,
-      purchaseState: response.data.purchaseState
-    };
-  } catch (error) {
-    console.error('Error verifying one-time purchase:', error);
+    console.error('One-time purchase not completed or canceled:', data);
+    return null;
+  } catch (err) {
+    console.error('Error verifying one-time purchase:', err);
     return null;
   }
 }
@@ -213,7 +228,6 @@ async function verifyOneTimePurchase(productId, purchaseToken) {
 async function acknowledgePurchase(productId, purchaseToken) {
   try {
     const client = await getAuthenticatedClient();
-    
     const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}:acknowledge`;
     
     await client.request({ 
@@ -222,10 +236,9 @@ async function acknowledgePurchase(productId, purchaseToken) {
       data: {}
     });
     
-    console.log('Purchase acknowledged successfully');
     return true;
-  } catch (error) {
-    console.error('Error acknowledging purchase:', error);
+  } catch (err) {
+    console.error('Error acknowledging purchase:', err);
     return false;
   }
 }
