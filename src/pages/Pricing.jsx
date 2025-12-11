@@ -221,8 +221,6 @@ export default function Pricing() {
           : 'com.sportswagerhelper.premium.annual.v3';
       }
 
-      alert('DEBUG: Starting IAP\nPlan: ' + plan + '\nProduct ID: ' + productId);
-
       const iapConfig = {
         productId: productId,
         productType: isAndroidDevice ? 'SUBS' : undefined,
@@ -236,8 +234,6 @@ export default function Pricing() {
         }
 
         if (!isMountedRef.current) return;
-
-        alert('DEBUG: Callback received\nSuccess: ' + data.isSuccess + '\nError: ' + (data.error || 'none'));
         
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
           if (data.receiptData) {
