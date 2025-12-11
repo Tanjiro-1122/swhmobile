@@ -76,6 +76,16 @@ Deno.serve(async (req) => {
     }
 
     if (!purchaseData) {
+      // Create failed audit record
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        user_email: user.email,
+        platform: 'android',
+        product_id: productId,
+        purchase_token: purchaseToken,
+        status: 'failed',
+        error_message: 'Failed to verify purchase with Google Play'
+      });
+      
       return Response.json({ 
         success: false, 
         error: 'Failed to verify purchase with Google Play' 
@@ -123,6 +133,17 @@ Deno.serve(async (req) => {
       // Acknowledge the purchase (consume it) so it can be purchased again
       await acknowledgePurchase(productId, purchaseToken);
 
+      // Create successful audit record
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        user_email: user.email,
+        platform: 'android',
+        product_id: productId,
+        transaction_id: purchaseData.orderId,
+        purchase_token: purchaseToken,
+        status: 'verified',
+        granted_credits: creditsToAdd
+      });
+
       console.log('Google Play credits purchase successful:', { 
         userId: user.id, 
         creditsAdded: creditsToAdd,
@@ -167,6 +188,18 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.User.update(user.id, updateData);
     }
 
+    // Create successful audit record
+    await base44.asServiceRole.entities.PurchaseAudit.create({
+      user_email: user.email,
+      platform: 'android',
+      product_id: productId,
+      transaction_id: purchaseData.orderId,
+      purchase_token: purchaseToken,
+      status: 'verified',
+      granted_subscription: subscriptionType,
+      verification_result: purchaseData.raw
+    });
+
     console.log('Google Play IAP successful:', { 
       userId: user.id, 
       subscriptionType,
@@ -180,6 +213,25 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Google Play IAP error:', error);
+    
+    // Log error to database
+    try {
+      await base44.asServiceRole.entities.ErrorLog.create({
+        error_type: 'iap',
+        severity: 'error',
+        function_name: 'handleGooglePlayIAP',
+        error_message: error.message,
+        error_stack: error.stack,
+        context: { 
+          action: body?.action,
+          productId: body?.productId,
+          platform: 'android'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return Response.json({ 
       success: false, 
       error: error.message 

@@ -47,6 +47,15 @@ Deno.serve(async (req) => {
     const validationResult = await validateReceipt(receipt);
 
     if (!validationResult.success) {
+      // Create failed audit record
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        user_email: user.email,
+        platform: 'apple',
+        product_id: productId || 'unknown',
+        status: 'failed',
+        error_message: validationResult.error
+      });
+      
       return Response.json({ 
         error: 'Receipt validation failed',
         details: validationResult.error 
@@ -85,6 +94,16 @@ Deno.serve(async (req) => {
         search_credits: newCredits
       });
 
+      // Create successful audit record
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        user_email: user.email,
+        platform: 'apple',
+        product_id: validationResult.productId,
+        transaction_id: validationResult.transactionId,
+        status: 'verified',
+        granted_credits: creditsToAdd
+      });
+
       return Response.json({
         success: true,
         type: 'credits',
@@ -114,6 +133,17 @@ Deno.serve(async (req) => {
         subscription_source: 'apple'
       });
     }
+
+    // Create successful audit record
+    await base44.asServiceRole.entities.PurchaseAudit.create({
+      user_email: user.email,
+      platform: 'apple',
+      product_id: validationResult.productId,
+      transaction_id: validationResult.transactionId,
+      status: 'verified',
+      granted_subscription: subscriptionType,
+      verification_result: validationResult.raw
+    });
 
     return Response.json({
       success: true,
