@@ -211,14 +211,18 @@ export default function Pricing() {
     }
   };
 
-  // Main subscribe handler - routes to Stripe or IAP based on device
+  // Main subscribe handler - routes to Stripe or IAP based on native bridge availability
   const handleSubscribe = async (plan) => {
-    alert('handleSubscribe called for plan: ' + plan + '\nisMobileDevice: ' + isMobileDevice);
-    if (isMobileDevice) {
-      alert('Calling handleIAPSubscribe...');
+    // Check if native IAP bridge is actually available (not just mobile device)
+    const hasNativeIAP = typeof window !== 'undefined' &&
+                         typeof window.WTN !== 'undefined' &&
+                         typeof window.WTN.inAppPurchase === 'function';
+    
+    if (hasNativeIAP) {
+      // Native app with IAP support
       await handleIAPSubscribe(plan);
-      alert('handleIAPSubscribe returned');
     } else {
+      // Web browser (even on mobile) - use Stripe
       await handleStripeCheckout(plan);
     }
   };
