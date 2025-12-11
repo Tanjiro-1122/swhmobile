@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 
+
 // Sport-themed icons as SVG components
 const FootballIcon = () => (
   <svg viewBox="0 0 100 100" className="w-12 h-12">
@@ -199,7 +200,6 @@ export default function Dashboard() {
 
       <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border overflow-x-hidden">
         {/* Header Section */}
-        <script src="https://unpkg.com/webtonative@1.0.81/webtonative.min.js"></script>
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
