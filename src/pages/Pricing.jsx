@@ -13,7 +13,7 @@ import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/u
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingItem, setProcessingItem] = useState(null); // Track which specific item is processing
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [iapReady, setIapReady] = useState(false);
 
@@ -86,7 +86,7 @@ export default function Pricing() {
 
   // Helper function to start Stripe checkout (used after login redirect)
   const startStripeCheckout = async (plan) => {
-    setIsProcessing(true);
+    setProcessingItem(plan);
     
     try {
       let priceId;
@@ -109,12 +109,12 @@ export default function Pricing() {
         window.location.href = response.data.url;
       } else {
         alert('Failed to create checkout session. Please try again.');
+        setProcessingItem(null);
       }
     } catch (error) {
       console.error('Stripe checkout error:', error);
       alert('Failed to start checkout. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      setProcessingItem(null);
     }
   };
 
@@ -133,7 +133,7 @@ export default function Pricing() {
 
   // IAP for mobile users
   const handleIAPSubscribe = async (plan) => {
-    setIsProcessing(true);
+    setProcessingItem(plan);
 
     try {
       const ua = navigator.userAgent || '';
@@ -184,15 +184,15 @@ export default function Pricing() {
           window.location.href = '/PostPurchaseSignIn';
         } else {
           alert(data.error || 'Purchase was not completed.');
+          setProcessingItem(null);
         }
-        setIsProcessing(false);
       }
 
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
       console.error('Subscription error:', error);
       alert('In-app purchases are not available. Please use the mobile app.');
-      setIsProcessing(false);
+      setProcessingItem(null);
     }
   };
 
@@ -212,7 +212,7 @@ export default function Pricing() {
       return;
     }
 
-    setIsProcessing(true);
+    setProcessingItem(pack.id);
 
     try {
       const ua = navigator.userAgent || '';
@@ -248,15 +248,15 @@ export default function Pricing() {
           window.location.href = '/PostPurchaseSignIn';
         } else {
           alert(data.error || 'Purchase was not completed.');
+          setProcessingItem(null);
         }
-        setIsProcessing(false);
       }
 
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
       console.error('Credit purchase error:', error);
       alert('In-app purchases are not available. Please use the mobile app.');
-      setIsProcessing(false);
+      setProcessingItem(null);
     }
   };
 
@@ -422,10 +422,10 @@ export default function Pricing() {
                 ) : (
                   <Button 
                     onClick={() => handleSubscribe('premium')}
-                    disabled={isProcessing}
+                    disabled={processingItem !== null}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
                   >
-                    {isProcessing ? (
+                    {processingItem === 'premium' ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         Processing...
@@ -479,10 +479,10 @@ export default function Pricing() {
                 ) : (
                   <Button 
                     onClick={() => handleSubscribe('vip')}
-                    disabled={isProcessing}
+                    disabled={processingItem !== null}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
                   >
-                    {isProcessing ? (
+                    {processingItem === 'vip' ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         Processing...
@@ -581,10 +581,10 @@ export default function Pricing() {
                       </div>
                       <Button
                         onClick={() => handleBuyCredits(pack)}
-                        disabled={isProcessing}
+                        disabled={processingItem !== null}
                         className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
                       >
-                        {isProcessing ? (
+                        {processingItem === pack.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           `Buy ${pack.credits} Credits`
