@@ -131,27 +131,11 @@ export default function Pricing() {
     await startStripeCheckout(plan);
   };
 
-  // IAP for mobile users
+  // IAP for native app users only
   const handleIAPSubscribe = async (plan) => {
     setProcessingItem(plan);
 
     try {
-      // Check if IAP bridge is available
-      const hasWTN = typeof window.WTN !== 'undefined';
-      const hasIAP = hasWTN && typeof window.WTN.inAppPurchase === 'function';
-      
-      if (!hasWTN) {
-        alert('ERROR: WebToNative (WTN) not found\nMake sure you\'re using the mobile app');
-        setProcessingItem(null);
-        return;
-      }
-      
-      if (!hasIAP) {
-        alert('ERROR: IAP function not available\nWTN exists but inAppPurchase is missing');
-        setProcessingItem(null);
-        return;
-      }
-
       const ua = navigator.userAgent || '';
       const isAndroidDevice = /Android/.test(ua);
 
@@ -167,7 +151,7 @@ export default function Pricing() {
           : 'com.sportswagerhelper.premium.annual.v3';
       }
 
-      alert('IAP BRIDGE READY\nPlan: ' + plan + '\nProduct ID: ' + productId + '\nAbout to call native bridge...');
+      alert('DEBUG: Starting IAP\nPlan: ' + plan + '\nProduct ID: ' + productId);
 
       const iapConfig = {
         productId: productId,
@@ -176,7 +160,7 @@ export default function Pricing() {
       };
 
       function handleIAPCallback(data) {
-        alert('CALLBACK RECEIVED\nSuccess: ' + data.isSuccess + '\nHas Receipt: ' + !!(data.receiptData || data.purchaseToken) + '\nError: ' + (data.error || 'none'));
+        alert('DEBUG: Callback received\nSuccess: ' + data.isSuccess + '\nError: ' + (data.error || 'none'));
         
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
           if (data.receiptData) {
@@ -195,6 +179,7 @@ export default function Pricing() {
           
           localStorage.setItem('pending_iap_product', data.productId || productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_receipt', '1');
           window.location.href = '/PostPurchaseSignIn';
         } else {
           alert('Purchase failed or cancelled: ' + (data.error || 'Unknown error'));
@@ -202,11 +187,10 @@ export default function Pricing() {
         }
       }
 
-      alert('About to invoke callNativeIAPWithCallback...');
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
-      alert('callNativeIAPWithCallback returned (waiting for callback...)');
     } catch (error) {
-      alert('EXCEPTION CAUGHT:\n' + error.message + '\n\nStack: ' + (error.stack || 'no stack'));
+      console.error('IAP Error:', error);
+      alert('Error: ' + error.message);
       setProcessingItem(null);
     }
   };
