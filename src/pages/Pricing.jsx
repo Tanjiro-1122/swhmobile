@@ -205,24 +205,6 @@ export default function Pricing() {
     setProcessingItem(null);
   };
 
-  // Cancel purchase and clear state
-  const cancelPurchase = () => {
-    try {
-      if (typeof window !== 'undefined' && window.WTN && typeof window.WTN.cancelPurchase === 'function') {
-        window.WTN.cancelPurchase();
-      }
-    } catch (err) {
-      console.warn('Native cancel failed or not available', err);
-    }
-
-    if (iapTimeoutRef.current) {
-      clearTimeout(iapTimeoutRef.current);
-      iapTimeoutRef.current = null;
-    }
-
-    setProcessingItem(null);
-  };
-
   // IAP for native app users only
   const handleIAPSubscribe = async (plan) => {
     setProcessingItem(plan);
