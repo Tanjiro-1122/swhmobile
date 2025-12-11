@@ -20,8 +20,20 @@ export function registerIAPCallback(cb) {
 }
 
 export async function callNativeIAPWithCallback(iapConfig, cb) {
-  const callbackId = registerIAPCallback(cb);
+  const callbackId = registerIAPCallback((data) => {
+    clearTimeout(timeoutId);
+    cb(data);
+  });
+  
   const payload = { ...iapConfig, callbackId };
+
+  // Set a 60-second timeout - if no callback fires, assume cancelled
+  const timeoutId = setTimeout(() => {
+    if (window.__iapCallbacks[callbackId]) {
+      delete window.__iapCallbacks[callbackId];
+      cb({ isSuccess: false, error: 'Purchase timeout or cancelled' });
+    }
+  }, 60000);
 
   if (window.WTN && typeof window.WTN.inAppPurchase === "function") {
     window.WTN.inAppPurchase(payload);
@@ -40,12 +52,14 @@ export async function callNativeIAPWithCallback(iapConfig, cb) {
       if (typeof window.Android.inAppPurchase === "function") {
         window.Android.inAppPurchase(payload);
       } else {
+        clearTimeout(timeoutId);
         throw err;
       }
     }
     return;
   }
 
+  clearTimeout(timeoutId);
   throw new Error("IAP bridge not available on this device.");
 }
 
