@@ -29,6 +29,8 @@ export default function Pricing() {
         clearTimeout(iapTimeoutRef.current);
         iapTimeoutRef.current = null;
       }
+      // Clear processing state on unmount
+      setProcessingItem(null);
     };
   }, []);
 
@@ -217,9 +219,13 @@ export default function Pricing() {
     // Safety timeout to avoid permanent spinner if no callback arrives
     iapTimeoutRef.current = setTimeout(() => {
       iapTimeoutRef.current = null;
-      if (isMountedRef.current) {
+      // Only show alert if still on this page
+      if (isMountedRef.current && processingItem) {
         setProcessingItem(null);
-        alert('Purchase timed out or was cancelled. You can try again.');
+        // Check if we're still on the pricing page
+        if (window.location.pathname.includes('Pricing') || window.location.pathname.includes('pricing')) {
+          alert('Purchase timed out or was cancelled. You can try again.');
+        }
       }
     }, 30000);
 
@@ -266,7 +272,11 @@ export default function Pricing() {
           iapTimeoutRef.current = null;
         }
 
-        if (!isMountedRef.current) return;
+        // Don't process if component unmounted (user navigated away)
+        if (!isMountedRef.current) {
+          console.log('IAP callback ignored - component unmounted');
+          return;
+        }
         
         // Handle success
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
@@ -291,16 +301,18 @@ export default function Pricing() {
           return;
         }
 
-        // Handle user cancellation
+        // Handle user cancellation (dismiss payment sheet)
         const userCancelled = data.error === 'user_cancelled' || 
                              data.error === 'cancelled' || 
-                             data.isCancelled === true;
+                             data.isCancelled === true ||
+                             data.error === 'payment_cancelled';
         if (userCancelled) {
+          console.log('User cancelled purchase');
           setProcessingItem(null);
           return;
         }
 
-        // Clear state on error
+        // Clear state on any other error
         console.error('Purchase failed:', data.error);
         setProcessingItem(null);
       });
