@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,21 @@ export default function Pricing() {
   const [processingItem, setProcessingItem] = useState(null); // Track which specific item is processing
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [iapReady, setIapReady] = useState(false);
+  
+  const iapTimeoutRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+      if (iapTimeoutRef.current) {
+        clearTimeout(iapTimeoutRef.current);
+        iapTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // Check if we're on a mobile device (iOS or Android)
@@ -67,6 +82,30 @@ export default function Pricing() {
       return () => clearInterval(interval);
     }
   }, []);
+  
+  // Focus/visibility guard to clear stale processing state
+  useEffect(() => {
+    const onFocus = () => {
+      if (processingItem) {
+        setTimeout(() => {
+          if (isMountedRef.current && processingItem) {
+            const pending = localStorage.getItem('pending_iap_product');
+            if (!pending) {
+              setProcessingItem(null);
+            }
+          }
+        }, 1500);
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [processingItem]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -131,9 +170,40 @@ export default function Pricing() {
     await startStripeCheckout(plan);
   };
 
+  // Cancel purchase and clear state
+  const cancelPurchase = () => {
+    try {
+      if (typeof window !== 'undefined' && window.WTN && typeof window.WTN.cancelPurchase === 'function') {
+        window.WTN.cancelPurchase();
+      }
+    } catch (err) {
+      console.warn('Native cancel failed or not available', err);
+    }
+
+    if (iapTimeoutRef.current) {
+      clearTimeout(iapTimeoutRef.current);
+      iapTimeoutRef.current = null;
+    }
+
+    setProcessingItem(null);
+  };
+
   // IAP for native app users only
   const handleIAPSubscribe = async (plan) => {
     setProcessingItem(plan);
+
+    if (iapTimeoutRef.current) {
+      clearTimeout(iapTimeoutRef.current);
+      iapTimeoutRef.current = null;
+    }
+
+    iapTimeoutRef.current = setTimeout(() => {
+      iapTimeoutRef.current = null;
+      if (isMountedRef.current) {
+        setProcessingItem(null);
+        alert('Purchase timed out or was cancelled. You can try again.');
+      }
+    }, 30000);
 
     try {
       const ua = navigator.userAgent || '';
@@ -159,7 +229,14 @@ export default function Pricing() {
         isConsumable: false
       };
 
-      function handleIAPCallback(data) {
+      await callNativeIAPWithCallback(iapConfig, function handleIAPCallback(data) {
+        if (iapTimeoutRef.current) {
+          clearTimeout(iapTimeoutRef.current);
+          iapTimeoutRef.current = null;
+        }
+
+        if (!isMountedRef.current) return;
+
         alert('DEBUG: Callback received\nSuccess: ' + data.isSuccess + '\nError: ' + (data.error || 'none'));
         
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
@@ -182,13 +259,15 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_receipt', '1');
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          alert('Purchase failed or cancelled: ' + (data.error || 'Unknown error'));
+          alert('Purchase cancelled or failed: ' + (data.error || 'Unknown'));
           setProcessingItem(null);
         }
-      }
-
-      await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
+      });
     } catch (error) {
+      if (iapTimeoutRef.current) {
+        clearTimeout(iapTimeoutRef.current);
+        iapTimeoutRef.current = null;
+      }
       console.error('IAP Error:', error);
       alert('Error: ' + error.message);
       setProcessingItem(null);
