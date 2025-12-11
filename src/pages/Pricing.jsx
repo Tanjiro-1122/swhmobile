@@ -270,24 +270,6 @@ export default function Pricing() {
     }
   };
 
-  // Cancel purchase and clear state
-  const cancelPurchase = () => {
-    try {
-      if (typeof window !== 'undefined' && window.WTN && typeof window.WTN.cancelPurchase === 'function') {
-        window.WTN.cancelPurchase();
-      }
-    } catch (err) {
-      console.warn('Native cancel failed or not available', err);
-    }
-
-    if (iapTimeoutRef.current) {
-      clearTimeout(iapTimeoutRef.current);
-      iapTimeoutRef.current = null;
-    }
-
-    setProcessingItem(null);
-  };
-
   // Main subscribe handler - routes to Stripe or IAP based on native bridge availability
   const handleSubscribe = async (plan) => {
     const hasNativeIAP = typeof window !== 'undefined' &&
