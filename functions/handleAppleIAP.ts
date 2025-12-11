@@ -31,7 +31,12 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { receipt, productId, isServerNotification } = body;
+    const { receipt, productId, isServerNotification, action } = body;
+
+    // Handle activatePending request (when only pending marker exists)
+    if (action === 'activatePending') {
+      return await handleActivatePending(base44, user, body);
+    }
 
     // Handle server-to-server notifications from Apple
     if (isServerNotification) {
@@ -197,6 +202,77 @@ async function validateReceipt(receiptData) {
 
   } catch (error) {
     return { success: false, error: error.message };
+  }
+}
+
+// Handle activation when only pending marker exists
+async function handleActivatePending(base44, user, body) {
+  try {
+    const { productId } = body;
+    
+    // Check if user already has active subscription
+    if (user.subscription_type && user.subscription_type !== 'free') {
+      const expiresAt = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+      if (!expiresAt || expiresAt > new Date()) {
+        return Response.json({ success: true, message: 'Subscription already active' });
+      }
+    }
+    
+    // Look for recently processed receipt for this user/product
+    const recentReceipts = await base44.asServiceRole.entities.Receipt.filter({
+      user_id: user.id,
+      product_id: productId,
+      platform: 'apple'
+    });
+    
+    if (recentReceipts.length === 0) {
+      return Response.json({ 
+        error: 'No receipt found for this product',
+        success: false 
+      }, { status: 404 });
+    }
+    
+    // Use the most recent receipt
+    const receipt = recentReceipts.sort((a, b) => 
+      new Date(b.created_date) - new Date(a.created_date)
+    )[0];
+    
+    // Determine subscription type from product ID
+    const PRODUCT_MAPPING = {
+      'com.sportswagerhelper.premium.monthly': 'premium_monthly',
+      'com.sportswagerhelper.vip.annual': 'vip_annual',
+      'com.sportswagerhelper.premium.monthly.v3': 'premium_monthly',
+      'com.sportswagerhelper.premium.annual.v3': 'vip_annual',
+      'com.sportswagerhelper.vip.annual.v3': 'vip_annual'
+    };
+    
+    const subscriptionType = PRODUCT_MAPPING[productId];
+    if (!subscriptionType) {
+      return Response.json({ 
+        error: 'Unknown product ID',
+        success: false 
+      }, { status: 400 });
+    }
+    
+    // Activate subscription
+    await base44.asServiceRole.entities.User.update(user.id, {
+      subscription_type: subscriptionType,
+      apple_transaction_id: receipt.transaction_id,
+      apple_original_transaction_id: receipt.original_transaction_id,
+      subscription_source: 'apple'
+    });
+    
+    return Response.json({ 
+      success: true,
+      subscriptionType 
+    });
+    
+  } catch (error) {
+    console.error('Activate pending error:', error);
+    return Response.json({ 
+      error: error.message,
+      success: false 
+    }, { status: 500 });
   }
 }
 
