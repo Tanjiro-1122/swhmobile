@@ -142,18 +142,16 @@ export default function Pricing() {
       let productId;
 
       if (isAndroidDevice) {
-        if (plan === 'premium') {
-          productId = 'com.sportswagerhelper.premium.monthly';
-        } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.vip.annual';
-        }
+        productId = plan === 'premium' 
+          ? 'com.sportswagerhelper.premium.monthly'
+          : 'com.sportswagerhelper.vip.annual';
       } else {
-        if (plan === 'premium') {
-          productId = 'com.sportswagerhelper.premium.monthly.v3';
-        } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.vip.annual.v3';
-        }
+        productId = plan === 'premium'
+          ? 'com.sportswagerhelper.premium.monthly.v3'
+          : 'com.sportswagerhelper.vip.annual.v3';
       }
+
+      console.log('Starting IAP for plan:', plan, 'productId:', productId);
 
       const iapConfig = {
         productId: productId,
@@ -162,8 +160,9 @@ export default function Pricing() {
       };
 
       function handleIAPCallback(data) {
+        console.log('IAP Callback received:', data);
+        
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
-          // Immediately submit to server for verification
           if (data.receiptData) {
             submitReceiptToServer({
               receipt: data.receiptData,
@@ -178,20 +177,19 @@ export default function Pricing() {
             });
           }
           
-          // Keep small marker only (avoid large base64 in localStorage)
           localStorage.setItem('pending_iap_product', data.productId || productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          alert(data.error || 'Purchase was not completed.');
+          console.error('Purchase failed or cancelled:', data);
           setProcessingItem(null);
         }
       }
 
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
-      console.error('Subscription error:', error);
-      alert('In-app purchases are not available. Please use the mobile app.');
+      console.error('IAP Error:', error);
+      alert('Error: ' + error.message);
       setProcessingItem(null);
     }
   };
