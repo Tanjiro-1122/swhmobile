@@ -213,8 +213,11 @@ export default function Pricing() {
 
   // Main subscribe handler - routes to Stripe or IAP based on device
   const handleSubscribe = async (plan) => {
+    alert('handleSubscribe called for plan: ' + plan + '\nisMobileDevice: ' + isMobileDevice);
     if (isMobileDevice) {
+      alert('Calling handleIAPSubscribe...');
       await handleIAPSubscribe(plan);
+      alert('handleIAPSubscribe returned');
     } else {
       await handleStripeCheckout(plan);
     }
