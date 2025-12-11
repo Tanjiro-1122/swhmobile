@@ -13,6 +13,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
+        console.log('DEBUG apple config from server:', response.data);
         if (response.data?.clientId) {
           setAppleConfig(response.data);
         }
@@ -58,7 +59,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
                 if (onSuccess) {
                   onSuccess(appleUser);
                 } else {
-                  base44.auth.redirectToLogin(window.location.href);
+                  base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
                 }
               } else {
                 throw new Error(verifyResponse.data?.error || 'Verification failed');
@@ -94,7 +95,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
-        console.log('Apple config from server:', response.data);
+        console.log('DEBUG apple config from server (on-demand):', response.data);
         if (!response.data?.clientId) {
           throw new Error('Could not retrieve Apple configuration.');
         }
@@ -103,9 +104,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
 
       const clientId = currentConfig.clientId;
-      const redirectUri = currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback';
+      const redirectUri = currentConfig.redirectUri || (window.location.origin + '/apple-auth-callback');
       
-      console.log('Initializing Apple Sign In with:', { clientId, redirectUri });
+      console.log('Apple init params:', { clientId, redirectURI: redirectUri });
 
       window.AppleID.auth.init({
         clientId: clientId,
@@ -137,7 +138,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         if (onSuccess) {
           onSuccess(appleUser);
         } else {
-          base44.auth.redirectToLogin(window.location.href);
+          base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
         }
       } else {
         throw new Error(verifyResponse.data?.error || 'Verification failed');

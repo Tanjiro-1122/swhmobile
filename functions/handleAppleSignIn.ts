@@ -98,9 +98,10 @@ Deno.serve(async (req) => {
     const { action, identityToken, authorizationCode, user } = await req.json();
 
     if (action === 'getClientId') {
+      const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
       return Response.json({ 
         clientId: APPLE_CLIENT_ID,
-        redirectUri: 'https://sportswagerhelper.com/apple-auth-callback',
+        redirectUri: redirectUri,
         configStatus: {
           hasClientId: !!APPLE_CLIENT_ID,
           hasTeamId: !!APPLE_TEAM_ID,
@@ -222,6 +223,8 @@ Deno.serve(async (req) => {
         keyDebug
       });
 
+      const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
+
       const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
         method: 'POST',
         headers: {
@@ -232,7 +235,7 @@ Deno.serve(async (req) => {
           client_secret: clientSecret,
           code: authorizationCode,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://sportswagerhelper.com/apple-auth-callback',
+          redirect_uri: redirectUri,
         }),
       });
 

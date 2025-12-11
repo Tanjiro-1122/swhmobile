@@ -13,7 +13,7 @@ import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/u
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [processingItem, setProcessingItem] = useState(null); // Track which specific item is processing
+  const [processingItem, setProcessingItem] = useState(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [iapReady, setIapReady] = useState(false);
   
@@ -270,19 +270,40 @@ export default function Pricing() {
     }
   };
 
+  // Cancel purchase and clear state
+  const cancelPurchase = () => {
+    try {
+      if (typeof window !== 'undefined' && window.WTN && typeof window.WTN.cancelPurchase === 'function') {
+        window.WTN.cancelPurchase();
+      }
+    } catch (err) {
+      console.warn('Native cancel failed or not available', err);
+    }
+
+    if (iapTimeoutRef.current) {
+      clearTimeout(iapTimeoutRef.current);
+      iapTimeoutRef.current = null;
+    }
+
+    setProcessingItem(null);
+  };
+
   // Main subscribe handler - routes to Stripe or IAP based on native bridge availability
   const handleSubscribe = async (plan) => {
-    // Check if native IAP bridge is actually available (not just mobile device)
     const hasNativeIAP = typeof window !== 'undefined' &&
                          typeof window.WTN !== 'undefined' &&
                          typeof window.WTN.inAppPurchase === 'function';
     
     if (hasNativeIAP) {
-      // Native app with IAP support
       await handleIAPSubscribe(plan);
     } else {
-      // Web browser (even on mobile) - use Stripe
-      await handleStripeCheckout(plan);
+      try {
+        await handleStripeCheckout(plan);
+      } catch (err) {
+        console.error('Stripe checkout failed:', err);
+        alert('Unable to start payment. Please try again or contact support.');
+        setProcessingItem(null);
+      }
     }
   };
 
