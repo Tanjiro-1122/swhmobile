@@ -20,33 +20,43 @@ export function registerIAPCallback(cb) {
 }
 
 export async function callNativeIAPWithCallback(iapConfig, cb) {
+  let callbackFired = false;
+  
   const callbackId = registerIAPCallback((data) => {
+    if (callbackFired) return; // Prevent duplicate callbacks
+    callbackFired = true;
     clearTimeout(timeoutId);
+    console.log('IAP callback received:', { error: data.error, isSuccess: data.isSuccess });
     cb(data);
   });
   
   const payload = { ...iapConfig, callbackId };
 
-  // Set a 60-second timeout - if no callback fires, assume cancelled
+  // Set a 15-second timeout - if no callback fires, assume cancelled or dismissed
   const timeoutId = setTimeout(() => {
-    if (window.__iapCallbacks[callbackId]) {
+    if (window.__iapCallbacks[callbackId] && !callbackFired) {
+      callbackFired = true;
+      console.log('IAP timeout - treating as cancellation');
       delete window.__iapCallbacks[callbackId];
-      cb({ isSuccess: false, error: 'Purchase timeout or cancelled' });
+      cb({ isSuccess: false, error: 'user_cancelled', isCancelled: true });
     }
-  }, 60000);
+  }, 15000);
 
   if (window.WTN && typeof window.WTN.inAppPurchase === "function") {
+    console.log('Calling WTN.inAppPurchase with productId:', payload.productId);
     window.WTN.inAppPurchase(payload);
     return;
   }
 
   if (window.webkit?.messageHandlers?.inAppPurchase) {
+    console.log('Calling webkit.messageHandlers.inAppPurchase with productId:', payload.productId);
     window.webkit.messageHandlers.inAppPurchase.postMessage(payload);
     return;
   }
 
   if (window.Android?.inAppPurchase) {
     try {
+      console.log('Calling Android.inAppPurchase with productId:', payload.productId);
       window.Android.inAppPurchase(JSON.stringify(payload));
     } catch (err) {
       if (typeof window.Android.inAppPurchase === "function") {

@@ -216,18 +216,14 @@ export default function Pricing() {
       iapTimeoutRef.current = null;
     }
 
-    // Safety timeout to avoid permanent spinner if no callback arrives
+    // Safety timeout - keep shorter since bridge has its own timeout
     iapTimeoutRef.current = setTimeout(() => {
       iapTimeoutRef.current = null;
-      // Only show alert if still on this page
       if (isMountedRef.current && processingItem) {
+        console.log('Page-level IAP timeout - clearing processing state');
         setProcessingItem(null);
-        // Check if we're still on the pricing page
-        if (window.location.pathname.includes('Pricing') || window.location.pathname.includes('pricing')) {
-          alert('Purchase timed out or was cancelled. You can try again.');
-        }
       }
-    }, 30000);
+    }, 20000);
 
     try {
       const ua = navigator.userAgent || '';
