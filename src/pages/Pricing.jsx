@@ -160,9 +160,13 @@ export default function Pricing() {
       };
 
       function handleIAPCallback(data) {
-        console.log('IAP Callback received:', data);
+        console.log('=== VIP IAP Callback ===');
+        console.log('Plan:', plan);
+        console.log('Product ID:', productId);
+        console.log('Callback Data:', JSON.stringify(data, null, 2));
         
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
+          console.log('✅ Purchase successful, submitting receipt...');
           if (data.receiptData) {
             submitReceiptToServer({
               receipt: data.receiptData,
@@ -179,9 +183,11 @@ export default function Pricing() {
           
           localStorage.setItem('pending_iap_product', data.productId || productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          console.log('Redirecting to PostPurchaseSignIn...');
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          console.error('Purchase failed or cancelled:', data);
+          console.error('❌ Purchase failed or cancelled:', data);
+          alert('Purchase failed: ' + (data.error || 'Unknown error'));
           setProcessingItem(null);
         }
       }
