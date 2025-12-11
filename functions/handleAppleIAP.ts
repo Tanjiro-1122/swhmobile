@@ -124,6 +124,25 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Apple IAP Error:', error);
+    
+    // Log error to database
+    try {
+      await base44.asServiceRole.entities.ErrorLog.create({
+        error_type: 'iap',
+        severity: 'error',
+        function_name: 'handleAppleIAP',
+        error_message: error.message,
+        error_stack: error.stack,
+        context: { 
+          action: body?.action,
+          productId: body?.productId,
+          platform: 'apple'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return Response.json({ 
       error: error.message 
     }, { status: 500 });
