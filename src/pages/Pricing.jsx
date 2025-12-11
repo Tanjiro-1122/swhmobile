@@ -33,6 +33,13 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
+    // Log available WTN methods for diagnostics
+    if (typeof window !== 'undefined' && typeof window.WTN === 'object') {
+      console.log('WTN API available:', Object.keys(window.WTN));
+    } else {
+      console.log('WTN API: not available');
+    }
+
     // Check if we're on a mobile device (iOS or Android)
     const checkMobileDevice = () => {
       const ua = navigator.userAgent || '';
@@ -87,6 +94,7 @@ export default function Pricing() {
   useEffect(() => {
     const onFocus = () => {
       if (processingItem) {
+        // Allow brief delay for real callbacks
         setTimeout(() => {
           if (isMountedRef.current && processingItem) {
             const pending = localStorage.getItem('pending_iap_product');
@@ -94,7 +102,7 @@ export default function Pricing() {
               setProcessingItem(null);
             }
           }
-        }, 1500);
+        }, 1000);
       }
     };
 
@@ -172,6 +180,33 @@ export default function Pricing() {
 
   // Cancel purchase and clear state
   const cancelPurchase = () => {
+    // Try native cancel methods if the bridge exposes one
+    try {
+      if (typeof window !== 'undefined' && window.WTN) {
+        if (typeof window.WTN.cancelPurchase === 'function') {
+          window.WTN.cancelPurchase();
+        } else if (typeof window.WTN.dismissIAP === 'function') {
+          window.WTN.dismissIAP();
+        } else if (typeof window.WTN.closePurchase === 'function') {
+          window.WTN.closePurchase();
+        }
+      }
+    } catch (err) {
+      console.warn('Native cancel call failed or not available', err);
+    }
+
+    // Clear safety timeout
+    if (iapTimeoutRef.current) {
+      clearTimeout(iapTimeoutRef.current);
+      iapTimeoutRef.current = null;
+    }
+
+    // Clear the UI processing flags
+    setProcessingItem(null);
+  };
+
+  // Cancel purchase and clear state
+  const cancelPurchase = () => {
     try {
       if (typeof window !== 'undefined' && window.WTN && typeof window.WTN.cancelPurchase === 'function') {
         window.WTN.cancelPurchase();
@@ -192,11 +227,13 @@ export default function Pricing() {
   const handleIAPSubscribe = async (plan) => {
     setProcessingItem(plan);
 
+    // Clear any previous timeout
     if (iapTimeoutRef.current) {
       clearTimeout(iapTimeoutRef.current);
       iapTimeoutRef.current = null;
     }
 
+    // Safety timeout to avoid permanent spinner if no callback arrives
     iapTimeoutRef.current = setTimeout(() => {
       iapTimeoutRef.current = null;
       if (isMountedRef.current) {
@@ -209,8 +246,22 @@ export default function Pricing() {
       const ua = navigator.userAgent || '';
       const isAndroidDevice = /Android/.test(ua);
 
-      let productId;
+      // Verify native bridge exists
+      const hasNativeIAP = typeof window !== 'undefined' &&
+                           typeof window.WTN !== 'undefined' &&
+                           typeof window.WTN.inAppPurchase === 'function';
 
+      if (!hasNativeIAP) {
+        if (iapTimeoutRef.current) {
+          clearTimeout(iapTimeoutRef.current);
+          iapTimeoutRef.current = null;
+        }
+        alert('Native in-app purchase is not available. Please use the mobile app.');
+        setProcessingItem(null);
+        return;
+      }
+
+      let productId;
       if (isAndroidDevice) {
         productId = plan === 'premium' 
           ? 'com.sportswagerhelper.premium.monthly'
@@ -228,6 +279,7 @@ export default function Pricing() {
       };
 
       await callNativeIAPWithCallback(iapConfig, function handleIAPCallback(data) {
+        // Clear timeout
         if (iapTimeoutRef.current) {
           clearTimeout(iapTimeoutRef.current);
           iapTimeoutRef.current = null;
@@ -235,6 +287,7 @@ export default function Pricing() {
 
         if (!isMountedRef.current) return;
         
+        // Handle success
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
           if (data.receiptData) {
             submitReceiptToServer({
@@ -254,10 +307,21 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           localStorage.setItem('pending_iap_receipt', '1');
           window.location.href = '/PostPurchaseSignIn';
-        } else {
-          alert('Purchase cancelled or failed: ' + (data.error || 'Unknown'));
-          setProcessingItem(null);
+          return;
         }
+
+        // Handle user cancellation
+        const userCancelled = data.error === 'user_cancelled' || 
+                             data.error === 'cancelled' || 
+                             data.isCancelled === true;
+        if (userCancelled) {
+          setProcessingItem(null);
+          return;
+        }
+
+        // Show error and clear state
+        alert('Purchase failed or cancelled: ' + (data.error || 'Unknown error'));
+        setProcessingItem(null);
       });
     } catch (error) {
       if (iapTimeoutRef.current) {
@@ -265,7 +329,7 @@ export default function Pricing() {
         iapTimeoutRef.current = null;
       }
       console.error('IAP Error:', error);
-      alert('Error: ' + error.message);
+      alert('Error starting purchase: ' + (error.message || 'Unknown'));
       setProcessingItem(null);
     }
   };
