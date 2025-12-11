@@ -484,10 +484,7 @@ export default function Pricing() {
                   </Button>
                 ) : (
                   <Button 
-                    onClick={() => {
-                      alert('VIP button clicked! Mobile device: ' + isMobileDevice);
-                      handleSubscribe('vip');
-                    }}
+                    onClick={() => handleSubscribe('vip')}
                     disabled={processingItem !== null}
                     className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
                   >
