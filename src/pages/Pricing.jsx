@@ -155,14 +155,13 @@ export default function Pricing() {
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
-        alert('Failed to create checkout session. Please try again.');
+        console.error('Failed to create checkout session');
         setProcessingItem(null);
-      }
-    } catch (error) {
-      console.error('Stripe checkout error:', error);
-      alert('Failed to start checkout. Please try again.');
-      setProcessingItem(null);
-    }
+        }
+        } catch (error) {
+        console.error('Stripe checkout error:', error);
+        setProcessingItem(null);
+        }
   };
 
   // Stripe checkout for web users
@@ -284,10 +283,10 @@ export default function Pricing() {
               platform: 'android'
             });
           }
-          
+
+          // Store minimal markers only
           localStorage.setItem('pending_iap_product', data.productId || productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
-          localStorage.setItem('pending_iap_receipt', '1');
           window.location.href = '/PostPurchaseSignIn';
           return;
         }
@@ -301,8 +300,8 @@ export default function Pricing() {
           return;
         }
 
-        // Show error and clear state
-        alert('Purchase failed or cancelled: ' + (data.error || 'Unknown error'));
+        // Clear state on error
+        console.error('Purchase failed:', data.error);
         setProcessingItem(null);
       });
     } catch (error) {
@@ -311,7 +310,6 @@ export default function Pricing() {
         iapTimeoutRef.current = null;
       }
       console.error('IAP Error:', error);
-      alert('Error starting purchase: ' + (error.message || 'Unknown'));
       setProcessingItem(null);
     }
   };
@@ -329,7 +327,6 @@ export default function Pricing() {
         await handleStripeCheckout(plan);
       } catch (err) {
         console.error('Stripe checkout failed:', err);
-        alert('Unable to start payment. Please try again or contact support.');
         setProcessingItem(null);
       }
     }
@@ -338,7 +335,6 @@ export default function Pricing() {
   const handleBuyCredits = async (pack) => {
     // Credit packs are only available on mobile via IAP
     if (!isMobileDevice) {
-      alert('Credit packs are only available in the mobile app. Please download the app from the App Store or Google Play.');
       return;
     }
 
@@ -377,7 +373,7 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_credits', pack.credits.toString());
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          alert(data.error || 'Purchase was not completed.');
+          console.error('Credit purchase failed:', data.error);
           setProcessingItem(null);
         }
       }
@@ -385,7 +381,6 @@ export default function Pricing() {
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
       console.error('Credit purchase error:', error);
-      alert('In-app purchases are not available. Please use the mobile app.');
       setProcessingItem(null);
     }
   };

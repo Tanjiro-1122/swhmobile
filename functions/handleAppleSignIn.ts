@@ -101,13 +101,7 @@ Deno.serve(async (req) => {
       const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
       return Response.json({ 
         clientId: APPLE_CLIENT_ID,
-        redirectUri: redirectUri,
-        configStatus: {
-          hasClientId: !!APPLE_CLIENT_ID,
-          hasTeamId: !!APPLE_TEAM_ID,
-          hasKeyId: !!APPLE_KEY_ID,
-          hasPrivateKey: !!APPLE_PRIVATE_KEY
-        }
+        redirectUri: redirectUri
       }, {
         headers: { 'Access-Control-Allow-Origin': '*' }
       });
@@ -186,15 +180,19 @@ Deno.serve(async (req) => {
       }
 
     if (action === 'exchangeCode') {
-      console.log('Starting exchangeCode action');
-      
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
         const missing = [];
         if (!APPLE_PRIVATE_KEY) missing.push('APPLE_PRIVATE_KEY');
         if (!APPLE_TEAM_ID) missing.push('APPLE_TEAM_ID');
         if (!APPLE_KEY_ID) missing.push('APPLE_KEY_ID');
         if (!APPLE_CLIENT_ID) missing.push('APPLE_CLIENT_ID');
-        throw new Error(`Missing required secrets for Apple Sign In: ${missing.join(', ')}`);
+        return Response.json({ 
+          success: false, 
+          error: `Missing required secrets: ${missing.join(', ')}` 
+        }, { 
+          status: 500,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
       }
 
       // Exchange authorization code for tokens
@@ -203,25 +201,14 @@ Deno.serve(async (req) => {
         clientSecret = await generateClientSecret();
       } catch (err) {
         console.error('Error generating client secret:', err);
-        throw new Error(`Failed to generate client secret: ${err.message}`);
+        return Response.json({ 
+          success: false, 
+          error: 'Failed to generate client secret' 
+        }, { 
+          status: 500,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
       }
-
-      // Log key format details (safely)
-      const keyDebug = APPLE_PRIVATE_KEY ? {
-        length: APPLE_PRIVATE_KEY.length,
-        hasHeader: APPLE_PRIVATE_KEY.includes('BEGIN PRIVATE KEY'),
-        hasFooter: APPLE_PRIVATE_KEY.includes('END PRIVATE KEY'),
-        hasNewlines: APPLE_PRIVATE_KEY.includes('\n') || APPLE_PRIVATE_KEY.includes('\\n')
-      } : 'MISSING';
-
-      console.log('Exchanging code with Apple:', {
-        client_id: APPLE_CLIENT_ID,
-        team_id: APPLE_TEAM_ID,
-        key_id: APPLE_KEY_ID,
-        hasClientSecret: !!clientSecret,
-        hasCode: !!authorizationCode,
-        keyDebug
-      });
 
       const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
 
@@ -241,11 +228,15 @@ Deno.serve(async (req) => {
 
       const tokenData = await tokenResponse.json();
 
-      console.log('Apple token response:', JSON.stringify(tokenData));
-
       if (tokenData.error) {
         console.error('Apple token error:', tokenData);
-        throw new Error(`Apple API Error: ${tokenData.error_description || tokenData.error}`);
+        return Response.json({ 
+          success: false, 
+          error: tokenData.error_description || tokenData.error 
+        }, { 
+          status: 400,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
       }
 
       // Decode the id_token to get user info
@@ -276,15 +267,12 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Apple Sign In CRITICAL error:', error);
-    console.error('Stack:', error.stack);
+    console.error('Apple Sign In error:', error);
     return Response.json({ 
       success: false,
-      error: error.message, 
-      stack: error.stack,
-      details: 'Check backend logs for more info'
+      error: error.message
     }, { 
-      status: 200,
+      status: 500,
       headers: { 'Access-Control-Allow-Origin': '*' }
     });
   }

@@ -147,19 +147,25 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Update user subscription
-    const updateData = {
-      subscription_type: subscriptionType,
-      google_play_purchase_token: purchaseToken,
-      google_play_order_id: purchaseData.orderId
-    };
+    // Check if user already has active subscription (prevent duplicate grants)
+    const currentExpiry = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+    const newExpiry = purchaseData.expiryTimeMillis ? new Date(parseInt(purchaseData.expiryTimeMillis)) : null;
+    
+    // Only update if new subscription or if new expiry is later
+    if (!currentExpiry || !newExpiry || newExpiry > currentExpiry) {
+      const updateData = {
+        subscription_type: subscriptionType,
+        google_play_purchase_token: purchaseToken,
+        google_play_order_id: purchaseData.orderId
+      };
 
-    // Add expiry date for subscriptions
-    if (purchaseData.expiryTimeMillis) {
-      updateData.subscription_expires_at = new Date(parseInt(purchaseData.expiryTimeMillis)).toISOString();
+      // Add expiry date for subscriptions
+      if (purchaseData.expiryTimeMillis) {
+        updateData.subscription_expires_at = new Date(parseInt(purchaseData.expiryTimeMillis)).toISOString();
+      }
+
+      await base44.asServiceRole.entities.User.update(user.id, updateData);
     }
-
-    await base44.asServiceRole.entities.User.update(user.id, updateData);
 
     console.log('Google Play IAP successful:', { 
       userId: user.id, 

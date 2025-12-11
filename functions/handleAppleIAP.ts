@@ -100,14 +100,20 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Update user subscription
-    await base44.asServiceRole.entities.User.update(user.id, {
-      subscription_type: subscriptionType,
-      apple_transaction_id: validationResult.transactionId,
-      apple_original_transaction_id: validationResult.originalTransactionId,
-      subscription_expires_at: validationResult.expiresDate,
-      subscription_source: 'apple'
-    });
+    // Check if user already has active subscription (prevent duplicate grants)
+    const currentExpiry = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+    const newExpiry = validationResult.expiresDate ? new Date(validationResult.expiresDate) : null;
+    
+    // Only update if new subscription or if new expiry is later
+    if (!currentExpiry || !newExpiry || newExpiry > currentExpiry) {
+      await base44.asServiceRole.entities.User.update(user.id, {
+        subscription_type: subscriptionType,
+        apple_transaction_id: validationResult.transactionId,
+        apple_original_transaction_id: validationResult.originalTransactionId,
+        subscription_expires_at: validationResult.expiresDate,
+        subscription_source: 'apple'
+      });
+    }
 
     return Response.json({
       success: true,

@@ -9,18 +9,17 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
   useEffect(() => {
     const getConfig = async () => {
-      try {
-        const response = await base44.functions.invoke('handleAppleSignIn', {
-          action: 'getClientId'
-        });
-        console.log('DEBUG apple config from server:', response.data);
-        if (response.data?.clientId) {
-          setAppleConfig(response.data);
+        try {
+          const response = await base44.functions.invoke('handleAppleSignIn', {
+            action: 'getClientId'
+          });
+          if (response.data?.clientId) {
+            setAppleConfig(response.data);
+          }
+        } catch (error) {
+          console.error('Failed to get Apple config:', error);
         }
-      } catch (error) {
-        console.error('Failed to get Apple config:', error);
-      }
-    };
+      };
     getConfig();
   }, []);
 
@@ -30,11 +29,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
     try {
       // Check if WebToNative's native Apple Sign In is available
       if (typeof window.WTN !== 'undefined' && typeof window.WTN.appleSignIn === 'function') {
-        console.log('Using WebToNative native Apple Sign In');
         
         window.WTN.appleSignIn({
           callback: async (data) => {
-            console.log('WTN Apple Sign In response:', data);
             
             if (data.isSuccess && data.authorizationCode) {
               // Exchange code with our backend
@@ -65,9 +62,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
                 throw new Error(verifyResponse.data?.error || 'Verification failed');
               }
             } else {
-              if (data.error !== 'user_cancelled') {
-                alert('Apple Sign In failed: ' + (data.error || 'Unknown error'));
-              }
+              console.error('Apple Sign In failed:', data.error);
             }
             setIsLoading(false);
           }
@@ -76,7 +71,6 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
 
       // Fallback to web-based Apple Sign In
-      console.log('Using web-based Apple Sign In');
       
       // Load Apple SDK if needed
       if (!window.AppleID) {
@@ -95,7 +89,6 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
-        console.log('DEBUG apple config from server (on-demand):', response.data);
         if (!response.data?.clientId) {
           throw new Error('Could not retrieve Apple configuration.');
         }
@@ -105,8 +98,6 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       const clientId = currentConfig.clientId;
       const redirectUri = currentConfig.redirectUri || (window.location.origin + '/apple-auth-callback');
-      
-      console.log('Apple init params:', { clientId, redirectURI: redirectUri });
 
       window.AppleID.auth.init({
         clientId: clientId,
@@ -145,9 +136,6 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
     } catch (error) {
       console.error('Apple Sign In error:', error);
-      if (error.error !== 'popup_closed_by_user') {
-        alert('Sign In Error: ' + (error.message || String(error)));
-      }
     } finally {
       setIsLoading(false);
     }
