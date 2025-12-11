@@ -136,6 +136,22 @@ export default function Pricing() {
     setProcessingItem(plan);
 
     try {
+      // Check if IAP bridge is available
+      const hasWTN = typeof window.WTN !== 'undefined';
+      const hasIAP = hasWTN && typeof window.WTN.inAppPurchase === 'function';
+      
+      if (!hasWTN) {
+        alert('ERROR: WebToNative (WTN) not found\nMake sure you\'re using the mobile app');
+        setProcessingItem(null);
+        return;
+      }
+      
+      if (!hasIAP) {
+        alert('ERROR: IAP function not available\nWTN exists but inAppPurchase is missing');
+        setProcessingItem(null);
+        return;
+      }
+
       const ua = navigator.userAgent || '';
       const isAndroidDevice = /Android/.test(ua);
 
@@ -151,7 +167,7 @@ export default function Pricing() {
           : 'com.sportswagerhelper.premium.annual.v3';
       }
 
-      alert('DEBUG: Starting IAP\nPlan: ' + plan + '\nProduct ID: ' + productId);
+      alert('IAP BRIDGE READY\nPlan: ' + plan + '\nProduct ID: ' + productId + '\nAbout to call native bridge...');
 
       const iapConfig = {
         productId: productId,
@@ -160,7 +176,7 @@ export default function Pricing() {
       };
 
       function handleIAPCallback(data) {
-        alert('DEBUG: Callback received\nSuccess: ' + data.isSuccess + '\nError: ' + (data.error || 'none'));
+        alert('CALLBACK RECEIVED\nSuccess: ' + data.isSuccess + '\nHas Receipt: ' + !!(data.receiptData || data.purchaseToken) + '\nError: ' + (data.error || 'none'));
         
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
           if (data.receiptData) {
@@ -186,10 +202,11 @@ export default function Pricing() {
         }
       }
 
+      alert('About to invoke callNativeIAPWithCallback...');
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
+      alert('callNativeIAPWithCallback returned (waiting for callback...)');
     } catch (error) {
-      console.error('IAP Error:', error);
-      alert('Error: ' + error.message);
+      alert('EXCEPTION CAUGHT:\n' + error.message + '\n\nStack: ' + (error.stack || 'no stack'));
       setProcessingItem(null);
     }
   };
