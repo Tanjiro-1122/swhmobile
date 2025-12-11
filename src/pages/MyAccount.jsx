@@ -47,31 +47,31 @@ function MyAccountContent() {
     const productId = localStorage.getItem('pending_iap_product');
     const platform = localStorage.getItem('pending_iap_platform') || 'ios';
     
-    if (receipt && productId) {
+    if (productId) {
       setActivatingIAP(true);
       try {
-        // Use the appropriate handler based on platform
         const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
         
-        const response = await base44.functions.invoke(functionName, {
-          receipt,
-          productId,
-          purchaseToken: receipt // Android uses purchaseToken
-        });
+        // Check if we have real receipt or just pending marker
+        const isRealReceipt = receipt && receipt.length > 20 && receipt !== '1';
+        
+        const response = await base44.functions.invoke(functionName, 
+          isRealReceipt 
+            ? { receipt, productId, purchaseToken: receipt }
+            : { action: 'activatePending', productId, platform }
+        );
 
         if (response.data.success) {
           setPaymentSuccess(true);
           setActiveTab("subscription");
-          // Clear stored data
           localStorage.removeItem('pending_iap_receipt');
           localStorage.removeItem('pending_iap_product');
           localStorage.removeItem('pending_iap_platform');
         } else {
-          alert('Failed to activate subscription. Please contact support.');
+          console.warn('IAP activation failed:', response.data);
         }
       } catch (error) {
         console.error('IAP activation error:', error);
-        alert('Failed to activate subscription. Please contact support.');
       } finally {
         setActivatingIAP(false);
       }

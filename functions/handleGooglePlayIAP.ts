@@ -47,7 +47,12 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { purchaseToken, productId } = body;
+    const { purchaseToken, productId, action } = body;
+    
+    // Handle activatePending request
+    if (action === 'activatePending') {
+      return await handleActivatePending(base44, user, productId);
+    }
 
     if (!purchaseToken || !productId) {
       return Response.json({ 
@@ -175,6 +180,82 @@ Deno.serve(async (req) => {
     }, { status: 500 });
   }
 });
+
+async function handleActivatePending(base44, user, productId) {
+  try {
+    // Check if user already has active subscription
+    if (user.subscription_type && user.subscription_type !== 'free') {
+      const expiresAt = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+      if (!expiresAt || expiresAt > new Date()) {
+        return Response.json({ success: true, message: 'Subscription already active' });
+      }
+    }
+    
+    // Look for recently processed receipt for this user/product
+    const recentReceipts = await base44.asServiceRole.entities.Receipt.filter({
+      user_id: user.id,
+      product_id: productId,
+      platform: 'android'
+    });
+    
+    if (recentReceipts.length === 0) {
+      return Response.json({ 
+        error: 'No receipt found for this product',
+        success: false 
+      }, { status: 404 });
+    }
+    
+    // Use the most recent receipt
+    const receipt = recentReceipts.sort((a, b) => 
+      new Date(b.created_date) - new Date(a.created_date)
+    )[0];
+    
+    const creditsToAdd = CREDIT_MAPPING[productId];
+    const subscriptionType = PRODUCT_MAPPING[productId];
+    
+    if (creditsToAdd) {
+      const currentCredits = user.search_credits || 0;
+      const newCredits = currentCredits + creditsToAdd;
+      
+      await base44.asServiceRole.entities.User.update(user.id, {
+        search_credits: newCredits
+      });
+      
+      return Response.json({
+        success: true,
+        type: 'credits',
+        credits_added: creditsToAdd,
+        new_balance: newCredits
+      });
+    }
+    
+    if (!subscriptionType) {
+      return Response.json({ 
+        error: 'Unknown product ID',
+        success: false 
+      }, { status: 400 });
+    }
+    
+    // Activate subscription
+    await base44.asServiceRole.entities.User.update(user.id, {
+      subscription_type: subscriptionType,
+      google_play_order_id: receipt.google_play_order_id,
+      subscription_source: 'google_play'
+    });
+    
+    return Response.json({ 
+      success: true,
+      subscription_type: subscriptionType 
+    });
+    
+  } catch (error) {
+    console.error('Activate pending error:', error);
+    return Response.json({ 
+      error: error.message,
+      success: false 
+    }, { status: 500 });
+  }
+}
 
 async function verifySubscription(subscriptionId, purchaseToken) {
   try {
