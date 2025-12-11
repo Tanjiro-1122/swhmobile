@@ -94,6 +94,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         const response = await base44.functions.invoke('handleAppleSignIn', {
           action: 'getClientId'
         });
+        console.log('Apple config from server:', response.data);
         if (!response.data?.clientId) {
           throw new Error('Could not retrieve Apple configuration.');
         }
@@ -101,10 +102,15 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         currentConfig = response.data;
       }
 
+      const clientId = currentConfig.clientId;
+      const redirectUri = currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback';
+      
+      console.log('Initializing Apple Sign In with:', { clientId, redirectUri });
+
       window.AppleID.auth.init({
-        clientId: currentConfig.clientId,
+        clientId: clientId,
         scope: 'name email',
-        redirectURI: currentConfig.redirectUri || 'https://sportswagerhelper.com/apple-auth-callback',
+        redirectURI: redirectUri,
         usePopup: true
       });
 
