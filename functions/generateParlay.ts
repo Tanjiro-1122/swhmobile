@@ -17,24 +17,6 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Check cache first (6 hour cache)
-        const CACHE_HOURS = 6;
-        const todayDate = new Date().toISOString().split('T')[0];
-        const cacheKey = `${sport}_${risk_level}_${todayDate}`;
-        
-        const cached = await base44.entities.CachedParlay.filter({ cache_key: cacheKey });
-        const now = new Date();
-        
-        if (cached.length > 0) {
-            const cacheEntry = cached[0];
-            const expiresAt = new Date(cacheEntry.expires_at);
-            
-            if (expiresAt > now && cacheEntry.parlay_data) {
-                console.log('Using cached parlay for', cacheKey);
-                return Response.json(cacheEntry.parlay_data);
-            }
-        }
-
         const result = await base44.integrations.Core.InvokeLLM({
             prompt: `You are a professional sports betting analyst with REAL-TIME INTERNET ACCESS. Generate a parlay bet for the user.
 
@@ -206,17 +188,6 @@ Generate the parlay with VERIFIED LIVE DATA for TODAY'S games only.`,
         if (!result || !result.legs || result.legs.length === 0) {
             throw new Error("Failed to generate valid parlay");
         }
-
-        // Cache the result for 6 hours
-        const expiresAt = new Date(now.getTime() + CACHE_HOURS * 60 * 60 * 1000);
-        if (cached.length > 0) {
-            await base44.entities.CachedParlay.delete(cached[0].id);
-        }
-        await base44.entities.CachedParlay.create({
-            cache_key: cacheKey,
-            parlay_data: result,
-            expires_at: expiresAt.toISOString()
-        });
 
         return Response.json(result);
 

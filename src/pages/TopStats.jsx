@@ -50,33 +50,14 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
     return prompts[sport] || prompts.nfl;
   };
 
-  const CACHE_HOURS = 6; // Cache data for 6 hours
-
-  const { data: statsData, isLoading, error, refetch } = useQuery({
+  const { data: statsData, isLoading, error } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
-      // First, check if we have valid cached data
-      const cached = await base44.entities.CachedStats.filter({ sport: selectedSport });
-      const now = new Date();
-
-      if (cached.length > 0) {
-        const cacheEntry = cached[0];
-        const expiresAt = new Date(cacheEntry.expires_at);
-
-        if (expiresAt > now && cacheEntry.stats_data) {
-          // Return cached data - NO LLM CREDIT USED
-          console.log('Using cached stats for', selectedSport);
-          return cacheEntry.stats_data;
-        }
-      }
-
-      // Cache expired or doesn't exist - make LLM call
-      console.log('Fetching fresh stats for', selectedSport);
       const response = await base44.integrations.Core.InvokeLLM({
         prompt: getPromptForSport(selectedSport) + `
 
-  Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
-  For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
+Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
+For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -122,25 +103,9 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
           }
         }
       });
-
-      // Save to cache for next 6 hours
-      const expiresAt = new Date(now.getTime() + CACHE_HOURS * 60 * 60 * 1000);
-
-      // Delete old cache entry if exists
-      if (cached.length > 0) {
-        await base44.entities.CachedStats.delete(cached[0].id);
-      }
-
-      // Create new cache entry
-      await base44.entities.CachedStats.create({
-        sport: selectedSport,
-        stats_data: response,
-        expires_at: expiresAt.toISOString()
-      });
-
       return response;
     },
-    staleTime: 1000 * 60 * 30, // React Query cache for 30 minutes
+    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
   });
 
   const currentSportConfig = SPORTS.find(s => s.id === selectedSport);
@@ -164,7 +129,6 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-2">
               🎁 FREE FOR ALL USERS - A Gift From Us!
             </Badge>
-            <p className="text-white/60 text-xs italic mt-2">⏱️ Data refreshed every 6 hours for accuracy</p>
           </div>
         </div>
 
@@ -191,13 +155,13 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
                   <p className="text-white/70">Loading {sport.name} stats...</p>
                 </div>
               ) : error || !statsData || !statsData.teams?.length ? (
-                <Card className="bg-black border-amber-400/30">
+                <Card className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-400/30">
                   <CardContent className="p-8 text-center">
                     <div className="text-6xl mb-4">⚾🏃‍♂️💨</div>
                     <h3 className="text-xl font-bold text-white mb-2">Swing and a Miss!</h3>
                     <p className="text-white/70 mb-6">Our stats batter whiffed on that one. Step back up to the plate and try again!</p>
                     <Button 
-                      onClick={() => refetch()}
+                      onClick={() => window.location.reload()}
                       className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold px-6"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
@@ -215,7 +179,7 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
                   </div>
 
                   {/* Top Teams Section */}
-                  <Card className="bg-black/80 backdrop-blur-xl border-white/10">
+                  <Card className="bg-black/40 backdrop-blur-xl border-white/10">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Users className="w-6 h-6 text-blue-400" />
@@ -274,7 +238,7 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
                   </Card>
 
                   {/* Top Players Section */}
-                  <Card className="bg-black/80 backdrop-blur-xl border-white/10">
+                  <Card className="bg-black/40 backdrop-blur-xl border-white/10">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Star className="w-6 h-6 text-yellow-400" />

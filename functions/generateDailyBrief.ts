@@ -12,10 +12,8 @@ Deno.serve(async (req) => {
     const { favoriteSports = [], favoriteLeagues = [] } = await req.json().catch(() => ({}));
 
     const today = new Date().toISOString().split('T')[0];
-    const now = new Date();
-    const CACHE_HOURS = 12; // Generate up to 2 briefs per day
 
-    // Check if brief already exists for today and is still valid
+    // Check if brief already exists for today
     const existingBriefs = await base44.entities.BettingBrief.filter(
       { brief_date: today },
       '-created_date',
@@ -23,16 +21,10 @@ Deno.serve(async (req) => {
     );
 
     if (existingBriefs && existingBriefs.length > 0) {
-      // Check if the brief was created within the last 12 hours
-      const briefCreated = new Date(existingBriefs[0].created_date);
-      const hoursSinceCreation = (now - briefCreated) / (1000 * 60 * 60);
-      
-      if (hoursSinceCreation < CACHE_HOURS) {
-        return Response.json({ 
-          message: 'Brief already exists for today',
-          brief: existingBriefs[0]
-        });
-      }
+      return Response.json({ 
+        message: 'Brief already exists for today',
+        brief: existingBriefs[0]
+      });
     }
 
     // Build personalized prompt based on user preferences

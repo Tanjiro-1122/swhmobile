@@ -11,10 +11,6 @@ Deno.serve(async (req) => {
 
     const { query } = await req.json();
 
-    // NOTE: This function uses 3 LLM calls per request (ensemble approach)
-    // Consider using single-model approach for high-traffic scenarios
-    // Or implement caching based on query + date
-
     // Ensemble approach: Run multiple analysis perspectives
     const [statisticalAnalysis, momentumAnalysis, contextualAnalysis] = await Promise.all([
       // Analysis 1: Pure statistical model

@@ -14,8 +14,6 @@ export default function TodaysPredictions() {
   const [predictions, setPredictions] = useState(null);
   const [activeTab, setActiveTab] = useState("games");
 
-  const CACHE_HOURS = 6; // Cache predictions for 6 hours
-
   const generatePredictions = async () => {
     setIsGenerating(true);
     try {
@@ -25,23 +23,6 @@ export default function TodaysPredictions() {
         day: 'numeric', 
         year: 'numeric' 
       });
-      const todayDate = new Date().toISOString().split('T')[0];
-
-      // Check cache first
-      const cached = await base44.entities.CachedPredictions.filter({ prediction_date: todayDate });
-      const now = new Date();
-      
-      if (cached.length > 0) {
-        const cacheEntry = cached[0];
-        const expiresAt = new Date(cacheEntry.expires_at);
-        
-        if (expiresAt > now && cacheEntry.predictions_data) {
-          console.log('Using cached predictions');
-          setPredictions(cacheEntry.predictions_data);
-          setIsGenerating(false);
-          return;
-        }
-      }
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert sports analyst. Generate AI predictions for today's major sporting events.
@@ -137,17 +118,6 @@ Be realistic and base predictions on actual current season data, injuries, match
         }
       });
 
-      // Cache the result for 6 hours
-      const expiresAt = new Date(now.getTime() + CACHE_HOURS * 60 * 60 * 1000);
-      if (cached.length > 0) {
-        await base44.entities.CachedPredictions.delete(cached[0].id);
-      }
-      await base44.entities.CachedPredictions.create({
-        prediction_date: todayDate,
-        predictions_data: result,
-        expires_at: expiresAt.toISOString()
-      });
-
       setPredictions(result);
     } catch (error) {
       console.error("Failed to generate predictions:", error);
@@ -168,8 +138,7 @@ Be realistic and base predictions on actual current season data, injuries, match
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">AI Predictions</h2>
-                <p className="text-gray-600">Game outcomes & player performance forecasts</p>
-                <p className="text-amber-600 text-xs">⏱️ Predictions refreshed every 6 hours</p>
+                <p className="text-gray-600">Real-time game outcomes & player performance forecasts</p>
               </div>
             </div>
             <Button
