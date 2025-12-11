@@ -277,8 +277,7 @@ Deno.serve(async (req) => {
         severity: 'error',
         function_name: 'handleAppleSignIn',
         error_message: error.message,
-        error_stack: error.stack,
-        context: { action: (await req.json().catch(() => ({})))?.action }
+        error_stack: error.stack
       });
     } catch (logError) {
       console.error('Failed to log error:', logError);

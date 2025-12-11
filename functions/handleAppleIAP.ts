@@ -21,8 +21,11 @@ const CREDIT_PACK_MAPPING = {
 };
 
 Deno.serve(async (req) => {
+  let body = {};
+  let base44;
+  
   try {
-    const base44 = createClientFromRequest(req);
+    base44 = createClientFromRequest(req);
     
     // Authenticate user
     const user = await base44.auth.me();
@@ -30,7 +33,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
+    body = await req.json();
     const { receipt, productId, isServerNotification, action } = body;
 
     // Handle activatePending request (when only pending marker exists)
@@ -157,18 +160,20 @@ Deno.serve(async (req) => {
     
     // Log error to database
     try {
-      await base44.asServiceRole.entities.ErrorLog.create({
-        error_type: 'iap',
-        severity: 'error',
-        function_name: 'handleAppleIAP',
-        error_message: error.message,
-        error_stack: error.stack,
-        context: { 
-          action: body?.action,
-          productId: body?.productId,
-          platform: 'apple'
-        }
-      });
+      if (base44) {
+        await base44.asServiceRole.entities.ErrorLog.create({
+          error_type: 'iap',
+          severity: 'error',
+          function_name: 'handleAppleIAP',
+          error_message: error.message,
+          error_stack: error.stack,
+          context: { 
+            action: body?.action,
+            productId: body?.productId,
+            platform: 'apple'
+          }
+        });
+      }
     } catch (logError) {
       console.error('Failed to log error:', logError);
     }
