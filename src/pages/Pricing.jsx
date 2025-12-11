@@ -148,7 +148,7 @@ export default function Pricing() {
       } else {
         productId = plan === 'premium'
           ? 'com.sportswagerhelper.premium.monthly.v3'
-          : 'com.sportswagerhelper.vip.annual.v3';
+          : 'com.sportswagerhelper.premium.annual.v3';
       }
 
       console.log('Starting IAP for plan:', plan, 'productId:', productId);
