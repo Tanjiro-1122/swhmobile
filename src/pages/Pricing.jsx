@@ -157,11 +157,11 @@ export default function Pricing() {
       } else {
         console.error('Failed to create checkout session');
         setProcessingItem(null);
-        }
-        } catch (error) {
-        console.error('Stripe checkout error:', error);
-        setProcessingItem(null);
-        }
+      }
+    } catch (error) {
+      console.error('Stripe checkout error:', error);
+      setProcessingItem(null);
+    }
   };
 
   // Stripe checkout for web users
