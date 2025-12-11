@@ -29,6 +29,8 @@ import MyAccount from './pages/MyAccount';
 import AppleKeyTester from './pages/AppleKeyTester';
 import PostPurchaseSignIn from './pages/PostPurchaseSignIn';
 import TopStats from './pages/TopStats';
+import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
+import AdminErrorLogs from './pages/AdminErrorLogs';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +66,8 @@ export const PAGES = {
     "AppleKeyTester": AppleKeyTester,
     "PostPurchaseSignIn": PostPurchaseSignIn,
     "TopStats": TopStats,
+    "AdminPurchaseAudit": AdminPurchaseAudit,
+    "AdminErrorLogs": AdminErrorLogs,
 }
 
 export const pagesConfig = {

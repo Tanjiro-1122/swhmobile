@@ -268,6 +268,22 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Apple Sign In error:', error);
+    
+    // Log error to database
+    try {
+      const base44 = createClientFromRequest(req);
+      await base44.asServiceRole.entities.ErrorLog.create({
+        error_type: 'auth',
+        severity: 'error',
+        function_name: 'handleAppleSignIn',
+        error_message: error.message,
+        error_stack: error.stack,
+        context: { action: (await req.json().catch(() => ({})))?.action }
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return Response.json({ 
       success: false,
       error: error.message
