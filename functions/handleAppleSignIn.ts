@@ -1,71 +1,47 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import * as jose from 'npm:jose@5.2.3';
 
-const APPLE_CLIENT_ID = Deno.env.get("APPLE_CLIENT_ID");
-const APPLE_TEAM_ID = Deno.env.get("APPLE_TEAM_ID");
-const APPLE_KEY_ID = Deno.env.get("APPLE_KEY_ID");
-const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY");
+const APPLE_CLIENT_ID = Deno.env.get('APPLE_CLIENT_ID') || '';
+const APPLE_TEAM_ID = Deno.env.get('APPLE_TEAM_ID') || '';
+const APPLE_KEY_ID = Deno.env.get('APPLE_KEY_ID') || '';
+const APPLE_PRIVATE_KEY = Deno.env.get('APPLE_PRIVATE_KEY') || '';
 const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
 const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerhelper.com';
 const ALLOW_KEY_TEST = Deno.env.get('ALLOW_KEY_TEST') === 'true';
+const SESSION_SECRET = Deno.env.get('SESSION_SECRET') || '';
 
-// 1) TypeScript typing for cached client secret
-let cachedClientSecret: { token: string; expAt: number } | null = null;
+let cachedClientSecret = null;
 
-// Simple rate limiter (in-memory)
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-function checkRateLimit(identifier: string, maxRequests = 10, windowMs = 60000): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-  
-  if (!record || now > record.resetAt) {
-    rateLimitMap.set(identifier, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-  
-  if (record.count >= maxRequests) {
-    return false;
-  }
-  
-  record.count++;
-  return true;
-}
-
-// Helper: build secure CORS headers - FIXED to use specific origin instead of wildcard
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,  // Specific origin, not '*'
+function corsHeaders(allowCredentials = false) {
+  const headers = {
+    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': 'application/json'  // Ensure JSON response
   };
+  if (allowCredentials) headers['Access-Control-Allow-Credentials'] = 'true';
+  return headers;
 }
 
 async function ensureClientSecret() {
   const now = Math.floor(Date.now() / 1000);
-  if (cachedClientSecret && cachedClientSecret.expAt > now + 60) { // keep 60s buffer
-    return cachedClientSecret.token;
-  }
+  if (cachedClientSecret && cachedClientSecret.expAt > now + 60) return cachedClientSecret.token;
 
   if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
-    throw new Error('Missing APPLE_* env vars needed to generate client secret');
+    throw new Error('Missing APPLE_* env vars to generate client secret');
   }
 
-  // Normalize private key formatting
-  let privateKey = APPLE_PRIVATE_KEY || '';
+  let privateKey = APPLE_PRIVATE_KEY;
   if (privateKey.includes('\\n')) privateKey = privateKey.replace(/\\n/g, '\n');
   if (!privateKey.includes('BEGIN PRIVATE KEY')) {
-    const rawBody = privateKey.replace(/\s/g, '');
-    const chunked = rawBody.match(/.{1,64}/g)?.join('\n') || rawBody;
+    const raw = privateKey.replace(/\s/g, '');
+    const chunked = raw.match(/.{1,64}/g)?.join('\n') || raw;
     privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
   }
 
-  // Create signed JWT (client_secret)
   const alg = 'ES256';
   const ecPrivateKey = await jose.importPKCS8(privateKey, alg);
   const iat = Math.floor(Date.now() / 1000);
-  const exp = iat + 60 * 60 * 24 * 180; // 180 days (Apple allows up to 6 months)
+  const exp = iat + 60 * 60 * 24 * 180;
   const jwt = await new jose.SignJWT({})
     .setProtectedHeader({ alg, kid: APPLE_KEY_ID })
     .setIssuedAt(iat)
@@ -79,44 +55,34 @@ async function ensureClientSecret() {
   return jwt;
 }
 
-// Use Apple's JWK set and jose to verify tokens (signature + claims)
 const appleJWKS = jose.createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'));
 
 async function verifyIdToken(idToken) {
   if (!APPLE_CLIENT_ID) throw new Error('APPLE_CLIENT_ID not configured');
-
-  // jwtVerify will fetch the appropriate JWK and verify signature and exp/iat by default
   const { payload } = await jose.jwtVerify(idToken, appleJWKS, {
     issuer: 'https://appleid.apple.com',
     audience: APPLE_CLIENT_ID,
   });
-
   return payload;
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders() });
+    return new Response(null, { headers: corsHeaders(true) });
   }
 
   try {
-    const body = await req.json(); // parse once
-    const { action, identityToken, authorizationCode, user, manualKey } = body || {};
+    const body = await req.json().catch(() => ({}));
+    const { action, identityToken, authorizationCode, manualKey, user, nonce } = body || {};
 
     if (action === 'getClientId') {
-      return Response.json({
-        clientId: APPLE_CLIENT_ID,
-        redirectUri: APPLE_REDIRECT_URI,
-      }, { headers: corsHeaders() });
+      return new Response(JSON.stringify({ clientId: APPLE_CLIENT_ID, redirectUri: APPLE_REDIRECT_URI }), { headers: corsHeaders(true) });
     }
 
     if (action === 'verify') {
-      if (!identityToken) {
-        return Response.json({ success: false, error: 'Missing identityToken' }, { status: 400, headers: corsHeaders() });
-      }
-      // Verify signature + claims using Apple's JWKS
+      if (!identityToken) return new Response(JSON.stringify({ success: false, error: 'Missing identityToken' }), { status: 400, headers: corsHeaders(true) });
       const payload = await verifyIdToken(identityToken);
-      return Response.json({
+      return new Response(JSON.stringify({
         success: true,
         appleUser: {
           id: payload.sub,
@@ -125,78 +91,49 @@ Deno.serve(async (req) => {
           isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
         },
         userInfo: user || null
-      }, { headers: corsHeaders() });
+      }), { headers: corsHeaders(true) });
     }
 
-    // Admin/dev-only key test endpoint
     if (action === 'testManualKey') {
-      if (!ALLOW_KEY_TEST) {
-        return Response.json({ success: false, error: 'Key testing disabled in production' }, { status: 403, headers: corsHeaders() });
+      if (!ALLOW_KEY_TEST) return new Response(JSON.stringify({ success: false, error: 'Key testing disabled' }), { status: 403, headers: corsHeaders() });
+      let clean = manualKey || '';
+      if (clean.includes('\\n')) clean = clean.replace(/\\n/g, '\n');
+      if (!clean.includes('BEGIN PRIVATE KEY')) {
+        const raw = clean.replace(/\s/g, '');
+        const chunked = raw.match(/.{1,64}/g)?.join('\n') || raw;
+        clean = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
       }
-      
-      // 3) Rate limit this endpoint
-      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-      if (!checkRateLimit(`testKey:${clientIp}`, 5, 300000)) { // 5 requests per 5 minutes
-        return Response.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders() });
-      }
-      let cleanKey = manualKey || '';
-      if (cleanKey.includes('\\n')) cleanKey = cleanKey.replace(/\\n/g, '\n');
-      if (!cleanKey.includes('BEGIN PRIVATE KEY')) {
-        const rawBody = cleanKey.replace(/\s/g, '');
-        const chunked = rawBody.match(/.{1,64}/g)?.join('\n') || rawBody;
-        cleanKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
-      }
-
       try {
-        await jose.importPKCS8(cleanKey, 'ES256');
-        return Response.json({
-          success: true,
-          message: 'Valid EC P-256 (ES256) key',
-        }, { headers: corsHeaders() });
+        await jose.importPKCS8(clean, 'ES256');
+        return new Response(JSON.stringify({ success: true, message: 'Valid EC P-256 (ES256) key' }), { headers: corsHeaders() });
       } catch (esErr) {
         try {
-          await jose.importPKCS8(cleanKey, 'RS256');
-          return Response.json({
-            success: false,
-            error: 'Wrong key type: RSA detected. Apple needs EC P-256 (ES256).'
-          }, { headers: corsHeaders() });
+          await jose.importPKCS8(clean, 'RS256');
+          return new Response(JSON.stringify({ success: false, error: 'Wrong key type: RSA detected. Apple needs EC P-256 (ES256).' }), { headers: corsHeaders() });
         } catch {
-          return Response.json({ success: false, error: `Key parsing error: ${esErr.message}` }, { status: 400, headers: corsHeaders() });
+          return new Response(JSON.stringify({ success: false, error: `Key parsing error: ${esErr.message}` }), { status: 400, headers: corsHeaders() });
         }
       }
     }
 
     if (action === 'exchangeCode') {
-      if (!authorizationCode) {
-        return Response.json({ success: false, error: 'Missing authorizationCode' }, { status: 400, headers: corsHeaders() });
-      }
-      
-      // 3) Rate limit exchangeCode action
-      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-      if (!checkRateLimit(`exchange:${clientIp}`, 20, 60000)) { // 20 requests per minute
-        return Response.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders() });
-      }
+      if (!authorizationCode) return new Response(JSON.stringify({ success: false, error: 'Missing authorizationCode' }), { status: 400, headers: corsHeaders(true) });
 
-      // Ensure env is set
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
         const missing = [];
         if (!APPLE_PRIVATE_KEY) missing.push('APPLE_PRIVATE_KEY');
         if (!APPLE_TEAM_ID) missing.push('APPLE_TEAM_ID');
         if (!APPLE_KEY_ID) missing.push('APPLE_KEY_ID');
         if (!APPLE_CLIENT_ID) missing.push('APPLE_CLIENT_ID');
-        return Response.json({ success: false, error: `Missing required secrets: ${missing.join(', ')}` }, { status: 500, headers: corsHeaders() });
+        return new Response(JSON.stringify({ success: false, error: `Missing required secrets: ${missing.join(', ')}` }), { status: 500, headers: corsHeaders(true) });
       }
 
-      // Generate (or reuse cached) client secret
       let clientSecret;
-      try {
-        clientSecret = await ensureClientSecret();
-      } catch (err) {
+      try { clientSecret = await ensureClientSecret(); } catch (err) {
         console.error('Error generating client secret:', err);
-        return Response.json({ success: false, error: 'Failed to generate client secret' }, { status: 500, headers: corsHeaders() });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to generate client secret' }), { status: 500, headers: corsHeaders(true) });
       }
 
-      // Exchange code for tokens
       const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -208,182 +145,106 @@ Deno.serve(async (req) => {
           redirect_uri: APPLE_REDIRECT_URI,
         })
       });
-
       const tokenData = await tokenResponse.json();
       if (tokenData.error) {
         console.error('Apple token error:', tokenData);
-        return Response.json({ success: false, error: tokenData.error_description || tokenData.error }, { status: 400, headers: corsHeaders() });
+        return new Response(JSON.stringify({ success: false, error: tokenData.error_description || tokenData.error }), { status: 400, headers: corsHeaders(true) });
       }
 
-      // Strongly verify id_token signature & claims before trusting payload
-      if (!tokenData.id_token) {
-        return Response.json({ success: false, error: 'No id_token in token response' }, { status: 400, headers: corsHeaders() });
-      }
+      if (!tokenData.id_token) return new Response(JSON.stringify({ success: false, error: 'No id_token in token response' }), { status: 400, headers: corsHeaders(true) });
 
       let payload;
       try {
-        const verification = await jose.jwtVerify(tokenData.id_token, appleJWKS, {
-          issuer: 'https://appleid.apple.com',
-          audience: APPLE_CLIENT_ID
-        });
+        const verification = await jose.jwtVerify(tokenData.id_token, appleJWKS, { issuer: 'https://appleid.apple.com', audience: APPLE_CLIENT_ID });
         payload = verification.payload;
       } catch (verifyErr) {
         console.error('id_token verification failed:', verifyErr);
-        return Response.json({ success: false, error: 'Failed to verify id_token' }, { status: 400, headers: corsHeaders() });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token' }), { status: 400, headers: corsHeaders(true) });
       }
 
-      // 2) OPTIONAL: nonce verification (prevents replay attacks)
+      if (nonce && payload.nonce && nonce !== payload.nonce) {
+        console.error('Nonce mismatch');
+        return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers: corsHeaders(true) });
+      }
+
       try {
-        const expectedNonce = body.nonce || null;
-        if (expectedNonce && payload.nonce !== expectedNonce) {
-          console.error('Nonce mismatch for Apple sign-in');
-          return Response.json({ success: false, error: 'Invalid nonce' }, { status: 400, headers: corsHeaders() });
+        const base44 = createClientFromRequest(req);
+
+        // Find user by apple_provider_id (matches User entity schema)
+        const existingUsers = await base44.asServiceRole.entities.User.filter({
+          apple_provider_id: payload.sub
+        });
+
+        let user = existingUsers.length > 0 ? existingUsers[0] : null;
+
+        if (!user) {
+          // Check for email conflict if non-private email
+          if (payload.email && !payload.hasOwnProperty('is_private_email')) {
+            const existing = await base44.asServiceRole.entities.User.filter({ email: payload.email });
+            if (existing.length > 0) {
+              return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { headers: corsHeaders(true) });
+            }
+          }
+
+          // Create new user
+          user = await base44.asServiceRole.entities.User.create({
+            email: payload.email || null,
+            full_name: user?.name ? `${user.name.firstName || ''} ${user.name.lastName || ''}`.trim() : null,
+            apple_provider_id: payload.sub,
+            apple_provider_email: payload.email || '',
+            apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+            apple_linked_at: new Date().toISOString(),
+            apple_last_sign_in: new Date().toISOString(),
+            role: 'user'
+          });
+        } else {
+          // Update existing user
+          try { 
+            await base44.asServiceRole.entities.User.update(user.id, { 
+              apple_last_sign_in: new Date().toISOString() 
+            }); 
+          } catch (e) {}
         }
-      } catch (nonceErr) {
-        console.error('Nonce verification error:', nonceErr);
-        return Response.json({ success: false, error: 'Nonce verification failed' }, { status: 400, headers: corsHeaders() });
-      }
 
-      // At this point payload is trusted — use payload.sub as Apple unique id
-      // 5) Server-side account linking by provider_id (payload.sub)
-      const base44 = createClientFromRequest(req);
-      let currentUser = null;
-      try {
-        currentUser = await base44.auth.me();
-      } catch (authErr) {
-        // User not authenticated yet - that's okay, we'll handle account lookup below
-      }
+        // Issue session token using Base44's native method
+        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(user.email || user.id);
 
-      // Check if an account exists with this apple_provider_id
-      const existingUsers = await base44.asServiceRole.entities.User.filter({
-        apple_provider_id: payload.sub
-      });
-
-      if (existingUsers.length > 0) {
-        // Account exists with this Apple ID
-        const linkedUser = existingUsers[0];
-
-        // If currently logged in as different user, prevent cross-account hijacking
-        if (currentUser && currentUser.id !== linkedUser.id) {
-          return Response.json({
-            success: false,
-            error: 'This Apple account is already linked to a different user'
-          }, { status: 400, headers: corsHeaders() });
-        }
-
-        // Update last sign-in timestamp
-        await base44.asServiceRole.entities.User.update(linkedUser.id, {
-          apple_last_sign_in: new Date().toISOString()
-        });
-
-        // Issue session token for automatic login
-        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(linkedUser.email);
-
-        return Response.json({
-          success: true,
-          appleUser: {
-            id: payload.sub,
-            email: payload.email,
-            emailVerified: payload.email_verified,
-            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-          },
-          linkedUserEmail: linkedUser.email,
-          sessionToken: sessionToken
-        }, { headers: corsHeaders() });
-      }
-
-      // No existing account with this apple_provider_id
-      // If user is currently logged in, link Apple to their account
-      if (currentUser) {
-        await base44.asServiceRole.entities.User.update(currentUser.id, {
-          apple_provider_id: payload.sub,
-          apple_provider_email: payload.email || '',
-          apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
-          apple_linked_at: new Date().toISOString(),
-          apple_last_sign_in: new Date().toISOString()
-        });
-
-        // Issue session token for the linked account
-        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(currentUser.email);
-
-        return Response.json({
-          success: true,
-          appleUser: {
-            id: payload.sub,
-            email: payload.email,
-            emailVerified: payload.email_verified,
-            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-          },
-          linked: true,
-          linkedUserEmail: currentUser.email,
-          sessionToken: sessionToken
-        }, { headers: corsHeaders() });
-      }
-
-      // User not logged in and no account with this Apple ID - create new account
-      try {
-        // Create new user account
-        const newUser = await base44.asServiceRole.entities.User.create({
-          email: payload.email || null,
-          full_name: user?.name ? `${user.name.firstName || ''} ${user.name.lastName || ''}`.trim() : null,
-          apple_provider_id: payload.sub,
-          apple_provider_email: payload.email || '',
-          apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
-          apple_linked_at: new Date().toISOString(),
-          apple_last_sign_in: new Date().toISOString(),
-          role: 'user'
-        });
-
-        // Issue session token for the new account
-        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(newUser.email || newUser.id);
-
-        return Response.json({
-          success: true,
-          appleUser: {
-            id: payload.sub,
-            email: payload.email,
-            emailVerified: payload.email_verified,
-            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-          },
-          linkedUserEmail: newUser.email,
+        return new Response(JSON.stringify({ 
+          success: true, 
           sessionToken: sessionToken,
-          newAccount: true
-        }, { headers: corsHeaders() });
-      } catch (createErr) {
-        console.error('Failed to create new user account:', createErr);
-        return Response.json({
-          success: false,
-          error: 'Failed to create account'
-        }, { status: 500, headers: corsHeaders() });
+          appleUser: {
+            id: payload.sub,
+            email: payload.email,
+            emailVerified: payload.email_verified,
+            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
+          }
+        }), { 
+          status: 200, 
+          headers: { ...corsHeaders(true), 'Content-Type': 'application/json' }
+        });
+
+      } catch (userErr) {
+        console.error('User/session processing error:', userErr);
+        return new Response(JSON.stringify({ success: false, error: 'server_error' }), { status: 500, headers: corsHeaders(true) });
       }
     }
 
-    return Response.json({ success: false, error: 'Invalid action' }, { status: 400, headers: corsHeaders() });
+    return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400, headers: corsHeaders() });
+
   } catch (error) {
     console.error('Apple Sign In error:', error);
-    
-    // 6) Sanitize error logs - remove sensitive data
-    const sanitizedMessage = error.message?.replace(/client_secret=[^&]*/g, 'client_secret=REDACTED')
-                                          ?.replace(/code=[^&]*/g, 'code=REDACTED')
-                                          ?.replace(/id_token=[^&]*/g, 'id_token=REDACTED') || 'Unknown error';
-    const sanitizedStack = error.stack?.replace(/client_secret=[^&]*/g, 'client_secret=REDACTED')
-                                       ?.replace(/code=[^&]*/g, 'code=REDACTED')
-                                       ?.replace(/id_token=[^&]*/g, 'id_token=REDACTED') || '';
-    
-    // Log sanitized error to database
     try {
       const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.ErrorLog.create({
         error_type: 'auth',
         severity: 'error',
         function_name: 'handleAppleSignIn',
-        error_message: sanitizedMessage,
-        error_stack: sanitizedStack
+        error_message: String(error.message).slice(0, 1000),
+        error_stack: String(error.stack || '').slice(0, 2000)
       });
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    } catch (logErr) {
+      console.error('Failed to log error:', logErr);
     }
-    
-    return Response.json({ success: false, error: 'Authentication error occurred' }, { status: 500, headers: { 'Access-Control-Allow-Origin': APP_CORS_ORIGIN } });
+    return new Response(JSON.stringify({ success: false, error: error.message || 'internal' }), { status: 500, headers: corsHeaders() });
   }
 });
