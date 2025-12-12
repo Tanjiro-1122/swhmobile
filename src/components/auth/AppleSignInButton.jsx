@@ -34,6 +34,10 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
   const handleAppleSignIn = async () => {
     setIsLoading(true);
 
+    // Generate nonce for replay attack prevention
+    const generatedNonce = generateNonce();
+    setNonce(generatedNonce);
+
     try {
       // Check if WebToNative's native Apple Sign In is available
       if (typeof window.WTN !== 'undefined' && typeof window.WTN.appleSignIn === 'function') {
