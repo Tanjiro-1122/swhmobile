@@ -47,9 +47,25 @@ function MyAccountContent() {
     const productId = localStorage.getItem('pending_iap_product');
     const platform = localStorage.getItem('pending_iap_platform') || 'ios';
     
+    // Apple account linking data
+    const appleProviderId = localStorage.getItem('apple_provider_id');
+    const appleProviderEmail = localStorage.getItem('apple_provider_email');
+    const appleIsPrivate = localStorage.getItem('apple_is_private_email') === 'true';
+    
     if (productId) {
       setActivatingIAP(true);
       try {
+        // Link Apple account if provider data exists
+        if (appleProviderId) {
+          console.log('Linking Apple account by provider_id:', appleProviderId);
+          await base44.auth.updateMe({
+            apple_provider_id: appleProviderId,
+            apple_provider_email: appleProviderEmail || '',
+            apple_is_private_email: appleIsPrivate,
+            apple_linked_at: new Date().toISOString()
+          });
+        }
+
         const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
         
         // Check if we have real receipt or just pending marker
@@ -64,9 +80,14 @@ function MyAccountContent() {
         if (response.data.success) {
           setPaymentSuccess(true);
           setActiveTab("subscription");
+          
+          // Clean up all localStorage
           localStorage.removeItem('pending_iap_receipt');
           localStorage.removeItem('pending_iap_product');
           localStorage.removeItem('pending_iap_platform');
+          localStorage.removeItem('apple_provider_id');
+          localStorage.removeItem('apple_provider_email');
+          localStorage.removeItem('apple_is_private_email');
         } else {
           console.warn('IAP activation failed:', response.data);
         }
