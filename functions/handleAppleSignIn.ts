@@ -31,13 +31,14 @@ function checkRateLimit(identifier: string, maxRequests = 10, windowMs = 60000):
   return true;
 }
 
-// Helper: build secure CORS headers
+// Helper: build secure CORS headers - FIXED to use specific origin instead of wildcard
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,
+    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,  // Specific origin, not '*'
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
+    'Content-Type': 'application/json'  // Ensure JSON response
   };
 }
 
