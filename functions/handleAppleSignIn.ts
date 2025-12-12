@@ -67,6 +67,9 @@ async function verifyIdToken(idToken) {
 }
 
 Deno.serve(async (req) => {
+  const startTs = new Date().toISOString();
+  console.info(`[handleAppleSignIn] ${startTs} - ${req.method} ${req.url}`);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders(true) });
   }
@@ -76,6 +79,7 @@ Deno.serve(async (req) => {
 
     // Check content-type to determine how to parse the body
     const contentType = req.headers.get('content-type') || '';
+    console.info(`[handleAppleSignIn] Content-Type: ${contentType}`);
     
     if (contentType.includes('application/x-www-form-urlencoded')) {
       // Apple form_post sends data as form-urlencoded
@@ -99,7 +103,14 @@ Deno.serve(async (req) => {
       nonce = body.nonce;
     }
 
+    // Ping endpoint for testing
+    if (action === 'ping') {
+      console.info('[handleAppleSignIn] Ping received');
+      return new Response(JSON.stringify({ success: true, message: 'pong', timestamp: new Date().toISOString() }), { headers: corsHeaders(true) });
+    }
+
     if (action === 'getClientId') {
+      console.info('[handleAppleSignIn] getClientId action');
       return new Response(JSON.stringify({ clientId: APPLE_CLIENT_ID, redirectUri: APPLE_REDIRECT_URI }), { headers: corsHeaders(true) });
     }
 
@@ -119,7 +130,21 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'testManualKey') {
+      console.info('[handleAppleSignIn] testManualKey action');
       if (!ALLOW_KEY_TEST) return new Response(JSON.stringify({ success: false, error: 'Key testing disabled' }), { status: 403, headers: corsHeaders() });
+
+      // Test with current env key if no manual key provided
+      if (!manualKey) {
+        console.info('[handleAppleSignIn] Testing with env APPLE_PRIVATE_KEY');
+        try {
+          await ensureClientSecret();
+          return new Response(JSON.stringify({ success: true, message: 'Client secret generated successfully with env key' }), { headers: corsHeaders() });
+        } catch (err) {
+          console.error('[handleAppleSignIn] Env key test failed:', err);
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 400, headers: corsHeaders() });
+        }
+      }
+
       let clean = manualKey || '';
       if (clean.includes('\\n')) clean = clean.replace(/\\n/g, '\n');
       if (!clean.includes('BEGIN PRIVATE KEY')) {
@@ -141,6 +166,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'exchangeCode') {
+      console.info('[handleAppleSignIn] exchangeCode action');
       if (!authorizationCode) return new Response(JSON.stringify({ success: false, error: 'Missing authorizationCode' }), { status: 400, headers: corsHeaders(true) });
 
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
@@ -153,12 +179,22 @@ Deno.serve(async (req) => {
       }
 
       let clientSecret;
-      try { clientSecret = await ensureClientSecret(); } catch (err) {
-        console.error('Error generating client secret:', err);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to generate client secret' }), { status: 500, headers: corsHeaders(true) });
+      try { 
+        console.info('[handleAppleSignIn] Generating client secret');
+        clientSecret = await ensureClientSecret(); 
+        console.info('[handleAppleSignIn] Client secret generated successfully');
+      } catch (err) {
+        console.error('[handleAppleSignIn] Error generating client secret:', err);
+        return new Response(JSON.stringify({ success: false, error: 'Failed to generate client secret', details: err.message }), { status: 500, headers: corsHeaders(true) });
       }
 
-      const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
+      console.info('[handleAppleSignIn] Exchanging code with Apple');
+      const tokenController = new AbortController();
+      const tokenTimeout = setTimeout(() => tokenController.abort(), 10000); // 10s timeout
+
+      let tokenResponse;
+      try {
+        tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -167,9 +203,18 @@ Deno.serve(async (req) => {
           code: authorizationCode,
           grant_type: 'authorization_code',
           redirect_uri: APPLE_REDIRECT_URI,
-        })
-      });
-      const tokenData = await tokenResponse.json();
+        }),
+        signal: tokenController.signal
+        });
+        } catch (fetchErr) {
+        clearTimeout(tokenTimeout);
+        console.error('[handleAppleSignIn] Token exchange fetch failed:', fetchErr);
+        return new Response(JSON.stringify({ success: false, error: 'Failed to contact Apple', details: fetchErr.message }), { status: 500, headers: corsHeaders(true) });
+        }
+        clearTimeout(tokenTimeout);
+
+        const tokenData = await tokenResponse.json();
+        console.info('[handleAppleSignIn] Apple token response status:', tokenResponse.status);
       if (tokenData.error) {
         console.error('Apple token error:', tokenData);
         return new Response(JSON.stringify({ success: false, error: tokenData.error_description || tokenData.error }), { status: 400, headers: corsHeaders(true) });
@@ -178,9 +223,15 @@ Deno.serve(async (req) => {
       if (!tokenData.id_token) return new Response(JSON.stringify({ success: false, error: 'No id_token in token response' }), { status: 400, headers: corsHeaders(true) });
 
       let payload;
+      console.info('[handleAppleSignIn] Verifying id_token');
       try {
+        const verifyController = new AbortController();
+        const verifyTimeout = setTimeout(() => verifyController.abort(), 10000);
+
         const verification = await jose.jwtVerify(tokenData.id_token, appleJWKS, { issuer: 'https://appleid.apple.com', audience: APPLE_CLIENT_ID });
+        clearTimeout(verifyTimeout);
         payload = verification.payload;
+        console.info('[handleAppleSignIn] id_token verified successfully');
       } catch (verifyErr) {
         console.error('id_token verification failed:', verifyErr);
         return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token' }), { status: 400, headers: corsHeaders(true) });
@@ -191,10 +242,12 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers: corsHeaders(true) });
       }
 
+      console.info('[handleAppleSignIn] Processing user session');
       try {
         const base44 = createClientFromRequest(req);
 
         // Find user by apple_provider_id (matches User entity schema)
+        console.info('[handleAppleSignIn] Looking up user by apple_provider_id');
         const existingUsers = await base44.asServiceRole.entities.User.filter({
           apple_provider_id: payload.sub
         });
