@@ -131,6 +131,12 @@ Deno.serve(async (req) => {
       if (!ALLOW_KEY_TEST) {
         return Response.json({ success: false, error: 'Key testing disabled in production' }, { status: 403, headers: corsHeaders() });
       }
+      
+      // 3) Rate limit this endpoint
+      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      if (!checkRateLimit(`testKey:${clientIp}`, 5, 300000)) { // 5 requests per 5 minutes
+        return Response.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders() });
+      }
       let cleanKey = manualKey || '';
       if (cleanKey.includes('\\n')) cleanKey = cleanKey.replace(/\\n/g, '\n');
       if (!cleanKey.includes('BEGIN PRIVATE KEY')) {
