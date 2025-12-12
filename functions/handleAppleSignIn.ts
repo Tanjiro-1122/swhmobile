@@ -329,20 +329,28 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Apple Sign In error:', error);
     
-    // Log error to database
+    // 6) Sanitize error logs - remove sensitive data
+    const sanitizedMessage = error.message?.replace(/client_secret=[^&]*/g, 'client_secret=REDACTED')
+                                          ?.replace(/code=[^&]*/g, 'code=REDACTED')
+                                          ?.replace(/id_token=[^&]*/g, 'id_token=REDACTED') || 'Unknown error';
+    const sanitizedStack = error.stack?.replace(/client_secret=[^&]*/g, 'client_secret=REDACTED')
+                                       ?.replace(/code=[^&]*/g, 'code=REDACTED')
+                                       ?.replace(/id_token=[^&]*/g, 'id_token=REDACTED') || '';
+    
+    // Log sanitized error to database
     try {
       const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.ErrorLog.create({
         error_type: 'auth',
         severity: 'error',
         function_name: 'handleAppleSignIn',
-        error_message: error.message,
-        error_stack: error.stack
+        error_message: sanitizedMessage,
+        error_stack: sanitizedStack
       });
     } catch (logError) {
       console.error('Failed to log error:', logError);
     }
     
-    return Response.json({ success: false, error: error.message }, { status: 500, headers: { 'Access-Control-Allow-Origin': APP_CORS_ORIGIN } });
+    return Response.json({ success: false, error: 'Authentication error occurred' }, { status: 500, headers: { 'Access-Control-Allow-Origin': APP_CORS_ORIGIN } });
   }
 });
