@@ -453,6 +453,7 @@ export default function Pricing() {
           <p className="text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Get unlimited AI-powered sports analytics and smart tools for better insights
           </p>
+          <link rel="preload" as="image" href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" fetchpriority="high" />
         </div>
 
         {/* Legacy Member Notice */}

@@ -211,6 +211,9 @@ export default function Dashboard() {
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
               alt="SWH Logo"
               className="w-20 h-20 rounded-2xl shadow-2xl border-4 border-white/30"
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
             />
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-2">
