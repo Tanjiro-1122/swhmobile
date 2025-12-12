@@ -9,8 +9,27 @@ const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sports
 const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerhelper.com';
 const ALLOW_KEY_TEST = Deno.env.get('ALLOW_KEY_TEST') === 'true';
 
-// Simple in-memory cache for the client secret
-let cachedClientSecret = null;
+// 1) TypeScript typing for cached client secret
+let cachedClientSecret: { token: string; expAt: number } | null = null;
+
+// Simple rate limiter (in-memory)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(identifier: string, maxRequests = 10, windowMs = 60000): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+  
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(identifier, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  
+  if (record.count >= maxRequests) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
 
 // Helper: build secure CORS headers
 function corsHeaders() {
