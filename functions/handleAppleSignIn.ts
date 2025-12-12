@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
       if (existingUsers.length > 0) {
         // Account exists with this Apple ID
         const linkedUser = existingUsers[0];
-        
+
         // If currently logged in as different user, prevent cross-account hijacking
         if (currentUser && currentUser.id !== linkedUser.id) {
           return Response.json({
@@ -274,7 +274,9 @@ Deno.serve(async (req) => {
           apple_last_sign_in: new Date().toISOString()
         });
 
-        // Return linked account info (client will handle login redirect)
+        // Issue session token for automatic login
+        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(linkedUser.email);
+
         return Response.json({
           success: true,
           appleUser: {
@@ -283,7 +285,8 @@ Deno.serve(async (req) => {
             emailVerified: payload.email_verified,
             isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
           },
-          linkedUserEmail: linkedUser.email
+          linkedUserEmail: linkedUser.email,
+          sessionToken: sessionToken
         }, { headers: corsHeaders() });
       }
 
