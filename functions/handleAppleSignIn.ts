@@ -12,11 +12,13 @@ const SESSION_SECRET = Deno.env.get('SESSION_SECRET') || '';
 
 let cachedClientSecret = null;
 
-function corsHeaders(allowCredentials = false) {
+function corsHeaders(allowCredentials = false, originHeader = undefined) {
+  const origin = originHeader || APP_CORS_ORIGIN;
   const headers = {
-    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Origin': (originHeader && originHeader === APP_CORS_ORIGIN) ? originHeader : APP_CORS_ORIGIN,
+    'Vary': 'Origin'
   };
   if (allowCredentials) headers['Access-Control-Allow-Credentials'] = 'true';
   return headers;
@@ -70,33 +72,44 @@ Deno.serve(async (req) => {
   const startTs = new Date().toISOString();
   console.info(`[handleAppleSignIn] ${startTs} - ${req.method} ${req.url}`);
 
+  const origin = req.headers.get('origin') || undefined;
+  const headers = corsHeaders(true, origin);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders(true) });
+    return new Response(null, { headers });
   }
 
   try {
     let action, identityToken, authorizationCode, manualKey, user, nonce, isFormPost = false;
 
     // Check content-type to determine how to parse the body
-    const contentType = req.headers.get('content-type') || '';
+    const contentType = (req.headers.get('content-type') || '').toLowerCase();
     console.info(`[handleAppleSignIn] Content-Type: ${contentType}`);
-    
+    let body = {};
+
     if (contentType.includes('application/x-www-form-urlencoded')) {
-      // Apple form_post sends data as form-urlencoded
-      isFormPost = true;
-      const formData = await req.formData();
-      authorizationCode = formData.get('code');
-      const userParam = formData.get('user');
-      if (userParam) {
-        try { user = JSON.parse(userParam); } catch (e) { user = null; }
-      }
-      const stateParam = formData.get('state');
-      // Automatically trigger exchange when we receive form post from Apple
+      // handle Apple's form_post reliably
+      const raw = await req.text();
+      const params = new URLSearchParams(raw);
+      authorizationCode = params.get('code') || undefined;
+      const userParam = params.get('user');
+      try { user = userParam ? JSON.parse(userParam) : null; } catch(e) { user = null; }
+      const stateParam = params.get('state'); // if you need it
       action = 'exchangeCode';
-      console.info('[handleAppleSignIn] Form post from Apple detected, will return HTML redirect');
+      isFormPost = true;
+      console.info('[handleAppleSignIn] Form POST from Apple detected');
+    } else if (contentType.includes('application/json')) {
+      body = await req.json().catch(() => ({}));
+      action = body.action;
+      identityToken = body.identityToken;
+      authorizationCode = body.authorizationCode;
+      manualKey = body.manualKey;
+      user = body.user;
+      nonce = body.nonce;
     } else {
-      // JSON body (from our frontend)
-      const body = await req.json().catch(() => ({}));
+      // Fallback: attempt to parse text as JSON
+      const t = await req.text().catch(() => '');
+      try { body = t ? JSON.parse(t) : {}; } catch(e) { body = {}; }
       action = body.action;
       identityToken = body.identityToken;
       authorizationCode = body.authorizationCode;
@@ -108,16 +121,16 @@ Deno.serve(async (req) => {
     // Ping endpoint for testing
     if (action === 'ping') {
       console.info('[handleAppleSignIn] Ping received');
-      return new Response(JSON.stringify({ success: true, message: 'pong', timestamp: new Date().toISOString() }), { headers: corsHeaders(true) });
+      return new Response(JSON.stringify({ success: true, message: 'pong', timestamp: new Date().toISOString() }), { status: 200, headers });
     }
 
     if (action === 'getClientId') {
       console.info('[handleAppleSignIn] getClientId action');
-      return new Response(JSON.stringify({ clientId: APPLE_CLIENT_ID, redirectUri: APPLE_REDIRECT_URI }), { headers: corsHeaders(true) });
+      return new Response(JSON.stringify({ clientId: APPLE_CLIENT_ID, redirectUri: APPLE_REDIRECT_URI }), { status: 200, headers });
     }
 
     if (action === 'verify') {
-      if (!identityToken) return new Response(JSON.stringify({ success: false, error: 'Missing identityToken' }), { status: 400, headers: corsHeaders(true) });
+      if (!identityToken) return new Response(JSON.stringify({ success: false, error: 'Missing identityToken' }), { status: 400, headers });
       const payload = await verifyIdToken(identityToken);
       return new Response(JSON.stringify({
         success: true,
@@ -128,22 +141,22 @@ Deno.serve(async (req) => {
           isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
         },
         userInfo: user || null
-      }), { headers: corsHeaders(true) });
+      }), { status: 200, headers });
     }
 
     if (action === 'testManualKey') {
       console.info('[handleAppleSignIn] testManualKey action');
-      if (!ALLOW_KEY_TEST) return new Response(JSON.stringify({ success: false, error: 'Key testing disabled' }), { status: 403, headers: corsHeaders() });
+      if (!ALLOW_KEY_TEST) return new Response(JSON.stringify({ success: false, error: 'Key testing disabled' }), { status: 403, headers });
 
       // Test with current env key if no manual key provided
       if (!manualKey) {
         console.info('[handleAppleSignIn] Testing with env APPLE_PRIVATE_KEY');
         try {
           await ensureClientSecret();
-          return new Response(JSON.stringify({ success: true, message: 'Client secret generated successfully with env key' }), { headers: corsHeaders() });
+          return new Response(JSON.stringify({ success: true, message: 'Client secret generated successfully with env key' }), { status: 200, headers });
         } catch (err) {
           console.error('[handleAppleSignIn] Env key test failed:', err);
-          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 400, headers: corsHeaders() });
+          return new Response(JSON.stringify({ success: false, error: err.message }), { status: 400, headers });
         }
       }
 
@@ -156,20 +169,20 @@ Deno.serve(async (req) => {
       }
       try {
         await jose.importPKCS8(clean, 'ES256');
-        return new Response(JSON.stringify({ success: true, message: 'Valid EC P-256 (ES256) key' }), { headers: corsHeaders() });
+        return new Response(JSON.stringify({ success: true, message: 'Valid EC P-256 (ES256) key' }), { status: 200, headers });
       } catch (esErr) {
         try {
           await jose.importPKCS8(clean, 'RS256');
-          return new Response(JSON.stringify({ success: false, error: 'Wrong key type: RSA detected. Apple needs EC P-256 (ES256).' }), { headers: corsHeaders() });
+          return new Response(JSON.stringify({ success: false, error: 'Wrong key type: RSA detected. Apple needs EC P-256 (ES256).' }), { status: 200, headers });
         } catch {
-          return new Response(JSON.stringify({ success: false, error: `Key parsing error: ${esErr.message}` }), { status: 400, headers: corsHeaders() });
+          return new Response(JSON.stringify({ success: false, error: `Key parsing error: ${esErr.message}` }), { status: 400, headers });
         }
       }
     }
 
     if (action === 'exchangeCode') {
       console.info('[handleAppleSignIn] exchangeCode action');
-      if (!authorizationCode) return new Response(JSON.stringify({ success: false, error: 'Missing authorizationCode' }), { status: 400, headers: corsHeaders(true) });
+      if (!authorizationCode) return new Response(JSON.stringify({ success: false, error: 'Missing authorizationCode' }), { status: 400, headers });
 
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
         const missing = [];
@@ -177,7 +190,7 @@ Deno.serve(async (req) => {
         if (!APPLE_TEAM_ID) missing.push('APPLE_TEAM_ID');
         if (!APPLE_KEY_ID) missing.push('APPLE_KEY_ID');
         if (!APPLE_CLIENT_ID) missing.push('APPLE_CLIENT_ID');
-        return new Response(JSON.stringify({ success: false, error: `Missing required secrets: ${missing.join(', ')}` }), { status: 500, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: `Missing required secrets: ${missing.join(', ')}` }), { status: 500, headers });
       }
 
       let clientSecret;
@@ -187,7 +200,7 @@ Deno.serve(async (req) => {
         console.info('[handleAppleSignIn] Client secret generated successfully');
       } catch (err) {
         console.error('[handleAppleSignIn] Error generating client secret:', err);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to generate client secret', details: err.message }), { status: 500, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to generate client secret', details: err.message }), { status: 500, headers });
       }
 
       console.info('[handleAppleSignIn] Exchanging code with Apple');
@@ -211,18 +224,18 @@ Deno.serve(async (req) => {
         } catch (fetchErr) {
         clearTimeout(tokenTimeout);
         console.error('[handleAppleSignIn] Token exchange fetch failed:', fetchErr);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to contact Apple', details: fetchErr.message }), { status: 500, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to contact Apple', details: fetchErr.message }), { status: 500, headers });
         }
         clearTimeout(tokenTimeout);
 
         const tokenData = await tokenResponse.json();
         console.info('[handleAppleSignIn] Apple token response status:', tokenResponse.status);
-      if (tokenData.error) {
+        if (tokenData.error) {
         console.error('Apple token error:', tokenData);
-        return new Response(JSON.stringify({ success: false, error: tokenData.error_description || tokenData.error }), { status: 400, headers: corsHeaders(true) });
-      }
+        return new Response(JSON.stringify({ success: false, error: tokenData.error_description || tokenData.error }), { status: 400, headers });
+        }
 
-      if (!tokenData.id_token) return new Response(JSON.stringify({ success: false, error: 'No id_token in token response' }), { status: 400, headers: corsHeaders(true) });
+        if (!tokenData.id_token) return new Response(JSON.stringify({ success: false, error: 'No id_token in token response' }), { status: 400, headers });
 
       let payload;
       console.info('[handleAppleSignIn] Verifying id_token');
@@ -231,7 +244,7 @@ Deno.serve(async (req) => {
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('JWKS verification timeout')), 10000)
         );
-        
+
         // Race between verification and timeout
         const verification = await Promise.race([
           jose.jwtVerify(tokenData.id_token, appleJWKS, { 
@@ -240,17 +253,17 @@ Deno.serve(async (req) => {
           }),
           timeoutPromise
         ]);
-        
+
         payload = verification.payload;
         console.info('[handleAppleSignIn] id_token verified successfully');
       } catch (verifyErr) {
         console.error('id_token verification failed:', verifyErr);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token', details: verifyErr.message }), { status: 400, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token', details: verifyErr.message }), { status: 400, headers });
       }
 
       if (nonce && payload.nonce && nonce !== payload.nonce) {
         console.error('Nonce mismatch');
-        return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers });
       }
 
       console.info('[handleAppleSignIn] Processing user session');
@@ -273,7 +286,7 @@ Deno.serve(async (req) => {
           if (payload.email && !payload.hasOwnProperty('is_private_email')) {
             const existing = await base44.asServiceRole.entities.User.filter({ email: payload.email });
             if (existing.length > 0) {
-              return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { headers: corsHeaders(true) });
+              return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { status: 200, headers });
             }
           }
 
@@ -337,16 +350,16 @@ Deno.serve(async (req) => {
           }
         }), { 
           status: 200, 
-          headers: { ...corsHeaders(true), 'Content-Type': 'application/json' }
+          headers: { ...headers, 'Content-Type': 'application/json' }
         });
 
       } catch (userErr) {
         console.error('User/session processing error:', userErr);
-        return new Response(JSON.stringify({ success: false, error: 'server_error' }), { status: 500, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'server_error' }), { status: 500, headers });
       }
-    }
+      }
 
-    return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400, headers: corsHeaders() });
+      return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400, headers });
 
   } catch (error) {
     console.error('Apple Sign In error (debug):', error);
@@ -378,9 +391,11 @@ Deno.serve(async (req) => {
       console.error('Failed to log error:', logErr);
     }
 
+    const origin = req.headers.get('origin') || undefined;
+    const headers = corsHeaders(true, origin);
     return new Response(JSON.stringify(debugResp), {
       status: 500,
-      headers: { ...corsHeaders(true), 'Content-Type': 'application/json' }
+      headers: { ...headers, 'Content-Type': 'application/json' }
     });
   }
-});
+  });
