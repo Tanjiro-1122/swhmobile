@@ -31,6 +31,7 @@ import TopStats from './pages/TopStats';
 import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import AdminErrorLogs from './pages/AdminErrorLogs';
 import AppleAuthCallback from './pages/AppleAuthCallback';
+import TestAppleKey from './pages/TestAppleKey';
 import __Layout from './Layout.jsx';
 
 
@@ -68,6 +69,7 @@ export const PAGES = {
     "AdminPurchaseAudit": AdminPurchaseAudit,
     "AdminErrorLogs": AdminErrorLogs,
     "AppleAuthCallback": AppleAuthCallback,
+    "TestAppleKey": TestAppleKey,
 }
 
 export const pagesConfig = {
