@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +22,11 @@ const confidenceColors = {
   high: "bg-green-500/20 text-green-400 border-green-500/30"
 };
 
-export default function MatchCard({ match, onDelete, index }) {
+const MatchCard = React.memo(function MatchCard({ match, onDelete, index }) {
   const [expanded, setExpanded] = useState(false);
   const [showDataSources, setShowDataSources] = useState(false);
 
-  const formatMatchDate = (dateString) => {
+  const formatMatchDate = useCallback((dateString) => {
     if (!dateString) return null;
     try {
       const date = new Date(dateString);
@@ -35,9 +35,18 @@ export default function MatchCard({ match, onDelete, index }) {
     } catch (error) {
       return null;
     }
-  };
+  }, []);
 
-  const formattedDate = formatMatchDate(match.match_date);
+  const formattedDate = useMemo(() => formatMatchDate(match.match_date), [match.match_date, formatMatchDate]);
+  
+  const isNorthAmericanSport = useMemo(() => 
+    ['NBA', 'NFL', 'MLB', 'NHL', 'Basketball', 'Football', 'Baseball', 'Hockey'].includes(match.sport),
+    [match.sport]
+  );
+
+  const handleDelete = useCallback(() => {
+    if (onDelete) onDelete(match.id);
+  }, [onDelete, match.id]);
 
   return (
     <motion.div
@@ -98,7 +107,7 @@ export default function MatchCard({ match, onDelete, index }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onDelete(match.id)}
+                  onClick={handleDelete}
                   className="hover:bg-red-500/20 hover:text-red-400 text-white/80 backdrop-blur-sm"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -110,9 +119,6 @@ export default function MatchCard({ match, onDelete, index }) {
           {/* Game Display - format varies by sport convention */}
           <div className="relative bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
             {(() => {
-              // North American sports use "Away @ Home" format
-              const isNorthAmericanSport = ['NBA', 'NFL', 'MLB', 'NHL', 'Basketball', 'Football', 'Baseball', 'Hockey'].includes(match.sport);
-              
               if (isNorthAmericanSport) {
                 // Away @ Home (North American convention)
                 return (
@@ -520,4 +526,6 @@ export default function MatchCard({ match, onDelete, index }) {
       </Card>
     </motion.div>
   );
-}
+});
+
+export default MatchCard;

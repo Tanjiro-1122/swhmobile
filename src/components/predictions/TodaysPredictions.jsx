@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ export default function TodaysPredictions() {
   const [predictions, setPredictions] = useState(null);
   const [activeTab, setActiveTab] = useState("games");
 
-  const generatePredictions = async () => {
+  const generatePredictions = useCallback(async () => {
     setIsGenerating(true);
     try {
       const today = new Date().toLocaleDateString('en-US', { 
@@ -124,7 +124,13 @@ Be realistic and base predictions on actual current season data, injuries, match
       setPredictions(null);
     }
     setIsGenerating(false);
-  };
+  }, []);
+
+  const counts = useMemo(() => ({
+    games: predictions?.game_predictions?.length || 0,
+    players: predictions?.player_predictions?.length || 0,
+    upsets: predictions?.upset_alerts?.length || 0
+  }), [predictions]);
 
   return (
     <div className="space-y-6 pb-4">
@@ -196,21 +202,21 @@ Be realistic and base predictions on actual current season data, injuries, match
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white font-bold"
               >
                 <Trophy className="w-4 h-4 mr-2" />
-                Games ({predictions.game_predictions?.length || 0})
+                Games ({counts.games})
               </TabsTrigger>
               <TabsTrigger 
                 value="players"
                 className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-bold"
               >
                 <Target className="w-4 h-4 mr-2" />
-                Players ({predictions.player_predictions?.length || 0})
+                Players ({counts.players})
               </TabsTrigger>
               <TabsTrigger 
                 value="upsets"
                 className="data-[state=active]:bg-orange-500 data-[state=active]:text-white font-bold"
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />
-                Upsets ({predictions.upset_alerts?.length || 0})
+                Upsets ({counts.upsets})
               </TabsTrigger>
             </TabsList>
 
