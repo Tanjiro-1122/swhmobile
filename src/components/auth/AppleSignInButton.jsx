@@ -55,7 +55,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
               });
 
               if (verifyResponse.data?.success) {
-                const { appleUser } = verifyResponse.data;
+                const { appleUser, linkedUserEmail } = verifyResponse.data;
                 
                 // Store Apple provider data for account linking
                 localStorage.setItem('apple_provider_id', appleUser.id);
@@ -70,7 +70,10 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
                   }
                 }
 
-                if (onSuccess) {
+                // If account is linked, redirect to login with the linked email
+                if (linkedUserEmail) {
+                  base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(linkedUserEmail)}`);
+                } else if (onSuccess) {
                   onSuccess(appleUser);
                 } else {
                   base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
