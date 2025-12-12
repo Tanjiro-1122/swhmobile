@@ -200,6 +200,7 @@ Deno.serve(async (req) => {
       }
 
       // At this point payload is trusted — use payload.sub as Apple unique id
+      // SECURITY: Do NOT leak tokens to client - return only necessary user info
       return Response.json({
         success: true,
         appleUser: {
@@ -207,12 +208,6 @@ Deno.serve(async (req) => {
           email: payload.email,
           emailVerified: payload.email_verified,
           isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-        },
-        tokens: {
-          accessToken: tokenData.access_token,
-          refreshToken: tokenData.refresh_token,
-          idToken: tokenData.id_token,
-          expiresIn: tokenData.expires_in,
         }
       }, { headers: corsHeaders() });
     }
