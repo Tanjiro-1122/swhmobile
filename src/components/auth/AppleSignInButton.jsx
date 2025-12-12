@@ -3,9 +3,17 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
+// Generate cryptographically secure nonce
+function generateNonce() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export default function AppleSignInButton({ onSuccess, className = "" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [appleConfig, setAppleConfig] = useState(null);
+  const [nonce, setNonce] = useState(null);
 
   useEffect(() => {
     const getConfig = async () => {
