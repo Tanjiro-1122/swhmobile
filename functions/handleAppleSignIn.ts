@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    let action, identityToken, authorizationCode, manualKey, user, nonce;
+    let action, identityToken, authorizationCode, manualKey, user, nonce, isFormPost = false;
 
     // Check content-type to determine how to parse the body
     const contentType = req.headers.get('content-type') || '';
@@ -83,6 +83,7 @@ Deno.serve(async (req) => {
     
     if (contentType.includes('application/x-www-form-urlencoded')) {
       // Apple form_post sends data as form-urlencoded
+      isFormPost = true;
       const formData = await req.formData();
       authorizationCode = formData.get('code');
       const userParam = formData.get('user');
@@ -92,6 +93,7 @@ Deno.serve(async (req) => {
       const stateParam = formData.get('state');
       // Automatically trigger exchange when we receive form post from Apple
       action = 'exchangeCode';
+      console.info('[handleAppleSignIn] Form post from Apple detected, will return HTML redirect');
     } else {
       // JSON body (from our frontend)
       const body = await req.json().catch(() => ({}));
