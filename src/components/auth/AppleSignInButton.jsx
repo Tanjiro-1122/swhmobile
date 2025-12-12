@@ -136,15 +136,19 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       console.log('[AppleSignInButton] Using redirectUri:', redirectUri);
 
+      // Store nonce for verification after redirect
+      sessionStorage.setItem('apple_nonce', generatedNonce);
+
       window.AppleID.auth.init({
         clientId: clientId,
         scope: 'name email',
         redirectURI: redirectUri,
-        usePopup: true,
-        nonce: generatedNonce
+        state: generatedNonce,
+        usePopup: false
       });
 
-      const response = await window.AppleID.auth.signIn();
+      // This will redirect the page to Apple, then Apple will POST back to redirectUri
+      await window.AppleID.auth.signIn();
 
       const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
         action: 'exchangeCode',
