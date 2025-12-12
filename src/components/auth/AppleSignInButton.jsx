@@ -144,10 +144,12 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         scope: 'name email',
         redirectURI: redirectUri,
         state: generatedNonce,
+        responseType: 'code id_token',
+        responseMode: 'form_post',
         usePopup: false
       });
 
-      // This will redirect the page to Apple, then Apple will POST back to redirectUri
+      // This will redirect to Apple, then Apple will POST back to handleAppleSignIn function
       await window.AppleID.auth.signIn();
 
       const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
