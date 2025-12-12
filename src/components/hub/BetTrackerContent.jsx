@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useDebounce } from "@/components/hooks/useDebounce.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,9 +25,17 @@ export default function BetTrackerContent() {
   const [filterResult, setFilterResult] = useState("all");
   const [filterBetType, setFilterBetType] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const [activeView, setActiveView] = useState("bets");
   const queryClient = useQueryClient();
+
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   const [newBet, setNewBet] = useState({
     bet_type: "moneyline",
