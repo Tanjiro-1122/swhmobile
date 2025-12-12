@@ -57,14 +57,15 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
               if (verifyResponse.data?.success) {
                 const { appleUser, linkedUserEmail, sessionToken } = verifyResponse.data;
 
-                // If account is linked and we have a session token, use it for automatic login
-                if (linkedUserEmail && sessionToken) {
+                // If we have a session token, use it for automatic login
+                if (sessionToken) {
+                  console.log('Setting session token from Apple sign-in');
                   await base44.auth.setToken(sessionToken);
                   window.location.href = '/MyAccount?activate_iap=true';
                   return;
                 }
 
-                // Store Apple provider data for account linking
+                // Store Apple provider data for account linking (fallback)
                 localStorage.setItem('apple_provider_id', appleUser.id);
                 localStorage.setItem('apple_provider_email', appleUser.email || '');
                 localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
@@ -145,8 +146,16 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       if (verifyResponse.data?.success) {
         const { appleUser, linkedUserEmail, sessionToken } = verifyResponse.data;
-        
-        // Store Apple provider data for account linking
+
+        // If we have a session token, use it for automatic login
+        if (sessionToken) {
+          console.log('Setting session token from Apple sign-in (web flow)');
+          await base44.auth.setToken(sessionToken);
+          window.location.href = '/MyAccount?activate_iap=true';
+          return;
+        }
+
+        // Store Apple provider data for account linking (fallback)
         localStorage.setItem('apple_provider_id', appleUser.id);
         localStorage.setItem('apple_provider_email', appleUser.email || '');
         localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
@@ -159,12 +168,8 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           }
         }
 
-        // If account is linked and we have a session token, use it for automatic login
-        if (linkedUserEmail && sessionToken) {
-          await base44.auth.setToken(sessionToken);
-          window.location.href = '/MyAccount?activate_iap=true';
-        } else if (linkedUserEmail) {
-          // Fallback to login redirect with email prefill
+        // Redirect to login with email prefill
+        if (linkedUserEmail) {
           base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(linkedUserEmail)}`);
         } else if (onSuccess) {
           onSuccess(appleUser);

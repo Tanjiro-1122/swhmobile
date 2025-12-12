@@ -303,6 +303,9 @@ Deno.serve(async (req) => {
           apple_last_sign_in: new Date().toISOString()
         });
 
+        // Issue session token for the linked account
+        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(currentUser.email);
+
         return Response.json({
           success: true,
           appleUser: {
@@ -312,7 +315,8 @@ Deno.serve(async (req) => {
             isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
           },
           linked: true,
-          linkedUserEmail: currentUser.email
+          linkedUserEmail: currentUser.email,
+          sessionToken: sessionToken
         }, { headers: corsHeaders() });
       }
 
