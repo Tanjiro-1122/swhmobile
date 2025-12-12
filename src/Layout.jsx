@@ -236,23 +236,18 @@ export default function Layout({ children, currentPageName }) {
                   </Button>
                 </>
               ) : (
-                                    <div className="flex items-center gap-2">
-                                                          {/* Apple/Google sign-in only on web, not mobile (mobile signs in after purchase) */}
-                                                          {!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
-                                                            <>
-                                                              <AppleSignInButton className="rounded-full px-4" />
-                                                              <GoogleSignInButton className="rounded-full px-4" />
-                                                            </>
-                                                          )}
-                                                          <Button
-                                                            onClick={handleLogin}
-                                                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-                                                          >
-                                                            <LogIn className="w-4 h-4 mr-2" />
-                                                            {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'Sign In' : 'Email'}
-                                                          </Button>
-                                                        </div>
-                                  )}
+                <div className="flex items-center gap-2">
+                  <AppleSignInButton className="rounded-full px-4" />
+                  <GoogleSignInButton className="rounded-full px-4" />
+                  <Button
+                    onClick={handleLogin}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Email
+                  </Button>
+                </div>
+              )}
                     </div>
                   </div>
                   </header>
