@@ -67,8 +67,9 @@ export default function AppleAuthCallback() {
           localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
         }
 
-        // If account is linked and we have a session token, use it for automatic login
-        if (linkedUserEmail && sessionToken) {
+        // If we have a session token, use it for automatic login
+        if (sessionToken) {
+          console.log('Setting session token from Apple callback');
           setMessage('Logging you in...');
           await base44.auth.setToken(sessionToken);
           setStatus('success');
