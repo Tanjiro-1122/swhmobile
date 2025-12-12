@@ -22,6 +22,13 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     base44.auth.isAuthenticated().then(setIsAuthenticated);
 
+    // Preload critical resources
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preconnect';
+    preloadLink.href = 'https://qtrypzzcjebvfcihiynt.supabase.co';
+    preloadLink.crossOrigin = 'anonymous';
+    document.head.appendChild(preloadLink);
+
     // Enhanced viewport for iOS/iPadOS
     const viewport = document.querySelector('meta[name="viewport"]');
     if (!viewport) {
@@ -87,6 +94,7 @@ export default function Layout({ children, currentPageName }) {
     document.head.appendChild(manifestLink);
 
     return () => {
+      document.head.removeChild(preloadLink);
       document.head.removeChild(jqueryScript);
       document.head.removeChild(firebaseScript);
       document.head.removeChild(web2appScript);
@@ -178,6 +186,8 @@ export default function Layout({ children, currentPageName }) {
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
                   alt="SWH Logo"
                   className="w-10 h-10 rounded-lg object-cover"
+                  loading="eager"
+                  decoding="async"
                 />
                 <span className="hidden sm:inline text-lg font-bold text-white">
                   Sports Wager Helper
