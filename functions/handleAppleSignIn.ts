@@ -320,18 +320,42 @@ Deno.serve(async (req) => {
         }, { headers: corsHeaders() });
       }
 
-      // User not logged in and no account with this Apple ID
-      // Return user info for client to handle (create account or link after login)
-      return Response.json({
-        success: true,
-        appleUser: {
-          id: payload.sub,
-          email: payload.email,
-          emailVerified: payload.email_verified,
-          isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-        },
-        requiresLogin: true
-      }, { headers: corsHeaders() });
+      // User not logged in and no account with this Apple ID - create new account
+      try {
+        // Create new user account
+        const newUser = await base44.asServiceRole.entities.User.create({
+          email: payload.email || null,
+          full_name: user?.name ? `${user.name.firstName || ''} ${user.name.lastName || ''}`.trim() : null,
+          apple_provider_id: payload.sub,
+          apple_provider_email: payload.email || '',
+          apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+          apple_linked_at: new Date().toISOString(),
+          apple_last_sign_in: new Date().toISOString(),
+          role: 'user'
+        });
+
+        // Issue session token for the new account
+        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(newUser.email || newUser.id);
+
+        return Response.json({
+          success: true,
+          appleUser: {
+            id: payload.sub,
+            email: payload.email,
+            emailVerified: payload.email_verified,
+            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
+          },
+          linkedUserEmail: newUser.email,
+          sessionToken: sessionToken,
+          newAccount: true
+        }, { headers: corsHeaders() });
+      } catch (createErr) {
+        console.error('Failed to create new user account:', createErr);
+        return Response.json({
+          success: false,
+          error: 'Failed to create account'
+        }, { status: 500, headers: corsHeaders() });
+      }
     }
 
     return Response.json({ success: false, error: 'Invalid action' }, { status: 400, headers: corsHeaders() });
