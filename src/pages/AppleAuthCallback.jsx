@@ -5,7 +5,7 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AppleAuthCallback() {
-  const [status, setStatus] = useState('processing'); // processing, success, error
+  const [status, setStatus] = useState('processing');
   const [message, setMessage] = useState('Completing Apple sign-in...');
 
   useEffect(() => {
@@ -14,27 +14,22 @@ export default function AppleAuthCallback() {
 
   const handleAppleCallback = async () => {
     try {
-      // Parse URL parameters
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
-      const state = params.get('state');
       const error = params.get('error');
 
-      // Check for Apple error response
       if (error) {
         setStatus('error');
         setMessage(`Apple sign-in failed: ${error}`);
         return;
       }
 
-      // Validate authorization code
       if (!code) {
         setStatus('error');
         setMessage('No authorization code received from Apple');
         return;
       }
 
-      // Get user info from fragment (if provided by Apple)
       let userInfo = null;
       const hash = window.location.hash;
       if (hash) {
@@ -49,7 +44,6 @@ export default function AppleAuthCallback() {
         }
       }
 
-      // Exchange code with backend
       setMessage('Verifying with Apple...');
       const response = await base44.functions.invoke('handleAppleSignIn', {
         action: 'exchangeCode',
@@ -60,14 +54,12 @@ export default function AppleAuthCallback() {
       if (response.data?.success) {
         const { appleUser, linkedUserEmail, sessionToken } = response.data;
 
-        // Store Apple provider data for account linking
         if (appleUser) {
           localStorage.setItem('apple_provider_id', appleUser.id);
           localStorage.setItem('apple_provider_email', appleUser.email || '');
           localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
         }
 
-        // If we have a session token, use it for automatic login
         if (sessionToken) {
           console.log('Setting session token from Apple callback');
           setMessage('Logging you in...');
@@ -75,21 +67,13 @@ export default function AppleAuthCallback() {
           setStatus('success');
           setMessage('Sign-in successful! Redirecting...');
           
-          // Check for pending IAP activation
           const pendingIAP = localStorage.getItem('pending_iap_product');
-          if (pendingIAP) {
-            setTimeout(() => {
-              window.location.href = '/MyAccount?activate_iap=true';
-            }, 1000);
-          } else {
-            setTimeout(() => {
-              window.location.href = '/Dashboard';
-            }, 1000);
-          }
+          setTimeout(() => {
+            window.location.href = pendingIAP ? '/MyAccount?activate_iap=true' : '/Dashboard';
+          }, 1000);
           return;
         }
 
-        // Account exists but no session token - redirect to login with email
         if (linkedUserEmail) {
           setMessage('Account found! Redirecting to login...');
           setTimeout(() => {
@@ -98,7 +82,6 @@ export default function AppleAuthCallback() {
           return;
         }
 
-        // New Apple account - needs to create account or link
         setStatus('success');
         setMessage('Apple sign-in successful! Please complete your account setup.');
         setTimeout(() => {
