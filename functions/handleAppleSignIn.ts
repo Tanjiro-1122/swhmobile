@@ -257,6 +257,9 @@ Deno.serve(async (req) => {
       try {
         const base44 = createClientFromRequest(req);
 
+        // Save user form data from Apple before we overwrite the variable
+        const appleFormUserData = user;
+
         // Find user by apple_provider_id (matches User entity schema)
         console.info('[handleAppleSignIn] Looking up user by apple_provider_id');
         const existingUsers = await base44.asServiceRole.entities.User.filter({
@@ -275,7 +278,6 @@ Deno.serve(async (req) => {
           }
 
           // Create new user
-          const userData = user; // Save form data before overwriting
           user = await base44.asServiceRole.entities.User.create({
             email: payload.email || null,
             full_name: userData?.name ? `${userData.name.firstName || ''} ${userData.name.lastName || ''}`.trim() : null,
