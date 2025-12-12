@@ -151,6 +151,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    console.info('[handleAppleSignIn] action=', action, 'isFormPost=', isFormPost, 'authorizationCode=', authorizationCode ? 'present' : 'missing');
+
     if (action === 'ping') {
       return new Response(JSON.stringify({ success: true, message: 'pong', timestamp: new Date().toISOString() }), { status: 200, headers });
     }

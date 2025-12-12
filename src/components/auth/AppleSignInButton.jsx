@@ -132,7 +132,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
 
       const clientId = currentConfig.clientId;
-      const redirectUri = currentConfig.redirectUri || (window.location.origin + '/apple-auth-callback');
+      const redirectUri = currentConfig.redirectUri;
+
+      console.log('[AppleSignInButton] Using redirectUri:', redirectUri);
 
       window.AppleID.auth.init({
         clientId: clientId,
