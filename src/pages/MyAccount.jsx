@@ -36,9 +36,13 @@ function MyAccountContent() {
       activatePendingIAP();
     }
     
-    // Clean URL
-    if (params.toString()) {
-      window.history.replaceState({}, '', window.location.pathname);
+    // Clean URL (keep email param for prefill if present)
+    const emailParam = params.get('email');
+    const newUrl = emailParam 
+      ? `${window.location.pathname}?email=${encodeURIComponent(emailParam)}`
+      : window.location.pathname;
+    if (params.toString() && window.location.href !== newUrl) {
+      window.history.replaceState({}, '', newUrl);
     }
   }, []);
 
