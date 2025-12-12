@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,44 @@ export default function AppleSignInTest() {
   const [authCode, setAuthCode] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [appleConfig, setAppleConfig] = useState(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await base44.functions.invoke('handleAppleSignIn', {
+          action: 'getClientId'
+        });
+        if (response.data?.clientId) {
+          setAppleConfig(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch Apple config:', err);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleManualAppleAuth = () => {
+    if (!appleConfig) {
+      alert('Apple configuration not loaded yet');
+      return;
+    }
+
+    const state = Math.random().toString(36).substring(7);
+    const nonce = Math.random().toString(36).substring(7);
+    
+    const authUrl = `https://appleid.apple.com/auth/authorize?` +
+      `client_id=${encodeURIComponent(appleConfig.clientId)}&` +
+      `redirect_uri=${encodeURIComponent(appleConfig.redirectUri)}&` +
+      `response_type=code&` +
+      `response_mode=form_post&` +
+      `scope=name%20email&` +
+      `state=${state}&` +
+      `nonce=${nonce}`;
+    
+    window.open(authUrl, '_blank', 'width=600,height=700');
+  };
 
   const handleGenerateClientSecret = async () => {
     setIsGenerating(true);
@@ -139,10 +177,36 @@ export default function AppleSignInTest() {
           </CardContent>
         </Card>
 
+        {/* Get Authorization Code */}
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white">2. Get Authorization Code</CardTitle>
+            <CardDescription className="text-slate-400">
+              Click to open Apple's authorization page and retrieve the authorization code
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={handleManualAppleAuth}
+              disabled={!appleConfig}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              Open Apple Sign-In (New Window)
+            </Button>
+            <Alert className="bg-yellow-900/20 border-yellow-700">
+              <AlertDescription className="text-slate-300 text-sm">
+                <strong>Note:</strong> After signing in with Apple, you'll be redirected back. 
+                Check your browser's network tab or the redirect URL for the <code className="bg-slate-700 px-1 py-0.5 rounded">code</code> parameter. 
+                Copy that value and paste it below.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+
         {/* Exchange Authorization Code */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">2. Exchange Authorization Code</CardTitle>
+            <CardTitle className="text-white">3. Exchange Authorization Code</CardTitle>
             <CardDescription className="text-slate-400">
               Exchange an authorization code from Apple for id_token and access_token
             </CardDescription>
@@ -217,8 +281,10 @@ export default function AppleSignInTest() {
           </CardHeader>
           <CardContent className="text-sm text-slate-300 space-y-2">
             <p><strong>Step 1:</strong> Click "Generate Client Secret" to verify your .p8 key configuration</p>
-            <p><strong>Step 2:</strong> Trigger an Apple Sign-In flow to get an authorization code</p>
-            <p><strong>Step 3:</strong> Paste the code and click "Exchange Code" to test the full flow</p>
+            <p><strong>Step 2:</strong> Click "Open Apple Sign-In" to trigger the authorization flow</p>
+            <p><strong>Step 3:</strong> After signing in, look for the <code className="bg-slate-700 px-1 py-0.5 rounded">code</code> parameter in the URL or network tab</p>
+            <p><strong>Step 4:</strong> Paste the code and click "Exchange Code" to test the full flow</p>
+            <p className="text-yellow-400 mt-4"><strong>Tip:</strong> Open browser DevTools (F12) → Network tab before clicking "Open Apple Sign-In" to capture all redirects</p>
           </CardContent>
         </Card>
       </div>
