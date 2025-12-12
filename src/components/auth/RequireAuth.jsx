@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import AppleSignInButton from "./AppleSignInButton";
+import GoogleSignInButton from "./GoogleSignInButton";
+import RestorePurchasesModal from "../hub/RestorePurchasesModal";
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileApp, setIsMobileApp] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
 
   useEffect(() => {
     // Check if running in a mobile app environment - multiple detection methods
@@ -121,6 +125,11 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
               </div>
 
               <div className="space-y-3">
+                <div className="flex gap-2">
+                  <AppleSignInButton className="flex-1" />
+                  <GoogleSignInButton className="flex-1" />
+                </div>
+
                 <Button
                   onClick={handleLogin}
                   className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg py-6 font-bold shadow-lg"
@@ -135,6 +144,14 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                 >
                   View Pricing Plans
                 </Button>
+
+                <Button
+                  onClick={() => setShowRestoreModal(true)}
+                  variant="link"
+                  className="w-full text-sm text-blue-600 hover:text-blue-700 underline"
+                >
+                  Legacy subscriber? Restore purchases
+                </Button>
               </div>
 
               <p className="text-center text-sm text-gray-500 mt-6">
@@ -143,6 +160,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
             </CardContent>
           </Card>
         </motion.div>
+        <RestorePurchasesModal open={showRestoreModal} onOpenChange={setShowRestoreModal} />
       </div>
     );
   }
