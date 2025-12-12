@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { withCache, generateCacheKey } from './utils/cache.js';
 
 Deno.serve(async (req) => {
   try {
@@ -10,6 +11,15 @@ Deno.serve(async (req) => {
     }
 
     const { query } = await req.json();
+    
+    // Generate cache key based on query and current date (predictions are date-sensitive)
+    const cacheKey = generateCacheKey('prediction', { 
+      query: query.toLowerCase().trim(),
+      date: new Date().toISOString().split('T')[0] // Cache per day
+    });
+    
+    // Use cache wrapper for the entire prediction
+    return Response.json(await withCache('predictions', cacheKey, async () => {
 
     // Ensemble approach: Run multiple analysis perspectives
     const [statisticalAnalysis, momentumAnalysis, contextualAnalysis] = await Promise.all([
@@ -197,7 +207,7 @@ Return JSON with contextual adjustment factors.`,
     else if (ensembleConfidence >= 65) confidenceLevel = 'Medium';
     else confidenceLevel = 'Low';
 
-    return Response.json({
+    return {
       ensemble_result: {
         home_win_probability: Math.round(normalizedHome * 10) / 10,
         away_win_probability: Math.round(normalizedAway * 10) / 10,
@@ -217,7 +227,8 @@ Return JSON with contextual adjustment factors.`,
         models_combined: 3,
         approach: 'Weighted ensemble of statistical, momentum, and contextual models'
       }
-    });
+    };
+    }));
 
   } catch (error) {
     console.error('Enhanced prediction error:', error);
