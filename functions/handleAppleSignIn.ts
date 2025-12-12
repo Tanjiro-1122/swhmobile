@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
           // Create new user
           user = await base44.asServiceRole.entities.User.create({
             email: payload.email || null,
-            full_name: userData?.name ? `${userData.name.firstName || ''} ${userData.name.lastName || ''}`.trim() : null,
+            full_name: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null,
             apple_provider_id: payload.sub,
             apple_provider_email: payload.email || '',
             apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
