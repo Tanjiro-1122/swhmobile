@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
 
 export default function Pricing() {
@@ -16,6 +17,7 @@ export default function Pricing() {
   const [processingItem, setProcessingItem] = useState(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [iapReady, setIapReady] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
   
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
@@ -828,6 +830,19 @@ export default function Pricing() {
           </CardContent>
         </Card>
 
+        {/* Restore Purchases Link - iOS only */}
+        {isMobileDevice && /iPhone|iPad|iPod/i.test(navigator.userAgent) && (
+          <div className="text-center mb-8">
+            <Button
+              variant="link"
+              onClick={() => setShowRestoreModal(true)}
+              className="text-blue-600 hover:text-blue-700 underline text-sm lg:text-base"
+            >
+              Legacy subscriber? Restore purchases
+            </Button>
+          </div>
+        )}
+
         {/* Disclaimer */}
         <div className="p-4 lg:p-6 bg-amber-50 border-2 border-amber-200 rounded-xl mb-24">
           <p className="text-sm lg:text-base text-amber-900 text-center">
@@ -837,6 +852,7 @@ export default function Pricing() {
         </div>
       </div>
       <FloatingDashboardButton />
+      <RestorePurchasesModal open={showRestoreModal} onOpenChange={setShowRestoreModal} />
     </div>
   );
 }
