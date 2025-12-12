@@ -43,7 +43,11 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
               if (verifyResponse.data?.success) {
                 const { appleUser } = verifyResponse.data;
-                localStorage.setItem('apple_auth_user', JSON.stringify(appleUser));
+                
+                // Store Apple provider data for account linking
+                localStorage.setItem('apple_provider_id', appleUser.id);
+                localStorage.setItem('apple_provider_email', appleUser.email || '');
+                localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
 
                 if (appleUser.email) {
                   try {
@@ -116,7 +120,11 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       if (verifyResponse.data?.success) {
         const { appleUser } = verifyResponse.data;
-        localStorage.setItem('apple_auth_user', JSON.stringify(appleUser));
+        
+        // Store Apple provider data for account linking
+        localStorage.setItem('apple_provider_id', appleUser.id);
+        localStorage.setItem('apple_provider_email', appleUser.email || '');
+        localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
 
         if (appleUser.email) {
           try {
