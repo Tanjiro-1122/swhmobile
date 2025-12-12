@@ -297,6 +297,32 @@ Deno.serve(async (req) => {
         // Issue session token using Base44's native method
         const sessionToken = await base44.asServiceRole.auth.issueSessionToken(user.email || user.id);
 
+        // If this is a form_post from Apple, return HTML redirect
+        if (isFormPost) {
+          const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?token=${encodeURIComponent(sessionToken)}&success=true`;
+          console.info('[handleAppleSignIn] Redirecting to:', redirectUrl);
+          
+          return new Response(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Redirecting...</title>
+              </head>
+              <body>
+                <p>Signing you in...</p>
+                <script>
+                  window.location.href = '${redirectUrl}';
+                </script>
+              </body>
+            </html>
+          `, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+          });
+        }
+
+        // Otherwise return JSON for client-side handling
         return new Response(JSON.stringify({ 
           success: true, 
           sessionToken: sessionToken,
