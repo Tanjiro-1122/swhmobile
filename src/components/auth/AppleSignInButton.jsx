@@ -54,8 +54,13 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
                 nonce: generatedNonce
               });
 
-              if (verifyResponse.data?.success) {
-                const { appleUser, linkedUserEmail, sessionToken } = verifyResponse.data;
+              if (!verifyResponse || !verifyResponse.data) throw new Error('No response from server');
+              const responseData = verifyResponse.data;
+
+              if (responseData.debug) console.debug('handleAppleSignIn debug:', responseData.debug);
+
+              if (responseData.success) {
+                const { appleUser, linkedUserEmail, sessionToken } = responseData;
 
                 // If we have a session token, use it for automatic login
                 if (sessionToken) {
@@ -87,7 +92,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
                   base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
                 }
               } else {
-                throw new Error(verifyResponse.data?.error || 'Verification failed');
+                const errMsg = responseData?.debug?.message || responseData?.error || 'Verification failed';
+                console.error('Apple Sign In failed:', errMsg, responseData);
+                throw new Error(errMsg);
               }
             } else {
               console.error('Apple Sign In failed:', data.error);
