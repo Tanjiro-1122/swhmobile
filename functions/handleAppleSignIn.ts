@@ -135,8 +135,20 @@ Deno.serve(async (req) => {
       incomingUser = body.user;
       nonce = body.nonce;
     } else {
+      // Fallback: try to parse text as JSON safely
       const t = await req.text().catch(() => '');
-      try { const body = t ? JSON.parse(t) : {}; action = body.action; identityToken = body.identityToken; authorizationCode = body.authorizationCode; manualKey = body.manualKey; incomingUser = body.user; nonce = body.nonce; } catch(e){ /* ignore */ }
+      try {
+        const body = t ? JSON.parse(t) : {};
+        action = body.action;
+        identityToken = body.identityToken;
+        authorizationCode = body.authorizationCode;
+        manualKey = body.manualKey;
+        incomingUser = body.user;
+        nonce = body.nonce;
+      } catch (e) {
+        // If parsing fails, just continue — action may be set elsewhere (e.g., form_post)
+        console.info('[handleAppleSignIn] Fallback JSON parse failed, continuing without body');
+      }
     }
 
     if (action === 'ping') {
