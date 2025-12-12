@@ -129,7 +129,8 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
         action: 'exchangeCode',
         authorizationCode: response.authorization.code,
-        user: response.user
+        user: response.user,
+        nonce: generatedNonce
       });
 
       if (verifyResponse.data?.success) {
