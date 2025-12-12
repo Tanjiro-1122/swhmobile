@@ -120,7 +120,8 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         clientId: clientId,
         scope: 'name email',
         redirectURI: redirectUri,
-        usePopup: true
+        usePopup: true,
+        nonce: generatedNonce
       });
 
       const response = await window.AppleID.auth.signIn();
