@@ -72,8 +72,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json().catch(() => ({}));
-    const { action, identityToken, authorizationCode, manualKey, user, nonce } = body || {};
+    let action, identityToken, authorizationCode, manualKey, user, nonce;
+
+    // Check content-type to determine how to parse the body
+    const contentType = req.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      // Apple form_post sends data as form-urlencoded
+      const formData = await req.formData();
+      authorizationCode = formData.get('code');
+      const userParam = formData.get('user');
+      if (userParam) {
+        try { user = JSON.parse(userParam); } catch (e) { user = null; }
+      }
+      const stateParam = formData.get('state');
+      // Automatically trigger exchange when we receive form post from Apple
+      action = 'exchangeCode';
+    } else {
+      // JSON body (from our frontend)
+      const body = await req.json().catch(() => ({}));
+      action = body.action;
+      identityToken = body.identityToken;
+      authorizationCode = body.authorizationCode;
+      manualKey = body.manualKey;
+      user = body.user;
+      nonce = body.nonce;
+    }
 
     if (action === 'getClientId') {
       return new Response(JSON.stringify({ clientId: APPLE_CLIENT_ID, redirectUri: APPLE_REDIRECT_URI }), { headers: corsHeaders(true) });
