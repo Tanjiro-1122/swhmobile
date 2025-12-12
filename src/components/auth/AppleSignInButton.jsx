@@ -144,8 +144,13 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         nonce: generatedNonce
       });
 
-      if (verifyResponse.data?.success) {
-        const { appleUser, linkedUserEmail, sessionToken } = verifyResponse.data;
+      if (!verifyResponse || !verifyResponse.data) throw new Error('No response from server when exchanging Apple code');
+      const data = verifyResponse.data;
+
+      if (data.debug) console.debug('handleAppleSignIn debug:', data.debug);
+
+      if (data.success) {
+        const { appleUser, linkedUserEmail, sessionToken } = data;
 
         // If we have a session token, use it for automatic login
         if (sessionToken) {
@@ -177,10 +182,12 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
           base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
         }
       } else {
-        throw new Error(verifyResponse.data?.error || 'Verification failed');
+        const errMsg = data?.debug?.message || data?.error || 'Apple Sign-In verification failed';
+        console.error('Apple Sign In failed:', errMsg, data);
+        throw new Error(errMsg);
       }
-    } catch (error) {
-      console.error('Apple Sign In error:', error);
+    } catch (err) {
+      console.error('Apple Sign In error:', err);
     } finally {
       setIsLoading(false);
     }
