@@ -230,8 +230,89 @@ Deno.serve(async (req) => {
         return Response.json({ success: false, error: 'Failed to verify id_token' }, { status: 400, headers: corsHeaders() });
       }
 
+      // 2) OPTIONAL: nonce verification (prevents replay attacks)
+      try {
+        const expectedNonce = body.nonce || null;
+        if (expectedNonce && payload.nonce !== expectedNonce) {
+          console.error('Nonce mismatch for Apple sign-in');
+          return Response.json({ success: false, error: 'Invalid nonce' }, { status: 400, headers: corsHeaders() });
+        }
+      } catch (nonceErr) {
+        console.error('Nonce verification error:', nonceErr);
+        return Response.json({ success: false, error: 'Nonce verification failed' }, { status: 400, headers: corsHeaders() });
+      }
+
       // At this point payload is trusted — use payload.sub as Apple unique id
-      // SECURITY: Do NOT leak tokens to client - return only necessary user info
+      // 5) Server-side account linking by provider_id (payload.sub)
+      const base44 = createClientFromRequest(req);
+      let currentUser = null;
+      try {
+        currentUser = await base44.auth.me();
+      } catch (authErr) {
+        // User not authenticated yet - that's okay, we'll handle account lookup below
+      }
+
+      // Check if an account exists with this apple_provider_id
+      const existingUsers = await base44.asServiceRole.entities.User.filter({
+        apple_provider_id: payload.sub
+      });
+
+      if (existingUsers.length > 0) {
+        // Account exists with this Apple ID
+        const linkedUser = existingUsers[0];
+        
+        // If currently logged in as different user, prevent cross-account hijacking
+        if (currentUser && currentUser.id !== linkedUser.id) {
+          return Response.json({
+            success: false,
+            error: 'This Apple account is already linked to a different user'
+          }, { status: 400, headers: corsHeaders() });
+        }
+
+        // Update last sign-in timestamp
+        await base44.asServiceRole.entities.User.update(linkedUser.id, {
+          apple_last_sign_in: new Date().toISOString()
+        });
+
+        // Return linked account info (client will handle login redirect)
+        return Response.json({
+          success: true,
+          appleUser: {
+            id: payload.sub,
+            email: payload.email,
+            emailVerified: payload.email_verified,
+            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
+          },
+          linkedUserEmail: linkedUser.email
+        }, { headers: corsHeaders() });
+      }
+
+      // No existing account with this apple_provider_id
+      // If user is currently logged in, link Apple to their account
+      if (currentUser) {
+        await base44.asServiceRole.entities.User.update(currentUser.id, {
+          apple_provider_id: payload.sub,
+          apple_provider_email: payload.email || '',
+          apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+          apple_linked_at: new Date().toISOString(),
+          apple_last_sign_in: new Date().toISOString()
+        });
+
+        return Response.json({
+          success: true,
+          appleUser: {
+            id: payload.sub,
+            email: payload.email,
+            emailVerified: payload.email_verified,
+            isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
+          },
+          linked: true,
+          linkedUserEmail: currentUser.email
+        }, { headers: corsHeaders() });
+      }
+
+      // User not logged in and no account with this Apple ID
+      // Return user info for client to handle (create account or link after login)
       return Response.json({
         success: true,
         appleUser: {
@@ -239,7 +320,8 @@ Deno.serve(async (req) => {
           email: payload.email,
           emailVerified: payload.email_verified,
           isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
-        }
+        },
+        requiresLogin: true
       }, { headers: corsHeaders() });
     }
 
