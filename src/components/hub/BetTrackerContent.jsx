@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDebounce } from "../hooks/useDebounce";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export default function BetTrackerContent() {
   const [filterResult, setFilterResult] = useState("all");
   const [filterBetType, setFilterBetType] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [activeView, setActiveView] = useState("bets");
   const queryClient = useQueryClient();
 
@@ -162,8 +164,8 @@ export default function BetTrackerContent() {
       if (filterSport !== "all" && bet.sport !== filterSport) return false;
       if (filterResult !== "all" && bet.result !== filterResult) return false;
       if (filterBetType !== "all" && bet.bet_type !== filterBetType) return false;
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearch) {
+        const query = debouncedSearch.toLowerCase();
         return (
           bet.selection?.toLowerCase().includes(query) ||
           bet.match_description?.toLowerCase().includes(query) ||
@@ -172,7 +174,7 @@ export default function BetTrackerContent() {
       }
       return true;
     });
-  }, [bets, filterSport, filterResult, filterBetType, searchQuery]);
+  }, [bets, filterSport, filterResult, filterBetType, debouncedSearch]);
 
   // Calculate stats
   const stats = useMemo(() => {
