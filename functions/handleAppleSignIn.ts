@@ -168,6 +168,12 @@ Deno.serve(async (req) => {
       if (!authorizationCode) {
         return Response.json({ success: false, error: 'Missing authorizationCode' }, { status: 400, headers: corsHeaders() });
       }
+      
+      // 3) Rate limit exchangeCode action
+      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      if (!checkRateLimit(`exchange:${clientIp}`, 20, 60000)) { // 20 requests per minute
+        return Response.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders() });
+      }
 
       // Ensure env is set
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
