@@ -1,18 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target } from "lucide-react";
+import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2 } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-
-// Import content components
-import ParlayBuilderContent from "@/components/poweruser/ParlayBuilderContent";
-import BettingCalculatorContent from "@/components/poweruser/BettingCalculatorContent";
-import ROITrackerContent from "@/components/poweruser/ROITrackerContent";
-import BankrollManagerContent from "@/components/poweruser/BankrollManagerContent";
-import LiveOddsContent from "@/components/hub/LiveOddsContent";
-import AlertsContent from "@/components/hub/AlertsContent";
-import BetTrackerContent from "@/components/hub/BetTrackerContent";
-import ValueBetFinderContent from "@/components/hub/ValueBetFinderContent";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
+// Lazy load heavy content components
+const ParlayBuilderContent = lazy(() => import("@/components/poweruser/ParlayBuilderContent"));
+const BettingCalculatorContent = lazy(() => import("@/components/poweruser/BettingCalculatorContent"));
+const ROITrackerContent = lazy(() => import("@/components/poweruser/ROITrackerContent"));
+const BankrollManagerContent = lazy(() => import("@/components/poweruser/BankrollManagerContent"));
+const LiveOddsContent = lazy(() => import("@/components/hub/LiveOddsContent"));
+const AlertsContent = lazy(() => import("@/components/hub/AlertsContent"));
+const BetTrackerContent = lazy(() => import("@/components/hub/BetTrackerContent"));
+const ValueBetFinderContent = lazy(() => import("@/components/hub/ValueBetFinderContent"));
+
+// Loading fallback
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+  </div>
+);
 
 function BettingHubContent() {
   const [activeTab, setActiveTab] = useState("tracker");
@@ -92,35 +99,51 @@ function BettingHubContent() {
           </div>
 
           <TabsContent value="tracker">
-            <BetTrackerContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <BetTrackerContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="parlay">
-            <ParlayBuilderContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ParlayBuilderContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="odds">
-            <LiveOddsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <LiveOddsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="alerts">
-            <AlertsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <AlertsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="calculator">
-            <BettingCalculatorContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <BettingCalculatorContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="roi">
-            <ROITrackerContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ROITrackerContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="bankroll">
-            <BankrollManagerContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <BankrollManagerContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="value">
-            <ValueBetFinderContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ValueBetFinderContent />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

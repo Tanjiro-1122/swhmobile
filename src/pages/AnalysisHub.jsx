@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, Sparkles, Target, Brain } from "lucide-react";
+import { User, Users, Sparkles, Target, Brain, Loader2 } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-
-// Import the content from existing pages
-import MyInsightsContent from "@/components/hub/MyInsightsContent";
-import PlayerStatsContent from "@/components/hub/PlayerStatsContent";
-import TeamStatsContent from "@/components/hub/TeamStatsContent";
-import AIPerformanceContent from "@/components/hub/AIPerformanceContent";
-import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
+// Lazy load heavy content components
+const MyInsightsContent = lazy(() => import("@/components/hub/MyInsightsContent"));
+const PlayerStatsContent = lazy(() => import("@/components/hub/PlayerStatsContent"));
+const TeamStatsContent = lazy(() => import("@/components/hub/TeamStatsContent"));
+const AIPerformanceContent = lazy(() => import("@/components/hub/AIPerformanceContent"));
+const TodaysPredictions = lazy(() => import("@/components/predictions/TodaysPredictions"));
+
+// Loading fallback
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+  </div>
+);
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
@@ -68,23 +75,33 @@ function AnalysisHubContent() {
           </div>
 
           <TabsContent value="predictions">
-            <TodaysPredictions />
+            <Suspense fallback={<LoadingSpinner />}>
+              <TodaysPredictions />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="insights">
-            <MyInsightsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <MyInsightsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="players">
-            <PlayerStatsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <PlayerStatsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="teams">
-            <TeamStatsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <TeamStatsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="performance">
-            <AIPerformanceContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <AIPerformanceContent />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

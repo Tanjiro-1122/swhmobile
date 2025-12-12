@@ -1,12 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, BookOpen, Sparkles } from "lucide-react";
+import { MessageSquare, BookOpen, Sparkles, Loader2 } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-
-import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
-import LearningCenterContent from "@/components/hub/LearningCenterContent";
-import CommunityContent from "@/components/hub/CommunityContent";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
+// Lazy load content components
+const BettingBriefsContent = lazy(() => import("@/components/hub/BettingBriefsContent"));
+const LearningCenterContent = lazy(() => import("@/components/hub/LearningCenterContent"));
+const CommunityContent = lazy(() => import("@/components/hub/CommunityContent"));
+
+// Loading fallback
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+  </div>
+);
 
 function CommunityHubPage() {
   const [activeTab, setActiveTab] = useState("feeds");
@@ -51,15 +59,21 @@ function CommunityHubPage() {
           </div>
 
           <TabsContent value="feeds">
-            <BettingBriefsContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <BettingBriefsContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="learning">
-            <LearningCenterContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <LearningCenterContent />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="community">
-            <CommunityContent />
+            <Suspense fallback={<LoadingSpinner />}>
+              <CommunityContent />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
