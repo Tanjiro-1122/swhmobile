@@ -90,6 +90,7 @@ If no next game scheduled, say TBD.`,
       await base44.entities.TeamStats.create(result);
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setCurrentTeam(result);
       setIsSearching(false);
       
