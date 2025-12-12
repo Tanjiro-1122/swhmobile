@@ -5,250 +5,208 @@ const APPLE_CLIENT_ID = Deno.env.get("APPLE_CLIENT_ID");
 const APPLE_TEAM_ID = Deno.env.get("APPLE_TEAM_ID");
 const APPLE_KEY_ID = Deno.env.get("APPLE_KEY_ID");
 const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY");
+const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
+const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerhelper.com';
+const ALLOW_KEY_TEST = Deno.env.get('ALLOW_KEY_TEST') === 'true';
 
-// Generate Apple client secret JWT using jose
-async function generateClientSecret() {
-  const now = Math.floor(Date.now() / 1000);
-  
-  // Simple Key Formatting - Handle newlines only
-  let privateKey = APPLE_PRIVATE_KEY || "";
-  if (privateKey.includes("\\n")) {
-    privateKey = privateKey.replace(/\\n/g, '\n');
-  }
+// Simple in-memory cache for the client secret
+let cachedClientSecret = null;
 
-  // If user pasted just the blob without headers, add them
-  if (!privateKey.includes("BEGIN PRIVATE KEY")) {
-      const rawBody = privateKey.replace(/\s/g, ''); // Clean up
-      const chunked = rawBody.match(/.{1,64}/g)?.join('\n');
-      privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
-  }
-
-  try {
-    const alg = 'ES256';
-    const ecPrivateKey = await jose.importPKCS8(privateKey, alg);
-    
-    const jwt = await new jose.SignJWT({})
-      .setProtectedHeader({ alg, kid: APPLE_KEY_ID })
-      .setIssuedAt(now)
-      .setIssuer(APPLE_TEAM_ID)
-      .setAudience('https://appleid.apple.com')
-      .setSubject(APPLE_CLIENT_ID)
-      .setExpirationTime(now + 86400 * 180) // 180 days
-      .sign(ecPrivateKey);
-      
-    return jwt;
-  } catch (err) {
-    console.error("JOSE Sign Error:", err);
-    if (err.message && (err.message.includes("requires curve") || err.message.includes("curve"))) {
-         throw new Error(`Invalid Key Curve: The provided APPLE_PRIVATE_KEY is not a P-256 Elliptic Curve key. Please ensure you downloaded the .p8 file from the Apple Developer Portal (Keys section) and it is specifically for "Sign in with Apple". Error details: ${err.message}`);
-    }
-    throw new Error(`Failed to sign Apple client secret: ${err.message}`);
-  }
+// Helper: build secure CORS headers
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': APP_CORS_ORIGIN,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
 }
 
-// Verify Apple identity token
-async function verifyAppleToken(identityToken) {
-  // Fetch Apple's public keys
-  const keysResponse = await fetch('https://appleid.apple.com/auth/keys');
-  const keysData = await keysResponse.json();
-  
-  // Decode the token header to get the key id
-  const tokenParts = identityToken.split('.');
-  const header = JSON.parse(atob(tokenParts[0]));
-  
-  // Find the matching key
-  const key = keysData.keys.find(k => k.kid === header.kid);
-  if (!key) {
-    throw new Error('Unable to find matching Apple public key');
+async function ensureClientSecret() {
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedClientSecret && cachedClientSecret.expAt > now + 60) { // keep 60s buffer
+    return cachedClientSecret.token;
   }
-  
-  // For simplicity, we'll decode and verify basic claims
-  // In production, you'd want to use a proper JWT library with JWK support
-  const payload = JSON.parse(atob(tokenParts[1]));
-  
-  // Verify basic claims
-  if (payload.iss !== 'https://appleid.apple.com') {
-    throw new Error('Invalid token issuer');
+
+  if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
+    throw new Error('Missing APPLE_* env vars needed to generate client secret');
   }
-  
-  if (payload.aud !== APPLE_CLIENT_ID) {
-    throw new Error('Invalid token audience');
+
+  // Normalize private key formatting
+  let privateKey = APPLE_PRIVATE_KEY || '';
+  if (privateKey.includes('\\n')) privateKey = privateKey.replace(/\\n/g, '\n');
+  if (!privateKey.includes('BEGIN PRIVATE KEY')) {
+    const rawBody = privateKey.replace(/\s/g, '');
+    const chunked = rawBody.match(/.{1,64}/g)?.join('\n') || rawBody;
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
   }
-  
-  if (payload.exp < Date.now() / 1000) {
-    throw new Error('Token expired');
-  }
-  
+
+  // Create signed JWT (client_secret)
+  const alg = 'ES256';
+  const ecPrivateKey = await jose.importPKCS8(privateKey, alg);
+  const iat = Math.floor(Date.now() / 1000);
+  const exp = iat + 60 * 60 * 24 * 180; // 180 days (Apple allows up to 6 months)
+  const jwt = await new jose.SignJWT({})
+    .setProtectedHeader({ alg, kid: APPLE_KEY_ID })
+    .setIssuedAt(iat)
+    .setIssuer(APPLE_TEAM_ID)
+    .setAudience('https://appleid.apple.com')
+    .setSubject(APPLE_CLIENT_ID)
+    .setExpirationTime(exp)
+    .sign(ecPrivateKey);
+
+  cachedClientSecret = { token: jwt, expAt: exp };
+  return jwt;
+}
+
+// Use Apple's JWK set and jose to verify tokens (signature + claims)
+const appleJWKS = jose.createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'));
+
+async function verifyIdToken(idToken) {
+  if (!APPLE_CLIENT_ID) throw new Error('APPLE_CLIENT_ID not configured');
+
+  // jwtVerify will fetch the appropriate JWK and verify signature and exp/iat by default
+  const { payload } = await jose.jwtVerify(idToken, appleJWKS, {
+    issuer: 'https://appleid.apple.com',
+    audience: APPLE_CLIENT_ID,
+  });
+
   return payload;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    return new Response(null, { headers: corsHeaders() });
   }
 
   try {
-    const { action, identityToken, authorizationCode, user } = await req.json();
+    const body = await req.json(); // parse once
+    const { action, identityToken, authorizationCode, user, manualKey } = body || {};
 
     if (action === 'getClientId') {
-      const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
-      return Response.json({ 
+      return Response.json({
         clientId: APPLE_CLIENT_ID,
-        redirectUri: redirectUri
-      }, {
-        headers: { 'Access-Control-Allow-Origin': '*' }
-      });
+        redirectUri: APPLE_REDIRECT_URI,
+      }, { headers: corsHeaders() });
     }
 
     if (action === 'verify') {
-      // Verify the identity token from Apple
-      const appleUser = await verifyAppleToken(identityToken);
-      
+      if (!identityToken) {
+        return Response.json({ success: false, error: 'Missing identityToken' }, { status: 400, headers: corsHeaders() });
+      }
+      // Verify signature + claims using Apple's JWKS
+      const payload = await verifyIdToken(identityToken);
       return Response.json({
         success: true,
         appleUser: {
-          id: appleUser.sub,
-          email: appleUser.email,
-          emailVerified: appleUser.email_verified,
-          isPrivateEmail: appleUser.is_private_email,
+          id: payload.sub,
+          email: payload.email,
+          emailVerified: payload.email_verified,
+          isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
         },
-        // Include user info if provided (only on first sign in)
         userInfo: user || null
-      }, {
-        headers: { 'Access-Control-Allow-Origin': '*' }
-      });
+      }, { headers: corsHeaders() });
     }
 
+    // Admin/dev-only key test endpoint
     if (action === 'testManualKey') {
-        const { manualKey } = await req.json();
-        
-        // 1. Basic Cleanup
-        let cleanKey = manualKey || "";
-        if (cleanKey.includes("\\n")) cleanKey = cleanKey.replace(/\\n/g, '\n');
-        
-        // 2. Add headers if missing
-        if (!cleanKey.includes("BEGIN PRIVATE KEY")) {
-            const rawBody = cleanKey.replace(/\s/g, '');
-            const chunked = rawBody.match(/.{1,64}/g)?.join('\n');
-            cleanKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
-        }
-
-        try {
-          // Test 1: Is it a valid ES256 (P-256) key? (What Apple needs)
-          await jose.importPKCS8(cleanKey, 'ES256');
-          
-          return Response.json({ 
-            success: true, 
-            message: "Success! This is a valid Elliptic Curve (P-256) key compatible with Apple Sign In.",
-            details: {
-                algorithm: "ES256",
-                format: "PKCS8",
-                readyForSecrets: true
-            }
-          }, { headers: { 'Access-Control-Allow-Origin': '*' }});
-
-        } catch (esError) {
-          // Test 2: Is it an RSA key? (Common mistake, e.g. Google keys)
-          try {
-            await jose.importPKCS8(cleanKey, 'RS256');
-            return Response.json({ 
-                success: false, 
-                error: "WRONG KEY TYPE: This is an RSA key (commonly used by Google). Apple Sign In requires an Elliptic Curve (EC) P-256 key.",
-                details: {
-                    detectedType: "RSA (RS256)",
-                    requiredType: "Elliptic Curve (ES256)"
-                }
-            }, { headers: { 'Access-Control-Allow-Origin': '*' }});
-          } catch (rsaError) {
-            // Test 3: Generic failure
-            return Response.json({ 
-                success: false, 
-                error: `Key Parsing Failed: ${esError.message}`,
-                details: {
-                    originalError: esError.message
-                }
-            }, { headers: { 'Access-Control-Allow-Origin': '*' }});
-          }
-        }
+      if (!ALLOW_KEY_TEST) {
+        return Response.json({ success: false, error: 'Key testing disabled in production' }, { status: 403, headers: corsHeaders() });
+      }
+      let cleanKey = manualKey || '';
+      if (cleanKey.includes('\\n')) cleanKey = cleanKey.replace(/\\n/g, '\n');
+      if (!cleanKey.includes('BEGIN PRIVATE KEY')) {
+        const rawBody = cleanKey.replace(/\s/g, '');
+        const chunked = rawBody.match(/.{1,64}/g)?.join('\n') || rawBody;
+        cleanKey = `-----BEGIN PRIVATE KEY-----\n${chunked}\n-----END PRIVATE KEY-----`;
       }
 
+      try {
+        await jose.importPKCS8(cleanKey, 'ES256');
+        return Response.json({
+          success: true,
+          message: 'Valid EC P-256 (ES256) key',
+        }, { headers: corsHeaders() });
+      } catch (esErr) {
+        try {
+          await jose.importPKCS8(cleanKey, 'RS256');
+          return Response.json({
+            success: false,
+            error: 'Wrong key type: RSA detected. Apple needs EC P-256 (ES256).'
+          }, { headers: corsHeaders() });
+        } catch {
+          return Response.json({ success: false, error: `Key parsing error: ${esErr.message}` }, { status: 400, headers: corsHeaders() });
+        }
+      }
+    }
+
     if (action === 'exchangeCode') {
+      if (!authorizationCode) {
+        return Response.json({ success: false, error: 'Missing authorizationCode' }, { status: 400, headers: corsHeaders() });
+      }
+
+      // Ensure env is set
       if (!APPLE_PRIVATE_KEY || !APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_CLIENT_ID) {
         const missing = [];
         if (!APPLE_PRIVATE_KEY) missing.push('APPLE_PRIVATE_KEY');
         if (!APPLE_TEAM_ID) missing.push('APPLE_TEAM_ID');
         if (!APPLE_KEY_ID) missing.push('APPLE_KEY_ID');
         if (!APPLE_CLIENT_ID) missing.push('APPLE_CLIENT_ID');
-        return Response.json({ 
-          success: false, 
-          error: `Missing required secrets: ${missing.join(', ')}` 
-        }, { 
-          status: 500,
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        });
+        return Response.json({ success: false, error: `Missing required secrets: ${missing.join(', ')}` }, { status: 500, headers: corsHeaders() });
       }
 
-      // Exchange authorization code for tokens
+      // Generate (or reuse cached) client secret
       let clientSecret;
       try {
-        clientSecret = await generateClientSecret();
+        clientSecret = await ensureClientSecret();
       } catch (err) {
         console.error('Error generating client secret:', err);
-        return Response.json({ 
-          success: false, 
-          error: 'Failed to generate client secret' 
-        }, { 
-          status: 500,
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        });
+        return Response.json({ success: false, error: 'Failed to generate client secret' }, { status: 500, headers: corsHeaders() });
       }
 
-      const redirectUri = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
-
+      // Exchange code for tokens
       const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           client_id: APPLE_CLIENT_ID,
           client_secret: clientSecret,
           code: authorizationCode,
           grant_type: 'authorization_code',
-          redirect_uri: redirectUri,
-        }),
+          redirect_uri: APPLE_REDIRECT_URI,
+        })
       });
 
       const tokenData = await tokenResponse.json();
-
       if (tokenData.error) {
         console.error('Apple token error:', tokenData);
-        return Response.json({ 
-          success: false, 
-          error: tokenData.error_description || tokenData.error 
-        }, { 
-          status: 400,
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        });
+        return Response.json({ success: false, error: tokenData.error_description || tokenData.error }, { status: 400, headers: corsHeaders() });
       }
 
-      // Decode the id_token to get user info
-      const idTokenParts = tokenData.id_token.split('.');
-      const idTokenPayload = JSON.parse(atob(idTokenParts[1]));
+      // Strongly verify id_token signature & claims before trusting payload
+      if (!tokenData.id_token) {
+        return Response.json({ success: false, error: 'No id_token in token response' }, { status: 400, headers: corsHeaders() });
+      }
 
+      let payload;
+      try {
+        const verification = await jose.jwtVerify(tokenData.id_token, appleJWKS, {
+          issuer: 'https://appleid.apple.com',
+          audience: APPLE_CLIENT_ID
+        });
+        payload = verification.payload;
+      } catch (verifyErr) {
+        console.error('id_token verification failed:', verifyErr);
+        return Response.json({ success: false, error: 'Failed to verify id_token' }, { status: 400, headers: corsHeaders() });
+      }
+
+      // At this point payload is trusted — use payload.sub as Apple unique id
       return Response.json({
         success: true,
         appleUser: {
-          id: idTokenPayload.sub,
-          email: idTokenPayload.email,
-          emailVerified: idTokenPayload.email_verified,
+          id: payload.sub,
+          email: payload.email,
+          emailVerified: payload.email_verified,
+          isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false
         },
         tokens: {
           accessToken: tokenData.access_token,
@@ -256,16 +214,10 @@ Deno.serve(async (req) => {
           idToken: tokenData.id_token,
           expiresIn: tokenData.expires_in,
         }
-      }, {
-        headers: { 'Access-Control-Allow-Origin': '*' }
-      });
+      }, { headers: corsHeaders() });
     }
 
-    return Response.json({ success: false, error: 'Invalid action' }, { 
-      status: 200,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-
+    return Response.json({ success: false, error: 'Invalid action' }, { status: 400, headers: corsHeaders() });
   } catch (error) {
     console.error('Apple Sign In error:', error);
     
@@ -283,12 +235,6 @@ Deno.serve(async (req) => {
       console.error('Failed to log error:', logError);
     }
     
-    return Response.json({ 
-      success: false,
-      error: error.message
-    }, { 
-      status: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
+    return Response.json({ success: false, error: error.message }, { status: 500, headers: { 'Access-Control-Allow-Origin': APP_CORS_ORIGIN } });
   }
 });
