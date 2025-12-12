@@ -225,16 +225,25 @@ Deno.serve(async (req) => {
       let payload;
       console.info('[handleAppleSignIn] Verifying id_token');
       try {
-        const verifyController = new AbortController();
-        const verifyTimeout = setTimeout(() => verifyController.abort(), 10000);
-
-        const verification = await jose.jwtVerify(tokenData.id_token, appleJWKS, { issuer: 'https://appleid.apple.com', audience: APPLE_CLIENT_ID });
-        clearTimeout(verifyTimeout);
+        // Create a timeout promise that rejects after 10 seconds
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('JWKS verification timeout')), 10000)
+        );
+        
+        // Race between verification and timeout
+        const verification = await Promise.race([
+          jose.jwtVerify(tokenData.id_token, appleJWKS, { 
+            issuer: 'https://appleid.apple.com', 
+            audience: APPLE_CLIENT_ID 
+          }),
+          timeoutPromise
+        ]);
+        
         payload = verification.payload;
         console.info('[handleAppleSignIn] id_token verified successfully');
       } catch (verifyErr) {
         console.error('id_token verification failed:', verifyErr);
-        return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token' }), { status: 400, headers: corsHeaders(true) });
+        return new Response(JSON.stringify({ success: false, error: 'Failed to verify id_token', details: verifyErr.message }), { status: 400, headers: corsHeaders(true) });
       }
 
       if (nonce && payload.nonce && nonce !== payload.nonce) {
