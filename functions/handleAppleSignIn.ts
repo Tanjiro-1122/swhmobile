@@ -232,19 +232,38 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ success: false, error: 'Invalid action' }), { status: 400, headers: corsHeaders() });
 
   } catch (error) {
-    console.error('Apple Sign In error:', error);
+    console.error('Apple Sign In error (debug):', error);
+
+    // Prepare safe error response for debugging (trim stack)
+    const safeMessage = String(error && error.message ? error.message : error).slice(0, 1000);
+    const safeStack = String(error && error.stack ? error.stack : '').slice(0, 2000);
+
+    const debugResp = {
+      success: false,
+      error: 'server_error',
+      debug: {
+        message: safeMessage,
+        stack: safeStack
+      }
+    };
+
+    // Still try to log to ErrorLog if possible
     try {
       const base44 = createClientFromRequest(req);
       await base44.asServiceRole.entities.ErrorLog.create({
         error_type: 'auth',
         severity: 'error',
         function_name: 'handleAppleSignIn',
-        error_message: String(error.message).slice(0, 1000),
-        error_stack: String(error.stack || '').slice(0, 2000)
+        error_message: safeMessage,
+        error_stack: safeStack
       });
     } catch (logErr) {
       console.error('Failed to log error:', logErr);
     }
-    return new Response(JSON.stringify({ success: false, error: error.message || 'internal' }), { status: 500, headers: corsHeaders() });
+
+    return new Response(JSON.stringify(debugResp), {
+      status: 500,
+      headers: { ...corsHeaders(true), 'Content-Type': 'application/json' }
+    });
   }
 });
