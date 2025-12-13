@@ -228,73 +228,73 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20 mt-6"
+            className="w-full max-w-2xl mx-auto mt-6"
           >
             {currentUser ? (
+              <div className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                  {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
+                </div>
+                <div className="text-left">
+                  <div className="text-white font-semibold">
+                    Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
+                  </div>
+                  <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
+                    {subscription.label} MEMBER
+                  </div>
+                </div>
+                {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
+                <ThemeToggle />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => {
+                    localStorage.clear();
+                    await base44.auth.logout();
+                    window.location.href = createPageUrl("Dashboard");
+                  }}
+                  className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-4 border border-white/20">
+                {/* Mobile users go to Pricing for IAP, web users sign in here */}
+                {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
                   <>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                      {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
-                    </div>
-                    <div className="text-left">
-                      <div className="text-white font-semibold">
-                        Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!
-                      </div>
-                      <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>
-                        {subscription.label} MEMBER
-                      </div>
-                    </div>
-                    {isVIP && <Crown className="w-6 h-6 text-yellow-400" />}
-                    <ThemeToggle />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={async () => {
-                        localStorage.clear();
-                        await base44.auth.logout();
-                        window.location.href = createPageUrl("Dashboard");
-                      }}
-                      className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full min-w-[44px] min-h-[44px]"
-                      title="Sign Out"
+                    <Link to={createPageUrl("Pricing")} className="w-full sm:w-auto">
+                      <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
+                        Get Started
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                      variant="outline"
+                      className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
                     >
-                      <LogOut className="w-5 h-5" />
+                      <User className="w-4 h-4 mr-2" />
+                      Account Holders
                     </Button>
+                    <ThemeToggle />
                   </>
                 ) : (
                   <>
-                    {/* Mobile users go to Pricing for IAP, web users sign in here */}
-                    {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
-                      <>
-                        <Link to={createPageUrl("Pricing")}>
-                          <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
-                            Get Started
-                          </Button>
-                        </Link>
-                        <Button 
-                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                          variant="outline"
-                          className="text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          Account Holders
-                        </Button>
-                        <ThemeToggle />
-                      </>
-                    ) : (
-                      <>
-                        <AppleSignInButton className="rounded-full px-4" />
-                        <GoogleSignInButton className="rounded-full px-4" />
-                        <Button 
-                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                        >
-                          <Mail className="w-4 h-4 mr-2" />
-                          Email
-                        </Button>
-                        <ThemeToggle />
-                      </>
-                    )}
+                    <AppleSignInButton className="rounded-full px-4" />
+                    <GoogleSignInButton className="rounded-full px-4" />
+                    <Button 
+                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email
+                    </Button>
+                    <ThemeToggle />
                   </>
                 )}
+              </div>
+            )}
           </motion.div>
 
 
