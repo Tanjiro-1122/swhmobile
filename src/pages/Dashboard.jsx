@@ -269,6 +269,14 @@ export default function Dashboard() {
                             Get Started
                           </Button>
                         </Link>
+                        <Button 
+                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                          variant="outline"
+                          className="text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Account Holders
+                        </Button>
                         <ThemeToggle />
                       </>
                     ) : (
