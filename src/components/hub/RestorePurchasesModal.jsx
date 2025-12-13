@@ -54,12 +54,14 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
           }
         });
       } else {
-        // Web environment - show instructions
-        setResult({
-          type: 'info',
-          message: 'Purchase restoration is only available in the iOS app. Please open the app and try again, or contact support.'
-        });
-        setRestoring(false);
+        // Web environment - close modal and inform user
+        setTimeout(() => {
+          setResult({
+            type: 'info',
+            message: 'This feature requires the iOS app. Please open Sports Wager Helper in the App Store.'
+          });
+          setRestoring(false);
+        }, 500);
       }
     } catch (error) {
       setResult({
