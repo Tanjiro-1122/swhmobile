@@ -20,34 +20,33 @@ export default function AppleAuthCallback() {
         const is_private = params.get('is_private');
         const name = params.get('name');
 
-        // If we have Apple user data from the redirect, complete sign-in
+        // If we have Apple user data from the redirect, store it and redirect to login
         if (success === 'true' && apple_id) {
-          setStatus('signing-in');
-          const resp = await base44.functions.invoke('handleAppleSignIn', {
-            action: 'completeSignIn',
-            apple_id,
-            email: email || null,
-            is_private: is_private || 'false',
-            full_name: name || null
-          });
+          setStatus('processing');
+          
+          // Store Apple provider data for account linking
+          localStorage.setItem('apple_provider_id', apple_id);
+          localStorage.setItem('apple_provider_email', email || '');
+          localStorage.setItem('apple_is_private_email', is_private || 'false');
+          localStorage.setItem('apple_provider_name', name || '');
 
-          if (resp.data?.success && resp.data?.sessionToken) {
-            await base44.auth.setToken(resp.data.sessionToken);
-            setStatus('success');
-            setTimeout(() => {
-              window.location.href = '/';
-            }, 500);
-            return;
+          // Copy email to clipboard if available
+          if (email) {
+            try {
+              await navigator.clipboard.writeText(email);
+            } catch (e) {
+              console.log('Could not copy email');
+            }
           }
 
-          if (resp.data?.reason === 'link_required') {
-            setError(resp.data.message);
-            setStatus('error');
-            return;
+          setStatus('success');
+          
+          // Redirect to Base44 login with email prefilled
+          if (email && is_private !== 'true') {
+            base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`);
+          } else {
+            base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
           }
-
-          setError(resp.data?.error || 'Authentication failed');
-          setStatus('error');
         } else {
           setTimeout(() => {
             setError('No authorization received');
