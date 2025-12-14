@@ -106,9 +106,18 @@ Deno.serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response(null, { headers });
 
+  // Read raw body ONCE at the start for debugging
+  let rawBody = '';
   try {
     const contentType = (req.headers.get('content-type') || '').toLowerCase();
     console.info(`[handleAppleSignIn] Content-Type: ${contentType}`);
+    
+    if (req.method === 'POST') {
+      rawBody = await req.text();
+      console.info(`[handleAppleSignIn] Raw POST Body (first 500 chars): ${rawBody.substring(0, 500)}`);
+      console.info(`[handleAppleSignIn] Raw POST Body length: ${rawBody.length}`);
+    }
+
     let action;
     let identityToken;
     let authorizationCode;
@@ -118,9 +127,8 @@ Deno.serve(async (req) => {
     let isFormPost = false;
 
     if (contentType.includes('application/x-www-form-urlencoded')) {
-      const raw = await req.text();
-      console.info('[handleAppleSignIn] Form POST raw body:', raw);
-      const params = new URLSearchParams(raw);
+      console.info('[handleAppleSignIn] Detected form-urlencoded POST');
+      const params = new URLSearchParams(rawBody);
       authorizationCode = params.get('code') || undefined;
       const userParam = params.get('user');
       try { incomingUser = userParam ? JSON.parse(userParam) : null; } catch(e) { incomingUser = null; }
@@ -128,18 +136,25 @@ Deno.serve(async (req) => {
       isFormPost = true;
       console.info('[handleAppleSignIn] Form POST from Apple detected, code:', authorizationCode ? 'present' : 'missing');
     } else if (contentType.includes('application/json')) {
-      const body = await req.json().catch(() => ({}));
+      console.info('[handleAppleSignIn] Detected JSON POST');
+      let body;
+      try { 
+        body = rawBody ? JSON.parse(rawBody) : {}; 
+      } catch(e) { 
+        console.error('[handleAppleSignIn] Failed to parse JSON body:', e);
+        body = {}; 
+      }
       action = body.action;
       identityToken = body.identityToken;
       authorizationCode = body.authorizationCode;
       manualKey = body.manualKey;
       incomingUser = body.user;
       nonce = body.nonce;
+      console.info('[handleAppleSignIn] Parsed JSON action:', action);
     } else {
-      // Fallback: try to parse text as JSON safely
-      const t = await req.text().catch(() => '');
+      console.info('[handleAppleSignIn] Content-Type not recognized, attempting fallback JSON parse');
       try {
-        const body = t ? JSON.parse(t) : {};
+        const body = rawBody ? JSON.parse(rawBody) : {};
         action = body.action;
         identityToken = body.identityToken;
         authorizationCode = body.authorizationCode;
@@ -147,7 +162,6 @@ Deno.serve(async (req) => {
         incomingUser = body.user;
         nonce = body.nonce;
       } catch (e) {
-        // If parsing fails, just continue — action may be set elsewhere (e.g., form_post)
         console.info('[handleAppleSignIn] Fallback JSON parse failed, continuing without body');
       }
     }
