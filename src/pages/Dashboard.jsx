@@ -281,9 +281,7 @@ export default function Dashboard() {
                   </>
                 ) : (
                   <>
-                    {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
-                      <AppleSignInButton className="rounded-full px-4" />
-                    )}
+                    <AppleSignInButton className="rounded-full px-4" />
                     <GoogleSignInButton className="rounded-full px-4" />
                     <Button 
                       onClick={() => base44.auth.redirectToLogin(window.location.href)}
