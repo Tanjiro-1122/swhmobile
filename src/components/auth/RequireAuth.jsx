@@ -126,10 +126,9 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
               <div className="space-y-3">
                 <div className="flex gap-2">
-                  {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+                  {isMobileApp ? (
                     <AppleSignInButton className="flex-1" />
-                  )}
-                  {!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+                  ) : (
                     <GoogleSignInButton className="flex-1" />
                   )}
                 </div>
