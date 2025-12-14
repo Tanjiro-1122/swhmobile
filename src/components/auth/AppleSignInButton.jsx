@@ -166,8 +166,73 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       // The callback page will close the popup and notify this parent window
 
       // Set up message listener BEFORE opening popup
-      const messageHandler = (event) => {
+      const messageHandler = async (event) => {
         console.log('[AppleSignIn] Received message:', event.data, 'from origin:', event.origin);
+
+        // Handle message from Apple's SDK (web_message mode)
+        if (event.origin === 'https://appleid.apple.com' && event.data?.authorization) {
+          console.log('[AppleSignIn] Received authorization from Apple');
+          window.removeEventListener('message', messageHandler);
+
+          const { code, id_token, state } = event.data.authorization;
+
+          if (!code) {
+            console.error('[AppleSignIn] No authorization code received');
+            setIsLoading(false);
+            return;
+          }
+
+          try {
+            // Exchange code with backend
+            console.log('[AppleSignIn] Exchanging code with backend...');
+            const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
+              action: 'exchangeCode',
+              authorizationCode: code,
+              nonce: generatedNonce
+            });
+
+            if (!verifyResponse || !verifyResponse.data) throw new Error('No response from server');
+            const responseData = verifyResponse.data;
+
+            if (responseData.debug) console.debug('handleAppleSignIn debug:', responseData.debug);
+
+            if (responseData.success) {
+              const { appleUser } = responseData;
+
+              // Store Apple provider data for account linking
+              localStorage.setItem('apple_provider_id', appleUser.id);
+              localStorage.setItem('apple_provider_email', appleUser.email || '');
+              localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
+
+              if (appleUser.email) {
+                try {
+                  await navigator.clipboard.writeText(appleUser.email);
+                } catch (e) {
+                  console.log('Could not copy email');
+                }
+              }
+
+              // Redirect to login with email prefill
+              if (appleUser.email && !appleUser.isPrivateEmail) {
+                base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(appleUser.email)}`);
+              } else if (onSuccess) {
+                onSuccess(appleUser);
+              } else {
+                base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+              }
+            } else {
+              const errMsg = responseData?.debug?.message || responseData?.error || 'Verification failed';
+              console.error('Apple Sign In failed:', errMsg, responseData);
+              throw new Error(errMsg);
+            }
+          } catch (err) {
+            console.error('Error exchanging Apple code:', err);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Handle legacy callback completion message
         if (event.data?.type === 'APPLE_AUTH_COMPLETE') {
           console.log('[AppleSignIn] Auth complete message received');
           window.removeEventListener('message', messageHandler);
