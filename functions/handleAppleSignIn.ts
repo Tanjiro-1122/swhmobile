@@ -242,42 +242,35 @@ Deno.serve(async (req) => {
 
       if (nonce && payload.nonce && nonce !== payload.nonce) return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers });
 
-      try {
-        const appleFormUserData = incomingUser;
-        const appleUser = {
-          id: payload.sub,
-          email: payload.email || null,
-          emailVerified: payload.email_verified,
-          isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
-          fullName: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null
-        };
+      const appleFormUserData = incomingUser;
+      const appleUser = {
+        id: payload.sub,
+        email: payload.email || null,
+        emailVerified: payload.email_verified,
+        isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+        fullName: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null
+      };
 
-        // For form POST (web flow), redirect to callback page with Apple user data
-        if (isFormPost) {
-          const params = new URLSearchParams({
-            success: 'true',
-            apple_id: appleUser.id,
-            email: appleUser.email || '',
-            is_private: appleUser.isPrivateEmail ? 'true' : 'false',
-            name: appleUser.fullName || ''
-          });
-          const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?${params.toString()}`;
-          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
-          return new Response(html, { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } });
-        }
-
-        // For native/API flow, return Apple user data for client-side handling
-        return new Response(JSON.stringify({ 
-          success: true, 
-          appleUser,
-          message: 'Apple authentication successful. Please complete sign-in.'
-        }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
-
-      } catch (userErr) {
-        const debug = APP_DEBUG ? { message: String(userErr?.message || userErr), stack: String(userErr?.stack || '') } : undefined;
-        console.error('User/session processing error:', userErr);
-        return new Response(JSON.stringify({ success: false, error: 'server_error', debug }), { status: 500, headers });
+      // For form POST (web flow), redirect to callback page with Apple user data
+      if (isFormPost) {
+        const params = new URLSearchParams({
+          success: 'true',
+          apple_id: appleUser.id,
+          email: appleUser.email || '',
+          is_private: appleUser.isPrivateEmail ? 'true' : 'false',
+          name: appleUser.fullName || ''
+        });
+        const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?${params.toString()}`;
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
+        return new Response(html, { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } });
       }
+
+      // For native/API flow, return Apple user data for client-side handling
+      return new Response(JSON.stringify({ 
+        success: true, 
+        appleUser,
+        message: 'Apple authentication successful. Please complete sign-in.'
+      }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
     }
 
 
