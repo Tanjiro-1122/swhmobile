@@ -20,32 +20,56 @@ export default function AppleAuthCallback() {
         const is_private = params.get('is_private');
         const name = params.get('name');
 
-        // If we have Apple user data from the redirect, store it and redirect to login
+        // If we have Apple user data from the redirect, handle popup or direct flow
         if (success === 'true' && apple_id) {
           setStatus('processing');
           
-          // Store Apple provider data for account linking
-          localStorage.setItem('apple_provider_id', apple_id);
-          localStorage.setItem('apple_provider_email', email || '');
-          localStorage.setItem('apple_is_private_email', is_private || 'false');
-          localStorage.setItem('apple_provider_name', name || '');
-
-          // Copy email to clipboard if available
-          if (email) {
-            try {
-              await navigator.clipboard.writeText(email);
-            } catch (e) {
-              console.log('Could not copy email');
-            }
-          }
-
-          setStatus('success');
+          // Check if we're in a popup (opened by parent window)
+          const isPopup = window.opener && window.opener !== window;
           
-          // Redirect to Base44 login with email prefilled
-          if (email && is_private !== 'true') {
-            base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`);
+          if (isPopup) {
+            // Store data in opener's localStorage
+            window.opener.localStorage.setItem('apple_provider_id', apple_id);
+            window.opener.localStorage.setItem('apple_provider_email', email || '');
+            window.opener.localStorage.setItem('apple_is_private_email', is_private || 'false');
+            window.opener.localStorage.setItem('apple_provider_name', name || '');
+            
+            setStatus('success');
+            
+            // Redirect opener to Base44 login
+            if (email && is_private !== 'true') {
+              window.opener.location.href = `${window.location.origin}${base44.auth.getLoginUrl(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`)}`;
+            } else {
+              window.opener.location.href = `${window.location.origin}${base44.auth.getLoginUrl('/MyAccount?activate_iap=true')}`;
+            }
+            
+            // Close popup after short delay
+            setTimeout(() => {
+              window.close();
+            }, 500);
           } else {
-            base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+            // Direct navigation (not popup)
+            localStorage.setItem('apple_provider_id', apple_id);
+            localStorage.setItem('apple_provider_email', email || '');
+            localStorage.setItem('apple_is_private_email', is_private || 'false');
+            localStorage.setItem('apple_provider_name', name || '');
+
+            if (email) {
+              try {
+                await navigator.clipboard.writeText(email);
+              } catch (e) {
+                console.log('Could not copy email');
+              }
+            }
+
+            setStatus('success');
+            
+            // Redirect to Base44 login with email prefilled
+            if (email && is_private !== 'true') {
+              base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`);
+            } else {
+              base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+            }
           }
         } else {
           setTimeout(() => {
