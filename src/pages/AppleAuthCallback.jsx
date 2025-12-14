@@ -22,31 +22,48 @@ export default function AppleAuthCallback() {
 
         // If we have Apple user data from the redirect, handle popup or direct flow
         if (success === 'true' && apple_id) {
+          console.log('[AppleCallback] Auth success, apple_id:', apple_id, 'email:', email);
           setStatus('processing');
           
           // Check if we're in a popup (opened by parent window)
           const isPopup = window.opener && window.opener !== window;
+          console.log('[AppleCallback] isPopup:', isPopup);
           
           if (isPopup) {
+            console.log('[AppleCallback] Storing data in opener localStorage');
             // Store data in opener's localStorage
-            window.opener.localStorage.setItem('apple_provider_id', apple_id);
-            window.opener.localStorage.setItem('apple_provider_email', email || '');
-            window.opener.localStorage.setItem('apple_is_private_email', is_private || 'false');
-            window.opener.localStorage.setItem('apple_provider_name', name || '');
+            try {
+              window.opener.localStorage.setItem('apple_provider_id', apple_id);
+              window.opener.localStorage.setItem('apple_provider_email', email || '');
+              window.opener.localStorage.setItem('apple_is_private_email', is_private || 'false');
+              window.opener.localStorage.setItem('apple_provider_name', name || '');
+              console.log('[AppleCallback] Data stored successfully');
+            } catch (e) {
+              console.error('[AppleCallback] Failed to store in opener localStorage:', e);
+            }
             
             setStatus('success');
             
             // Redirect opener to Base44 login
-            if (email && is_private !== 'true') {
-              window.opener.location.href = `${window.location.origin}${base44.auth.getLoginUrl(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`)}`;
-            } else {
-              window.opener.location.href = `${window.location.origin}${base44.auth.getLoginUrl('/MyAccount?activate_iap=true')}`;
+            const redirectUrl = email && is_private !== 'true' 
+              ? `/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`
+              : '/MyAccount?activate_iap=true';
+            
+            console.log('[AppleCallback] Redirecting opener to:', redirectUrl);
+            
+            try {
+              const loginUrl = base44.auth.getLoginUrl(redirectUrl);
+              console.log('[AppleCallback] Full login URL:', loginUrl);
+              window.opener.location.href = loginUrl;
+            } catch (e) {
+              console.error('[AppleCallback] Failed to redirect opener:', e);
             }
             
             // Close popup after short delay
             setTimeout(() => {
+              console.log('[AppleCallback] Closing popup');
               window.close();
-            }, 500);
+            }, 1000);
           } else {
             // Direct navigation (not popup)
             localStorage.setItem('apple_provider_id', apple_id);
