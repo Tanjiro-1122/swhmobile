@@ -157,7 +157,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         redirectURI: redirectUri,
         state: generatedNonce,
         responseType: 'code id_token',
-        responseMode: 'form_post',
+        responseMode: 'web_message',
         usePopup: true
       });
       console.log('[AppleSignIn] Apple SDK initialized, calling signIn()...');
