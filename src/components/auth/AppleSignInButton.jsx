@@ -29,6 +29,17 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         }
       };
     getConfig();
+
+    // Listen for callback completion from popup
+    const handleStorageChange = (e) => {
+      if (e.key === 'apple_provider_id' && e.newValue) {
+        console.log('[AppleSignIn] Detected Apple auth completion');
+        // The popup has set the data, parent window will redirect
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleAppleSignIn = async () => {
