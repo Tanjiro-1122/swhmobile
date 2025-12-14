@@ -303,16 +303,22 @@ export default function Pricing() {
         const userCancelled = data.error === 'user_cancelled' || 
                              data.error === 'cancelled' || 
                              data.isCancelled === true ||
-                             data.error === 'payment_cancelled';
+                             data.error === 'payment_cancelled' ||
+                             data.error === 'User cancelled' ||
+                             data.status === 'cancelled';
         if (userCancelled) {
           console.log('User cancelled purchase');
           setProcessingItem(null);
+          alert('Purchase cancelled. You can select another plan or try again anytime.');
           return;
         }
 
         // Clear state on any other error
         console.error('Purchase failed:', data.error);
         setProcessingItem(null);
+        if (data.error) {
+          alert(`Purchase failed: ${data.error}. Please try again.`);
+        }
       });
     } catch (error) {
       if (iapTimeoutRef.current) {
@@ -383,8 +389,24 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_credits', pack.credits.toString());
           window.location.href = '/PostPurchaseSignIn';
         } else {
-          console.error('Credit purchase failed:', data.error);
-          setProcessingItem(null);
+          // Handle cancellation
+          const userCancelled = data.error === 'user_cancelled' || 
+                               data.error === 'cancelled' || 
+                               data.isCancelled === true ||
+                               data.error === 'payment_cancelled' ||
+                               data.error === 'User cancelled' ||
+                               data.status === 'cancelled';
+          if (userCancelled) {
+            console.log('User cancelled credit purchase');
+            setProcessingItem(null);
+            alert('Purchase cancelled. You can select another pack or try again anytime.');
+          } else {
+            console.error('Credit purchase failed:', data.error);
+            setProcessingItem(null);
+            if (data.error) {
+              alert(`Purchase failed: ${data.error}. Please try again.`);
+            }
+          }
         }
       }
 
