@@ -142,49 +142,9 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       });
 
       // This will redirect to Apple, then Apple will POST back to handleAppleSignIn function
+      // which will then redirect to /apple-auth-callback with the result
       await window.AppleID.auth.signIn();
-
-      const verifyResponse = await base44.functions.invoke('handleAppleSignIn', {
-        action: 'exchangeCode',
-        authorizationCode: response.authorization.code,
-        user: response.user,
-        nonce: generatedNonce
-      });
-
-      if (!verifyResponse || !verifyResponse.data) throw new Error('No response from server when exchanging Apple code');
-      const data = verifyResponse.data;
-
-      if (data.debug) console.debug('handleAppleSignIn debug:', data.debug);
-
-      if (data.success) {
-        const { appleUser } = data;
-
-        // Store Apple provider data for account linking
-        localStorage.setItem('apple_provider_id', appleUser.id);
-        localStorage.setItem('apple_provider_email', appleUser.email || '');
-        localStorage.setItem('apple_is_private_email', appleUser.isPrivateEmail ? 'true' : 'false');
-
-        if (appleUser.email) {
-          try {
-            await navigator.clipboard.writeText(appleUser.email);
-          } catch (e) {
-            console.log('Could not copy email');
-          }
-        }
-
-        // Redirect to login with email prefill
-        if (appleUser.email && !appleUser.isPrivateEmail) {
-          base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(appleUser.email)}`);
-        } else if (onSuccess) {
-          onSuccess(appleUser);
-        } else {
-          base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
-        }
-      } else {
-        const errMsg = data?.debug?.message || data?.error || 'Apple Sign-In verification failed';
-        console.error('Apple Sign In failed:', errMsg, data);
-        throw new Error(errMsg);
-      }
+      // Note: Code after signIn() won't execute as page will be redirected
     } catch (err) {
       console.error('Apple Sign In error:', err);
     } finally {
