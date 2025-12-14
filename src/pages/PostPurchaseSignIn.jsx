@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Mail, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import AppleSignInButton from "@/components/auth/AppleSignInButton";
-import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+
 
 export default function PostPurchaseSignIn() {
   const [pendingPurchase, setPendingPurchase] = useState(null);
@@ -25,15 +24,7 @@ export default function PostPurchaseSignIn() {
     base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
   };
 
-  const handleAppleSuccess = (appleUser) => {
-    // After Apple auth, redirect to activate subscription
-    window.location.href = '/MyAccount?activate_iap=true';
-  };
 
-  const handleGoogleSuccess = () => {
-    // After Google auth, redirect to activate subscription
-    window.location.href = '/MyAccount?activate_iap=true';
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -67,25 +58,6 @@ export default function PostPurchaseSignIn() {
 
             {/* Sign In Options */}
             <div className="space-y-4">
-              {/* Apple Sign In - Primary for iOS */}
-              <AppleSignInButton 
-                onSuccess={handleAppleSuccess}
-                className="w-full py-4 text-lg rounded-xl"
-              />
-
-              {/* Google Sign In */}
-              <GoogleSignInButton 
-                onSuccess={handleGoogleSuccess}
-                className="w-full py-4 text-lg rounded-xl"
-              />
-
-              {/* Divider */}
-              <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-white/20" />
-                <span className="text-white/50 text-sm">or</span>
-                <div className="flex-1 h-px bg-white/20" />
-              </div>
-
               {/* Email Sign In */}
               <Button
                 onClick={handleEmailSignIn}
