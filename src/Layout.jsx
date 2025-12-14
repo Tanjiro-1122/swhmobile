@@ -237,7 +237,9 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <div className="flex items-center gap-2">
-                  <AppleSignInButton className="rounded-full px-4" />
+                  {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+                    <AppleSignInButton className="rounded-full px-4" />
+                  )}
                   <GoogleSignInButton className="rounded-full px-4" />
                   <Button
                     onClick={handleLogin}
