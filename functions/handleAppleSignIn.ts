@@ -5,7 +5,7 @@ const APPLE_CLIENT_ID = Deno.env.get('APPLE_CLIENT_ID') || '';
 const APPLE_TEAM_ID = Deno.env.get('APPLE_TEAM_ID') || '';
 const APPLE_KEY_ID = Deno.env.get('APPLE_KEY_ID') || '';
 const APPLE_PRIVATE_KEY = Deno.env.get('APPLE_PRIVATE_KEY') || '';
-const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
+const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://api.sportswagerhelper.com/handleAppleSignIn';
 const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerhelper.com';
 const ALLOW_KEY_TEST = Deno.env.get('ALLOW_KEY_TEST') === 'true';
 const APP_DEBUG = Deno.env.get('APP_DEBUG') === 'true';
@@ -246,29 +246,29 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
         const appleFormUserData = incomingUser;
 
-        const existingUsers = await base44.asServiceRole.entities.User.filter({ apple_provider_id: payload.sub });
-        let dbUser = existingUsers.length > 0 ? existingUsers[0] : null;
+        // Use base44.auth methods instead of direct entity access
+        let dbUser = await base44.asServiceRole.auth.getUserByProviderId('apple', payload.sub);
 
         if (!dbUser) {
           if (payload.email && !payload.hasOwnProperty('is_private_email')) {
-            const existing = await base44.asServiceRole.entities.User.filter({ email: payload.email });
-            if (existing.length > 0) {
+            const existing = await base44.asServiceRole.auth.getUserByEmail(payload.email);
+            if (existing) {
               return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { status: 200, headers });
             }
           }
 
-          dbUser = await base44.asServiceRole.entities.User.create({
+          // Use upsertUserWithProvider to create user with Apple provider
+          dbUser = await base44.asServiceRole.auth.upsertUserWithProvider({
+            provider_type: 'apple',
+            provider_id: payload.sub,
             email: payload.email || null,
             full_name: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null,
-            apple_provider_id: payload.sub,
-            apple_provider_email: payload.email || '',
-            apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
-            apple_linked_at: new Date().toISOString(),
-            apple_last_sign_in: new Date().toISOString(),
-            role: 'user'
+            provider_metadata: {
+              apple_provider_email: payload.email || '',
+              apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+              apple_linked_at: new Date().toISOString(),
+            }
           });
-        } else {
-          try { await base44.asServiceRole.entities.User.update(dbUser.id, { apple_last_sign_in: new Date().toISOString() }); } catch {}
         }
 
         const sessionToken = await base44.asServiceRole.auth.issueSessionToken(dbUser.email || dbUser.id);
@@ -292,12 +292,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Apple Sign In error (debug):', error);
     const debug = APP_DEBUG ? { message: String(error?.message || error), stack: String(error?.stack || '') } : undefined;
-    try {
-      const base44 = createClientFromRequest(req);
-      await base44.asServiceRole.entities.ErrorLog.create({ error_type: 'auth', severity: 'error', function_name: 'handleAppleSignIn', error_message: String(error?.message || error).slice(0,1000), error_stack: String(error?.stack || '').slice(0,2000) });
-    } catch (logErr) {
-      console.error('Failed to log error:', logErr);
-    }
     const origin = req.headers.get('origin') || undefined;
     const headers = corsHeaders(true, origin);
     return new Response(JSON.stringify({ success: false, error: 'server_error', debug }), { status: 500, headers: { ...headers, 'Content-Type': 'application/json' } });
