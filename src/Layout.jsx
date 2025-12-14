@@ -240,7 +240,9 @@ export default function Layout({ children, currentPageName }) {
                   {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
                     <AppleSignInButton className="rounded-full px-4" />
                   )}
-                  <GoogleSignInButton className="rounded-full px-4" />
+                  {!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+                    <GoogleSignInButton className="rounded-full px-4" />
+                  )}
                   <Button
                     onClick={handleLogin}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"

@@ -129,7 +129,9 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                   {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
                     <AppleSignInButton className="flex-1" />
                   )}
-                  <GoogleSignInButton className="flex-1" />
+                  {!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+                    <GoogleSignInButton className="flex-1" />
+                  )}
                 </div>
 
                 <Button
