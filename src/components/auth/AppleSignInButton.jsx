@@ -147,12 +147,13 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       if (appleAuthWindow && typeof appleAuthWindow.focus === 'function') {
         appleAuthWindow.focus();
       }
-    } catch (err) {
+      } catch (err) {
       console.error('Apple Sign In error:', err);
-    } finally {
+      alert(`Apple Sign In failed: ${err.message || 'Unknown error'}. Please check browser console for details.`);
+      } finally {
       setIsLoading(false);
-    }
-  };
+      }
+      };
 
   return (
     <Button
