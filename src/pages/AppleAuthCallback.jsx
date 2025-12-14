@@ -43,6 +43,13 @@ export default function AppleAuthCallback() {
               window.opener.localStorage.setItem('apple_is_private_email', is_private || 'false');
               window.opener.localStorage.setItem('apple_provider_name', name || '');
               console.log('[AppleCallback] Data stored successfully');
+
+              // Also post message to opener
+              window.opener.postMessage({ 
+                type: 'APPLE_AUTH_COMPLETE', 
+                data: { apple_id, email, is_private, name } 
+              }, '*');
+              console.log('[AppleCallback] Posted message to opener');
             } catch (e) {
               console.error('[AppleCallback] Failed to store in opener localStorage:', e);
             }
