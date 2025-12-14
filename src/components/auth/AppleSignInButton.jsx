@@ -141,7 +141,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
 
       const clientId = currentConfig.clientId;
-      const redirectUri = currentConfig.redirectUri;
+      const redirectUri = currentConfig.redirectUri || 'https://sportswagerhelper.com/AppleAuthCallback';
 
       console.log('[AppleSignIn] Using clientId:', clientId);
       console.log('[AppleSignIn] Using redirectUri:', redirectUri);

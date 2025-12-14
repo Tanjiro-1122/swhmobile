@@ -5,7 +5,7 @@ const APPLE_CLIENT_ID = Deno.env.get('APPLE_CLIENT_ID') || '';
 const APPLE_TEAM_ID = Deno.env.get('APPLE_TEAM_ID') || '';
 const APPLE_KEY_ID = Deno.env.get('APPLE_KEY_ID') || '';
 const APPLE_PRIVATE_KEY = Deno.env.get('APPLE_PRIVATE_KEY') || '';
-const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/apple-auth-callback';
+const APPLE_REDIRECT_URI = Deno.env.get('APPLE_REDIRECT_URI') || 'https://sportswagerhelper.com/AppleAuthCallback';
 const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerhelper.com';
 const ALLOW_KEY_TEST = Deno.env.get('ALLOW_KEY_TEST') === 'true';
 const APP_DEBUG = Deno.env.get('APP_DEBUG') === 'true';
@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
           is_private: appleUser.isPrivateEmail ? 'true' : 'false',
           name: appleUser.fullName || ''
         });
-        const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?${params.toString()}`;
+        const redirectUrl = `${APP_CORS_ORIGIN}/AppleAuthCallback?${params.toString()}`;
         console.info('[handleAppleSignIn] Redirecting to:', redirectUrl);
         const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>console.log('[Backend] Redirecting to:', ${JSON.stringify(redirectUrl)});</script></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
         return new Response(html, { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } });
