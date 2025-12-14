@@ -11,6 +11,9 @@ export default function AppleAuthCallback() {
   useEffect(() => {
     async function handleCallback() {
       try {
+        console.log('[AppleCallback] Starting callback handler');
+        console.log('[AppleCallback] Full URL:', window.location.href);
+        console.log('[AppleCallback] Search params:', window.location.search);
         setStatus('processing');
 
         const params = new URLSearchParams(window.location.search);
@@ -19,6 +22,8 @@ export default function AppleAuthCallback() {
         const email = params.get('email');
         const is_private = params.get('is_private');
         const name = params.get('name');
+
+        console.log('[AppleCallback] Parsed params:', { success, apple_id, email, is_private, name });
 
         // If we have Apple user data from the redirect, handle popup or direct flow
         if (success === 'true' && apple_id) {

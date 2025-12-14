@@ -164,6 +164,17 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       // This opens a popup, Apple will POST to handleAppleSignIn which redirects to /apple-auth-callback
       // The callback page will close the popup and notify this parent window
+
+      // Set up message listener BEFORE opening popup
+      const messageHandler = (event) => {
+        console.log('[AppleSignIn] Received message:', event.data, 'from origin:', event.origin);
+        if (event.data?.type === 'APPLE_AUTH_COMPLETE') {
+          console.log('[AppleSignIn] Auth complete message received');
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+      window.addEventListener('message', messageHandler);
+
       try {
         const appleAuthWindow = window.AppleID.auth.signIn();
         console.log('[AppleSignIn] signIn() called, window:', appleAuthWindow);
@@ -173,6 +184,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         }
       } catch (signInErr) {
         console.error('[AppleSignIn] signIn() error:', signInErr);
+        window.removeEventListener('message', messageHandler);
         throw signInErr;
       }
       } catch (err) {
