@@ -119,13 +119,14 @@ Deno.serve(async (req) => {
 
     if (contentType.includes('application/x-www-form-urlencoded')) {
       const raw = await req.text();
+      console.info('[handleAppleSignIn] Form POST raw body:', raw);
       const params = new URLSearchParams(raw);
       authorizationCode = params.get('code') || undefined;
       const userParam = params.get('user');
       try { incomingUser = userParam ? JSON.parse(userParam) : null; } catch(e) { incomingUser = null; }
       action = 'exchangeCode';
       isFormPost = true;
-      console.info('[handleAppleSignIn] Form POST from Apple detected');
+      console.info('[handleAppleSignIn] Form POST from Apple detected, code:', authorizationCode ? 'present' : 'missing');
     } else if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       action = body.action;
