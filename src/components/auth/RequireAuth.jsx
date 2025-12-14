@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
-import AppleSignInButton from "./AppleSignInButton";
-import GoogleSignInButton from "./GoogleSignInButton";
+
 import RestorePurchasesModal from "../hub/RestorePurchasesModal";
 export default function RequireAuth({ children, pageName = "this feature" }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -125,8 +124,6 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
               </div>
 
               <div className="space-y-3">
-                <AppleSignInButton className="w-full" />
-
                 <Button
                   onClick={handleLogin}
                   className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg py-6 font-bold shadow-lg"
