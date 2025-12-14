@@ -270,13 +270,53 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ 
           success: true, 
           appleUser,
-          linkedUserEmail: appleUser.email,
           message: 'Apple authentication successful. Please complete sign-in.'
         }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
 
       } catch (userErr) {
         const debug = APP_DEBUG ? { message: String(userErr?.message || userErr), stack: String(userErr?.stack || '') } : undefined;
         console.error('User/session processing error:', userErr);
+        return new Response(JSON.stringify({ success: false, error: 'server_error', debug }), { status: 500, headers });
+      }
+    }
+
+    if (action === 'completeSignIn') {
+      const body = await req.json();
+      const { apple_id, email, is_private, full_name } = body;
+      if (!apple_id) return new Response(JSON.stringify({ success: false, error: 'Missing apple_id' }), { status: 400, headers });
+      
+      try {
+        const base44 = createClientFromRequest(req);
+
+        let dbUser = await base44.auth.getUserByProviderId('apple', apple_id);
+
+        if (!dbUser) {
+          if (email && is_private === 'false') {
+            const existing = await base44.auth.getUserByEmail(email);
+            if (existing) {
+              return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { status: 200, headers });
+            }
+          }
+
+          dbUser = await base44.auth.upsertUserWithProvider({
+            provider_type: 'apple',
+            provider_id: apple_id,
+            email: email || null,
+            full_name: full_name || null,
+            provider_metadata: {
+              apple_is_private_email: is_private === 'true',
+              apple_linked_at: new Date().toISOString(),
+            }
+          });
+        }
+        
+        const sessionToken = await base44.auth.issueSessionToken(dbUser.id);
+
+        return new Response(JSON.stringify({ success: true, sessionToken }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
+
+      } catch (userErr) {
+        const debug = APP_DEBUG ? { message: String(userErr?.message || userErr), stack: String(userErr?.stack || '') } : undefined;
+        console.error('User/session processing error (completeSignIn):', userErr);
         return new Response(JSON.stringify({ success: false, error: 'server_error', debug }), { status: 500, headers });
       }
     }

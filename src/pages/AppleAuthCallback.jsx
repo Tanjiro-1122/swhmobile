@@ -13,42 +13,46 @@ export default function AppleAuthCallback() {
       try {
         setStatus('processing');
 
-        // Since Apple redirects with form_post, the backend will handle it automatically
-        // But if we're here from a GET redirect, try to handle it client-side
         const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
+        const success = params.get('success');
+        const apple_id = params.get('apple_id');
+        const email = params.get('email');
+        const is_private = params.get('is_private');
+        const name = params.get('name');
 
-        if (code) {
-          // We have a code in the URL, exchange it
-          setStatus('exchanging');
+        // If we have Apple user data from the redirect, complete sign-in
+        if (success === 'true' && apple_id) {
+          setStatus('signing-in');
           const resp = await base44.functions.invoke('handleAppleSignIn', {
-            action: 'exchangeCode',
-            authorizationCode: code,
-            nonce: sessionStorage.getItem('apple_nonce') || null
+            action: 'completeSignIn',
+            apple_id,
+            email: email || null,
+            is_private: is_private || 'false',
+            full_name: name || null
           });
 
           if (resp.data?.success && resp.data?.sessionToken) {
-            setStatus('signing-in');
             await base44.auth.setToken(resp.data.sessionToken);
             setStatus('success');
-            window.location.href = '/';
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 500);
             return;
           }
 
           if (resp.data?.reason === 'link_required') {
-            navigate('/link-account', { state: { hint: resp.data.message } });
+            setError(resp.data.message);
+            setStatus('error');
             return;
           }
 
           setError(resp.data?.error || 'Authentication failed');
           setStatus('error');
         } else {
-          // No code - might be waiting for form_post from Apple
-          // Give it a moment, then show error
           setTimeout(() => {
-            setError('No authorization code received');
+            setError('No authorization received');
             setStatus('error');
-          }, 3000);
+          }, 2000);
         }
       } catch (err) {
         console.error('Error during Apple callback handling:', err);
