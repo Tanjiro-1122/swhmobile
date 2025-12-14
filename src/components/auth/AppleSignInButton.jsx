@@ -108,26 +108,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         return; // Exit - callback will handle the rest
       }
 
-      // Fallback to web-based Apple Sign In
-      
-      // Load Apple SDK if needed
-      if (!window.AppleID) {
-        console.log('[AppleSignIn] Loading Apple SDK...');
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-          script.async = true;
-          script.onload = () => {
-            console.log('[AppleSignIn] Apple SDK loaded successfully');
-            resolve();
-          };
-          script.onerror = () => reject(new Error('Failed to load Apple SDK'));
-          document.head.appendChild(script);
-        });
-      } else {
-        console.log('[AppleSignIn] Apple SDK already loaded');
-      }
-
+      // Fallback to web-based popup flow with query mode
       let currentConfig = appleConfig;
       if (!currentConfig) {
         const response = await base44.functions.invoke('handleAppleSignIn', {
@@ -141,7 +122,7 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       }
 
       const clientId = currentConfig.clientId;
-      const redirectUri = currentConfig.redirectUri || 'https://sportswagerhelper.com/AppleAuthCallback';
+      const redirectUri = 'https://sportswagerhelper.com/AppleAuthCallback';
 
       console.log('[AppleSignIn] Using clientId:', clientId);
       console.log('[AppleSignIn] Using redirectUri:', redirectUri);
@@ -150,31 +131,40 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       // Store nonce for verification after redirect
       sessionStorage.setItem('apple_nonce', generatedNonce);
 
-      console.log('[AppleSignIn] Initializing Apple SDK...');
-      window.AppleID.auth.init({
-        clientId: clientId,
-        scope: 'name email',
-        redirectURI: redirectUri,
-        state: generatedNonce,
-        responseType: 'code id_token',
-        responseMode: 'web_message',
-        usePopup: true
-      });
-      console.log('[AppleSignIn] Apple SDK initialized, calling signIn()...');
+      // Build authorization URL with response_mode=query for popup flow
+      const authUrl = new URL('https://appleid.apple.com/auth/authorize');
+      authUrl.searchParams.set('response_type', 'code id_token');
+      authUrl.searchParams.set('response_mode', 'query');
+      authUrl.searchParams.set('client_id', clientId);
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('scope', 'name email');
+      authUrl.searchParams.set('state', generatedNonce);
+      authUrl.searchParams.set('nonce', generatedNonce);
 
-      // This opens a popup, Apple will POST to handleAppleSignIn which redirects to /apple-auth-callback
-      // The callback page will close the popup and notify this parent window
+      console.log('[AppleSignIn] Opening popup with URL:', authUrl.toString());
 
       // Set up message listener BEFORE opening popup
       const messageHandler = async (event) => {
-        console.log('[AppleSignIn] Received message:', event.data, 'from origin:', event.origin);
+        console.log('[AppleSignIn] Received postMessage:', event.data, 'from origin:', event.origin);
 
-        // Handle message from Apple's SDK (web_message mode)
-        if (event.origin === 'https://appleid.apple.com' && event.data?.authorization) {
-          console.log('[AppleSignIn] Received authorization from Apple');
+        // Only accept messages from our own origin
+        if (event.origin !== window.location.origin) {
+          console.log('[AppleSignIn] Ignoring message from different origin');
+          return;
+        }
+
+        // Handle callback message with authorization data
+        if (event.data?.type === 'apple_auth') {
+          console.log('[AppleSignIn] Received Apple auth data from callback');
           window.removeEventListener('message', messageHandler);
 
-          const { code, id_token, state } = event.data.authorization;
+          const { code, id_token, state, error } = event.data;
+
+          if (error) {
+            console.error('[AppleSignIn] Apple returned error:', error);
+            setIsLoading(false);
+            return;
+          }
 
           if (!code) {
             console.error('[AppleSignIn] No authorization code received');
@@ -229,29 +219,25 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
             console.error('Error exchanging Apple code:', err);
             setIsLoading(false);
           }
-          return;
-        }
-
-        // Handle legacy callback completion message
-        if (event.data?.type === 'APPLE_AUTH_COMPLETE') {
-          console.log('[AppleSignIn] Auth complete message received');
-          window.removeEventListener('message', messageHandler);
         }
       };
       window.addEventListener('message', messageHandler);
 
-      try {
-        const appleAuthWindow = window.AppleID.auth.signIn();
-        console.log('[AppleSignIn] signIn() called, window:', appleAuthWindow);
-        if (appleAuthWindow && typeof appleAuthWindow.focus === 'function') {
-          appleAuthWindow.focus();
-          console.log('[AppleSignIn] Popup focused');
-        }
-      } catch (signInErr) {
-        console.error('[AppleSignIn] signIn() error:', signInErr);
+      // Open popup
+      const popup = window.open(
+        authUrl.toString(),
+        'AppleSignIn',
+        'width=600,height=700,scrollbars=yes'
+      );
+
+      if (!popup) {
+        console.error('[AppleSignIn] Popup blocked');
         window.removeEventListener('message', messageHandler);
-        throw signInErr;
+        throw new Error('Popup was blocked. Please allow popups for this site.');
       }
+
+      popup.focus();
+      console.log('[AppleSignIn] Popup opened successfully');
       } catch (err) {
       console.error('Apple Sign In error:', err);
       console.error('Error details:', err.message, err.stack);

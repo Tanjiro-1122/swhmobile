@@ -17,94 +17,64 @@ export default function AppleAuthCallback() {
         setStatus('processing');
 
         const params = new URLSearchParams(window.location.search);
-        const success = params.get('success');
-        const apple_id = params.get('apple_id');
-        const email = params.get('email');
-        const is_private = params.get('is_private');
-        const name = params.get('name');
+        
+        // Get authorization data from query params (response_mode=query)
+        const code = params.get('code');
+        const id_token = params.get('id_token');
+        const state = params.get('state');
+        const error = params.get('error');
+        const userParam = params.get('user');
 
-        console.log('[AppleCallback] Parsed params:', { success, apple_id, email, is_private, name });
+        console.log('[AppleCallback] Parsed Apple response:', { 
+          code: code ? 'present' : 'missing', 
+          id_token: id_token ? 'present' : 'missing',
+          state, 
+          error,
+          user: userParam ? 'present' : 'missing'
+        });
 
-        // If we have Apple user data from the redirect, handle popup or direct flow
-        if (success === 'true' && apple_id) {
-          console.log('[AppleCallback] Auth success, apple_id:', apple_id, 'email:', email);
-          setStatus('processing');
+        // Check if we're in a popup (opened by parent window)
+        const isPopup = window.opener && window.opener !== window;
+        console.log('[AppleCallback] isPopup:', isPopup);
+
+        if (error) {
+          console.error('[AppleCallback] Apple returned error:', error);
+          setError(error);
+          setStatus('error');
+          return;
+        }
+
+        if (!code) {
+          console.error('[AppleCallback] No authorization code received');
+          setError('No authorization code received');
+          setStatus('error');
+          return;
+        }
+
+        // If in popup, post message back to opener
+        if (isPopup) {
+          console.log('[AppleCallback] Posting auth data to opener');
+          setStatus('success');
           
-          // Check if we're in a popup (opened by parent window)
-          const isPopup = window.opener && window.opener !== window;
-          console.log('[AppleCallback] isPopup:', isPopup);
+          window.opener.postMessage({
+            type: 'apple_auth',
+            code,
+            id_token,
+            state,
+            user: userParam
+          }, window.location.origin);
           
-          if (isPopup) {
-            console.log('[AppleCallback] Storing data in opener localStorage');
-            // Store data in opener's localStorage
-            try {
-              window.opener.localStorage.setItem('apple_provider_id', apple_id);
-              window.opener.localStorage.setItem('apple_provider_email', email || '');
-              window.opener.localStorage.setItem('apple_is_private_email', is_private || 'false');
-              window.opener.localStorage.setItem('apple_provider_name', name || '');
-              console.log('[AppleCallback] Data stored successfully');
-
-              // Also post message to opener
-              window.opener.postMessage({ 
-                type: 'APPLE_AUTH_COMPLETE', 
-                data: { apple_id, email, is_private, name } 
-              }, '*');
-              console.log('[AppleCallback] Posted message to opener');
-            } catch (e) {
-              console.error('[AppleCallback] Failed to store in opener localStorage:', e);
-            }
-            
-            setStatus('success');
-            
-            // Redirect opener to Base44 login
-            const redirectUrl = email && is_private !== 'true' 
-              ? `/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`
-              : '/MyAccount?activate_iap=true';
-            
-            console.log('[AppleCallback] Redirecting opener to:', redirectUrl);
-            
-            try {
-              const loginUrl = base44.auth.getLoginUrl(redirectUrl);
-              console.log('[AppleCallback] Full login URL:', loginUrl);
-              window.opener.location.href = loginUrl;
-            } catch (e) {
-              console.error('[AppleCallback] Failed to redirect opener:', e);
-            }
-            
-            // Close popup after short delay
-            setTimeout(() => {
-              console.log('[AppleCallback] Closing popup');
-              window.close();
-            }, 1000);
-          } else {
-            // Direct navigation (not popup)
-            localStorage.setItem('apple_provider_id', apple_id);
-            localStorage.setItem('apple_provider_email', email || '');
-            localStorage.setItem('apple_is_private_email', is_private || 'false');
-            localStorage.setItem('apple_provider_name', name || '');
-
-            if (email) {
-              try {
-                await navigator.clipboard.writeText(email);
-              } catch (e) {
-                console.log('Could not copy email');
-              }
-            }
-
-            setStatus('success');
-            
-            // Redirect to Base44 login with email prefilled
-            if (email && is_private !== 'true') {
-              base44.auth.redirectToLogin(`/MyAccount?activate_iap=true&email=${encodeURIComponent(email)}`);
-            } else {
-              base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
-            }
-          }
-        } else {
+          console.log('[AppleCallback] Message posted, closing popup');
+          
+          // Close popup after short delay
           setTimeout(() => {
-            setError('No authorization received');
-            setStatus('error');
-          }, 2000);
+            window.close();
+          }, 500);
+        } else {
+          // Direct navigation (not popup) - shouldn't happen with our flow but handle it
+          console.log('[AppleCallback] Direct navigation detected (not popup)');
+          setError('Please use the Apple Sign-In button');
+          setStatus('error');
         }
       } catch (err) {
         console.error('Error during Apple callback handling:', err);
