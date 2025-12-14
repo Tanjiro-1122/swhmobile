@@ -153,15 +153,20 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
 
       // This opens a popup, Apple will POST to handleAppleSignIn which redirects to /apple-auth-callback
       // The callback page will close the popup and notify this parent window
-      const appleAuthWindow = window.AppleID.auth.signIn();
-      console.log('[AppleSignIn] signIn() called, window:', appleAuthWindow);
-      if (appleAuthWindow && typeof appleAuthWindow.focus === 'function') {
-        appleAuthWindow.focus();
-        console.log('[AppleSignIn] Popup focused');
+      try {
+        const appleAuthWindow = window.AppleID.auth.signIn();
+        console.log('[AppleSignIn] signIn() called, window:', appleAuthWindow);
+        if (appleAuthWindow && typeof appleAuthWindow.focus === 'function') {
+          appleAuthWindow.focus();
+          console.log('[AppleSignIn] Popup focused');
+        }
+      } catch (signInErr) {
+        console.error('[AppleSignIn] signIn() error:', signInErr);
+        throw signInErr;
       }
       } catch (err) {
       console.error('Apple Sign In error:', err);
-      alert(`Apple Sign In failed: ${err.message || 'Unknown error'}. Please check browser console for details.`);
+      console.error('Error details:', err.message, err.stack);
       } finally {
       setIsLoading(false);
       }
