@@ -138,13 +138,12 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         state: generatedNonce,
         responseType: 'code id_token',
         responseMode: 'form_post',
-        usePopup: false
+        usePopup: true
       });
 
-      // This will redirect to Apple, then Apple will POST back to handleAppleSignIn function
-      // which will then redirect to /apple-auth-callback with the result
+      // This opens a popup, Apple will POST to handleAppleSignIn which redirects to /apple-auth-callback
+      // The callback page will close the popup and notify this parent window
       await window.AppleID.auth.signIn();
-      // Note: Code after signIn() won't execute as page will be redirected
     } catch (err) {
       console.error('Apple Sign In error:', err);
     } finally {
