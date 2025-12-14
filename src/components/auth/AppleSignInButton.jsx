@@ -101,14 +101,20 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       
       // Load Apple SDK if needed
       if (!window.AppleID) {
+        console.log('[AppleSignIn] Loading Apple SDK...');
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
           script.async = true;
-          script.onload = resolve;
+          script.onload = () => {
+            console.log('[AppleSignIn] Apple SDK loaded successfully');
+            resolve();
+          };
           script.onerror = () => reject(new Error('Failed to load Apple SDK'));
           document.head.appendChild(script);
         });
+      } else {
+        console.log('[AppleSignIn] Apple SDK already loaded');
       }
 
       let currentConfig = appleConfig;
@@ -126,11 +132,14 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
       const clientId = currentConfig.clientId;
       const redirectUri = currentConfig.redirectUri;
 
-      console.log('[AppleSignInButton] Using redirectUri:', redirectUri);
+      console.log('[AppleSignIn] Using clientId:', clientId);
+      console.log('[AppleSignIn] Using redirectUri:', redirectUri);
+      console.log('[AppleSignIn] Generated nonce:', generatedNonce);
 
       // Store nonce for verification after redirect
       sessionStorage.setItem('apple_nonce', generatedNonce);
 
+      console.log('[AppleSignIn] Initializing Apple SDK...');
       window.AppleID.auth.init({
         clientId: clientId,
         scope: 'name email',
@@ -140,12 +149,15 @@ export default function AppleSignInButton({ onSuccess, className = "" }) {
         responseMode: 'form_post',
         usePopup: true
       });
+      console.log('[AppleSignIn] Apple SDK initialized, calling signIn()...');
 
       // This opens a popup, Apple will POST to handleAppleSignIn which redirects to /apple-auth-callback
       // The callback page will close the popup and notify this parent window
       const appleAuthWindow = window.AppleID.auth.signIn();
+      console.log('[AppleSignIn] signIn() called, window:', appleAuthWindow);
       if (appleAuthWindow && typeof appleAuthWindow.focus === 'function') {
         appleAuthWindow.focus();
+        console.log('[AppleSignIn] Popup focused');
       }
       } catch (err) {
       console.error('Apple Sign In error:', err);
