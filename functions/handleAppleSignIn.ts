@@ -262,7 +262,8 @@ Deno.serve(async (req) => {
           name: appleUser.fullName || ''
         });
         const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?${params.toString()}`;
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
+        console.info('[handleAppleSignIn] Redirecting to:', redirectUrl);
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>console.log('[Backend] Redirecting to:', ${JSON.stringify(redirectUrl)});</script></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
         return new Response(html, { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } });
       }
 
