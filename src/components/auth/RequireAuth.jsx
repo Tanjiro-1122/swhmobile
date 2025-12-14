@@ -125,13 +125,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
               </div>
 
               <div className="space-y-3">
-                <div className="flex gap-2">
-                  {isMobileApp ? (
-                    <AppleSignInButton className="flex-1" />
-                  ) : (
-                    <GoogleSignInButton className="flex-1" />
-                  )}
-                </div>
+                <AppleSignInButton className="w-full" />
 
                 <Button
                   onClick={handleLogin}
