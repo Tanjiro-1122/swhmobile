@@ -243,43 +243,36 @@ Deno.serve(async (req) => {
       if (nonce && payload.nonce && nonce !== payload.nonce) return new Response(JSON.stringify({ success: false, error: 'Invalid nonce' }), { status: 400, headers });
 
       try {
-        const base44 = createClientFromRequest(req);
         const appleFormUserData = incomingUser;
+        const appleUser = {
+          id: payload.sub,
+          email: payload.email || null,
+          emailVerified: payload.email_verified,
+          isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
+          fullName: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null
+        };
 
-        // Use base44.auth methods instead of direct entity access
-        let dbUser = await base44.asServiceRole.auth.getUserByProviderId('apple', payload.sub);
-
-        if (!dbUser) {
-          if (payload.email && !payload.hasOwnProperty('is_private_email')) {
-            const existing = await base44.asServiceRole.auth.getUserByEmail(payload.email);
-            if (existing) {
-              return new Response(JSON.stringify({ success: false, reason: 'link_required', message: 'An account with this email exists. Please sign in and link Apple from Account Settings.' }), { status: 200, headers });
-            }
-          }
-
-          // Use upsertUserWithProvider to create user with Apple provider
-          dbUser = await base44.asServiceRole.auth.upsertUserWithProvider({
-            provider_type: 'apple',
-            provider_id: payload.sub,
-            email: payload.email || null,
-            full_name: appleFormUserData?.name ? `${appleFormUserData.name.firstName || ''} ${appleFormUserData.name.lastName || ''}`.trim() : null,
-            provider_metadata: {
-              apple_provider_email: payload.email || '',
-              apple_is_private_email: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false,
-              apple_linked_at: new Date().toISOString(),
-            }
-          });
-        }
-
-        const sessionToken = await base44.asServiceRole.auth.issueSessionToken(dbUser.email || dbUser.id);
-
+        // For form POST (web flow), redirect to callback page with Apple user data
         if (isFormPost) {
-          const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?token=${encodeURIComponent(sessionToken)}&success=true`;
+          const params = new URLSearchParams({
+            success: 'true',
+            apple_id: appleUser.id,
+            email: appleUser.email || '',
+            is_private: appleUser.isPrivateEmail ? 'true' : 'false',
+            name: appleUser.fullName || ''
+          });
+          const redirectUrl = `${APP_CORS_ORIGIN}/apple-auth-callback?${params.toString()}`;
           const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title></head><body><p>Signing you in...</p><script>window.location.href = ${JSON.stringify(redirectUrl)}</script></body></html>`;
           return new Response(html, { status: 200, headers: { ...headers, 'Content-Type': 'text/html' } });
         }
 
-        return new Response(JSON.stringify({ success: true, sessionToken, appleUser: { id: payload.sub, email: payload.email, emailVerified: payload.email_verified, isPrivateEmail: payload.hasOwnProperty('is_private_email') ? payload.is_private_email : false } }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
+        // For native/API flow, return Apple user data for client-side handling
+        return new Response(JSON.stringify({ 
+          success: true, 
+          appleUser,
+          linkedUserEmail: appleUser.email,
+          message: 'Apple authentication successful. Please complete sign-in.'
+        }), { status: 200, headers: { ...headers, 'Content-Type': 'application/json' } });
 
       } catch (userErr) {
         const debug = APP_DEBUG ? { message: String(userErr?.message || userErr), stack: String(userErr?.stack || '') } : undefined;
