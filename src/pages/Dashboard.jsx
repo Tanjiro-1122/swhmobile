@@ -275,7 +275,7 @@ export default function Dashboard() {
                      variant="outline"
                      className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
                    >
-                     <LogIn className="w-4 h-4 mr-2" />
+                     <Mail className="w-4 h-4 mr-2" />
                      Sign In
                    </Button>
                    <ThemeToggle />
