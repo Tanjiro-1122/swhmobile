@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, Home } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
 
 export default function EmailLoginModal({ open, onOpenChange }) {
   const [email, setEmail] = useState("");
@@ -47,8 +48,9 @@ export default function EmailLoginModal({ open, onOpenChange }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold">
             {isSignUp ? "Create Account" : "Welcome Back"}
@@ -147,5 +149,17 @@ export default function EmailLoginModal({ open, onOpenChange }) {
         </form>
       </DialogContent>
     </Dialog>
+
+      {/* Dashboard Button */}
+      {open && (
+        <a 
+          href={createPageUrl("Dashboard")}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-full shadow-2xl flex items-center gap-2 transition-all duration-300 hover:scale-105"
+        >
+          <Home className="w-5 h-5" />
+          Dashboard
+        </a>
+      )}
+    </>
   );
 }
