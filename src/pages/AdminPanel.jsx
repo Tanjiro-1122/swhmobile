@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Crown, Sparkles, Star, Users, TrendingUp, DollarSign, Search, Target, RefreshCw, Loader2, Apple } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, TrendingUp, DollarSign, Search, Target, RefreshCw, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,22 +179,14 @@ function AdminPanelContent() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
-                <p className="text-xl text-gray-700 font-medium">Manage users and subscriptions</p>
-              </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Shield className="w-8 h-8 text-white" />
             </div>
-            <Link to={createPageUrl("AppleSignInTest")}>
-              <Button className="bg-black hover:bg-gray-900 text-white font-bold">
-                <Apple className="w-5 h-5 mr-2" />
-                Test Apple Sign-In
-              </Button>
-            </Link>
+            <div>
+              <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
+              <p className="text-xl text-gray-700 font-medium">Manage users and subscriptions</p>
+            </div>
           </div>
         </div>
 
