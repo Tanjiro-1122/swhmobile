@@ -16,6 +16,8 @@ export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [processingItem, setProcessingItem] = useState(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [iapReady, setIapReady] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   
@@ -44,15 +46,15 @@ export default function Pricing() {
       console.log('WTN API: not available');
     }
 
-    // Check if we're on a mobile device (iOS or Android)
-    const checkMobileDevice = () => {
-      const ua = navigator.userAgent || '';
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-      return isMobile;
-    };
+    // Check platform
+    const ua = navigator.userAgent || '';
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    const isiOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroidDevice = /Android/i.test(ua);
     
-    const isMobile = checkMobileDevice();
     setIsMobileDevice(isMobile);
+    setIsIOS(isiOS);
+    setIsAndroid(isAndroidDevice);
 
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
@@ -816,12 +818,19 @@ export default function Pricing() {
                 </ul>
               </div>
               <div className="border-t pt-4 mt-4">
-                {isMobileDevice ? (
+                {isIOS ? (
                   <p className="text-xs lg:text-sm text-gray-600">
                     • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
                     • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
                     • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
+                  </p>
+                ) : isAndroid ? (
+                  <p className="text-xs lg:text-sm text-gray-600">
+                    • Payment will be charged to your Google Play account at confirmation of purchase.<br/>
+                    • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
+                    • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
+                    • You can manage and cancel your subscriptions by going to your Google Play Store account settings after purchase.
                   </p>
                 ) : (
                   <p className="text-xs lg:text-sm text-gray-600">
@@ -853,7 +862,7 @@ export default function Pricing() {
         </Card>
 
         {/* Restore Purchases Link - iOS only */}
-        {isMobileDevice && /iPhone|iPad|iPod/i.test(navigator.userAgent) && (
+        {isIOS && (
           <div className="text-center mb-8">
             <Button
               variant="link"
