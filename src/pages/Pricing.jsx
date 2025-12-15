@@ -818,10 +818,10 @@ export default function Pricing() {
               <div className="border-t pt-4 mt-4">
                 {isMobileDevice ? (
                   <p className="text-xs lg:text-sm text-gray-600">
-                    • Payment will be charged to your Apple ID / Google Play account at confirmation of purchase.<br/>
+                    • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
                     • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
-                    • You can manage and cancel your subscriptions by going to your App Store / Google Play Store account settings after purchase.
+                    • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
                   </p>
                 ) : (
                   <p className="text-xs lg:text-sm text-gray-600">

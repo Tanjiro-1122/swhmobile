@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppleSignInButton from "@/components/auth/AppleSignInButton";
-import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
