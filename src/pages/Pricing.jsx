@@ -863,8 +863,8 @@ export default function Pricing() {
           </CardContent>
         </Card>
 
-        {/* Restore Purchases Link - iOS only */}
-        {isIOS && (
+        {/* Restore Purchases Link - Mobile only */}
+        {(isIOS || isAndroid) && (
           <div className="text-center mb-8">
             <Button
               variant="link"

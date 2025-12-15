@@ -10,6 +10,14 @@ import { createPageUrl } from "@/utils";
 
 export default function SubscriptionContent() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  React.useEffect(() => {
+    const ua = navigator.userAgent || '';
+    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    setIsAndroid(/Android/i.test(ua));
+  }, []);
 
   const { data: currentUser, isLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -95,22 +103,40 @@ export default function SubscriptionContent() {
 
             {hasPaidPlan && !isLegacy && (
               <div className="pt-4 border-t border-white/20">
-                <Button
-                  onClick={handleManageBilling}
-                  disabled={isLoadingPortal}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3"
-                >
-                  {isLoadingPortal ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  ) : (
-                    <CreditCard className="w-5 h-5 mr-2" />
-                  )}
-                  Manage Billing & Subscription
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-                <p className="text-center text-sm text-white/60 mt-2">
-                  Update payment method, view invoices, or cancel subscription
-                </p>
+                {isIOS || isAndroid ? (
+                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 text-center">
+                    <CreditCard className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                    <p className="font-bold text-blue-300 mb-2">Manage Your Subscription</p>
+                    <p className="text-sm text-blue-200/80 mb-3">
+                      Your subscription is managed through {isIOS ? "Apple's App Store" : "Google Play Store"}
+                    </p>
+                    <p className="text-xs text-blue-200/60">
+                      {isIOS 
+                        ? "Go to Settings → [Your Name] → Subscriptions on your device"
+                        : "Go to Play Store → Menu → Subscriptions on your device"
+                      }
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleManageBilling}
+                      disabled={isLoadingPortal}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3"
+                    >
+                      {isLoadingPortal ? (
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      ) : (
+                        <CreditCard className="w-5 h-5 mr-2" />
+                      )}
+                      Manage Billing & Subscription
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                    </Button>
+                    <p className="text-center text-sm text-white/60 mt-2">
+                      Update payment method, view invoices, or cancel subscription
+                    </p>
+                  </>
+                )}
               </div>
             )}
 

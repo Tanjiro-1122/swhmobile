@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 
 export default function PrivacyPolicy() {
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || '';
+    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    setIsAndroid(/Android/i.test(ua));
+  }, []);
+
+  const storeName = isIOS ? "Apple's App Store" : isAndroid ? "Google Play Store" : "Apple's App Store or Google Play Store";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -86,7 +97,8 @@ export default function PrivacyPolicy() {
                 
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">4.1 Third-Party Services We Use</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Stripe (Payment Processing):</strong> Shares: Email, name, subscription tier, payment amount. Purpose: Process payments securely. Note: We never see your full credit card number - Stripe handles all card data.</li>
+                  <li><strong>Stripe (Payment Processing - Web):</strong> Shares: Email, name, subscription tier, payment amount. Purpose: Process payments securely. Note: We never see your full credit card number - Stripe handles all card data.</li>
+                  <li><strong>{storeName} (In-App Purchases - Mobile):</strong> Shares: Transaction receipts, purchase tokens. Purpose: Verify and process mobile subscriptions. {isIOS ? "Apple" : isAndroid ? "Google" : "Apple/Google"} handles all payment processing.</li>
                   <li><strong>Base44 Platform (Hosting):</strong> Shares: All app data (database, files). Purpose: Host application and database. Data Location: USA servers. Security: Encrypted at rest and in transit.</li>
                   <li><strong>AI/LLM Providers:</strong> Shares: Your sports prediction queries (e.g., "Lakers vs Celtics prediction"). Purpose: Generate AI analysis and predictions. Note: We do NOT share your email, name, or any identifiable information with AI providers.</li>
                   <li><strong>Sports Data APIs (StatMuse, ESPN, etc.):</strong> Shares: API requests for sports statistics (no personal data). Purpose: Fetch live odds, stats, injury reports, weather data.</li>
@@ -294,6 +306,10 @@ export default function PrivacyPolicy() {
 
               <section className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200 mt-8">
                 <h2 className="text-xl font-bold text-blue-900 mb-3">📱 Mobile App Specific Information</h2>
+                <p className="text-blue-800 mb-3">
+                  <strong>In-App Purchases:</strong> {isIOS ? "Apple processes all in-app purchases through your Apple ID. " : isAndroid ? "Google processes all in-app purchases through your Google Play account. " : "Mobile payments are processed through Apple's App Store (iOS) or Google Play Store (Android). "}
+                  We receive only verification receipts/tokens - never your full payment details.
+                </p>
                 <p className="text-blue-800 mb-3">
                   <strong>Push Notifications:</strong> If you enable push notifications, we'll use your device token to send alerts about 
                   odds changes, game starts, and betting insights. You can disable these anytime in your device settings or app preferences.

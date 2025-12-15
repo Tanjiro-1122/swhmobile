@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 
 export default function TermsOfService() {
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || '';
+    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
+    setIsAndroid(/Android/i.test(ua));
+  }, []);
+
+  const storeName = isIOS ? "App Store" : isAndroid ? "Google Play Store" : "App Store/Google Play Store";
+  const storeProvider = isIOS ? "Apple" : isAndroid ? "Google" : "Apple/Google";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -91,6 +103,9 @@ export default function TermsOfService() {
                   <li>Unlimited searches and analysis</li>
                   <li>Cancel anytime (no prorated refunds for partial months)</li>
                   <li>Auto-renews unless cancelled 24 hours before renewal date</li>
+                  {(isIOS || isAndroid) && (
+                    <li><strong>Mobile Subscriptions:</strong> Managed through your {storeName} account settings</li>
+                  )}
                 </ul>
               </section>
 
@@ -151,8 +166,18 @@ export default function TermsOfService() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">5.4 How to Request a Refund</h3>
                 <p className="mb-2">To request a refund:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Email:</strong> support@sportswagerhelper.com with your account email and reason</li>
-                  <li><strong>Subject Line:</strong> "Refund Request - [Your Email]"</li>
+                  {(isIOS || isAndroid) ? (
+                    <>
+                      <li><strong>Mobile Purchases:</strong> Refunds for {storeName} purchases must be requested directly through {storeProvider}</li>
+                      <li><strong>{isIOS ? "Apple" : "Google"} Refund Process:</strong> {isIOS ? "Visit reportaproblem.apple.com" : "Visit play.google.com/store/account and select 'Order History'"}</li>
+                      <li><strong>Note:</strong> {storeProvider} handles all mobile refund decisions according to their policies</li>
+                    </>
+                  ) : (
+                    <>
+                      <li><strong>Web Purchases (Stripe):</strong> support@sportswagerhelper.com with your account email and reason</li>
+                      <li><strong>Mobile Purchases:</strong> Request through App Store (Apple) or Google Play Store (Google) directly</li>
+                    </>
+                  )}
                   <li><strong>We'll Check:</strong> Your purchase date and total search count</li>
                   <li><strong>Processing Time:</strong> Refunds processed within 5-7 business days if approved</li>
                 </ul>
