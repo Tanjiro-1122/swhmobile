@@ -118,10 +118,10 @@ const menuItems = [
           tag: null
         },
         {
-          id: "topstats",
-          title: "TOP STATS",
-          subtitle: "League Leaders",
-          description: "Top 10 teams & players across all sports",
+          id: "thenews",
+          title: "THE NEWS",
+          subtitle: "Latest Updates",
+          description: "Stats, standings & sports news",
           SportIcon: TrophyIcon,
           page: "TopStats",
           gradient: "from-yellow-600 to-amber-700",

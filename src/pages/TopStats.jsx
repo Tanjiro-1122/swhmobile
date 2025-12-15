@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Star, TrendingUp, Loader2, RefreshCw } from "lucide-react";
+import { Trophy, Users, Star, TrendingUp, Loader2, RefreshCw, Tv } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -116,14 +116,15 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
         {/* Header */}
         <div className="text-center mb-8">
           <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm px-4 py-2 mb-4">
-            <Trophy className="w-4 h-4 mr-2 inline" />
-            TOP STATS
+            <Tv className="w-4 h-4 mr-2 inline" />
+            THE NEWS
           </Badge>
-          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-            League Leaders & Standings
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2 flex items-center justify-center gap-3">
+            <Tv className="w-10 h-10" />
+            The News
           </h1>
           <p className="text-white/70">
-            Top 10 teams and players across major sports leagues
+            League standings, top players & latest sports updates
           </p>
           <div className="mt-4">
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm px-4 py-2">
