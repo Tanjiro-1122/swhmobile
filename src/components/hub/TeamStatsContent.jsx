@@ -33,44 +33,8 @@ export default function TeamStatsContent() {
     const maxRetries = 2;
 
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for team: "${query}"
-Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-
-Return: team name, sport, league, current record, season averages, last 5 games with scores, next game prediction, key players, injuries, strengths, weaknesses.
-
-If no next game scheduled, say TBD.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            team_name: { type: "string" },
-            sport: { type: "string" },
-            league: { type: "string" },
-            current_record: { type: "object" },
-            season_averages: { type: "object" },
-            last_five_games: { type: "array", items: { type: "object" } },
-            form: { type: "string" },
-            strengths: { type: "array", items: { type: "string" } },
-            weaknesses: { type: "array", items: { type: "string" } },
-            key_players: { type: "array", items: { type: "string" } },
-            injuries: { type: "array", items: { type: "object" } },
-            next_game: {
-              type: "object",
-              properties: {
-                opponent: { type: "string" },
-                date: { type: "string" },
-                location: { type: "string" },
-                predicted_outcome: { type: "string" },
-                predicted_score: { type: "string" },
-                confidence: { type: "string" },
-                reasoning: { type: "string" }
-              }
-            }
-          },
-          required: ["team_name", "sport"]
-        }
-      });
+      const response = await base44.functions.invoke('getTeamStats', { query });
+      const result = response.data;
 
       if (!result || !result.team_name) {
         throw new Error("Invalid response - team not found");
