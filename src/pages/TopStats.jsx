@@ -139,7 +139,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
               <TabsTrigger
                 key={sport.id}
                 value={sport.id}
-                className="px-4 py-3 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-white/10 text-white/70 hover:bg-white/20 transition-all min-w-[80px]"
+                className="relative px-4 py-3 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-white/10 text-white/70 hover:bg-white/20 transition-all min-w-[80px]"
               >
                 <span className="text-xl mr-2">{sport.icon}</span>
                 <span className="font-bold">{sport.name}</span>
@@ -172,11 +172,13 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
               ) : statsData ? (
                 <div className="space-y-8">
                   {/* Season Info */}
-                  <div className="text-center">
-                    <Badge variant="outline" className="text-white/70 border-white/30">
-                      {statsData.season || '2024-2025 Season'}
-                    </Badge>
-                  </div>
+                  {statsData.season && (
+                    <div className="text-center">
+                      <Badge variant="outline" className="text-white/70 border-white/30">
+                        {statsData.season}
+                      </Badge>
+                    </div>
+                  )}
 
                   {/* Top Teams Section */}
                   <Card className="bg-black/40 backdrop-blur-xl border-white/10">
