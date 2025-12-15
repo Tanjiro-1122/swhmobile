@@ -444,23 +444,26 @@ function AdminPanelContent() {
                 filteredUsers.map((user) => (
                   <Card key={user.id} className="border-2 border-gray-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-5">
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="text-lg font-black text-gray-900">{user.full_name || 'No name'}</div>
                           <div className="text-base font-semibold text-gray-700">{user.email}</div>
                           <div className="text-sm font-medium text-gray-600 mt-1">
                             Joined: {new Date(user.created_date).toLocaleDateString()}
                           </div>
+                          <div className="mt-2 lg:hidden">
+                            {getTierBadge(user.subscription_type)}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="min-w-36">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:gap-4">
+                          <div className="hidden lg:block min-w-36">
                             {getTierBadge(user.subscription_type)}
                           </div>
                           <Select
                             value={user.subscription_type || 'free'}
                             onValueChange={(value) => handleSubscriptionChange(user.id, value)}
                           >
-                            <SelectTrigger className="w-56 border-2 border-gray-300 text-gray-900 font-semibold">
+                            <SelectTrigger className="w-full sm:w-56 border-2 border-gray-300 text-gray-900 font-semibold">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
