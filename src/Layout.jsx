@@ -7,7 +7,6 @@ import {
   Home,
   LogOut,
   Crown,
-  LogIn,
   Mail
 } from "lucide-react";
 
