@@ -143,6 +143,7 @@ const menuItems = [
 export default function Dashboard() {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated()
@@ -151,7 +152,10 @@ export default function Dashboard() {
         console.error('Auth check error:', err);
         setIsAuthenticated(false);
       });
-  }, []);
+
+      const ua = navigator.userAgent || '';
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(ua));
+      }, []);
 
   const { data: currentUser, error: userError } = useQuery({
     queryKey: ['currentUser'],
@@ -259,8 +263,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-4 border border-white/20">
-                {/* Mobile users go to Pricing for IAP, web users sign in here */}
-                {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
+                {isMobile ? (
                  <>
                    <Link to={createPageUrl("Pricing")} className="w-full sm:w-auto">
                      <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
@@ -272,8 +275,8 @@ export default function Dashboard() {
                      variant="outline"
                      className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
                    >
-                     <User className="w-4 h-4 mr-2" />
-                     Account Holders
+                     <LogIn className="w-4 h-4 mr-2" />
+                     Sign In
                    </Button>
                    <ThemeToggle />
                  </>

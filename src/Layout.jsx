@@ -7,7 +7,8 @@ import {
   Home,
   LogOut,
   Crown,
-  LogIn
+  LogIn,
+  Mail
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,6 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = () => {
-    // Use current full URL for redirect back after login
     base44.auth.redirectToLogin(window.location.href);
   };
 
@@ -239,7 +239,7 @@ export default function Layout({ children, currentPageName }) {
                   onClick={handleLogin}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <Mail className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
               )}
