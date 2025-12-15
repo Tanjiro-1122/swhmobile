@@ -1,11 +1,11 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, TrendingUp, Target, Shield, DollarSign, Brain, Zap, Award, Users, MessageSquare, Crown } from "lucide-react"; // Added Users and Crown
+import { BookOpen, TrendingUp, Target, Shield, DollarSign, Brain, Zap, Award, Users, MessageSquare, Crown, Bot } from "lucide-react";
 import { motion } from "framer-motion";
+import AIAssistantChat from "@/components/learning/AIAssistantChat";
 
 export default function LearningCenter() {
   const [selectedLesson, setSelectedLesson] = useState(null);
@@ -471,7 +471,20 @@ Dynamic rating that updates after each game:
           </div>
         </div>
 
-        {selectedLesson ? (
+        <Tabs defaultValue="lessons" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="lessons" className="text-base font-bold">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Lessons
+            </TabsTrigger>
+            <TabsTrigger value="ai-assistant" className="text-base font-bold">
+              <Bot className="w-4 h-4 mr-2" />
+              AI Assistant
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="lessons">
+            {selectedLesson ? (
           // Lesson View
           <div className="space-y-6">
             <Button
@@ -685,6 +698,18 @@ Dynamic rating that updates after each game:
             </CardContent>
           </Card>
         )}
+          </TabsContent>
+
+          <TabsContent value="ai-assistant">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-6">
+                <h2 className="text-4xl font-black text-gray-900 mb-3">AI Betting Assistant</h2>
+                <p className="text-lg text-gray-700">Ask questions about betting strategies, terminology, and more!</p>
+              </div>
+              <AIAssistantChat />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
