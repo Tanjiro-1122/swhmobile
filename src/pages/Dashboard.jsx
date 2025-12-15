@@ -8,8 +8,6 @@ import {
   TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import AppleSignInButton from "@/components/auth/AppleSignInButton";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -263,35 +261,33 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-4 border border-white/20">
                 {/* Mobile users go to Pricing for IAP, web users sign in here */}
                 {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
-                  <>
-                    <Link to={createPageUrl("Pricing")} className="w-full sm:w-auto">
-                      <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
-                        Get Started
-                      </Button>
-                    </Link>
-                    <Button 
-                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                      variant="outline"
-                      className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Account Holders
-                    </Button>
-                    <ThemeToggle />
-                  </>
+                 <>
+                   <Link to={createPageUrl("Pricing")} className="w-full sm:w-auto">
+                     <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
+                       Get Started
+                     </Button>
+                   </Link>
+                   <Button 
+                     onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                     variant="outline"
+                     className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
+                   >
+                     <User className="w-4 h-4 mr-2" />
+                     Account Holders
+                   </Button>
+                   <ThemeToggle />
+                 </>
                 ) : (
-                  <>
-                    <AppleSignInButton className="rounded-full px-4" />
-                    <GoogleSignInButton className="rounded-full px-4" />
-                    <Button 
-                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email
-                    </Button>
-                    <ThemeToggle />
-                  </>
+                 <>
+                   <Button 
+                     onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                   >
+                     <Mail className="w-4 h-4 mr-2" />
+                     Sign In with Email
+                   </Button>
+                   <ThemeToggle />
+                 </>
                 )}
               </div>
             )}
