@@ -786,8 +786,10 @@ export default function Pricing() {
               <div>
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
-                  {isMobileDevice 
-                    ? "Payments are processed securely through Apple's App Store or Google Play Store using your respective account payment methods."
+                  {isIOS 
+                    ? "Payments are processed securely through Apple's App Store using your account payment methods."
+                    : isAndroid
+                    ? "Payments are processed securely through Google Play Store using your account payment methods."
                     : "Web payments are processed securely through Stripe. You can pay with credit card, debit card, or other supported payment methods."
                   }
                 </p>
