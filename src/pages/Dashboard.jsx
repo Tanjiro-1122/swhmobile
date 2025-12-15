@@ -11,6 +11,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import EmailLoginModal from "@/components/auth/EmailLoginModal";
 
 
 
@@ -144,6 +145,7 @@ export default function Dashboard() {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated()
@@ -271,7 +273,7 @@ export default function Dashboard() {
                      </Button>
                    </Link>
                    <Button 
-                     onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                     onClick={() => setShowLoginModal(true)}
                      variant="outline"
                      className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
                    >
@@ -476,6 +478,9 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Email Login Modal for Mobile */}
+      {isMobile && <EmailLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />}
     </div>
   );
 }
