@@ -86,15 +86,19 @@ Deno.serve(async (req) => {
         // Enhance prompt with explicit source instructions
         const enhancedPrompt = `${prompt}
 
-CRITICAL: Search and aggregate data from ALL available sources:
-- ESPN.com, official league sites (NBA.com, NFL.com, MLB.com, NHL.com)
-- Sports-Reference sites (Basketball-Reference, Pro-Football-Reference, etc.)
-- The Odds API and sportsbooks (FanDuel, DraftKings, BetMGM) for current odds/lines
-- TheScore, Bleacher Report for latest news
-- TeamRankings, FantasyPros for advanced analytics
-- Use CURRENT ${new Date().getFullYear()} season data
+CRITICAL: PRIORITIZE DATA SOURCES IN THIS ORDER:
 
-Provide the most accurate, up-to-date information available.`;
+PRIMARY SOURCE (CHECK FIRST):
+1. The Odds API - MUST retrieve current odds, lines, spreads, totals, betting data FIRST
+
+SECONDARY SOURCES (use for additional context):
+2. ESPN.com, official league sites (NBA.com, NFL.com, MLB.com, NHL.com)
+3. Sports-Reference sites (Basketball-Reference, Pro-Football-Reference, etc.)
+4. Sportsbooks (FanDuel, DraftKings, BetMGM) for additional odds comparison
+5. TheScore, Bleacher Report for latest news
+6. TeamRankings, FantasyPros for advanced analytics
+
+Use CURRENT ${new Date().getFullYear()} season data. Provide the most accurate, up-to-date information with betting context from The Odds API as the foundation.`;
 
         const llmRequest: any = {
           prompt: enhancedPrompt,

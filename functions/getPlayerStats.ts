@@ -12,13 +12,17 @@ Deno.serve(async (req) => {
     const { query } = await req.json();
     
     const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for athlete: "${query}" across ALL available sources including:
-- ESPN.com (stats, schedules, injury reports)
-- Official league sites (NBA.com, NFL.com, MLB.com, NHL.com, MLS.com)
-- Sports databases (Basketball-Reference, Pro-Football-Reference)
-- The Odds API (betting lines, props, odds movements)
-- TheScore, Bleacher Report (recent news, updates)
-- FanDuel, DraftKings (fantasy projections, player props)
+        prompt: `Search for athlete: "${query}" - PRIORITIZE THESE SOURCES IN THIS ORDER:
+
+PRIMARY SOURCE (CHECK FIRST):
+1. The Odds API - MUST check for current player props, betting lines, odds movements
+
+SECONDARY SOURCES:
+2. ESPN.com (stats, schedules, injury reports)
+3. Official league sites (NBA.com, NFL.com, MLB.com, NHL.com, MLS.com)
+4. Sports databases (Basketball-Reference, Pro-Football-Reference)
+5. TheScore, Bleacher Report (recent news, updates)
+6. FanDuel, DraftKings (fantasy projections, player props)
 
 Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
