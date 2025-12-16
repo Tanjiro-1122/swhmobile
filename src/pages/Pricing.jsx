@@ -39,22 +39,29 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
-    // Log available WTN methods for diagnostics
-    if (typeof window !== 'undefined' && typeof window.WTN === 'object') {
-      console.log('WTN API available:', Object.keys(window.WTN));
-    } else {
-      console.log('WTN API: not available');
-    }
-
-    // Check platform
+    // Check if running in native app (not just mobile browser)
     const ua = navigator.userAgent || '';
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
     const isiOS = /iPhone|iPad|iPod/i.test(ua);
     const isAndroidDevice = /Android/i.test(ua);
     
-    setIsMobileDevice(isMobile);
-    setIsIOS(isiOS);
-    setIsAndroid(isAndroidDevice);
+    // Only consider it a mobile device if it's in the actual native app
+    // Check for specific app indicators or if WTN bridge actually works
+    const isActuallyNativeApp = (isiOS || isAndroidDevice) && 
+                                 typeof window !== 'undefined' && 
+                                 typeof window.WTN !== 'undefined' &&
+                                 typeof window.WTN.inAppPurchase === 'function';
+    
+    setIsMobileDevice(isActuallyNativeApp);
+    setIsIOS(isiOS && isActuallyNativeApp);
+    setIsAndroid(isAndroidDevice && isActuallyNativeApp);
+    
+    console.log('Platform detection:', { 
+      ua, 
+      isiOS, 
+      isAndroidDevice, 
+      hasWTN: typeof window?.WTN !== 'undefined',
+      isActuallyNativeApp 
+    });
 
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
