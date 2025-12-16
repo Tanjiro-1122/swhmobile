@@ -40,6 +40,17 @@ Deno.serve(async (req) => {
     const briefData = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a professional sports betting analyst. Generate a comprehensive daily betting brief for ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.
 
+CRITICAL: PRIORITIZE DATA SOURCES IN THIS ORDER:
+
+PRIMARY SOURCE (CHECK FIRST):
+1. The Odds API - MUST retrieve current odds, lines, spreads, totals, props, line movements
+
+SECONDARY SOURCES:
+2. ESPN.com, official league sites for game schedules and player news
+3. Injury reports from official team sites
+4. Weather services for outdoor games
+5. Sportsbook sites (FanDuel, DraftKings, BetMGM) for additional odds comparison
+
 ${sportsFilter}
 
 Your brief should include:
