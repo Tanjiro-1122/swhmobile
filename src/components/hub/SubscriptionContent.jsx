@@ -105,17 +105,17 @@ export default function SubscriptionContent() {
               <div className="pt-4 border-t border-white/20">
                 {isIOS || isAndroid ? (
                   <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 text-center">
-                    <CreditCard className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                    <p className="font-bold text-blue-300 mb-2">Manage Your Subscription</p>
-                    <p className="text-sm text-blue-200/80 mb-3">
-                      Your subscription is managed through {isIOS ? "Apple's App Store" : "Google Play Store"}
-                    </p>
-                    <p className="text-xs text-blue-200/60">
-                      {isIOS 
-                        ? "Go to Settings → [Your Name] → Subscriptions on your device"
-                        : "Go to Play Store → Menu → Subscriptions on your device"
-                      }
-                    </p>
+                   <CreditCard className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                   <p className="font-bold text-black text-lg mb-2">Manage Your Subscription</p>
+                   <p className="text-sm font-semibold text-black mb-3">
+                     Your subscription is managed through {isIOS ? "Apple's App Store" : "Google Play Store"}
+                   </p>
+                   <p className="text-xs font-semibold text-black">
+                     {isIOS 
+                       ? "Go to Settings → [Your Name] → Subscriptions on your device"
+                       : "Go to Play Store → Menu → Subscriptions on your device"
+                     }
+                   </p>
                   </div>
                 ) : (
                   <>
@@ -158,9 +158,9 @@ export default function SubscriptionContent() {
         <Card className="border border-green-500/30 bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm shadow-xl">
           <CardContent className="p-6">
             <div className="text-center">
-              <Zap className="w-12 h-12 text-green-400 mx-auto mb-3" />
-              <h3 className="text-xl font-black text-white mb-2">Upgrade Your Experience</h3>
-              <p className="text-white/70 mb-4">
+              <Zap className="w-12 h-12 text-green-600 mx-auto mb-3" />
+              <h3 className="text-xl font-black text-black mb-2">Upgrade Your Experience</h3>
+              <p className="font-semibold text-black mb-4">
                 Get unlimited searches and access to all premium features
               </p>
               <Link to={createPageUrl("Pricing")}>
