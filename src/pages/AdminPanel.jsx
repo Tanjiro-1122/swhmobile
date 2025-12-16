@@ -441,7 +441,7 @@ function AdminPanelContent() {
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8 text-gray-700 text-lg font-semibold">No users found</div>
               ) : (
-                filteredUsers.map((user) => (
+                filteredUsers.filter(user => !user.email?.toLowerCase().includes('test')).map((user) => (
                   <Card key={user.id} className="border-2 border-gray-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-5">
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
