@@ -291,8 +291,8 @@ export default function SportDetail() {
   }, [sport]);
 
   const handleRefresh = () => {
-    fetchPlayers(true);
-    fetchTeams(true);
+    fetchPlayers();
+    fetchTeams();
   };
 
   return (
