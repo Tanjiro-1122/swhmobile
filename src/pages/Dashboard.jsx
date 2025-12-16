@@ -265,35 +265,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-4 border border-white/20">
-                {isMobile ? (
-                 <>
-                   <Link to={createPageUrl("Pricing")} className="w-full sm:w-auto">
-                     <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 rounded-full">
-                       Get Started
-                     </Button>
-                   </Link>
-                   <Button 
-                     onClick={() => setShowLoginModal(true)}
-                     variant="outline"
-                     className="w-full sm:w-auto text-white border-white/30 hover:bg-white/10 font-semibold px-6 rounded-full"
-                   >
-                     <Mail className="w-4 h-4 mr-2" />
-                     Sign In
-                   </Button>
-                   <ThemeToggle />
-                 </>
-                ) : (
-                 <>
-                   <Button 
-                     onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
-                   >
-                     <Mail className="w-4 h-4 mr-2" />
-                     Sign In with Email
-                   </Button>
-                   <ThemeToggle />
-                 </>
-                )}
+                <Button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+                <ThemeToggle />
               </div>
             )}
           </motion.div>
