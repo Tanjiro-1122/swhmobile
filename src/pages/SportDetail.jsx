@@ -265,7 +265,7 @@ export default function SportDetail() {
         </Tabs>
 
         <p className="text-center text-slate-400 text-sm mt-8 pb-8">
-          Data fetched from {config.source}
+          Data sourced from {config.source}
         </p>
       </div>
     </div>
