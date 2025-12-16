@@ -170,24 +170,40 @@ export default function SportDetail() {
                 <div className="p-8 text-center text-slate-500">No team data available</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-sm">
                     <thead className="bg-slate-50 border-b">
                       <tr>
-                        <th className="text-left p-4 font-semibold text-slate-700">#</th>
-                        <th className="text-left p-4 font-semibold text-slate-700">Team</th>
-                        <th className="text-center p-4 font-semibold text-slate-700">W</th>
-                        <th className="text-center p-4 font-semibold text-slate-700">L</th>
-                        <th className="text-center p-4 font-semibold text-slate-700">Win%</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 sticky left-0 bg-slate-50 z-10">#</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 sticky left-12 bg-slate-50 z-10 min-w-[140px]">Team</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Record</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Win%</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">PF</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">PA</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Diff</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">ATS</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">O/U</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Home</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Away</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 whitespace-nowrap">Last 5-10</th>
                       </tr>
                     </thead>
                     <tbody>
                       {teams.map((team, index) => (
                         <tr key={index} className="border-b hover:bg-slate-50">
-                          <td className="p-4 font-bold text-slate-700">{index + 1}</td>
-                          <td className="p-4 font-semibold text-slate-800">{team.name}</td>
-                          <td className="p-4 text-center text-slate-600">{team.wins}</td>
-                          <td className="p-4 text-center text-slate-600">{team.losses}</td>
-                          <td className="p-4 text-center text-slate-600">{team.winPct}</td>
+                          <td className="p-3 font-bold text-slate-700 sticky left-0 bg-white">{index + 1}</td>
+                          <td className="p-3 font-semibold text-slate-800 sticky left-12 bg-white">{team.name}</td>
+                          <td className="p-3 text-center text-slate-600 whitespace-nowrap">{team.wins}-{team.losses}</td>
+                          <td className="p-3 text-center font-semibold text-slate-700">{team.winPct}</td>
+                          <td className="p-3 text-center text-slate-600">{team.pointsFor || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{team.pointsAgainst || '--'}</td>
+                          <td className={`p-3 text-center font-semibold ${parseFloat(team.differential) > 0 ? 'text-green-600' : parseFloat(team.differential) < 0 ? 'text-red-600' : 'text-slate-600'}`}>
+                            {team.differential || '--'}
+                          </td>
+                          <td className="p-3 text-center text-slate-600">{team.ats || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{team.ou || '--'}</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">{team.homeRecord || '--'}</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">{team.awayRecord || '--'}</td>
+                          <td className="p-3 text-slate-600 text-xs font-mono">{team.lastGames || '--'}</td>
                         </tr>
                       ))}
                     </tbody>
