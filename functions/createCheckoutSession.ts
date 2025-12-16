@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/#/MyAccount?tab=subscription&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/#/Pricing`,
+      success_url: `${origin}/#/Dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/#/Pricing?payment_cancelled=true`,
       metadata: {
         user_id: user.id,
         user_email: user.email,
