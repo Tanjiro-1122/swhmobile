@@ -11,35 +11,35 @@ import TeamRankings from '@/components/topten/TeamRankings';
 
 const sportConfig = {
   NFL: {
-    icon: '🏈',
+    logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nfl.png',
     gradient: 'from-blue-600 to-blue-800',
     accent: 'bg-blue-600',
     border: 'border-blue-500',
     source: 'NFL.com & TeamRankings.com'
   },
   MLB: {
-    icon: '⚾',
+    logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/mlb.png',
     gradient: 'from-red-600 to-red-800',
     accent: 'bg-red-600',
     border: 'border-red-500',
     source: 'MLB.com'
   },
   NBA: {
-    icon: '🏀',
+    logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png',
     gradient: 'from-orange-500 to-orange-700',
     accent: 'bg-orange-500',
     border: 'border-orange-500',
     source: 'NBA.com'
   },
   NHL: {
-    icon: '🏒',
+    logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nhl.png',
     gradient: 'from-teal-500 to-teal-700',
     accent: 'bg-teal-500',
     border: 'border-teal-500',
     source: 'NHL.com'
   },
   Soccer: {
-    icon: '⚽',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/FIFA_logo_without_slogan.svg/500px-FIFA_logo_without_slogan.svg.png',
     gradient: 'from-green-600 to-green-800',
     accent: 'bg-green-600',
     border: 'border-green-500',
@@ -149,7 +149,7 @@ Use the most recent standings from ${config.source} and TeamRankings.com.`,
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-6"
           >
-            <span className="text-7xl">{config.icon}</span>
+            <img src={config.logo} alt={sport} className="w-20 h-20 object-contain" />
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-white">{sport}</h1>
               <p className="text-white/70 mt-2">Top 10 Players & Team Rankings</p>
