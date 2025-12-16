@@ -7,11 +7,15 @@ import { Sparkles, Calendar, TrendingUp, AlertTriangle, Cloud } from "lucide-rea
 import { motion } from "framer-motion";
 
 export default function BettingBriefsContent() {
-  const { data: briefs = [], isLoading } = useQuery({
+  const { data: briefs = [], isLoading, refetch } = useQuery({
     queryKey: ['bettingBriefs'],
     queryFn: async () => {
       return await base44.entities.BettingBrief.list('-brief_date', 10);
     },
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache old data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   if (isLoading) {
