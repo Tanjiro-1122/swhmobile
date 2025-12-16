@@ -22,13 +22,22 @@ export default function EmailLoginModal({ open, onOpenChange }) {
 
     try {
       if (isSignUp) {
-        // Sign up flow
-        await base44.auth.signUp({ email, password, full_name: fullName });
-        window.location.reload();
+        // Sign up flow - use magic link
+        await base44.auth.signInWithOtp({ 
+          email, 
+          options: {
+            data: { full_name: fullName }
+          }
+        });
+        setError("");
+        alert("Check your email for the sign-up link!");
+        handleClose();
       } else {
-        // Sign in flow
-        await base44.auth.signIn({ email, password });
-        window.location.reload();
+        // Sign in flow - use magic link
+        await base44.auth.signInWithOtp({ email });
+        setError("");
+        alert("Check your email for the sign-in link!");
+        handleClose();
       }
     } catch (err) {
       setError(err.message || "Authentication failed. Please try again.");
