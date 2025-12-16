@@ -22,35 +22,55 @@ export default function TopStats() {
 
   const getPromptForSport = (sport) => {
     const prompts = {
-      nfl: `Search the internet for the latest 2024-2025 NFL standings and statistics. Provide the current top 10 NFL teams by win-loss record and the top 10 players by performance.
+      nfl: `You are a sports data expert. Search ESPN.com/nfl/standings and NFL.com for the CURRENT 2024-2025 NFL season standings and player statistics.
 
-Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".750"), points for per game (e.g., "28.5"), points against per game (e.g., "18.2"), current streak (e.g., "W3" or "L2"), and division.
+CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
-Players: Include rank (1-10), player name, team, position (QB/RB/WR/etc), and three relevant stats with labels. For QBs: passing yards, touchdowns, passer rating. For RBs: rushing yards, touchdowns, yards per carry. For WRs: receiving yards, touchdowns, receptions. Include games played.`,
+Teams (EXACTLY 10): rank (1-10), name (e.g., "Kansas City Chiefs"), wins (number), losses (number), winPct (e.g., "0.750"), pointsFor (e.g., "28.5"), pointsAgainst (e.g., "18.2"), streak (e.g., "W3"), division (e.g., "AFC West")
 
-      nba: `Search the internet for the latest 2024-2025 NBA standings and statistics. Provide the current top 10 NBA teams by win-loss record and the top 10 players by performance.
+Players (EXACTLY 10): rank (1-10), name (e.g., "Patrick Mahomes"), team, position (QB/RB/WR/TE), stat1Label (e.g., "Pass Yds"), stat1Value (e.g., "3250"), stat2Label (e.g., "Pass TD"), stat2Value (e.g., "28"), stat3Label (e.g., "Rating"), stat3Value (e.g., "105.2"), gamesPlayed (number)
 
-Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".667"), points per game (e.g., "115.2"), points allowed per game (e.g., "108.5"), current streak (e.g., "W5" or "L1"), and conference (Eastern/Western).
+Use CURRENT 2024-2025 season data. Search ESPN and NFL.com NOW.`,
 
-Players: Include rank (1-10), player name, team, position (PG/SG/SF/PF/C), points per game, assists per game, rebounds per game, and games played.`,
+      nba: `You are a sports data expert. Search ESPN.com/nba/standings and NBA.com for the CURRENT 2024-2025 NBA season standings and player statistics.
 
-      mlb: `Search the internet for the latest MLB standings and statistics. Since it's currently December, provide the final 2024 season top 10 teams and players.
+CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
-Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".605"), runs scored per game (e.g., "5.2"), runs allowed per game (e.g., "4.1"), final streak or playoff result, and division.
+Teams (EXACTLY 10): rank (1-10), name (e.g., "Boston Celtics"), wins (number), losses (number), winPct (e.g., "0.667"), pointsFor (e.g., "115.2"), pointsAgainst (e.g., "108.5"), streak (e.g., "W5"), division (e.g., "Atlantic" or "Eastern Conference")
 
-Players: Include rank (1-10), player name, team, position (OF/1B/P/etc), and three relevant stats. For hitters: batting average, home runs, RBIs. For pitchers: ERA, wins, strikeouts. Include games played.`,
+Players (EXACTLY 10): rank (1-10), name (e.g., "Luka Doncic"), team, position (PG/SG/SF/PF/C), stat1Label (e.g., "PPG"), stat1Value (e.g., "28.5"), stat2Label (e.g., "APG"), stat2Value (e.g., "8.2"), stat3Label (e.g., "RPG"), stat3Value (e.g., "9.1"), gamesPlayed (number)
 
-      nhl: `Search the internet for the latest 2024-2025 NHL standings and statistics. Provide the current top 10 NHL teams by points and the top 10 players by performance.
+Use CURRENT 2024-2025 season data. Search ESPN and NBA.com NOW.`,
 
-Teams: Include rank (1-10), team name, wins, losses (regular + OT/SO), win percentage (e.g., ".625"), goals for per game (e.g., "3.5"), goals against per game (e.g., "2.8"), current streak (e.g., "W4" or "L2"), and division.
+      mlb: `You are a sports data expert. Search ESPN.com/mlb and MLB.com for the FINAL 2024 MLB season standings and statistics (season ended in October 2024).
 
-Players: Include rank (1-10), player name, team, position (C/LW/RW/D), goals scored, assists, plus/minus rating, and games played.`,
+CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
-      soccer: `Search the internet for the latest FIFA World Rankings and top European league statistics. Provide the current top 10 national teams and top 10 players.
+Teams (EXACTLY 10): rank (1-10), name (e.g., "Los Angeles Dodgers"), wins (number), losses (number), winPct (e.g., "0.605"), pointsFor (e.g., "5.2" - runs per game), pointsAgainst (e.g., "4.1" - runs allowed), streak (e.g., "Won World Series" or "Lost NLCS"), division (e.g., "NL West")
 
-Teams: Include rank (1-10), team name, wins (recent record), losses (recent record), win percentage or points, goals for (recent average), goals against (recent average), current form (e.g., "W-W-D"), and confederation (UEFA/CONMEBOL/etc).
+Players (EXACTLY 10): rank (1-10), name (e.g., "Shohei Ohtani"), team, position (OF/1B/SS/SP/RP), stat1Label (e.g., "AVG" or "ERA"), stat1Value (e.g., ".310" or "2.45"), stat2Label (e.g., "HR" or "Wins"), stat2Value (e.g., "45" or "18"), stat3Label (e.g., "RBI" or "K"), stat3Value (e.g., "120" or "250"), gamesPlayed (number)
 
-Players: Include rank (1-10), player name, club team, position (FW/MF/DF), goals this season, assists this season, total goal contributions, and games played.`
+Use FINAL 2024 season data.`,
+
+      nhl: `You are a sports data expert. Search ESPN.com/nhl/standings and NHL.com for the CURRENT 2024-2025 NHL season standings and player statistics.
+
+CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
+
+Teams (EXACTLY 10): rank (1-10), name (e.g., "Colorado Avalanche"), wins (number), losses (number including OT/SO), winPct (e.g., "0.625"), pointsFor (e.g., "3.5" - goals per game), pointsAgainst (e.g., "2.8"), streak (e.g., "W4"), division (e.g., "Central")
+
+Players (EXACTLY 10): rank (1-10), name (e.g., "Connor McDavid"), team, position (C/LW/RW/D/G), stat1Label (e.g., "Goals"), stat1Value (e.g., "25"), stat2Label (e.g., "Assists"), stat2Value (e.g., "42"), stat3Label (e.g., "+/-"), stat3Value (e.g., "+18"), gamesPlayed (number)
+
+Use CURRENT 2024-2025 season data. Search ESPN and NHL.com NOW.`,
+
+      soccer: `You are a sports data expert. Search FIFA.com/fifa-world-ranking and transfermarkt.com for CURRENT FIFA World Rankings and top European league player statistics.
+
+CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
+
+Teams (EXACTLY 10 national teams): rank (1-10), name (e.g., "Argentina"), wins (recent 10 games), losses (recent 10 games), winPct (e.g., "0.70"), pointsFor (e.g., "2.5" - goals per game), pointsAgainst (e.g., "0.8"), streak (e.g., "W-W-D"), division (e.g., "CONMEBOL" or "UEFA")
+
+Players (EXACTLY 10 from top leagues): rank (1-10), name (e.g., "Erling Haaland"), team (club name), position (FW/MF/DF/GK), stat1Label (e.g., "Goals"), stat1Value (e.g., "22"), stat2Label (e.g., "Assists"), stat2Value (e.g., "8"), stat3Label (e.g., "Apps"), stat3Value (e.g., "20"), gamesPlayed (number)
+
+Use CURRENT 2024-2025 season data. Search FIFA.com and transfermarkt NOW.`
     };
     return prompts[sport] || prompts.nfl;
   };
