@@ -30,8 +30,6 @@ import PostPurchaseSignIn from './pages/PostPurchaseSignIn';
 import TopStats from './pages/TopStats';
 import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import AdminErrorLogs from './pages/AdminErrorLogs';
-import TopTen from './pages/TopTen';
-import SportDetail from './pages/SportDetail';
 import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
@@ -69,8 +67,6 @@ export const PAGES = {
     "TopStats": TopStats,
     "AdminPurchaseAudit": AdminPurchaseAudit,
     "AdminErrorLogs": AdminErrorLogs,
-    "TopTen": TopTen,
-    "SportDetail": SportDetail,
     "Home": Home,
 }
 
