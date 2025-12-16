@@ -12,12 +12,12 @@ const sportColors = {
   Soccer: 'from-green-600 to-green-800'
 };
 
-const sportIcons = {
-  NFL: '🏈',
-  MLB: '⚾',
-  NBA: '🏀',
-  NHL: '🏒',
-  Soccer: '⚽'
+const sportLogos = {
+  NFL: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nfl.png',
+  MLB: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/mlb.png',
+  NBA: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png',
+  NHL: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nhl.png',
+  Soccer: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/FIFA_logo_without_slogan.svg/500px-FIFA_logo_without_slogan.svg.png'
 };
 
 export default function SportCard({ sport, index }) {
