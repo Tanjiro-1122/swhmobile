@@ -24,6 +24,8 @@ Deno.serve(async (req) => {
     // Get the host from request to build proper URLs
     const url = new URL(req.url);
     const origin = url.origin;
+    
+    console.log('🔍 Creating checkout session:', { origin, priceId, mode, userEmail: user.email });
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
@@ -37,8 +39,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/MyAccount?tab=subscription&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/Pricing`,
+      success_url: `${origin}/#/MyAccount?tab=subscription&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/#/Pricing`,
       metadata: {
         user_id: user.id,
         user_email: user.email,
@@ -55,6 +57,8 @@ Deno.serve(async (req) => {
       }),
     });
 
+    console.log('✅ Checkout session created:', { sessionId: session.id, url: session.url });
+    
     return Response.json({ 
       sessionId: session.id,
       url: session.url 
