@@ -395,7 +395,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                             </tr>
                           </thead>
                           <tbody>
-                            {statsData.teams?.map((team, idx) => (
+                            {statsData.teams?.slice(0, 10).map((team, idx) => (
                               <tr 
                                 key={idx} 
                                 className={`border-b border-white/5 hover:bg-white/5 transition-colors ${idx < 3 ? 'bg-gradient-to-r from-yellow-500/10 to-transparent' : ''}`}
@@ -459,7 +459,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                             </tr>
                           </thead>
                           <tbody>
-                            {statsData.players?.map((player, idx) => (
+                            {statsData.players?.slice(0, 10).map((player, idx) => (
                               <tr 
                                 key={idx} 
                                 className={`border-b border-white/5 hover:bg-white/5 transition-colors ${idx < 3 ? 'bg-gradient-to-r from-purple-500/10 to-transparent' : ''}`}
