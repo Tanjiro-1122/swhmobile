@@ -12,10 +12,17 @@ Deno.serve(async (req) => {
     const { query } = await req.json();
     
     const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for athlete: "${query}"
+        prompt: `Search for athlete: "${query}" across ALL available sources including:
+- ESPN.com (stats, schedules, injury reports)
+- Official league sites (NBA.com, NFL.com, MLB.com, NHL.com, MLS.com)
+- Sports databases (Basketball-Reference, Pro-Football-Reference)
+- The Odds API (betting lines, props, odds movements)
+- TheScore, Bleacher Report (recent news, updates)
+- FanDuel, DraftKings (fantasy projections, player props)
+
 Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Return player data: name, team, position, sport, league, season stats, last 5 games, health status, next game prediction, strengths, weaknesses.
+Return comprehensive player data: name, team, position, sport, league, season stats, last 5 games with detailed stats, health status, next game prediction with betting insights, current odds/lines if available, strengths, weaknesses.
 
 IMPORTANT FIELDS:
 - role: Must be one of "Starter", "Bench", "Sixth Man", "Rotation", or "Unknown" - indicate if player starts or comes off bench
@@ -23,12 +30,13 @@ IMPORTANT FIELDS:
 - injury_details: If not healthy, specify the injury (e.g., "Sprained ankle", "Hamstring strain")
 
 Stats by sport:
-- Basketball: PPG, RPG, APG, SPG, BPG, 3PM, FG%
-- Football: passing/rushing/receiving yards, TDs
-- Baseball: AVG, HR, RBI (batters) or ERA, K, W (pitchers)
-- Hockey: G, A, PTS, +/-
-- Soccer: goals, assists
+- Basketball: PPG, RPG, APG, SPG, BPG, 3PM, FG%, FT%, minutes
+- Football: passing/rushing/receiving yards, TDs, completions, targets
+- Baseball: AVG, HR, RBI, SB (batters) or ERA, K, W, WHIP (pitchers)
+- Hockey: G, A, PTS, +/-, SOG, TOI
+- Soccer: goals, assists, shots, key passes, tackles
 
+Include current betting lines/props if available.
 If no next game scheduled, say TBD.`,
         add_context_from_internet: true,
         response_json_schema: {

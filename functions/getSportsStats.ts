@@ -83,8 +83,21 @@ Deno.serve(async (req) => {
     const result = await retryWithBackoff(async () => {
         console.log('[getSportsStats] Calling InvokeLLM...');
 
+        // Enhance prompt with explicit source instructions
+        const enhancedPrompt = `${prompt}
+
+CRITICAL: Search and aggregate data from ALL available sources:
+- ESPN.com, official league sites (NBA.com, NFL.com, MLB.com, NHL.com)
+- Sports-Reference sites (Basketball-Reference, Pro-Football-Reference, etc.)
+- The Odds API and sportsbooks (FanDuel, DraftKings, BetMGM) for current odds/lines
+- TheScore, Bleacher Report for latest news
+- TeamRankings, FantasyPros for advanced analytics
+- Use CURRENT ${new Date().getFullYear()} season data
+
+Provide the most accurate, up-to-date information available.`;
+
         const llmRequest: any = {
-          prompt,
+          prompt: enhancedPrompt,
           add_context_from_internet: true,
           max_tokens,
         };
