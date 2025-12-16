@@ -153,19 +153,30 @@ export default function Pricing() {
         mode = 'payment';
       }
       
+      console.log('Creating Stripe checkout session...', { priceId, mode });
+      
       const response = await base44.functions.invoke('createCheckoutSession', {
         priceId,
         mode
       });
       
+      console.log('Checkout session response:', response);
+      
       if (response.data?.url) {
+        console.log('Redirecting to Stripe checkout:', response.data.url);
         window.location.href = response.data.url;
+      } else if (response.data?.error) {
+        console.error('Checkout session error:', response.data.error);
+        alert(`Checkout failed: ${response.data.error}`);
+        setProcessingItem(null);
       } else {
-        console.error('Failed to create checkout session');
+        console.error('No checkout URL returned:', response);
+        alert('Failed to create checkout session. Please try again.');
         setProcessingItem(null);
       }
     } catch (error) {
       console.error('Stripe checkout error:', error);
+      alert(`Error: ${error.message || 'Failed to start checkout'}`);
       setProcessingItem(null);
     }
   };
@@ -180,7 +191,13 @@ export default function Pricing() {
     }
     
     // Already authenticated - go directly to Stripe
-    await startStripeCheckout(plan);
+    try {
+      await startStripeCheckout(plan);
+    } catch (err) {
+      console.error('Stripe checkout failed:', err);
+      alert('Failed to start checkout. Please try again or contact support if the issue persists.');
+      setProcessingItem(null);
+    }
   };
 
   // Cancel purchase and clear state
