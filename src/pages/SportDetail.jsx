@@ -194,6 +194,7 @@ Use the most recent standings from ${config.source} and TeamRankings.com.`,
                 players={players} 
                 isLoading={loadingPlayers}
                 accentColor={config.border}
+                sport={sport}
               />
             </motion.div>
           </TabsContent>
