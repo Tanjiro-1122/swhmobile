@@ -577,114 +577,118 @@ export default function Pricing() {
             </Card>
           </motion.div>
 
-          {/* Premium Monthly */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="md:col-span-1"
-          >
-            <Card className={`h-full border-2 ${currentPlan === 'premium_monthly' ? 'border-purple-500 shadow-2xl' : 'border-purple-200'} relative`}>
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg whitespace-nowrap">
-                  MOST POPULAR
-                </Badge>
-              </div>
-              <CardHeader className="text-center p-6 lg:p-8 bg-gradient-to-br from-purple-50 to-pink-50 pt-8">
-                <Star className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-purple-600" />
-                <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Premium Monthly</CardTitle>
-                <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$19.99</div>
-                <div className="text-sm lg:text-base text-gray-600">/month • Cancel anytime</div>
-              </CardHeader>
-              <CardContent className="p-6 lg:p-8">
-                <ul className="space-y-3 mb-8">
-                  {features.premium.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm lg:text-base text-gray-700">
-                      <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                {currentPlan === 'premium_monthly' ? (
-                  <Button disabled className="w-full bg-gray-200 text-gray-600 cursor-not-allowed py-6 text-base">
-                    Current Plan
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => handleSubscribe('premium')}
-                    disabled={processingItem !== null}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                  >
-                    {processingItem === 'premium' ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      'Subscribe Now'
-                    )}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* VIP Annual */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="md:col-span-2 lg:col-span-1"
-          >
-            <Card className={`h-full border-2 ${currentPlan === 'vip_annual' ? 'border-yellow-500 shadow-2xl' : 'border-yellow-200'} relative`}>
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg animate-pulse whitespace-nowrap">
-                  💎 BEST VALUE
-                </Badge>
-              </div>
-              <CardHeader className="text-center p-6 lg:p-8 bg-gradient-to-br from-yellow-50 to-orange-50 pt-8">
-                <Crown className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-yellow-600" />
-                <CardTitle className="text-2xl lg:text-3xl font-black mb-2">VIP Annual</CardTitle>
-                <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$149.99</div>
-                <div className="text-sm lg:text-base text-gray-600">/year • Billed annually</div>
-                <div className="mt-3">
-                  <Badge className="bg-green-100 text-green-800 border-green-300 text-sm">
-                    Save 37% vs Monthly
+          {/* Premium Monthly - Hide on iOS */}
+          {!isIOS && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="md:col-span-1"
+            >
+              <Card className={`h-full border-2 ${currentPlan === 'premium_monthly' ? 'border-purple-500 shadow-2xl' : 'border-purple-200'} relative`}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg whitespace-nowrap">
+                    MOST POPULAR
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="p-6 lg:p-8">
-                <ul className="space-y-3 mb-8">
-                  {features.vip.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm lg:text-base text-gray-700">
-                      <Check className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      <span className="font-semibold">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                {currentPlan === 'vip_annual' ? (
-                  <Button disabled className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-6 cursor-not-allowed opacity-75 text-base">
-                    ⭐ You're a VIP Member!
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => handleSubscribe('vip')}
-                    disabled={processingItem !== null}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                  >
-                    {processingItem === 'vip' ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      'Upgrade to VIP'
-                    )}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+                <CardHeader className="text-center p-6 lg:p-8 bg-gradient-to-br from-purple-50 to-pink-50 pt-8">
+                  <Star className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-purple-600" />
+                  <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Premium Monthly</CardTitle>
+                  <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$19.99</div>
+                  <div className="text-sm lg:text-base text-gray-600">/month • Cancel anytime</div>
+                </CardHeader>
+                <CardContent className="p-6 lg:p-8">
+                  <ul className="space-y-3 mb-8">
+                    {features.premium.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm lg:text-base text-gray-700">
+                        <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {currentPlan === 'premium_monthly' ? (
+                    <Button disabled className="w-full bg-gray-200 text-gray-600 cursor-not-allowed py-6 text-base">
+                      Current Plan
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe('premium')}
+                      disabled={processingItem !== null}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                    >
+                      {processingItem === 'premium' ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Processing...
+                        </div>
+                      ) : (
+                        'Subscribe Now'
+                      )}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* VIP Annual - Hide on iOS */}
+          {!isIOS && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="md:col-span-2 lg:col-span-1"
+            >
+              <Card className={`h-full border-2 ${currentPlan === 'vip_annual' ? 'border-yellow-500 shadow-2xl' : 'border-yellow-200'} relative`}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg animate-pulse whitespace-nowrap">
+                    💎 BEST VALUE
+                  </Badge>
+                </div>
+                <CardHeader className="text-center p-6 lg:p-8 bg-gradient-to-br from-yellow-50 to-orange-50 pt-8">
+                  <Crown className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-yellow-600" />
+                  <CardTitle className="text-2xl lg:text-3xl font-black mb-2">VIP Annual</CardTitle>
+                  <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$149.99</div>
+                  <div className="text-sm lg:text-base text-gray-600">/year • Billed annually</div>
+                  <div className="mt-3">
+                    <Badge className="bg-green-100 text-green-800 border-green-300 text-sm">
+                      Save 37% vs Monthly
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 lg:p-8">
+                  <ul className="space-y-3 mb-8">
+                    {features.vip.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm lg:text-base text-gray-700">
+                        <Check className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-semibold">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {currentPlan === 'vip_annual' ? (
+                    <Button disabled className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-6 cursor-not-allowed opacity-75 text-base">
+                      ⭐ You're a VIP Member!
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe('vip')}
+                      disabled={processingItem !== null}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                    >
+                      {processingItem === 'vip' ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Processing...
+                        </div>
+                      ) : (
+                        'Upgrade to VIP'
+                      )}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
         </div>
 
         {/* Feature Comparison - Better iPad readability */}
