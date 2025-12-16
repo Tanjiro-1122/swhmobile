@@ -22,7 +22,16 @@ export default function TopStats() {
 
   const getPromptForSport = (sport) => {
     const prompts = {
-      nfl: `You are a sports data expert. Search ESPN.com/nfl/standings and NFL.com for the CURRENT 2024-2025 NFL season standings and player statistics.
+        nfl: `You are a sports data expert. PRIORITIZE THESE SOURCES IN ORDER:
+
+    PRIMARY SOURCE (CHECK FIRST):
+    1. The Odds API - Check for current NFL odds, lines, player props
+
+    SECONDARY SOURCES:
+    2. ESPN.com/nfl/standings
+    3. NFL.com
+
+    Search for the CURRENT 2024-2025 NFL season standings and player statistics.
 
 CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
@@ -32,7 +41,16 @@ Players (EXACTLY 10): rank (1-10), name (e.g., "Patrick Mahomes"), team, positio
 
 Use CURRENT 2024-2025 season data. Search ESPN and NFL.com NOW.`,
 
-      nba: `You are a sports data expert. Search ESPN.com/nba/standings and NBA.com for the CURRENT 2024-2025 NBA season standings and player statistics.
+      nba: `You are a sports data expert. PRIORITIZE THESE SOURCES IN ORDER:
+
+      PRIMARY SOURCE (CHECK FIRST):
+      1. The Odds API - Check for current NBA odds, lines, player props
+
+      SECONDARY SOURCES:
+      2. ESPN.com/nba/standings
+      3. NBA.com
+
+      Search for the CURRENT 2024-2025 NBA season standings and player statistics.
 
 CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
@@ -42,7 +60,16 @@ Players (EXACTLY 10): rank (1-10), name (e.g., "Luka Doncic"), team, position (P
 
 Use CURRENT 2024-2025 season data. Search ESPN and NBA.com NOW.`,
 
-      mlb: `You are a sports data expert. Search ESPN.com/mlb and MLB.com for the FINAL 2024 MLB season standings and statistics (season ended in October 2024).
+      mlb: `You are a sports data expert. PRIORITIZE THESE SOURCES IN ORDER:
+
+      PRIMARY SOURCE (CHECK FIRST):
+      1. The Odds API - Check for current MLB odds, lines, player props
+
+      SECONDARY SOURCES:
+      2. ESPN.com/mlb
+      3. MLB.com
+
+      Search for the FINAL 2024 MLB season standings and statistics (season ended in October 2024).
 
 CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
@@ -52,7 +79,16 @@ Players (EXACTLY 10): rank (1-10), name (e.g., "Shohei Ohtani"), team, position 
 
 Use FINAL 2024 season data.`,
 
-      nhl: `You are a sports data expert. Search ESPN.com/nhl/standings and NHL.com for the CURRENT 2024-2025 NHL season standings and player statistics.
+      nhl: `You are a sports data expert. PRIORITIZE THESE SOURCES IN ORDER:
+
+      PRIMARY SOURCE (CHECK FIRST):
+      1. The Odds API - Check for current NHL odds, lines, player props
+
+      SECONDARY SOURCES:
+      2. ESPN.com/nhl/standings
+      3. NHL.com
+
+      Search for the CURRENT 2024-2025 NHL season standings and player statistics.
 
 CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
@@ -62,7 +98,16 @@ Players (EXACTLY 10): rank (1-10), name (e.g., "Connor McDavid"), team, position
 
 Use CURRENT 2024-2025 season data. Search ESPN and NHL.com NOW.`,
 
-      soccer: `You are a sports data expert. Search FIFA.com/fifa-world-ranking and transfermarkt.com for CURRENT FIFA World Rankings and top European league player statistics.
+      soccer: `You are a sports data expert. PRIORITIZE THESE SOURCES IN ORDER:
+
+      PRIMARY SOURCE (CHECK FIRST):
+      1. The Odds API - Check for current Soccer odds, lines, player props
+
+      SECONDARY SOURCES:
+      2. FIFA.com/fifa-world-ranking
+      3. transfermarkt.com
+
+      Search for CURRENT FIFA World Rankings and top European league player statistics.
 
 CRITICAL: You MUST provide EXACTLY 10 teams and EXACTLY 10 players with ALL required fields.
 
