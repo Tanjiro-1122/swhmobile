@@ -201,7 +201,7 @@ export default function SportDetail() {
   const fetchTeams = async () => {
     setLoadingTeams(true);
     try {
-      const apiKey = window.SECRETS?.THE_ODDS_API_KEY;
+      const apiKey = window.SECRETS?.ODDS_API_KEY;
       
       if (!apiKey) {
         console.warn('Odds API key not configured, using LLM fallback');
