@@ -196,7 +196,7 @@ export default function SportDetail() {
           >
             <img src={config.logo} alt={sport} className="w-16 h-16 object-contain" />
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-white">{sport.toUpperCase()}</h1>
+              <h1 className="text-3xl md:text-4xl font-black text-white">{sport}</h1>
               <p className="text-white/70 text-sm mt-1">Top 10 Players & Team Rankings</p>
               <p className="text-white/50 text-xs mt-0.5">Source: {config.source}</p>
             </div>
