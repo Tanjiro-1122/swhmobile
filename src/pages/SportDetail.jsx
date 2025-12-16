@@ -245,7 +245,13 @@ export default function SportDetail() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 -mt-8">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center mb-4">
+          <Link to={createPageUrl('TopTen')}>
+            <Button variant="outline" className="bg-white shadow-sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Sports
+            </Button>
+          </Link>
           <Button
             onClick={handleRefresh}
             variant="outline"
