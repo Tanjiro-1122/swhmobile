@@ -15,35 +15,40 @@ const sportConfig = {
     gradient: 'from-blue-600 to-blue-800',
     accent: 'bg-blue-600',
     border: 'border-blue-500',
-    source: 'NFL.com & TeamRankings.com'
+    source: 'NFL.com & TeamRankings.com',
+    oddsApiKey: 'americanfootball_nfl'
   },
   MLB: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/mlb.png',
     gradient: 'from-red-600 to-red-800',
     accent: 'bg-red-600',
     border: 'border-red-500',
-    source: 'MLB.com'
+    source: 'MLB.com',
+    oddsApiKey: 'baseball_mlb'
   },
   NBA: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png',
     gradient: 'from-orange-500 to-orange-700',
     accent: 'bg-orange-500',
     border: 'border-orange-500',
-    source: 'NBA.com'
+    source: 'NBA.com',
+    oddsApiKey: 'basketball_nba'
   },
   NHL: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nhl.png',
     gradient: 'from-teal-500 to-teal-700',
     accent: 'bg-teal-500',
     border: 'border-teal-500',
-    source: 'NHL.com'
+    source: 'NHL.com',
+    oddsApiKey: 'icehockey_nhl'
   },
   Soccer: {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/FIFA_logo_without_slogan.svg/500px-FIFA_logo_without_slogan.svg.png',
     gradient: 'from-green-600 to-green-800',
     accent: 'bg-green-600',
     border: 'border-green-500',
-    source: 'FIFA & Premier League'
+    source: 'FIFA & Premier League',
+    oddsApiKey: 'soccer_epl'
   }
 };
 
