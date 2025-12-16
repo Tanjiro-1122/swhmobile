@@ -759,12 +759,12 @@ export default function Pricing() {
             <CardContent className="p-6 lg:p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {creditPacks.map((pack) => (
-                  <Card key={pack.id} className="border-2 border-cyan-100 hover:border-cyan-300 transition-all">
+                  <Card key={pack.id} className="border-2 border-cyan-100 hover:border-cyan-300 transition-all bg-white dark:bg-slate-900">
                     <CardContent className="p-6 text-center">
-                      <div className="text-4xl font-black text-cyan-600 mb-2">{pack.credits}</div>
-                      <div className="text-gray-600 font-semibold mb-4">Search Credits</div>
-                      <div className="text-2xl font-bold text-gray-900 mb-4">${pack.price.toFixed(2)}</div>
-                      <div className="text-xs text-gray-500 mb-4">
+                      <div className="text-4xl font-black text-cyan-600 dark:text-cyan-400 mb-2">{pack.credits}</div>
+                      <div className="text-gray-700 dark:text-gray-300 font-semibold mb-4">Search Credits</div>
+                      <div className="text-3xl font-black text-slate-900 dark:text-white mb-4">${pack.price.toFixed(2)}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-4">
                         ${(pack.price / pack.credits).toFixed(2)} per search
                       </div>
                       <Button
