@@ -360,10 +360,15 @@ export default function Pricing() {
 
   // Main subscribe handler - routes to Stripe or IAP based on platform detection
   const handleSubscribe = async (plan) => {
-    // Force Stripe for web/desktop users, IAP only for mobile apps
+    console.log('Subscribe handler:', { plan, isMobileDevice, iapReady, shouldUseIAP: isMobileDevice && iapReady });
+    
+    // ONLY use IAP if we're in the actual native app with working IAP bridge
+    // Otherwise, ALWAYS use Stripe (including mobile web browsers)
     if (isMobileDevice && iapReady) {
+      console.log('Using IAP for native app');
       await handleIAPSubscribe(plan);
     } else {
+      console.log('Using Stripe for web');
       try {
         await handleStripeCheckout(plan);
       } catch (err) {
