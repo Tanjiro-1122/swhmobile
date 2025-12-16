@@ -18,11 +18,6 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { sport, prompt, schema } = await req.json();
     
