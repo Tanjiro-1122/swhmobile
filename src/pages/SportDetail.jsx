@@ -57,117 +57,228 @@ export default function SportDetail() {
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [loadingTeams, setLoadingTeams] = useState(true);
 
-  const getPlayerSchema = (sport) => {
-    const schemas = {
-      NFL: {
-        name: { type: "string" },
-        team: { type: "string" },
-        position: { type: "string" },
-        yds: { type: "number" },
-        td: { type: "number" },
-        cmp_att: { type: "string" },
-        cmp_pct: { type: "number" },
-        qbr: { type: "number" },
-        rush_yds: { type: "number" },
-        rec: { type: "number" },
-        rec_yds: { type: "number" },
-        total_td: { type: "number" }
-      },
-      MLB: {
-        name: { type: "string" },
-        team: { type: "string" },
-        position: { type: "string" },
-        avg: { type: "number" },
-        hr: { type: "number" },
-        rbi: { type: "number" },
-        obp: { type: "number" },
-        slg: { type: "number" },
-        era: { type: "number" },
-        w: { type: "number" },
-        k: { type: "number" },
-        whip: { type: "number" }
-      },
-      NBA: {
-        name: { type: "string" },
-        team: { type: "string" },
-        position: { type: "string" },
-        gp: { type: "number" },
-        min: { type: "number" },
-        pts: { type: "number" },
-        reb: { type: "number" },
-        ast: { type: "number" },
-        fg_pct: { type: "number" },
-        three_pct: { type: "number" }
-      },
-      NHL: {
-        name: { type: "string" },
-        team: { type: "string" },
-        position: { type: "string" },
-        gp: { type: "number" },
-        g: { type: "number" },
-        a: { type: "number" },
-        pts: { type: "number" },
-        plus_minus: { type: "number" },
-        pim: { type: "number" },
-        sog: { type: "number" },
-        s_pct: { type: "number" },
-        toi: { type: "string" }
-      },
-      Soccer: {
-        name: { type: "string" },
-        team: { type: "string" },
-        position: { type: "string" },
-        gp: { type: "number" },
-        g: { type: "number" },
-        a: { type: "number" },
-        sot: { type: "number" },
-        pass_pct: { type: "number" },
-        tck: { type: "number" },
-        min: { type: "number" },
-        yc: { type: "number" },
-        rc: { type: "number" }
-      }
-    };
-    return schemas[sport] || schemas.NBA;
-  };
-
-  const getPlayerPrompt = (sport) => {
-    const prompts = {
-      NFL: `Search for the current top 10 best NFL players right now in the 2024-2025 season. For each player provide their current season stats: name, team, position, passing/rushing/receiving yards (yds), touchdowns (td), completion/attempts (cmp_att as string like "250/380"), completion percentage (cmp_pct), QBR (qbr), rushing yards (rush_yds), receptions (rec), receiving yards (rec_yds), and total touchdowns (total_td).`,
-      MLB: `Search for the current top 10 best MLB players right now in the 2024-2025 season. For each player provide their current season stats: name, team, position, batting average (avg), home runs (hr), RBIs (rbi), on-base percentage (obp), slugging percentage (slg), ERA (era), wins (w), strikeouts (k), and WHIP (whip).`,
-      NBA: `Search for the current top 10 best NBA players right now in the 2024-2025 season. For each player provide their current season stats: name, team, position, games played (gp), minutes per game (min), points per game (pts), rebounds per game (reb), assists per game (ast), field goal percentage (fg_pct), and three-point percentage (three_pct).`,
-      NHL: `Search for the current top 10 best NHL players right now in the 2024-2025 season. For each player provide their current season stats: name, team, position, games played (gp), goals (g), assists (a), points (pts), plus/minus (plus_minus), penalty minutes (pim), shots on goal (sog), shooting percentage (s_pct), and time on ice (toi as string like "20:45").`,
-      Soccer: `Search for the current top 10 best Soccer players right now in the 2024-2025 season. For each player provide their current season stats: name, team, position, games played (gp), goals (g), assists (a), shots on target (sot), pass completion percentage (pass_pct), tackles (tck), minutes played (min), yellow cards (yc), and red cards (rc).`
-    };
-    return prompts[sport] || prompts.NBA;
-  };
-
-  const fetchPlayers = async (forceRefresh = false) => {
+  const fetchPlayers = async () => {
     setLoadingPlayers(true);
     try {
-      const response = await base44.functions.invoke('getTopTenData', {
-        sport,
-        type: 'players',
-        forceRefresh
-      });
-      console.log('Players response:', response);
-      setPlayers(response.data?.data || []);
+      const apiKey = window.SECRETS?.THE_ODDS_API_KEY;
+      
+      // Sport-specific stat definitions
+      const statPrompts = {
+        NFL: 'passing yards (YDS), touchdowns (TD), completions/attempts (CMP/ATT), completion percentage (CMP%), quarterback rating (QBR), rushing yards (RUSH YDS), receptions (REC), receiving yards (REC YDS), total touchdowns (TOTAL TD)',
+        MLB: 'batting average (AVG), home runs (HR), runs batted in (RBI), on-base percentage (OBP), slugging percentage (SLG), earned run average (ERA), wins (W), strikeouts (K), WHIP',
+        NBA: 'games played (GP), minutes per game (MIN), points per game (PTS), rebounds per game (REB), assists per game (AST), field goal percentage (FG%), three-point percentage (3P%)',
+        NHL: 'games played (GP), goals (G), assists (A), points (PTS), plus/minus (+/-), penalty minutes (PIM), shots on goal (SOG), shooting percentage (S%), ice time (TOI)',
+        Soccer: 'games played (GP), goals (G), assists (A), shots on target (SOT), pass accuracy (PASS%), tackles (TCK), minutes played (MIN), yellow cards (YC), red cards (RC)'
+      };
+
+      const statSchema = {
+        NFL: {
+          position: { type: "string" },
+          yds: { type: "string" },
+          td: { type: "string" },
+          cmp_att: { type: "string" },
+          cmp_pct: { type: "string" },
+          qbr: { type: "string" },
+          rush_yds: { type: "string" },
+          rec: { type: "string" },
+          rec_yds: { type: "string" },
+          total_td: { type: "string" }
+        },
+        MLB: {
+          position: { type: "string" },
+          avg: { type: "string" },
+          hr: { type: "string" },
+          rbi: { type: "string" },
+          obp: { type: "string" },
+          slg: { type: "string" },
+          era: { type: "string" },
+          w: { type: "string" },
+          k: { type: "string" },
+          whip: { type: "string" }
+        },
+        NBA: {
+          position: { type: "string" },
+          gp: { type: "number" },
+          min: { type: "string" },
+          pts: { type: "string" },
+          reb: { type: "string" },
+          ast: { type: "string" },
+          fg_pct: { type: "string" },
+          three_pct: { type: "string" }
+        },
+        NHL: {
+          position: { type: "string" },
+          gp: { type: "number" },
+          g: { type: "string" },
+          a: { type: "string" },
+          pts: { type: "string" },
+          plus_minus: { type: "string" },
+          pim: { type: "string" },
+          sog: { type: "string" },
+          s_pct: { type: "string" },
+          toi: { type: "string" }
+        },
+        Soccer: {
+          position: { type: "string" },
+          gp: { type: "number" },
+          g: { type: "string" },
+          a: { type: "string" },
+          sot: { type: "string" },
+          pass_pct: { type: "string" },
+          tck: { type: "string" },
+          min: { type: "string" },
+          yc: { type: "string" },
+          rc: { type: "string" }
+        }
+      };
+      
+      if (!apiKey) {
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Search for the current top 10 best ${sport} players for 2024-2025 season. 
+                   For each player provide: name, team, and these stats: ${statPrompts[sport]}.
+                   Use the most recent real statistics from ${config.source}. Provide actual numbers, not zeros.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              players: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    team: { type: "string" },
+                    ...statSchema[sport]
+                  }
+                }
+              }
+            }
+          }
+        });
+        setPlayers(result.players || []);
+      } else {
+        const oddsResponse = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${config.oddsApiKey}/scores/?apiKey=${apiKey}&daysFrom=3`
+        );
+        const oddsData = await oddsResponse.json();
+        
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Based on this recent ${sport} game data: ${JSON.stringify(oddsData.slice(0, 10))}, 
+                   provide the current top 10 best ${sport} players for 2024-2025 season. 
+                   For each player provide: name, team, and these stats: ${statPrompts[sport]}.
+                   Use real current statistics from ${config.source}. Provide actual numbers, not zeros.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              players: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    team: { type: "string" },
+                    ...statSchema[sport]
+                  }
+                }
+              }
+            }
+          }
+        });
+        setPlayers(result.players || []);
+      }
     } catch (error) {
       console.error('Error fetching players:', error);
     }
     setLoadingPlayers(false);
   };
 
-  const fetchTeams = async (forceRefresh = false) => {
+  const fetchTeams = async () => {
     setLoadingTeams(true);
     try {
-      const response = await base44.functions.invoke('getTopTenData', {
-        sport,
-        type: 'teams',
-        forceRefresh
-      });
-      console.log('Teams response:', response);
-      setTeams(response.data?.data || []);
+      const apiKey = window.SECRETS?.THE_ODDS_API_KEY;
+      
+      if (!apiKey) {
+        console.warn('Odds API key not configured, using LLM fallback');
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Search for the current top 10 ${sport} team rankings for 2024-2025 season.
+                   For each team provide: team name, wins (W), losses (L), win percentage (WIN%), 
+                   games behind leader (GB), conference record (CONF like "14-7"), 
+                   division record (DIV like "5-1"), home record (HOME like "11-2"), 
+                   road record (ROAD like "9-3"), last 10 games record (LAST10 like "7-3"), 
+                   and current streak (STREAK like "W 4" for 4 game win streak or "L 2" for 2 game losing streak).
+                   Use the most recent standings from ${config.source} and TeamRankings.com.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              teams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    w: { type: "number" },
+                    l: { type: "number" },
+                    win_pct: { type: "string" },
+                    gb: { type: "string" },
+                    conf: { type: "string" },
+                    div: { type: "string" },
+                    home: { type: "string" },
+                    road: { type: "string" },
+                    last10: { type: "string" },
+                    streak: { type: "string" }
+                  }
+                }
+              }
+            }
+          }
+        });
+        setTeams(result.teams || []);
+      } else {
+        // Fetch live scores and standings from Odds API
+        const oddsResponse = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${config.oddsApiKey}/scores/?apiKey=${apiKey}&daysFrom=30`
+        );
+        const oddsData = await oddsResponse.json();
+        
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Based on this ${sport} game data: ${JSON.stringify(oddsData.slice(0, 30))}, 
+                   calculate and provide the current top 10 team rankings for 2024-2025 season.
+                   For each team provide: team name, wins (W), losses (L), win percentage (WIN%), 
+                   games behind leader (GB), conference record (CONF like "14-7"), 
+                   division record (DIV like "5-1"), home record (HOME like "11-2"), 
+                   road record (ROAD like "9-3"), last 10 games record (LAST10 like "7-3"), 
+                   and current streak (STREAK like "W 4" for 4 game win streak or "L 2" for 2 game losing streak).
+                   Use real standings data from ${config.source}.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              teams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    w: { type: "number" },
+                    l: { type: "number" },
+                    win_pct: { type: "string" },
+                    gb: { type: "string" },
+                    conf: { type: "string" },
+                    div: { type: "string" },
+                    home: { type: "string" },
+                    road: { type: "string" },
+                    last10: { type: "string" },
+                    streak: { type: "string" }
+                  }
+                }
+              }
+            }
+          }
+        });
+        setTeams(result.teams || []);
+      }
     } catch (error) {
       console.error('Error fetching teams:', error);
     }
