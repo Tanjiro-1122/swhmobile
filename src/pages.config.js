@@ -32,6 +32,7 @@ import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import AdminErrorLogs from './pages/AdminErrorLogs';
 import TopTen from './pages/TopTen';
 import SportDetail from './pages/SportDetail';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -70,6 +71,7 @@ export const PAGES = {
     "AdminErrorLogs": AdminErrorLogs,
     "TopTen": TopTen,
     "SportDetail": SportDetail,
+    "Home": Home,
 }
 
 export const pagesConfig = {
