@@ -105,9 +105,9 @@ export default function ProfileContent() {
       {currentUser?.subscription_type !== 'legacy' && currentUser?.subscription_type !== 'vip_annual' && (
         <Card className="border border-yellow-500/30 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
-            <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-            <h3 className="text-xl font-bold text-white mb-2">Upgrade Your Account</h3>
-            <p className="text-white/70 mb-4">Get unlimited access and exclusive features with VIP Annual</p>
+            <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
+            <h3 className="text-xl font-bold text-black mb-2">Upgrade Your Account</h3>
+            <p className="font-semibold text-black mb-4">Get unlimited access and exclusive features with VIP Annual</p>
             <Button 
               onClick={() => window.location.href = '/Pricing'}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"

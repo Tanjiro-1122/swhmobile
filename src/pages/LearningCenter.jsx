@@ -587,7 +587,7 @@ Dynamic rating that updates after each game:
         {!selectedLesson && (
           <Card className="mt-8 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-black font-black">
                 <Zap className="w-6 h-6 text-blue-600" />
                 Pro Tips for Success
               </CardTitle>
@@ -599,8 +599,8 @@ Dynamic rating that updates after each game:
                     <span className="text-white font-bold">1</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">Start Small</h4>
-                    <p className="text-sm text-gray-600">Begin with small bets while learning. Focus on understanding concepts before increasing stakes.</p>
+                    <h4 className="font-bold text-black mb-1">Start Small</h4>
+                    <p className="text-sm font-semibold text-black">Begin with small bets while learning. Focus on understanding concepts before increasing stakes.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -608,8 +608,8 @@ Dynamic rating that updates after each game:
                     <span className="text-white font-bold">2</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">Track Everything</h4>
-                    <p className="text-sm text-gray-600">Keep detailed records of all bets. You can't improve what you don't measure.</p>
+                    <h4 className="font-bold text-black mb-1">Track Everything</h4>
+                    <p className="text-sm font-semibold text-black">Keep detailed records of all bets. You can't improve what you don't measure.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -617,8 +617,8 @@ Dynamic rating that updates after each game:
                     <span className="text-white font-bold">3</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">Specialize</h4>
-                    <p className="text-sm text-gray-600">Focus on 1-2 sports to become an expert rather than spreading too thin.</p>
+                    <h4 className="font-bold text-black mb-1">Specialize</h4>
+                    <p className="text-sm font-semibold text-black">Focus on 1-2 sports to become an expert rather than spreading too thin.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -626,8 +626,8 @@ Dynamic rating that updates after each game:
                     <span className="text-white font-bold">4</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">Be Patient</h4>
-                    <p className="text-sm text-gray-600">Betting success is measured over hundreds of bets, not individual wins/losses.</p>
+                    <h4 className="font-bold text-black mb-1">Be Patient</h4>
+                    <p className="text-sm font-semibold text-black">Betting success is measured over hundreds of bets, not individual wins/losses.</p>
                   </div>
                 </div>
               </div>
@@ -641,7 +641,7 @@ Dynamic rating that updates after each game:
             <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8" />
-                <CardTitle className="text-2xl font-bold">Join Our Community</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">Join Our Community</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -655,11 +655,11 @@ Dynamic rating that updates after each game:
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Reddit Community</h3>
-                      <p className="text-sm text-gray-600">r/sportswagerhelper</p>
+                      <h3 className="text-xl font-bold text-black">Reddit Community</h3>
+                      <p className="text-sm font-semibold text-black">r/sportswagerhelper</p>
                     </div>
                   </div>
-                  <p className="text-gray-700 mb-4">
+                  <p className="font-semibold text-black mb-4">
                     Join our free public community on Reddit to ask questions, share strategies, and connect with other bettors. Open to everyone!
                   </p>
                   <Button
@@ -677,14 +677,14 @@ Dynamic rating that updates after each game:
                       <MessageSquare className="w-6 h-6 text-purple-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">VIP Discord</h3>
+                      <h3 className="text-xl font-bold text-black">VIP Discord</h3>
                       <Badge className="bg-purple-100 text-purple-700">
                         <Crown className="w-3 h-3 mr-1" />
                         VIP Only
                       </Badge>
                     </div>
                   </div>
-                  <p className="text-gray-700 mb-4">
+                  <p className="font-semibold text-black mb-4">
                     Exclusive private Discord channel for VIP Annual and Legacy members. Get priority support, advanced strategies, and network with serious bettors.
                   </p>
                   <Button
