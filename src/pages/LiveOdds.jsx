@@ -271,7 +271,8 @@ function LiveOddsContent() {
 
   const formatOdds = (odds) => {
     if (odds === null || odds === undefined) return 'N/A';
-    return odds > 0 ? `+${odds}` : odds.toString();
+    const rounded = Math.round(odds);
+    return rounded > 0 ? `+${rounded}` : rounded.toString();
   };
 
   const formatDate = (dateString) => {
