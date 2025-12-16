@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
           }
         } else if (session.mode === 'payment') {
           // One-time payment for VIP ($149.99)
-          subscriptionType = 'vip_annual';
+          const priceId = session.line_items?.data?.[0]?.price?.id || session.amount_total === 14999;
+          if (priceId === 'price_1SN2OrRrQjRM0rB2FrP8gDYp' || session.amount_total === 14999) {
+            subscriptionType = 'vip_annual';
+          }
         }
 
         // Update user subscription
