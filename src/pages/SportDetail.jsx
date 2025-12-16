@@ -137,22 +137,36 @@ export default function SportDetail() {
                 <div className="p-8 text-center text-slate-500">No player data available</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-sm">
                     <thead className="bg-slate-50 border-b">
                       <tr>
-                        <th className="text-left p-4 font-semibold text-slate-700">#</th>
-                        <th className="text-left p-4 font-semibold text-slate-700">Player</th>
-                        <th className="text-left p-4 font-semibold text-slate-700">Team</th>
-                        <th className="text-left p-4 font-semibold text-slate-700">Stats</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 sticky left-0 bg-slate-50 z-10">#</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 sticky left-12 bg-slate-50 z-10 min-w-[160px]">Player</th>
+                        <th className="text-left p-3 font-semibold text-slate-700 min-w-[140px]">Team</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">POS</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">GP</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 1</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 2</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 3</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 4</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 5</th>
+                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 6</th>
                       </tr>
                     </thead>
                     <tbody>
                       {players.map((player, index) => (
                         <tr key={index} className="border-b hover:bg-slate-50">
-                          <td className="p-4 font-bold text-slate-700">{index + 1}</td>
-                          <td className="p-4 font-semibold text-slate-800">{player.name}</td>
-                          <td className="p-4 text-slate-600">{player.team}</td>
-                          <td className="p-4 text-slate-600 text-sm">{player.stats}</td>
+                          <td className="p-3 font-bold text-slate-700 sticky left-0 bg-white">{index + 1}</td>
+                          <td className="p-3 font-semibold text-slate-800 sticky left-12 bg-white">{player.name}</td>
+                          <td className="p-3 text-slate-600">{player.team}</td>
+                          <td className="p-3 text-center text-xs text-slate-600">{player.position || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.gamesPlayed || '--'}</td>
+                          <td className="p-3 text-center font-semibold text-slate-700">{player.stat1 || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.stat2 || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.stat3 || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.stat4 || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.stat5 || '--'}</td>
+                          <td className="p-3 text-center text-slate-600">{player.stat6 || '--'}</td>
                         </tr>
                       ))}
                     </tbody>
