@@ -8,7 +8,7 @@ const sports = ['NFL', 'MLB', 'NBA', 'NHL', 'Soccer'];
 
 export default function TopTen() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <motion.div 
@@ -44,6 +44,7 @@ export default function TopTen() {
           Select a sport to view top players and team rankings
         </motion.p>
       </div>
+
       <FloatingDashboardButton />
     </div>
   );

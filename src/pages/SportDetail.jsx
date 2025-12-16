@@ -6,72 +6,52 @@ import { ArrowLeft, Users, Shield, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
-import PlayerList from '@/components/PlayerList';
-import TeamRankings from '@/components/TeamRankings';
+import PlayerList from '@/components/topten/PlayerList';
+import TeamRankings from '@/components/topten/TeamRankings';
 
 const sportConfig = {
   NFL: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nfl.png',
     gradient: 'from-blue-600 to-blue-800',
     accent: 'bg-blue-600',
-    border: 'border-blue-500',
-    source: 'NFL.com & TeamRankings.com',
-    oddsApiKey: 'americanfootball_nfl'
+    source: 'NFL.com & TeamRankings.com'
   },
   MLB: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/mlb.png',
     gradient: 'from-red-600 to-red-800',
     accent: 'bg-red-600',
-    border: 'border-red-500',
-    source: 'MLB.com',
-    oddsApiKey: 'baseball_mlb'
+    source: 'MLB.com'
   },
   NBA: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png',
     gradient: 'from-orange-500 to-orange-700',
     accent: 'bg-orange-500',
-    border: 'border-orange-500',
-    source: 'NBA.com',
-    oddsApiKey: 'basketball_nba'
+    source: 'NBA.com'
   },
   NHL: {
     logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nhl.png',
     gradient: 'from-teal-500 to-teal-700',
     accent: 'bg-teal-500',
-    border: 'border-teal-500',
-    source: 'NHL.com',
-    oddsApiKey: 'icehockey_nhl'
+    source: 'NHL.com'
   },
   Soccer: {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/FIFA_logo_without_slogan.svg/500px-FIFA_logo_without_slogan.svg.png',
     gradient: 'from-green-600 to-green-800',
     accent: 'bg-green-600',
-    border: 'border-green-500',
-    source: 'FIFA & Premier League',
-    oddsApiKey: 'soccer_epl'
+    source: 'Premier League & UEFA'
   }
 };
 
 export default function SportDetail() {
   const location = useLocation();
-  const [sport, setSport] = useState(() => {
-    const urlParams = new URLSearchParams(location.search);
-    return urlParams.get('sport') || 'NFL';
-  });
-  
+  const urlParams = new URLSearchParams(location.search);
+  const sport = urlParams.get('sport') || 'NFL';
+  const config = sportConfig[sport] || sportConfig.NFL;
+
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [loadingTeams, setLoadingTeams] = useState(true);
-
-  // Update sport when URL changes
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const newSport = urlParams.get('sport') || 'NFL';
-    setSport(newSport);
-  }, [location.search]);
-
-  const config = sportConfig[sport] || sportConfig.NFL;
 
   const fetchPlayers = async () => {
     setLoadingPlayers(true);
@@ -80,7 +60,6 @@ export default function SportDetail() {
         sport,
         type: 'players'
       });
-      
       setPlayers(response.data?.data || []);
     } catch (error) {
       console.error('Error fetching players:', error);
@@ -96,7 +75,6 @@ export default function SportDetail() {
         sport,
         type: 'teams'
       });
-      
       setTeams(response.data?.data || []);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -116,7 +94,7 @@ export default function SportDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-white">
       {/* Hero Header */}
       <div className={`bg-gradient-to-br ${config.gradient} pt-8 pb-16 px-4`}>
         <div className="max-w-4xl mx-auto">
@@ -128,18 +106,15 @@ export default function SportDetail() {
           </Link>
           
           <motion.div 
-            key={sport}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-6"
           >
-            <div className="w-20 h-20 flex items-center justify-center bg-white rounded-xl p-2">
-              <img src={config.logo} alt={sport} className="w-full h-full object-contain" />
-            </div>
+            <img src={config.logo} alt={sport} className="w-20 h-20 object-contain bg-white rounded-lg p-2" />
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-white">{sport}</h1>
-              <p className="text-white/70 mt-2">Top 10 Players & Team Rankings</p>
-              <p className="text-white/50 text-sm mt-1">Source: {config.source}</p>
+              <p className="text-white/80 mt-2">Top 10 Players & Team Rankings</p>
+              <p className="text-white/60 text-sm mt-1">Source: {config.source}</p>
             </div>
           </motion.div>
         </div>
@@ -161,43 +136,30 @@ export default function SportDetail() {
 
         <Tabs defaultValue="players" className="w-full">
           <TabsList className="w-full bg-white shadow-sm rounded-xl p-1 mb-6">
-            <TabsTrigger value="players" className="flex-1 rounded-lg data-[state=active]:shadow-sm">
+            <TabsTrigger value="players" className="flex-1 rounded-lg">
               <Users className="w-4 h-4 mr-2" />
               Top 10 Players
             </TabsTrigger>
-            <TabsTrigger value="teams" className="flex-1 rounded-lg data-[state=active]:shadow-sm">
+            <TabsTrigger value="teams" className="flex-1 rounded-lg">
               <Shield className="w-4 h-4 mr-2" />
               Team Rankings
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="players">
-            <motion.div
-              key={`players-${sport}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <PlayerList 
-                players={players} 
-                isLoading={loadingPlayers}
-                accentColor={config.border}
-                sport={sport}
-              />
-            </motion.div>
+            <PlayerList 
+              players={players} 
+              isLoading={loadingPlayers}
+              sport={sport}
+            />
           </TabsContent>
 
           <TabsContent value="teams">
-            <motion.div
-              key={`teams-${sport}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <TeamRankings 
-                teams={teams} 
-                isLoading={loadingTeams}
-                accentColor={config.accent}
-              />
-            </motion.div>
+            <TeamRankings 
+              teams={teams} 
+              isLoading={loadingTeams}
+              accentColor={config.accent}
+            />
           </TabsContent>
         </Tabs>
 
