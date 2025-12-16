@@ -63,9 +63,12 @@ If no next game scheduled, say TBD.`,
 
   } catch (error) {
     console.error('Team stats error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Query was:', await req.clone().json());
     return Response.json({ 
-      error: error.message,
-      stack: error.stack 
+      error: error.message || 'An error occurred fetching team stats',
+      details: error.toString(),
+      type: 'team_stats_error'
     }, { status: 500 });
   }
 });

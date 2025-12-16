@@ -232,9 +232,12 @@ Return JSON with contextual adjustment factors.`,
 
   } catch (error) {
     console.error('Enhanced prediction error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return Response.json({ 
-      error: error.message,
-      stack: error.stack 
+      error: error.message || 'An error occurred during prediction',
+      details: error.toString(),
+      type: 'prediction_error'
     }, { status: 500 });
   }
 });
