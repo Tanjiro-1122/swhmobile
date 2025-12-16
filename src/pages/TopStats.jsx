@@ -323,9 +323,9 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/30">
                 <CardContent className="p-12 text-center">
                   <div className="text-6xl mb-4">📊</div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Ready to See the Latest Stats?</h3>
+                  <h3 className="text-2xl font-bold text-white mb-3">Ready to See the Top Ten?</h3>
                   <p className="text-white/70 mb-6">
-                    Click below to load current standings and player stats for all major sports
+                    Click below to load top 10 teams and players for all major sports
                   </p>
                   <Button 
                     onClick={handleFirstTimeLookup}
