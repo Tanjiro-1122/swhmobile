@@ -347,11 +347,6 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                 </CardContent>
               </Card>
             ) : error || !statsData || !statsData.teams?.length ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-                  <p className="text-white/70">Loading {sport.name} stats...</p>
-                </div>
-              ) : error || !statsData || !statsData.teams?.length ? (
                 <Card className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-400/30">
                   <CardContent className="p-8 text-center">
                     <div className="text-6xl mb-4">⚠️</div>
