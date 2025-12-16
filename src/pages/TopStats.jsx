@@ -387,7 +387,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Users className="w-6 h-6 text-blue-400" />
-                        Top 10 Teams - {sport.name}
+                        Top 10 Teams - {currentSportConfig?.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -446,7 +446,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Star className="w-6 h-6 text-yellow-400" />
-                        Top 10 Players - {sport.name}
+                        Top 10 Players - {currentSportConfig?.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
