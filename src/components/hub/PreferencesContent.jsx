@@ -74,8 +74,8 @@ export default function PreferencesContent() {
         <CardContent className="p-6 flex items-center gap-4">
           <Sparkles className="w-10 h-10 text-purple-400 flex-shrink-0" />
           <div>
-            <h3 className="font-bold text-white">Personalize Your Experience</h3>
-            <p className="text-sm text-white/70">
+            <h3 className="font-bold text-black">Personalize Your Experience</h3>
+            <p className="text-sm font-semibold text-black">
               Set your favorite sports, leagues, and teams to get tailored recommendations and insights.
             </p>
           </div>

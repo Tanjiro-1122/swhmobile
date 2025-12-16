@@ -78,8 +78,8 @@ export default function SubscriptionContent() {
             <div className="flex items-center gap-3">
               {plan.icon && <plan.icon className="w-8 h-8" />}
               <div>
-                <CardTitle className="text-2xl font-black">{plan.name}</CardTitle>
-                <p className="text-white/80 text-sm mt-1">Your current subscription</p>
+                <CardTitle className="text-2xl font-black text-white">{plan.name}</CardTitle>
+                <p className="text-white text-sm mt-1 font-semibold">Your current subscription</p>
               </div>
             </div>
             <Badge className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
@@ -144,8 +144,8 @@ export default function SubscriptionContent() {
               <div className="pt-4 border-t border-white/20">
                 <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4 text-center">
                   <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                  <p className="font-bold text-yellow-300">Legacy VIP Status</p>
-                  <p className="text-sm text-yellow-200/80">You have lifetime access - no billing needed!</p>
+                  <p className="font-bold text-black text-lg">Legacy VIP Status</p>
+                  <p className="text-sm font-semibold text-black">You have lifetime access - no billing needed!</p>
                 </div>
               </div>
             )}
