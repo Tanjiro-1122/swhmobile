@@ -1,4 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { LRUCache } from 'npm:lru-cache';
+
+const cache = new LRUCache({
+  max: 100, // cache up to 100 items
+  ttl: 1000 * 60 * 60, // 1 hour
+});
 
 const sportPrompts = {
   NFL: {
@@ -34,6 +40,11 @@ Deno.serve(async (req) => {
 
     const { sport } = await req.json();
     const prompts = sportPrompts[sport] || sportPrompts.NFL;
+
+    const cacheKey = `top-ten-${sport}`;
+    if (cache.has(cacheKey)) {
+      return Response.json(cache.get(cacheKey));
+    }
 
     // Fetch players
     const playersResponse = await base44.integrations.Core.InvokeLLM({
@@ -95,10 +106,14 @@ Deno.serve(async (req) => {
       }
     });
 
-    return Response.json({
+    const result = {
       players: (playersResponse.players || []).slice(0, 10),
       teams: (teamsResponse.teams || []).slice(0, 10)
-    });
+    };
+
+    cache.set(cacheKey, result);
+
+    return Response.json(result);
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
