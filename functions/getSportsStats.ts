@@ -3,6 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    // AUTH CHECK - THIS WAS MISSING!
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { sport } = body;
 
@@ -83,8 +90,28 @@ Give exactly 10 teams and 10 players with real current data.`,
 
     console.log(`[getSportsStats] Got ${result?.teams?.length || 0} teams, ${result?.players?.length || 0} players`);
 
+    // Validate and clean response
+    const data = result || {};
+    const teams = Array.isArray(data.teams) ? data.teams.slice(0, 10) : [];
+    const players = Array.isArray(data.players) ? data.players.slice(0, 10) : [];
+
+    // Log if we got incomplete data
+    if (teams.length < 10 || players.length < 10) {
+      console.warn(`[getSportsStats] Incomplete data: ${teams.length} teams, ${players.length} players`);
+    }
+
     return Response.json({
-      data: result || { sport, season: "2024-2025", teams: [], players: [] },
+      data: {
+        sport: data.sport || sport,
+        season: data.season || "2024-2025",
+        teams,
+        players
+      },
+      validation: {
+        teamsCount: teams.length,
+        playersCount: players.length,
+        complete: teams.length === 10 && players.length === 10
+      },
       fetched_at: new Date().toISOString()
     });
 
