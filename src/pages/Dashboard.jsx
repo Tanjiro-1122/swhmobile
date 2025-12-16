@@ -458,8 +458,8 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Email Login Modal for Mobile */}
-      {isMobile && <EmailLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />}
+      {/* Email Login Modal */}
+      <EmailLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
   );
 }
