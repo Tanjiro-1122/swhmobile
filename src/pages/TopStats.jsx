@@ -20,7 +20,7 @@ const SPORTS = [
 
 export default function TopStats() {
   const [selectedSport, setSelectedSport] = useState('nfl');
-  const [mainTab, setMainTab] = useState('feeds');
+  const [mainTab, setMainTab] = useState('topten');
   const [hasLoadedStats, setHasLoadedStats] = useState(false);
   const [isGeneratingStats, setIsGeneratingStats] = useState(false);
 
@@ -254,7 +254,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
           </div>
         </div>
 
-        {/* Main Tabs - Feeds vs Sports Stats */}
+        {/* Main Tabs - Feeds vs Top Ten */}
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full mb-8">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-black/40 backdrop-blur-xl border border-white/10 p-1">
             <TabsTrigger 
@@ -265,11 +265,11 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
               Feeds
             </TabsTrigger>
             <TabsTrigger 
-              value="stats"
+              value="topten"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/60 flex items-center gap-2"
             >
-              <BarChart3 className="w-4 h-4" />
-              Sports Stats
+              <Trophy className="w-4 h-4" />
+              Top Ten
             </TabsTrigger>
           </TabsList>
 
@@ -278,10 +278,49 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
             <BettingBriefsContent />
           </TabsContent>
 
-          {/* Sports Stats Section */}
-          <TabsContent value="stats" className="mt-6">
-            {!hasLoadedStats ? (
-              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/30">
+          {/* Top Ten Section */}
+          <TabsContent value="topten" className="mt-6">
+            {/* Sport Selection Buttons */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+              {SPORTS.map((sport) => (
+                <button
+                  key={sport.id}
+                  onClick={() => {
+                    setSelectedSport(sport.id);
+                    setHasLoadedStats(true);
+                  }}
+                  className={`p-6 rounded-xl border-2 transition-all ${
+                    selectedSport === sport.id
+                      ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/50 scale-105'
+                      : 'bg-black/40 border-white/10 hover:border-white/30'
+                  }`}
+                >
+                  <div className="text-5xl mb-2">{sport.icon}</div>
+                  <div className="text-white font-bold">{sport.name}</div>
+                </button>
+              ))}
+            </div>
+
+            {hasLoadedStats && selectedSport && (
+              <>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-white">
+                    {currentSportConfig?.name} - Top 10 Teams & Players
+                  </h2>
+                  <Button
+                    onClick={handleRefreshStats}
+                    variant="outline"
+                    size="sm"
+                    disabled={isGeneratingStats || isLoading}
+                    className="gap-2"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isGeneratingStats || isLoading ? 'animate-spin' : ''}`} />
+                    {isGeneratingStats || isLoading ? 'Loading...' : 'Refresh'}
+                  </Button>
+                </div>
+
+                {isLoading ? (
+                  <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/30">
                 <CardContent className="p-12 text-center">
                   <div className="text-6xl mb-4">📊</div>
                   <h3 className="text-2xl font-bold text-white mb-3">Ready to See the Latest Stats?</h3>
@@ -307,39 +346,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   </Button>
                 </CardContent>
               </Card>
-            ) : (
-              <>
-                <div className="flex justify-end mb-4">
-                  <Button
-                    onClick={handleRefreshStats}
-                    variant="outline"
-                    size="sm"
-                    disabled={isGeneratingStats || isLoading}
-                    className="gap-2"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isGeneratingStats || isLoading ? 'animate-spin' : ''}`} />
-                    {isGeneratingStats || isLoading ? 'Refreshing...' : 'Refresh'}
-                  </Button>
-                </div>
-
-                {/* Sport Tabs */}
-                <Tabs value={selectedSport} onValueChange={setSelectedSport} className="w-full">
-          <TabsList className="flex flex-wrap justify-center gap-2 bg-transparent mb-8">
-            {SPORTS.map((sport) => (
-              <TabsTrigger
-                key={sport.id}
-                value={sport.id}
-                className="relative px-4 py-3 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-white/10 text-white/70 hover:bg-white/20 transition-all min-w-[80px]"
-              >
-                <span className="text-xl mr-2">{sport.icon}</span>
-                <span className="font-bold">{sport.name}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {SPORTS.map((sport) => (
-            <TabsContent key={sport.id} value={sport.id}>
-              {isLoading ? (
+            ) : error || !statsData || !statsData.teams?.length ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
                   <p className="text-white/70">Loading {sport.name} stats...</p>
@@ -364,7 +371,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                     </Button>
                   </CardContent>
                 </Card>
-              ) : statsData ? (
+                ) : statsData ? (
                 <div className="space-y-8">
                   {/* Season Info */}
                   {statsData.season && (
@@ -496,14 +503,11 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              ) : null}
-            </TabsContent>
-          ))}
-                </Tabs>
-              </>
-            )}
-          </TabsContent>
+                  </div>
+                  ) : null}
+                  </>
+                  )}
+                  </TabsContent>
         </Tabs>
       </div>
       <FloatingDashboardButton />
