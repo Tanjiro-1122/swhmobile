@@ -145,13 +145,13 @@ export default function SportDetail() {
   const fetchPlayers = async (forceRefresh = false) => {
     setLoadingPlayers(true);
     try {
-      const { data } = await base44.functions.invoke('getTopTenData', {
+      const response = await base44.functions.invoke('getTopTenData', {
         sport,
         type: 'players',
         forceRefresh
       });
-      console.log('Players response:', data);
-      setPlayers(data.data || []);
+      console.log('Players response:', response);
+      setPlayers(response.data?.data || []);
     } catch (error) {
       console.error('Error fetching players:', error);
     }
@@ -161,13 +161,13 @@ export default function SportDetail() {
   const fetchTeams = async (forceRefresh = false) => {
     setLoadingTeams(true);
     try {
-      const { data } = await base44.functions.invoke('getTopTenData', {
+      const response = await base44.functions.invoke('getTopTenData', {
         sport,
         type: 'teams',
         forceRefresh
       });
-      console.log('Teams response:', data);
-      setTeams(data.data || []);
+      console.log('Teams response:', response);
+      setTeams(response.data?.data || []);
     } catch (error) {
       console.error('Error fetching teams:', error);
     }
