@@ -172,7 +172,7 @@ export default function SportDetail() {
     setLoadingTeams(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for the current top 10 ${sport} team standings for 2024-2025 season. For each team provide: name, wins (w), losses (l), win percentage (win_pct as decimal like 0.750), games back (gb as string or number), conference record (conf as string like "10-5"), division record (div as string like "5-2"), home record (home as string like "12-3"), road record (road as string like "8-7"), last 10 games record (last10 as string like "7-3"), and current streak (streak as string like "W3" or "L2"). Use the most recent standings from ${config.source}.`,
+        prompt: `Search for the current top 10 ${sport} team standings for 2024-2025 season. IMPORTANT: Return ONLY the top 10 teams, no more. For each team provide: name, wins (w), losses (l), win percentage (win_pct as decimal like 0.750), games back (gb as string or number), conference record (conf as string like "10-5"), division record (div as string like "5-2"), home record (home as string like "12-3"), road record (road as string like "8-7"), last 10 games record (last10 as string like "7-3"), and current streak (streak as string like "W3" or "L2"). Use the most recent standings from ${config.source}.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -199,7 +199,7 @@ export default function SportDetail() {
           }
         }
       });
-      setTeams(result.teams || []);
+      setTeams((result.teams || []).slice(0, 10));
     } catch (error) {
       console.error('Error fetching teams:', error);
     }
