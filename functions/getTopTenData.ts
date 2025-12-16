@@ -16,6 +16,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Sport and type are required' }, { status: 400 });
     }
 
+    const validSports = ['NFL', 'MLB', 'NBA', 'NHL', 'Soccer'];
+    if (!validSports.includes(sport)) {
+      return Response.json({ error: 'Invalid sport. Must be one of: NFL, MLB, NBA, NHL, Soccer' }, { status: 400 });
+    }
+
     const sources = {
       NFL: 'NFL.com & TeamRankings.com',
       MLB: 'MLB.com',
@@ -114,7 +119,7 @@ Deno.serve(async (req) => {
     const fetchData = async () => {
       if (type === 'players') {
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `${playerPrompts[sport] || playerPrompts.NBA} Use the most recent data available from ${sources[sport] || sources.NBA}. Provide accurate 2024-2025 season statistics.`,
+          prompt: `${playerPrompts[sport]} Use the most recent data available from ${sources[sport]}. Provide accurate 2024-2025 season statistics. ONLY include stats relevant to ${sport}.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -123,7 +128,7 @@ Deno.serve(async (req) => {
                 type: "array",
                 items: {
                   type: "object",
-                  properties: playerSchemas[sport] || playerSchemas.NBA
+                  properties: playerSchemas[sport]
                 }
               }
             }
@@ -132,7 +137,7 @@ Deno.serve(async (req) => {
         return result.players || [];
       } else {
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Search for the current top 10 ${sport} team standings for 2024-2025 season. IMPORTANT: Return ONLY the top 10 teams, no more. For each team provide: name, wins (w), losses (l), win percentage (win_pct as decimal like 0.750), games back (gb as string or number), conference record (conf as string like "10-5"), division record (div as string like "5-2"), home record (home as string like "12-3"), road record (road as string like "8-7"), last 10 games record (last10 as string like "7-3"), and current streak (streak as string like "W3" or "L2"). Use the most recent standings from ${sources[sport] || sources.NBA}.`,
+          prompt: `Search for the current top 10 ${sport} team standings for 2024-2025 season. IMPORTANT: Return ONLY the top 10 teams, no more. For each team provide: name, wins (w), losses (l), win percentage (win_pct as decimal like 0.750), games back (gb as string or number), conference record (conf as string like "10-5"), division record (div as string like "5-2"), home record (home as string like "12-3"), road record (road as string like "8-7"), last 10 games record (last10 as string like "7-3"), and current streak (streak as string like "W3" or "L2"). Use the most recent standings from ${sources[sport]}.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
