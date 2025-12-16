@@ -236,8 +236,14 @@ export default function Pricing() {
     setProcessingItem(null);
   };
 
-  // IAP for native app users only
+  // IAP for native app users only - ANDROID ONLY (iOS subscriptions removed)
   const handleIAPSubscribe = async (plan) => {
+    // iOS: Redirect to web for subscriptions
+    if (isIOS) {
+      alert('iOS subscriptions are not available. Please use credit packs or visit our website for subscriptions.');
+      return;
+    }
+
     setProcessingItem(plan);
 
     // Clear any previous timeout
@@ -279,15 +285,11 @@ export default function Pricing() {
         productId = plan === 'premium' 
           ? 'com.sportswagerhelper.premium.monthly'
           : 'com.sportswagerhelper.vip.annual';
-      } else {
-        productId = plan === 'premium'
-          ? 'com.sportswagerhelper.premium.monthly.v3'
-          : 'com.sportswagerhelper.premium.annual.v3';
       }
 
       const iapConfig = {
         productId: productId,
-        productType: isAndroidDevice ? 'SUBS' : undefined,
+        productType: 'SUBS',
         isConsumable: false
       };
 
