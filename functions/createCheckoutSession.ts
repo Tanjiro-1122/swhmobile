@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `https://sportswagerhelper.base44.app/MyAccount?tab=subscription&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://sportswagerhelper.base44.app/Pricing`,
+      success_url: `${origin}/MyAccount?tab=subscription&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/Pricing`,
       metadata: {
         user_id: user.id,
         user_email: user.email,
