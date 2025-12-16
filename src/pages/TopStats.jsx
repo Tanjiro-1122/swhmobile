@@ -130,89 +130,93 @@ Use CURRENT 2024-2025 season data. Search FIFA.com and transfermarkt NOW.`
     return prompts[sport] || prompts.nfl;
   };
 
-  const { data: statsData, isLoading, error, refetch } = useQuery({
-    queryKey: ['topStats', selectedSport],
+  const { data: allSportsData, isLoading, error, refetch } = useQuery({
+    queryKey: ['topStats', 'allSports'],
     queryFn: async () => {
       try {
-        console.log('Invoking getSportsStats for sport:', selectedSport);
-        const response = await base44.functions.invoke('getSportsStats', {
-          sport: selectedSport,
-          prompt: getPromptForSport(selectedSport) + `
+        console.log('Fetching all sports data...');
+        const results = {};
+        
+        // Fetch all sports data in parallel
+        const promises = SPORTS.map(async (sport) => {
+          const response = await base44.functions.invoke('getSportsStats', {
+            sport: sport.id,
+            prompt: getPromptForSport(sport.id) + `
 
 Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
 For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
-          schema: {
-            type: "object",
-            properties: {
-              sport: { type: "string" },
-              season: { type: "string" },
-              teams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    rank: { type: "number" },
-                    name: { type: "string" },
-                    wins: { type: "number" },
-                    losses: { type: "number" },
-                    winPct: { type: "string" },
-                    pointsFor: { type: "string" },
-                    pointsAgainst: { type: "string" },
-                    streak: { type: "string" },
-                    division: { type: "string" }
+            schema: {
+              type: "object",
+              properties: {
+                sport: { type: "string" },
+                season: { type: "string" },
+                teams: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      rank: { type: "number" },
+                      name: { type: "string" },
+                      wins: { type: "number" },
+                      losses: { type: "number" },
+                      winPct: { type: "string" },
+                      pointsFor: { type: "string" },
+                      pointsAgainst: { type: "string" },
+                      streak: { type: "string" },
+                      division: { type: "string" }
+                    }
                   }
-                }
-              },
-              players: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    rank: { type: "number" },
-                    name: { type: "string" },
-                    team: { type: "string" },
-                    position: { type: "string" },
-                    stat1Label: { type: "string" },
-                    stat1Value: { type: "string" },
-                    stat2Label: { type: "string" },
-                    stat2Value: { type: "string" },
-                    stat3Label: { type: "string" },
-                    stat3Value: { type: "string" },
-                    gamesPlayed: { type: "number" }
+                },
+                players: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      rank: { type: "number" },
+                      name: { type: "string" },
+                      team: { type: "string" },
+                      position: { type: "string" },
+                      stat1Label: { type: "string" },
+                      stat1Value: { type: "string" },
+                      stat2Label: { type: "string" },
+                      stat2Value: { type: "string" },
+                      stat3Label: { type: "string" },
+                      stat3Value: { type: "string" },
+                      gamesPlayed: { type: "number" }
+                    }
                   }
                 }
               }
             }
-          }
+          });
+          return { sportId: sport.id, data: response.data };
         });
-        console.log('getSportsStats response:', response);
-        if (!response || !response.data) {
-          throw new Error('Invalid response from getSportsStats');
-        }
+
+        const responses = await Promise.all(promises);
+        responses.forEach(({ sportId, data }) => {
+          results[sportId] = data;
+        });
+
         localStorage.setItem('topStatsLoaded', 'true');
-        return response.data;
+        console.log('All sports data fetched:', results);
+        return results;
       } catch (err) {
-        console.error('Error invoking getSportsStats:', err);
-        console.error('Error details:', {
-          message: err?.message,
-          status: err?.status,
-          response: err?.response,
-          data: err?.data
-        });
+        console.error('Error fetching sports stats:', err);
         throw err;
       }
     },
-    enabled: hasLoadedStats, // Only fetch if user has clicked first time lookup
-    staleTime: Infinity, // Cache forever until refresh
+    enabled: hasLoadedStats,
+    staleTime: Infinity,
     gcTime: Infinity,
     retry: 1,
   });
+
+  const statsData = allSportsData?.[selectedSport];
 
   const handleFirstTimeLookup = async () => {
     setIsGeneratingStats(true);
     setHasLoadedStats(true);
     localStorage.setItem('topStatsLoaded', 'true');
-    // This will trigger the query since enabled will become true
   };
 
   const handleRefreshStats = async () => {
@@ -223,6 +227,12 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
       setIsGeneratingStats(false);
     }
   };
+
+  useEffect(() => {
+    if (hasLoadedStats && !isLoading && allSportsData) {
+      setIsGeneratingStats(false);
+    }
+  }, [hasLoadedStats, isLoading, allSportsData]);
 
   const currentSportConfig = SPORTS.find(s => s.id === selectedSport);
 
