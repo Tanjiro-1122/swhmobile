@@ -44,12 +44,12 @@ export default function Pricing() {
     const isiOS = /iPhone|iPad|iPod/i.test(ua);
     const isAndroidDevice = /Android/i.test(ua);
     
-    // Only consider it a mobile device if it's in the actual native app
-    // Check for specific app indicators or if WTN bridge actually works
-    const isActuallyNativeApp = (isiOS || isAndroidDevice) && 
-                                 typeof window !== 'undefined' && 
+    // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
+    // This prevents mobile web browsers from being detected as native apps
+    // WebToNative should set window.WTN.isNativeApp = true in native environment
+    const isActuallyNativeApp = typeof window !== 'undefined' && 
                                  typeof window.WTN !== 'undefined' &&
-                                 typeof window.WTN.inAppPurchase === 'function';
+                                 window.WTN.isNativeApp === true;
     
     setIsMobileDevice(isActuallyNativeApp);
     setIsIOS(isiOS && isActuallyNativeApp);
