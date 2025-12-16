@@ -25,71 +25,29 @@ export default function TeamRankings({ teams, isLoading, accentColor }) {
           className={`bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all border-l-4 ${accentColor.replace('bg-', 'border-')}`}
         >
           <div className="flex items-start gap-4">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${accentColor} text-white font-bold flex-shrink-0`}>
+            <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${accentColor} text-white font-bold text-xl flex-shrink-0`}>
               {index + 1}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div>
-                  <h4 className="font-bold text-slate-800 text-lg">{team.name}</h4>
-                  <p className="text-sm text-slate-600">{team.record} {team.winPct && `(${team.winPct})`}</p>
-                </div>
-                {team.conference && (
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h4 className="font-bold text-slate-900 text-lg">{team.name}</h4>
+                {team.division && (
                   <span className="px-2 py-1 bg-slate-100 rounded text-xs font-medium text-slate-600 whitespace-nowrap">
-                    {team.conference}
+                    {team.division}
                   </span>
                 )}
               </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                {team.pointsFor && (
-                  <div className="bg-green-50 rounded px-2 py-1">
-                    <span className="text-green-700 font-semibold">{team.pointsFor}</span>
-                    <span className="text-slate-500 ml-1">PPG</span>
-                  </div>
-                )}
-                {team.pointsAgainst && (
-                  <div className="bg-red-50 rounded px-2 py-1">
-                    <span className="text-red-700 font-semibold">{team.pointsAgainst}</span>
-                    <span className="text-slate-500 ml-1">PA</span>
-                  </div>
-                )}
-                {team.pointDifferential && (
-                  <div className={`rounded px-2 py-1 ${parseFloat(team.pointDifferential) > 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
-                    <span className={`font-semibold ${parseFloat(team.pointDifferential) > 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-                      {parseFloat(team.pointDifferential) > 0 ? '+' : ''}{team.pointDifferential}
-                    </span>
-                    <span className="text-slate-500 ml-1">Diff</span>
-                  </div>
-                )}
-                {team.streak && (
-                  <div className={`rounded px-2 py-1 ${team.streak.startsWith('W') ? 'bg-green-50' : 'bg-red-50'}`}>
-                    <span className={`font-semibold ${team.streak.startsWith('W') ? 'text-green-700' : 'text-red-700'}`}>
-                      {team.streak}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {(team.homeRecord || team.awayRecord || team.lastFive) && (
-                <div className="flex flex-wrap gap-2 mt-2 text-xs text-slate-600">
-                  {team.homeRecord && (
-                    <span className="bg-slate-100 px-2 py-0.5 rounded">
-                      🏠 {team.homeRecord}
-                    </span>
-                  )}
-                  {team.awayRecord && (
-                    <span className="bg-slate-100 px-2 py-0.5 rounded">
-                      ✈️ {team.awayRecord}
-                    </span>
-                  )}
-                  {team.lastFive && (
-                    <span className="bg-slate-100 px-2 py-0.5 rounded">
-                      L5: {team.lastFive}
-                    </span>
-                  )}
-                </div>
-              )}
+              <p className="text-sm text-slate-700 font-medium mb-1">{team.wins}-{team.losses}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                2024-2025 season: {team.wins || 0} wins, {team.losses || 0} losses, 
+                {team.pointsFor && ` ${team.pointsFor} PPG,`}
+                {team.pointsAgainst && ` ${team.pointsAgainst} allowed,`}
+                {team.pointDifferential && ` ${parseFloat(team.pointDifferential) > 0 ? '+' : ''}${team.pointDifferential} differential,`}
+                {team.homeRecord && ` ${team.homeRecord} home,`}
+                {team.awayRecord && ` ${team.awayRecord} away,`}
+                {team.lastFive && ` ${team.lastFive} last 5,`}
+                {team.streak && ` ${team.streak} streak`}
+              </p>
             </div>
           </div>
         </motion.div>
