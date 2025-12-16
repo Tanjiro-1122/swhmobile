@@ -6,8 +6,8 @@ import { ArrowLeft, Users, Shield, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
-import PlayerList from '@/components/topten/PlayerList';
-import TeamRankings from '@/components/topten/TeamRankings';
+import PlayerList from '@/components/PlayerList';
+import TeamRankings from '@/components/TeamRankings';
 
 const sportConfig = {
   NFL: {
@@ -65,7 +65,7 @@ export default function SportDetail() {
   const fetchPlayers = async () => {
     setLoadingPlayers(true);
     try {
-      const apiKey = window.SECRETS?.THE_ODDS_API_KEY;
+      const apiKey = window.SECRETS?.ODDS_API_KEY;
       
       // Sport-specific stat definitions
       const statPrompts = {
@@ -303,32 +303,33 @@ export default function SportDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Header */}
-      <div className={`bg-gradient-to-br ${config.gradient} py-6 px-4`}>
+      <div className={`bg-gradient-to-br ${config.gradient} pt-8 pb-16 px-4`}>
         <div className="max-w-4xl mx-auto">
+          <Link to={createPageUrl('Home')}>
+            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 mb-6">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Sports
+            </Button>
+          </Link>
+          
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4"
+            className="flex items-center gap-6"
           >
-            <img src={config.logo} alt={sport} className="w-16 h-16 object-contain" />
+            <img src={config.logo} alt={sport} className="w-20 h-20 object-contain" />
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-white">{sport}</h1>
-              <p className="text-white/70 text-sm mt-1">Top 10 Players & Team Rankings</p>
-              <p className="text-white/50 text-xs mt-0.5">Source: {config.source}</p>
+              <h1 className="text-4xl md:text-5xl font-black text-white">{sport}</h1>
+              <p className="text-white/70 mt-2">Top 10 Players & Team Rankings</p>
+              <p className="text-white/50 text-sm mt-1">Source: {config.source}</p>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 -mt-4">
-        <div className="flex justify-between items-center mb-4">
-          <Link to={createPageUrl('TopTen')}>
-            <Button variant="outline" className="bg-white shadow-sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Sports
-            </Button>
-          </Link>
+      <div className="max-w-4xl mx-auto px-4 -mt-8">
+        <div className="flex justify-end mb-4">
           <Button
             onClick={handleRefresh}
             variant="outline"
@@ -381,7 +382,7 @@ export default function SportDetail() {
         </Tabs>
 
         <p className="text-center text-slate-400 text-sm mt-8 pb-8">
-          Data sourced from {config.source}
+          Data fetched from {config.source}
         </p>
       </div>
     </div>
