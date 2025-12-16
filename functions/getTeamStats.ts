@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import { withCache, generateCacheKey } from './utils/cache.js';
+import { withCache, generateCacheKey } from './utils/cache.ts';
 
 Deno.serve(async (req) => {
   try {
