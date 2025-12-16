@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
   Sparkles, Zap, MessageSquare, User, Crown, 
-  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut
+  TrendingUp, Target, ChevronRight, Settings, Mail, Shield, FileText, LogOut, Check
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Card, CardContent } from "@/components/ui/card";
@@ -158,6 +158,16 @@ export default function Dashboard() {
 
       const ua = navigator.userAgent || '';
       setIsMobile(/iPhone|iPad|iPod|Android/i.test(ua));
+
+      // Check for payment success
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('payment_success') === 'true') {
+        setShowSuccessMessage(true);
+        // Clear URL params
+        window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
+        // Auto-hide after 5 seconds
+        setTimeout(() => setShowSuccessMessage(false), 5000);
+      }
       }, []);
 
   const { data: currentUser, error: userError } = useQuery({
@@ -192,6 +202,21 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen max-h-screen relative overflow-x-hidden overflow-y-auto">
+      {/* Payment Success Message */}
+      {showSuccessMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-2xl"
+        >
+          <div className="flex items-center gap-2">
+            <Check className="w-5 h-5" />
+            <span className="font-bold">Payment successful! Your subscription is now active.</span>
+          </div>
+        </motion.div>
+      )}
+      
       {/* Modern Dark Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Subtle gradient orbs */}
