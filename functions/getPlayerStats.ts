@@ -22,7 +22,16 @@ Deno.serve(async (req) => {
 
 Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Return comprehensive player data: name, team, position, sport, league, season stats, last 5 games with detailed stats, health status, next game prediction with betting insights, current odds/lines if available, strengths, weaknesses.
+Return comprehensive player data: name, team, position, sport, league, season stats, last 5 games with FULL DETAILED PER-GAME STATS (not just dates/opponents, but actual numbers for every stat), health status, next game prediction with betting insights, current odds/lines if available, strengths, weaknesses.
+
+CRITICAL for recent_form array: Each game MUST include ALL statistical categories with actual numbers:
+- Baseball: date, opponent, result, hits, at_bats, home_runs, rbis, stolen_bases, batting_average, strikeouts
+- Basketball: date, opponent, result, points, rebounds, assists, steals, blocks, field_goals_made, field_goals_attempted, three_pointers_made, minutes_played
+- Football: date, opponent, result, passing_yards, passing_touchdowns, rushing_yards, rushing_touchdowns, receptions, receiving_yards, receiving_touchdowns
+- Hockey: date, opponent, result, goals, assists, points, plus_minus, shots_on_goal, time_on_ice
+- Soccer: date, opponent, result, goals, assists, shots, shots_on_target, passes, pass_accuracy, tackles
+
+Do NOT return empty or null values - provide actual game statistics.
 
 IMPORTANT FIELDS:
 - role: Must be one of "Starter", "Bench", "Sixth Man", "Rotation", or "Unknown" - indicate if player starts or comes off bench
@@ -49,7 +58,49 @@ If no next game scheduled, say TBD.`,
             role: { type: "string", enum: ["Starter", "Bench", "Sixth Man", "Rotation", "Unknown"] },
             league: { type: "string" },
             season_averages: { type: "object" },
-            recent_form: { type: "array", items: { type: "object" } },
+            recent_form: { 
+              type: "array", 
+              items: { 
+                type: "object",
+                properties: {
+                  date: { type: "string" },
+                  opponent: { type: "string" },
+                  result: { type: "string" },
+                  hits: { type: "number" },
+                  at_bats: { type: "number" },
+                  home_runs: { type: "number" },
+                  rbis: { type: "number" },
+                  stolen_bases: { type: "number" },
+                  strikeouts: { type: "number" },
+                  batting_average: { type: "number" },
+                  points: { type: "number" },
+                  rebounds: { type: "number" },
+                  assists: { type: "number" },
+                  steals: { type: "number" },
+                  blocks: { type: "number" },
+                  field_goals_made: { type: "number" },
+                  field_goals_attempted: { type: "number" },
+                  three_pointers_made: { type: "number" },
+                  minutes_played: { type: "number" },
+                  passing_yards: { type: "number" },
+                  passing_touchdowns: { type: "number" },
+                  rushing_yards: { type: "number" },
+                  rushing_touchdowns: { type: "number" },
+                  receptions: { type: "number" },
+                  receiving_yards: { type: "number" },
+                  receiving_touchdowns: { type: "number" },
+                  goals: { type: "number" },
+                  shots_on_goal: { type: "number" },
+                  time_on_ice: { type: "number" },
+                  plus_minus: { type: "number" },
+                  shots: { type: "number" },
+                  shots_on_target: { type: "number" },
+                  passes: { type: "number" },
+                  pass_accuracy: { type: "number" },
+                  tackles: { type: "number" }
+                }
+              } 
+            },
             health_status: { type: "string", enum: ["Healthy", "Day-to-Day", "Out 1-2 Weeks", "Out 2-4 Weeks", "Out 4-6 Weeks", "Out 6+ Weeks", "Out for Season"] },
             injury_details: { type: "string" },
             next_game: {
