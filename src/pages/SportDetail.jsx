@@ -151,7 +151,7 @@ Use the most recent standings from ${config.source} and TeamRankings.com.`,
           >
             <img src={config.logo} alt={sport} className="w-20 h-20 object-contain" />
             <div>
-              <h1 className="text-4xl md:text-5xl font-black text-white">{sport}</h1>
+              <h1 className="text-4xl md:text-5xl font-black text-white">{sport.toUpperCase()}</h1>
               <p className="text-white/70 mt-2">Top 10 Players & Team Rankings</p>
               <p className="text-white/50 text-sm mt-1">Source: {config.source}</p>
             </div>
