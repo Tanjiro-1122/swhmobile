@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Star, TrendingUp, Loader2, RefreshCw, Tv } from "lucide-react";
+import { Trophy, Users, Star, TrendingUp, Loader2, RefreshCw, Tv, Newspaper, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
 
 // Sport configurations
 const SPORTS = [
@@ -19,6 +20,15 @@ const SPORTS = [
 
 export default function TopStats() {
   const [selectedSport, setSelectedSport] = useState('nfl');
+  const [mainTab, setMainTab] = useState('feeds');
+  const [hasLoadedStats, setHasLoadedStats] = useState(false);
+  const [isGeneratingStats, setIsGeneratingStats] = useState(false);
+
+  // Check if stats have been loaded before
+  useEffect(() => {
+    const loaded = localStorage.getItem('topStatsLoaded');
+    setHasLoadedStats(!!loaded);
+  }, []);
 
   const getPromptForSport = (sport) => {
     const prompts = {
@@ -120,7 +130,7 @@ Use CURRENT 2024-2025 season data. Search FIFA.com and transfermarkt NOW.`
     return prompts[sport] || prompts.nfl;
   };
 
-  const { data: statsData, isLoading, error } = useQuery({
+  const { data: statsData, isLoading, error, refetch } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
       try {
@@ -179,6 +189,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
         if (!response || !response.data) {
           throw new Error('Invalid response from getSportsStats');
         }
+        localStorage.setItem('topStatsLoaded', 'true');
         return response.data;
       } catch (err) {
         console.error('Error invoking getSportsStats:', err);
@@ -191,9 +202,27 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
         throw err;
       }
     },
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+    enabled: hasLoadedStats, // Only fetch if user has clicked first time lookup
+    staleTime: Infinity, // Cache forever until refresh
+    gcTime: Infinity,
     retry: 1,
   });
+
+  const handleFirstTimeLookup = async () => {
+    setIsGeneratingStats(true);
+    setHasLoadedStats(true);
+    localStorage.setItem('topStatsLoaded', 'true');
+    // This will trigger the query since enabled will become true
+  };
+
+  const handleRefreshStats = async () => {
+    setIsGeneratingStats(true);
+    try {
+      await refetch();
+    } finally {
+      setIsGeneratingStats(false);
+    }
+  };
 
   const currentSportConfig = SPORTS.find(s => s.id === selectedSport);
 
@@ -220,8 +249,76 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
           </div>
         </div>
 
-        {/* Sport Tabs */}
-        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="w-full">
+        {/* Main Tabs - Feeds vs Sports Stats */}
+        <Tabs value={mainTab} onValueChange={setMainTab} className="w-full mb-8">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-black/40 backdrop-blur-xl border border-white/10 p-1">
+            <TabsTrigger 
+              value="feeds"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/60 flex items-center gap-2"
+            >
+              <Newspaper className="w-4 h-4" />
+              Feeds
+            </TabsTrigger>
+            <TabsTrigger 
+              value="stats"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/60 flex items-center gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Sports Stats
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Feeds Section */}
+          <TabsContent value="feeds" className="mt-6">
+            <BettingBriefsContent />
+          </TabsContent>
+
+          {/* Sports Stats Section */}
+          <TabsContent value="stats" className="mt-6">
+            {!hasLoadedStats ? (
+              <Card className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/30">
+                <CardContent className="p-12 text-center">
+                  <div className="text-6xl mb-4">📊</div>
+                  <h3 className="text-2xl font-bold text-white mb-3">Ready to See the Latest Stats?</h3>
+                  <p className="text-white/70 mb-6">
+                    Click below to load current standings and player stats for all major sports
+                  </p>
+                  <Button 
+                    onClick={handleFirstTimeLookup}
+                    disabled={isGeneratingStats}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-3 text-lg"
+                  >
+                    {isGeneratingStats ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Loading Stats...
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="w-5 h-5 mr-2" />
+                        First Time Lookup
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="flex justify-end mb-4">
+                  <Button
+                    onClick={handleRefreshStats}
+                    variant="outline"
+                    size="sm"
+                    disabled={isGeneratingStats || isLoading}
+                    className="gap-2"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isGeneratingStats || isLoading ? 'animate-spin' : ''}`} />
+                    {isGeneratingStats || isLoading ? 'Refreshing...' : 'Refresh'}
+                  </Button>
+                </div>
+
+                {/* Sport Tabs */}
+                <Tabs value={selectedSport} onValueChange={setSelectedSport} className="w-full">
           <TabsList className="flex flex-wrap justify-center gap-2 bg-transparent mb-8">
             {SPORTS.map((sport) => (
               <TabsTrigger
@@ -398,6 +495,10 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
               ) : null}
             </TabsContent>
           ))}
+                </Tabs>
+              </>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
       <FloatingDashboardButton />
