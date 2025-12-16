@@ -79,12 +79,11 @@ export default function Pricing() {
     };
     checkAuth();
     
-    // Only check for IAP readiness on mobile devices
-    if (isMobile) {
+    // Only check for IAP readiness if we detected a native app
+    if (isActuallyNativeApp) {
       const checkIAPReady = () => {
         const wtnExists = typeof window.WTN !== 'undefined';
         const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
-        console.log('IAP Check - WTN exists:', wtnExists, 'IAP exists:', iapExists, 'WTN object:', window.WTN);
         setIapReady(iapExists);
         return iapExists;
       };
@@ -100,6 +99,9 @@ export default function Pricing() {
       }, 500);
       
       return () => clearInterval(interval);
+    } else {
+      // Force Stripe for web browsers
+      setIapReady(false);
     }
   }, []);
   
