@@ -8,6 +8,8 @@ import { Sparkles, Calendar, TrendingUp, AlertTriangle, Cloud, RefreshCw } from 
 import { motion } from "framer-motion";
 
 export default function BettingBriefsContent() {
+  const [isGenerating, setIsGenerating] = React.useState(false);
+
   const { data: briefs = [], isLoading, refetch } = useQuery({
     queryKey: ['bettingBriefs'],
     queryFn: async () => {
@@ -18,6 +20,20 @@ export default function BettingBriefsContent() {
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
+
+  const handleRefresh = async () => {
+    setIsGenerating(true);
+    try {
+      // Generate new brief
+      await base44.functions.invoke('generateDailyBrief', {});
+      // Refetch the list
+      await refetch();
+    } catch (error) {
+      console.error('Failed to generate brief:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -43,14 +59,14 @@ export default function BettingBriefsContent() {
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button
-          onClick={() => refetch()}
+          onClick={handleRefresh}
           variant="outline"
           size="sm"
-          disabled={isLoading}
+          disabled={isGenerating || isLoading}
           className="gap-2"
         >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
+          <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+          {isGenerating ? 'Generating...' : 'Refresh'}
         </Button>
       </div>
       {briefs.map((brief, index) => (
