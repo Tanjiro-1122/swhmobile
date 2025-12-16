@@ -121,11 +121,22 @@ const menuItems = [
           id: "thenews",
           title: "THE NEWS",
           subtitle: "Latest Updates",
-          description: "Stats, standings & sports news",
+          description: "Sports betting briefs & news",
           SportIcon: TrophyIcon,
           page: "TopStats",
           gradient: "from-yellow-600 to-amber-700",
           borderColor: "border-yellow-400",
+          tag: "FREE"
+        },
+        {
+          id: "topten",
+          title: "TOP TEN",
+          subtitle: "Rankings",
+          description: "Top players & team standings",
+          SportIcon: TrophyIcon,
+          page: "TopTen",
+          gradient: "from-amber-600 to-orange-700",
+          borderColor: "border-amber-400",
           tag: "NEW"
         },
         {
