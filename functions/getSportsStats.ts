@@ -21,11 +21,11 @@ Deno.serve(async (req) => {
 
     // Sport-specific prompts targeting specific websites
     const prompts = {
-      nfl: 'Search NFL.com/standings and teamrankings.com/nfl for current 2024-2025 NFL season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), current streak, division. Also search NFL.com/stats for top 10 players (mix of QBs, RBs, WRs) with: name, team, position, primary stat label, primary stat value, secondary stat label, secondary stat value, tertiary stat label, tertiary stat value, games played.',
-      nba: 'Search ESPN.com/nba/standings for current 2024-2025 NBA season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), current streak, conference/division. Also search ESPN.com/nba/stats for top 10 players by PPG with: name, team, position, PPG, APG, RPG, FG%, games played.',
-      mlb: 'Search ESPN.com/mlb/standings for 2024 MLB final season standings. Get the top 10 teams with: team name, wins, losses, win percentage, runs per game, runs allowed per game, final result/streak, division. Also search ESPN.com/mlb/stats for top 10 players (mix of batters and pitchers) with: name, team, position, primary stat, value, secondary stat, value, tertiary stat, value, games played.',
-      nhl: 'Search ESPN.com/nhl/standings for current 2024-2025 NHL season. Get the top 10 teams by points with: team name, wins, losses, win percentage, goals for (ppg), goals against (ppg), current streak, division. Also search ESPN.com/nhl/stats for top 10 players by points with: name, team, position, goals, assists, points, +/-, games played.',
-      soccer: 'Search FIFA.com/rankings for current FIFA national team rankings. Get the top 10 national teams with: team name, wins (recent 10), losses (recent 10), win percentage, goals for (avg), goals against (avg), current streak, confederation. Also search transfermarkt.com for top 10 players from European leagues with: name, club team, position, goals, assists, apps, market value, games played.'
+      nfl: 'Search NFL.com/standings and teamrankings.com/nfl for current 2024-2025 NFL season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), point differential, home record (W-L), away record (W-L), last 5 games (W-L), current streak, division. Also search NFL.com/stats for top 10 players (mix of QBs, RBs, WRs) with: name, team, position, primary stat label, primary stat value, secondary stat label, secondary stat value, tertiary stat label, tertiary stat value, games played.',
+      nba: 'Search ESPN.com/nba/standings for current 2024-2025 NBA season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), point differential, home record (W-L), away record (W-L), last 5 games (W-L), current streak, conference/division. Also search ESPN.com/nba/stats for top 10 players by PPG with: name, team, position, PPG, APG, RPG, FG%, games played.',
+      mlb: 'Search ESPN.com/mlb/standings for 2024 MLB final season standings. Get the top 10 teams with: team name, wins, losses, win percentage, runs per game, runs allowed per game, run differential, home record (W-L), away record (W-L), last 10 games (W-L), final result/streak, division. Also search ESPN.com/mlb/stats for top 10 players (mix of batters and pitchers) with: name, team, position, primary stat, value, secondary stat, value, tertiary stat, value, games played.',
+      nhl: 'Search ESPN.com/nhl/standings for current 2024-2025 NHL season. Get the top 10 teams by points with: team name, wins, losses, win percentage, goals for (ppg), goals against (ppg), goal differential, home record (W-L-OT), away record (W-L-OT), last 5 games (W-L-OT), current streak, division. Also search ESPN.com/nhl/stats for top 10 players by points with: name, team, position, goals, assists, points, +/-, games played.',
+      soccer: 'Search FIFA.com/rankings for current FIFA national team rankings. Get the top 10 national teams with: team name, wins (recent 10), losses (recent 10), win percentage, goals for (avg), goals against (avg), goal differential, home record (recent), away record (recent), last 5 games (W-D-L), current streak, confederation. Also search transfermarkt.com for top 10 players from European leagues with: name, club team, position, goals, assists, apps, market value, games played.'
     };
 
     const prompt = prompts[sport] || prompts.nfl;
@@ -60,6 +60,10 @@ Give exactly 10 teams and 10 players with real current data.`,
                 winPct: { type: "string" },
                 pointsFor: { type: "string" },
                 pointsAgainst: { type: "string" },
+                pointDifferential: { type: "string" },
+                homeRecord: { type: "string" },
+                awayRecord: { type: "string" },
+                lastFive: { type: "string" },
                 streak: { type: "string" },
                 division: { type: "string" }
               }
