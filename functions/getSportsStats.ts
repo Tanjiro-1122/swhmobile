@@ -19,13 +19,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Sport is required' }, { status: 400 });
     }
 
-    // Very simple prompts - just get top 10 teams and players
+    // Sport-specific prompts targeting specific websites
     const prompts = {
-      nfl: 'Search ESPN NFL standings. Give me the top 10 NFL teams by record right now with: team name, wins, losses, win %, points per game, and division. Also give me top 10 NFL players by stats (QBs by yards, RBs by yards, WRs by yards) with: name, team, position, and their main stat.',
-      nba: 'Search ESPN NBA standings. Give me the top 10 NBA teams by record right now with: team name, wins, losses, win %, points per game, and conference. Also give me top 10 NBA players by points per game with: name, team, position, PPG, assists, rebounds.',
-      mlb: 'Search ESPN MLB standings. Give me the top 10 MLB teams from 2024 season with: team name, wins, losses, win %, runs per game, and division. Also give me top 10 MLB players by batting average or ERA with: name, team, position, and their main stats.',
-      nhl: 'Search ESPN NHL standings. Give me the top 10 NHL teams by points right now with: team name, wins, losses, points, goals per game, and division. Also give me top 10 NHL players by points with: name, team, position, goals, and assists.',
-      soccer: 'Search FIFA rankings. Give me the top 10 national soccer teams with: team name, ranking, recent record, and confederation. Also give me top 10 soccer players by goals in European leagues with: name, club team, position, goals, and league.'
+      nfl: 'Search NFL.com/standings and teamrankings.com/nfl for current 2024-2025 NFL season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), current streak, division. Also search NFL.com/stats for top 10 players (mix of QBs, RBs, WRs) with: name, team, position, primary stat label, primary stat value, secondary stat label, secondary stat value, tertiary stat label, tertiary stat value, games played.',
+      nba: 'Search ESPN.com/nba/standings for current 2024-2025 NBA season. Get the top 10 teams by record with: team name, wins, losses, win percentage, points for (ppg), points against (ppg), current streak, conference/division. Also search ESPN.com/nba/stats for top 10 players by PPG with: name, team, position, PPG, APG, RPG, FG%, games played.',
+      mlb: 'Search ESPN.com/mlb/standings for 2024 MLB final season standings. Get the top 10 teams with: team name, wins, losses, win percentage, runs per game, runs allowed per game, final result/streak, division. Also search ESPN.com/mlb/stats for top 10 players (mix of batters and pitchers) with: name, team, position, primary stat, value, secondary stat, value, tertiary stat, value, games played.',
+      nhl: 'Search ESPN.com/nhl/standings for current 2024-2025 NHL season. Get the top 10 teams by points with: team name, wins, losses, win percentage, goals for (ppg), goals against (ppg), current streak, division. Also search ESPN.com/nhl/stats for top 10 players by points with: name, team, position, goals, assists, points, +/-, games played.',
+      soccer: 'Search FIFA.com/rankings for current FIFA national team rankings. Get the top 10 national teams with: team name, wins (recent 10), losses (recent 10), win percentage, goals for (avg), goals against (avg), current streak, confederation. Also search transfermarkt.com for top 10 players from European leagues with: name, club team, position, goals, assists, apps, market value, games played.'
     };
 
     const prompt = prompts[sport] || prompts.nfl;
