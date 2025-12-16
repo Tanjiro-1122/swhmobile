@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import { withCache, generateCacheKey } from './utils/cache.ts';
 
 // Lightweight retry helper
 async function retryWithBackoff(fn: () => Promise<any>, retries = 3, delay = 1000) {
@@ -81,14 +80,7 @@ Deno.serve(async (req) => {
 
     console.log('[getSportsStats] Fetching stats for:', sport);
 
-    // Generate cache key
-    const cacheKey = generateCacheKey('sportsStats', {
-      sport,
-      date: new Date().toISOString().split('T')[0],
-    });
-
-    const result = await withCache('teamStats', cacheKey, async () => {
-      return await retryWithBackoff(async () => {
+    const result = await retryWithBackoff(async () => {
         console.log('[getSportsStats] Calling InvokeLLM...');
 
         const llmRequest: any = {
@@ -160,7 +152,6 @@ Deno.serve(async (req) => {
           fetched_at: new Date().toISOString(),
         };
       }, 3, 2000);
-    });
 
     return Response.json(result, { 
       status: 200,

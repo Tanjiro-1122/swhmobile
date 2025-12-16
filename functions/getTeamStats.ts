@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import { withCache, generateCacheKey } from './utils/cache.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -12,14 +11,7 @@ Deno.serve(async (req) => {
 
     const { query } = await req.json();
     
-    // Generate cache key based on query
-    const cacheKey = generateCacheKey('teamStats', { 
-      query: query.toLowerCase().trim()
-    });
-    
-    // Use cache wrapper for team stats
-    const result = await withCache('teamStats', cacheKey, async () => {
-      return await base44.integrations.Core.InvokeLLM({
+    const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Search for team: "${query}"
 Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
@@ -57,7 +49,6 @@ If no next game scheduled, say TBD.`,
           required: ["team_name", "sport"]
         }
       });
-    });
     
     return Response.json(result);
 
