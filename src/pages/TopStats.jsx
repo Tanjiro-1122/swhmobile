@@ -53,13 +53,13 @@ For players: Top 10 players from top European leagues (Premier League, La Liga, 
   const { data: statsData, isLoading, error } = useQuery({
     queryKey: ['topStats', selectedSport],
     queryFn: async () => {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await base44.functions.invoke('getSportsStats', {
+        sport: selectedSport,
         prompt: getPromptForSport(selectedSport) + `
 
 Return accurate, current statistics. For teams include: rank, name, wins, losses, winPct, pointsFor, pointsAgainst, streak, division.
 For players include: rank, name, team, position, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value, gamesPlayed.`,
-        add_context_from_internet: true,
-        response_json_schema: {
+        schema: {
           type: "object",
           properties: {
             sport: { type: "string" },
@@ -103,7 +103,7 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
           }
         }
       });
-      return response;
+      return response.data;
     },
     staleTime: 1000 * 60 * 30, // Cache for 30 minutes
   });
