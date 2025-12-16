@@ -34,7 +34,7 @@ export default function SportCard({ sport, index }) {
           
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-5xl">{sportIcons[sport]}</span>
+              <img src={sportLogos[sport]} alt={sport} className="w-16 h-16 object-contain" />
               <div>
                 <h3 className="text-2xl font-bold text-white">{sport}</h3>
                 <p className="text-white/70 text-sm mt-1">View Top 10 Rankings</p>
