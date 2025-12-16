@@ -349,13 +349,10 @@ export default function Pricing() {
     }
   };
 
-  // Main subscribe handler - routes to Stripe or IAP based on native bridge availability
+  // Main subscribe handler - routes to Stripe or IAP based on platform detection
   const handleSubscribe = async (plan) => {
-    const hasNativeIAP = typeof window !== 'undefined' &&
-                         typeof window.WTN !== 'undefined' &&
-                         typeof window.WTN.inAppPurchase === 'function';
-    
-    if (hasNativeIAP) {
+    // Force Stripe for web/desktop users, IAP only for mobile apps
+    if (isMobileDevice && iapReady) {
       await handleIAPSubscribe(plan);
     } else {
       try {
