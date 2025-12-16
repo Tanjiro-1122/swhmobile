@@ -125,7 +125,7 @@ export default function SportDetail() {
             </TabsTrigger>
             <TabsTrigger value="teams" className="flex-1 rounded-lg">
               <Shield className="w-4 h-4 mr-2" />
-              Team Rankings
+              Top 10 Teams
             </TabsTrigger>
           </TabsList>
 

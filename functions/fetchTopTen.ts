@@ -3,23 +3,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 const sportPrompts = {
   NFL: {
     players: "Search NFL.com and get the top 10 NFL players for the current 2024-2025 season. Include their name, team, and key stats (passing yards/touchdowns for QBs, rushing yards for RBs, receiving yards for WRs, etc).",
-    teams: "Search TeamRankings.com and NFL.com to get the current NFL team standings. Include team name, wins, losses, and win percentage. Order by best record."
+    teams: "Search TeamRankings.com and NFL.com to get the top 10 NFL teams by current standings. Include team name, wins, losses, and win percentage. Return exactly 10 teams ordered by best record."
   },
   MLB: {
     players: "Search MLB.com and get the top 10 MLB players for the current season. Include their name, team, and key stats (batting average, home runs, RBIs for hitters; ERA, strikeouts for pitchers).",
-    teams: "Search MLB.com to get the current MLB team standings. Include team name, wins, losses, and win percentage. Order by best record."
+    teams: "Search MLB.com to get the top 10 MLB teams by current standings. Include team name, wins, losses, and win percentage. Return exactly 10 teams ordered by best record."
   },
   NBA: {
     players: "Search NBA.com and get the top 10 NBA players for the current 2024-2025 season. Include their name, team, and key stats (points per game, rebounds, assists).",
-    teams: "Search NBA.com to get the current NBA team standings. Include team name, wins, losses, and win percentage. Order by best record."
+    teams: "Search NBA.com to get the top 10 NBA teams by current standings. Include team name, wins, losses, and win percentage. Return exactly 10 teams ordered by best record."
   },
   NHL: {
     players: "Search NHL.com and get the top 10 NHL players for the current 2024-2025 season. Include their name, team, and key stats (goals, assists, points).",
-    teams: "Search NHL.com to get the current NHL team standings. Include team name, wins, losses, and win percentage. Order by best record."
+    teams: "Search NHL.com to get the top 10 NHL teams by current standings. Include team name, wins, losses, and win percentage. Return exactly 10 teams ordered by best record."
   },
   Soccer: {
     players: "Search Premier League official site and get the top 10 soccer players in the Premier League for the current season. Include their name, team, and key stats (goals, assists).",
-    teams: "Search Premier League official site to get the current Premier League standings. Include team name, wins, losses, and win percentage. Order by best record."
+    teams: "Search Premier League official site to get the top 10 Premier League teams by current standings. Include team name, wins, losses, and win percentage. Return exactly 10 teams ordered by best record."
   }
 };
 
@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
     });
 
     return Response.json({
-      players: playersResponse.players || [],
-      teams: teamsResponse.teams || []
+      players: (playersResponse.players || []).slice(0, 10),
+      teams: (teamsResponse.teams || []).slice(0, 10)
     });
 
   } catch (error) {
