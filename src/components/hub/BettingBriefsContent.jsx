@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Calendar, TrendingUp, AlertTriangle, Cloud } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Calendar, TrendingUp, AlertTriangle, Cloud, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BettingBriefsContent() {
@@ -40,6 +41,18 @@ export default function BettingBriefsContent() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button
+          onClick={() => refetch()}
+          variant="outline"
+          size="sm"
+          disabled={isLoading}
+          className="gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
       {briefs.map((brief, index) => (
         <motion.div
           key={brief.id}
