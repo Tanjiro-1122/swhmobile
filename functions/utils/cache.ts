@@ -31,11 +31,11 @@ const caches = {
     updateAgeOnGet: true,
   }),
   
-  // Sports stats cache - 30 minutes TTL (standings/leaders change slowly)
+  // Sports stats cache - 24 hours TTL (refreshes daily)
   sportsStats: new LRUCache({
     max: 200,
-    ttl: 1000 * 60 * 30, // 30 minutes
-    updateAgeOnGet: true,
+    ttl: 1000 * 60 * 60 * 24, // 24 hours
+    updateAgeOnGet: false,
   }),
 };
 

@@ -142,64 +142,30 @@ export default function SportDetail() {
     return prompts[sport] || prompts.NBA;
   };
 
-  const fetchPlayers = async () => {
+  const fetchPlayers = async (forceRefresh = false) => {
     setLoadingPlayers(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${getPlayerPrompt(sport)} Use the most recent data available from ${config.source}. Provide accurate 2024-2025 season statistics.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            players: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: getPlayerSchema(sport)
-              }
-            }
-          }
-        }
+      const response = await base44.functions.invoke('getTopTenData', {
+        sport,
+        type: 'players',
+        forceRefresh
       });
-      setPlayers(result.players || []);
+      setPlayers(response.data.data || []);
     } catch (error) {
       console.error('Error fetching players:', error);
     }
     setLoadingPlayers(false);
   };
 
-  const fetchTeams = async () => {
+  const fetchTeams = async (forceRefresh = false) => {
     setLoadingTeams(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for the current top 10 ${sport} team standings for 2024-2025 season. IMPORTANT: Return ONLY the top 10 teams, no more. For each team provide: name, wins (w), losses (l), win percentage (win_pct as decimal like 0.750), games back (gb as string or number), conference record (conf as string like "10-5"), division record (div as string like "5-2"), home record (home as string like "12-3"), road record (road as string like "8-7"), last 10 games record (last10 as string like "7-3"), and current streak (streak as string like "W3" or "L2"). Use the most recent standings from ${config.source}.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            teams: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  w: { type: "number" },
-                  l: { type: "number" },
-                  win_pct: { type: "string" },
-                  gb: { type: "string" },
-                  conf: { type: "string" },
-                  div: { type: "string" },
-                  home: { type: "string" },
-                  road: { type: "string" },
-                  last10: { type: "string" },
-                  streak: { type: "string" }
-                }
-              }
-            }
-          }
-        }
+      const response = await base44.functions.invoke('getTopTenData', {
+        sport,
+        type: 'teams',
+        forceRefresh
       });
-      setTeams((result.teams || []).slice(0, 10));
+      setTeams(response.data.data || []);
     } catch (error) {
       console.error('Error fetching teams:', error);
     }
@@ -212,8 +178,8 @@ export default function SportDetail() {
   }, [sport]);
 
   const handleRefresh = () => {
-    fetchPlayers();
-    fetchTeams();
+    fetchPlayers(true);
+    fetchTeams(true);
   };
 
   return (
