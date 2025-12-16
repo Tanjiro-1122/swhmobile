@@ -22,30 +22,35 @@ export default function TopStats() {
 
   const getPromptForSport = (sport) => {
     const prompts = {
-      nfl: `You are a sports statistics expert. Using data from official NFL sources and ESPN, provide the current top 10 NFL teams by win-loss record for the 2024-2025 season, and the top 10 NFL players by overall performance.
+      nfl: `Search the internet for the latest 2024-2025 NFL standings and statistics. Provide the current top 10 NFL teams by win-loss record and the top 10 players by performance.
 
-For teams: Rank, Team name, Wins, Losses, Win%, Points For per game, Points Against per game, Current streak (W3/L2), Division.
-For players: Include QBs (passing yards, TDs, passer rating), RBs (rushing yards, TDs), WRs (receiving yards, TDs). Mix of positions based on impact.`,
+Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".750"), points for per game (e.g., "28.5"), points against per game (e.g., "18.2"), current streak (e.g., "W3" or "L2"), and division.
 
-      nba: `You are a sports statistics expert. Using data from official NBA sources and ESPN, provide the current top 10 NBA teams by win-loss record for the 2024-2025 season, and the top 10 NBA players by overall performance.
+Players: Include rank (1-10), player name, team, position (QB/RB/WR/etc), and three relevant stats with labels. For QBs: passing yards, touchdowns, passer rating. For RBs: rushing yards, touchdowns, yards per carry. For WRs: receiving yards, touchdowns, receptions. Include games played.`,
 
-For teams: Rank, Team name, Wins, Losses, Win%, Points per game, Points allowed per game, Current streak, Conference.
-For players: Points per game, Assists per game, Rebounds per game. Rank by overall impact/stats.`,
+      nba: `Search the internet for the latest 2024-2025 NBA standings and statistics. Provide the current top 10 NBA teams by win-loss record and the top 10 players by performance.
 
-      mlb: `You are a sports statistics expert. Using data from MLB.com/standings, provide the top 10 MLB teams by win-loss record for the 2024 season (or 2025 if available), and the top 10 MLB players.
+Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".667"), points per game (e.g., "115.2"), points allowed per game (e.g., "108.5"), current streak (e.g., "W5" or "L1"), and conference (Eastern/Western).
 
-For teams: Rank, Team name, Wins, Losses, Win%, Runs scored per game, Runs allowed per game, Current streak, Division.
-For players: Batting average, Home runs, RBIs for hitters. Include top pitchers with ERA, Wins, Strikeouts.`,
+Players: Include rank (1-10), player name, team, position (PG/SG/SF/PF/C), points per game, assists per game, rebounds per game, and games played.`,
 
-      nhl: `You are a sports statistics expert. Using data from official NHL sources, provide the current top 10 NHL teams by points/win record for the 2024-2025 season, and the top 10 NHL players.
+      mlb: `Search the internet for the latest MLB standings and statistics. Since it's currently December, provide the final 2024 season top 10 teams and players.
 
-For teams: Rank, Team name, Wins, Losses (include OT losses), Win%, Goals For per game, Goals Against per game, Current streak, Division.
-For players: Goals, Assists, Plus/Minus. Mix of forwards and defensemen.`,
+Teams: Include rank (1-10), team name, wins, losses, win percentage (e.g., ".605"), runs scored per game (e.g., "5.2"), runs allowed per game (e.g., "4.1"), final streak or playoff result, and division.
 
-      soccer: `You are a sports statistics expert. Using data from UEFA rankings (uefa.com/nationalassociations/uefarankings) and FIFA World Rankings (inside.fifa.com/fifa-world-ranking/men), provide:
+Players: Include rank (1-10), player name, team, position (OF/1B/P/etc), and three relevant stats. For hitters: batting average, home runs, RBIs. For pitchers: ERA, wins, strikeouts. Include games played.`,
 
-For teams: Top 10 national teams from the current FIFA Men's World Rankings with their ranking points and confederation.
-For players: Top 10 players from top European leagues (Premier League, La Liga, Bundesliga, Serie A, Ligue 1) by goals and assists this season.`
+      nhl: `Search the internet for the latest 2024-2025 NHL standings and statistics. Provide the current top 10 NHL teams by points and the top 10 players by performance.
+
+Teams: Include rank (1-10), team name, wins, losses (regular + OT/SO), win percentage (e.g., ".625"), goals for per game (e.g., "3.5"), goals against per game (e.g., "2.8"), current streak (e.g., "W4" or "L2"), and division.
+
+Players: Include rank (1-10), player name, team, position (C/LW/RW/D), goals scored, assists, plus/minus rating, and games played.`,
+
+      soccer: `Search the internet for the latest FIFA World Rankings and top European league statistics. Provide the current top 10 national teams and top 10 players.
+
+Teams: Include rank (1-10), team name, wins (recent record), losses (recent record), win percentage or points, goals for (recent average), goals against (recent average), current form (e.g., "W-W-D"), and confederation (UEFA/CONMEBOL/etc).
+
+Players: Include rank (1-10), player name, club team, position (FW/MF/DF), goals this season, assists this season, total goal contributions, and games played.`
     };
     return prompts[sport] || prompts.nfl;
   };
@@ -156,17 +161,22 @@ For players include: rank, name, team, position, stat1Label, stat1Value, stat2La
                   <p className="text-white/70">Loading {sport.name} stats...</p>
                 </div>
               ) : error || !statsData || !statsData.teams?.length ? (
-                <Card className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-400/30">
+                <Card className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-400/30">
                   <CardContent className="p-8 text-center">
-                    <div className="text-6xl mb-4">⚾🏃‍♂️💨</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Swing and a Miss!</h3>
-                    <p className="text-white/70 mb-6">Our stats batter whiffed on that one. Step back up to the plate and try again!</p>
+                    <div className="text-6xl mb-4">⚠️</div>
+                    <h3 className="text-xl font-bold text-white mb-2">Error Loading Stats</h3>
+                    <p className="text-white/70 mb-4">
+                      {error?.message || error?.error || "Failed to load data. Please try again."}
+                    </p>
+                    {error?.details && (
+                      <p className="text-xs text-white/50 mb-6 font-mono">{error.details}</p>
+                    )}
                     <Button 
                       onClick={() => window.location.reload()}
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold px-6"
+                      className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold px-6"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Batter Up!
+                      Try Again
                     </Button>
                   </CardContent>
                 </Card>
