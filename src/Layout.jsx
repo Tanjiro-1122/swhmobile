@@ -7,13 +7,10 @@ import {
         Home,
         LogOut,
         Crown,
-        Mail,
-        Apple,
-        ChevronDown
+        Mail
       } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "./components/DomainChangeBanner";
 import AgeGate from "./components/auth/AgeGate";
@@ -237,26 +234,13 @@ export default function Layout({ children, currentPageName }) {
                   </Button>
                 </>
               ) : (
-                <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button
-                                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-4 min-h-[44px] rounded-full flex items-center gap-2"
-                                          >
-                                            Sign In
-                                            <ChevronDown className="w-4 h-4" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700 text-white">
-                                          <DropdownMenuItem onSelect={handleLogin} className="cursor-pointer hover:!bg-slate-700 focus:!bg-slate-700">
-                                            <Apple className="w-4 h-4 mr-2" />
-                                            <span>Sign In with Apple</span>
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onSelect={handleLogin} className="cursor-pointer hover:!bg-slate-700 focus:!bg-slate-700">
-                                            <Mail className="w-4 h-4 mr-2" />
-                                            <span>Sign In with Email</span>
-                                          </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
+                <Button
+                                        onClick={handleLogin}
+                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
+                                      >
+                                        <Mail className="w-4 h-4 mr-2" />
+                                        Sign In
+                                      </Button>
               )}
                     </div>
                   </div>
