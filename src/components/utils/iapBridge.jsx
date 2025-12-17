@@ -1,91 +1,40 @@
-// components/utils/iapBridge.js
-// Global IAP bridge helper for safe JS -> Native calls (WebToNative / WKWebView / Android bridge)
-
-import { base44 } from "@/api/base44Client";
-
-if (typeof window !== "undefined") {
-  window.__iapCallbacks = window.__iapCallbacks || {};
-}
-
-export function registerIAPCallback(cb) {
-  const id = `iap_cb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  window.__iapCallbacks[id] = (data) => {
-    try {
-      cb(data);
-    } finally {
-      try { delete window.__iapCallbacks[id]; } catch(e) {}
-    }
-  };
-  return id;
-}
-
-export async function callNativeIAPWithCallback(iapConfig, cb) {
-  let callbackFired = false;
-  
-  const callbackId = registerIAPCallback((data) => {
-    if (callbackFired) return; // Prevent duplicate callbacks
-    callbackFired = true;
-    clearTimeout(timeoutId);
-    console.log('IAP callback received:', { error: data.error, isSuccess: data.isSuccess });
-    cb(data);
-  });
-  
-  const payload = { ...iapConfig, callbackId };
-
-  // Set a 15-second timeout - if no callback fires, assume cancelled or dismissed
-  const timeoutId = setTimeout(() => {
-    if (window.__iapCallbacks[callbackId] && !callbackFired) {
-      callbackFired = true;
-      console.log('IAP timeout - treating as cancellation');
-      delete window.__iapCallbacks[callbackId];
-      cb({ isSuccess: false, error: 'user_cancelled', isCancelled: true });
-    }
-  }, 15000);
-
-  if (window.WTN && typeof window.WTN.inAppPurchase === "function") {
-    console.log('Calling WTN.inAppPurchase with productId:', payload.productId);
-    window.WTN.inAppPurchase(payload);
-    return;
-  }
-
-  if (window.webkit?.messageHandlers?.inAppPurchase) {
-    console.log('Calling webkit.messageHandlers.inAppPurchase with productId:', payload.productId);
-    window.webkit.messageHandlers.inAppPurchase.postMessage(payload);
-    return;
-  }
-
-  if (window.Android?.inAppPurchase) {
-    try {
-      console.log('Calling Android.inAppPurchase with productId:', payload.productId);
-      window.Android.inAppPurchase(JSON.stringify(payload));
-    } catch (err) {
-      if (typeof window.Android.inAppPurchase === "function") {
-        window.Android.inAppPurchase(payload);
-      } else {
-        clearTimeout(timeoutId);
-        throw err;
-      }
-    }
-    return;
-  }
-
-  clearTimeout(timeoutId);
-  throw new Error("IAP bridge not available on this device.");
-}
+/**
+ * This file acts as a bridge between the web/React application and native mobile functionalities,
+ * particularly for In-App Purchases (IAP) and other platform-specific APIs.
+ */
 
 /**
- * submitReceiptToServer
- * - iOS: pass `receipt` (base64 string)
- * - Android: pass `purchaseToken` and productId
+ * Placeholder for Google Play Age Signals API.
+ * This function needs to be implemented in the native Android code and exposed to the WebView.
+ * When called from Javascript, it should trigger the native process to get age-related signals.
+ * 
+ * @returns {Promise<object>} A promise that resolves with an object containing age signals.
+ *          Example success: { status: 'success', ageRange: '13-17', parentalConsent: 'approved' }
+ *          Example failure/unsupported: { status: 'error', message: 'Not implemented on this platform.' }
  */
-export async function submitReceiptToServer({ receipt, productId, platform, purchaseToken }) {
-  try {
-    if (platform === "ios") {
-      await base44.functions.invoke("handleAppleIAP", { receipt, productId, platform: "ios" });
-    } else if (platform === "android") {
-      await base44.functions.invoke("handleGooglePlayIAP", { purchaseToken, productId });
-    }
-  } catch (err) {
-    console.error("submitReceiptToServer error:", err);
+export const getAgeSignals = async () => {
+  console.log("Attempting to call getAgeSignals...");
+
+  // Check if the function is exposed by the native wrapper (e.g., via webtonative or a custom bridge)
+  if (window.nativeBridge && typeof window.nativeBridge.getAgeSignals === 'function') {
+    return window.nativeBridge.getAgeSignals();
   }
-}
+  
+  // Fallback for web environment or if native bridge isn't available
+  console.warn("getAgeSignals: Native bridge not found. Returning a mock response.");
+  return Promise.resolve({ 
+    status: 'unsupported', 
+    message: 'This feature is only available on the native Android app.' 
+  });
+};
+
+// You can add other IAP bridge functions here.
+// For example:
+/*
+export const makePurchase = async (productId) => {
+  if (window.nativeBridge && typeof window.nativeBridge.makePurchase === 'function') {
+    return window.nativeBridge.makePurchase(productId);
+  }
+  return Promise.resolve({ status: 'unsupported' });
+};
+*/
