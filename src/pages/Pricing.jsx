@@ -821,10 +821,10 @@ export default function Pricing() {
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
                   {isIOS 
-                    ? "Payments are processed securely through Apple's App Store using your account payment methods."
-                    : isAndroid
-                    ? "Payments are processed securely through Google Play Store using your account payment methods."
-                    : "Web payments are processed securely through Stripe. You can pay with credit card, debit card, or other supported payment methods."
+                    ? "Payments are processed securely through the App Store using your Apple ID."
+                    : isMobileDevice
+                    ? "Payments are processed securely through your device's app store."
+                    : "Web payments are processed securely through Stripe."
                   }
                 </p>
               </div>
@@ -861,12 +861,12 @@ export default function Pricing() {
                     • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
                     • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
                   </p>
-                ) : isAndroid ? (
+                ) : isMobileDevice ? (
                   <p className="text-xs lg:text-sm text-gray-600">
-                    • Payment will be charged to your Google Play account at confirmation of purchase.<br/>
+                    • Payment will be charged to your device's app store account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
                     • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
-                    • You can manage and cancel your subscriptions by going to your Google Play Store account settings after purchase.
+                    • You can manage and cancel your subscriptions by going to your device's app store account settings after purchase.
                   </p>
                 ) : (
                   <p className="text-xs lg:text-sm text-gray-600">
