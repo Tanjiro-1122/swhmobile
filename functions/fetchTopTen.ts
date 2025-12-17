@@ -8,29 +8,29 @@ const cache = new LRUCache({
 
 const sportPrompts = {
   NFL: {
-    players: "Search NFL.com for the top 10 players for the 2024-2025 season. Return name, team, position, games played, and key stats like PassYds, RushYds, RecYds, TDs, Sacks, Tackles. Use the exact schema provided.",
-    teams: "Search TeamRankings.com and NFL.com for top 10 NFL teams. Include name, wins, losses, win%, PF, PA, Diff, ATS, O/U, and last 5 games. Order by best record.",
-    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, stat1: { type: "string", description: "Passing Yards for QBs, Rushing Yards for RBs, or Receiving Yards for WRs/TEs" }, stat2: { type: "string", description: "Total Touchdowns" }, stat3: { type: "string", description: "Sacks for defensive players, Receptions for offensive" }, stat4: { type: "string", description: "Tackles for defensive players, Passing TDs for QBs" } } } } } }
+    players: "Search espn.com/nfl/stats for the top 10 players. Return name, team, position, gamesPlayed, passingYards, totalTds, sacksOrReceptions, and tacklesOrPassingTds. Use the exact schema provided.",
+    teams: "Search espn.com/nfl/standings for top 10 NFL teams. Include name, wins, losses, win%, PF, PA, Diff, ATS, O/U, and last 5 games. Order by best record.",
+    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, passingYards: { type: "string" }, totalTds: { type: "string" }, sacksOrReceptions: { type: "string" }, tacklesOrPassingTds: { type: "string" } } } } } }
   },
   MLB: {
-    players: "Search MLB.com for the top 10 players. Return name, team, position, games played, and key stats like AVG, HR, RBI, ERA, SO, Wins. Use the exact schema provided.",
-    teams: "Search MLB.com for top 10 MLB teams. Include name, wins, losses, win%, runs per game, runs allowed, run differential, home/away record, and last 10 games. Order by best record.",
-    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, stat1: { type: "string", description: "Batting Average for hitters, ERA for pitchers" }, stat2: { type: "string", description: "Home Runs for hitters, Strikeouts for pitchers" }, stat3: { type: "string", description: "RBIs for hitters, Wins for pitchers" }, stat4: { type: "string", description: "Hits for hitters, WHIP for pitchers" } } } } } }
+    players: "Search espn.com/mlb/stats for the top 10 players. Return name, team, position, gamesPlayed, and key stats: avgOrEra, hrOrSo, rbiOrWins, hitsOrWhip. Use the exact schema provided.",
+    teams: "Search espn.com/mlb/standings for top 10 MLB teams. Include name, wins, losses, win%, runs per game, runs allowed, run differential, home/away record, and last 10 games. Order by best record.",
+    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, avgOrEra: { type: "string" }, hrOrSo: { type: "string" }, rbiOrWins: { type: "string" }, hitsOrWhip: { type: "string" } } } } } }
   },
   NBA: {
-    players: "Search NBA.com for the top 10 players for the 2024-2025 season. Return name, team, position, games played, and key stats like PPG, RPG, APG, SPG, BPG, FG%. Use the exact schema provided.",
-    teams: "Search NBA.com for top 10 NBA teams. Include name, wins, losses, win%, PPG, points allowed, point differential, ATS, O/U, and last 10 games. Order by best record.",
-    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, stat1: { type: "string", description: "Points Per Game" }, stat2: { type: "string", description: "Rebounds Per Game" }, stat3: { type: "string", description: "Assists Per Game" }, stat4: { type: "string", description: "Field Goal %" } } } } } }
+    players: "Search espn.com/nba/stats for the top 10 players. Return name, team, position, gamesPlayed, and key stats: ppg, rpg, apg, fgPercentage. Use the exact schema provided.",
+    teams: "Search espn.com/nba/standings for top 10 NBA teams. Include name, wins, losses, win%, PPG, points allowed, point differential, ATS, O/U, and last 10 games. Order by best record.",
+    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, ppg: { type: "string" }, rpg: { type: "string" }, apg: { type: "string" }, fgPercentage: { type: "string" } } } } } }
   },
   NHL: {
-    players: "Search NHL.com for the top 10 players for the 2024-2025 season. Return name, team, position, games played, and key stats like Goals, Assists, Points, +/-, Shots. Use the exact schema provided.",
-    teams: "Search NHL.com for top 10 NHL teams. Include name, wins, losses, win%, GPG, GAG, goal differential, home/away record, and last 10 games. Order by best record.",
-    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, stat1: { type: "string", description: "Goals" }, stat2: { type: "string", description: "Assists" }, stat3: { type: "string", description: "Total Points" }, stat4: { type: "string", description: "+/- Rating" } } } } } }
+    players: "Search espn.com/nhl/stats for the top 10 players. Return name, team, position, gamesPlayed, and key stats: goals, assists, points, plusMinus. Use the exact schema provided.",
+    teams: "Search espn.com/nhl/standings for top 10 NHL teams. Include name, wins, losses, win%, GPG, GAG, goal differential, home/away record, and last 10 games. Order by best record.",
+    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, goals: { type: "string" }, assists: { type: "string" }, points: { type: "string" }, plusMinus: { type: "string" } } } } } }
   },
  Soccer: {
-    players: "Search Premier League site for top 10 players. Return name, team, position, games played, and key stats like Goals, Assists, Shots, Tackles, Key Passes. Use the exact schema provided.",
-    teams: "Search Premier League site for top 10 teams. Include name, wins, losses, win%, GPG, GAG, goal differential, clean sheets, and last 6 games. Order by best record.",
-    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, stat1: { type: "string", description: "Goals" }, stat2: { type: "string", description: "Assists" }, stat3: { type: "string", description: "Shots" }, stat4: { type: "string", description: "Tackles" } } } } } }
+    players: "Search espn.com/soccer/stats for top 10 players in a major league like Premier League. Return name, team, position, gamesPlayed, and key stats: goals, assists, shots, tackles. Use the exact schema provided.",
+    teams: "Search espn.com/soccer/standings for top 10 teams. Include name, wins, losses, win%, GPG, GAG, goal differential, clean sheets, and last 6 games. Order by best record.",
+    playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, goals: { type: "string" }, assists: { type: "string" }, shots: { type: "string" }, tackles: { type: "string" } } } } } }
   }
 };
 

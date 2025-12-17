@@ -52,34 +52,34 @@ export default function SportDetail() {
   const [loadingTeams, setLoadingTeams] = useState(true);
 const playerColumnsConfig = {
   NFL: [
-    { header: 'Pass Yds', key: 'stat1' },
-    { header: 'TDs', key: 'stat2' },
-    { header: 'Sacks/Rec', key: 'stat3' },
-    { header: 'Tkls/PassTD', key: 'stat4' },
+    { header: 'Pass Yds', key: 'passingYards' },
+    { header: 'TDs', key: 'totalTds' },
+    { header: 'Sacks/Rec', key: 'sacksOrReceptions' },
+    { header: 'Tkls/PassTD', key: 'tacklesOrPassingTds' },
   ],
   MLB: [
-    { header: 'AVG/ERA', key: 'stat1' },
-    { header: 'HR/SO', key: 'stat2' },
-    { header: 'RBI/Wins', key: 'stat3' },
-    { header: 'Hits/WHIP', key: 'stat4' },
+    { header: 'AVG/ERA', key: 'avgOrEra' },
+    { header: 'HR/SO', key: 'hrOrSo' },
+    { header: 'RBI/Wins', key: 'rbiOrWins' },
+    { header: 'Hits/WHIP', key: 'hitsOrWhip' },
   ],
   NBA: [
-    { header: 'PPG', key: 'stat1' },
-    { header: 'RPG', key: 'stat2' },
-    { header: 'APG', key: 'stat3' },
-    { header: 'FG%', key: 'stat4' },
+    { header: 'PPG', key: 'ppg' },
+    { header: 'RPG', key: 'rpg' },
+    { header: 'APG', 'key': 'apg' },
+    { header: 'FG%', key: 'fgPercentage' },
   ],
   NHL: [
-    { header: 'Goals', key: 'stat1' },
-    { header: 'Assists', key: 'stat2' },
-    { header: 'Points', key: 'stat3' },
-    { header: '+/-', key: 'stat4' },
+    { header: 'Goals', key: 'goals' },
+    { header: 'Assists', key: 'assists' },
+    { header: 'Points', key: 'points' },
+    { header: '+/-', key: 'plusMinus' },
   ],
   Soccer: [
-    { header: 'Goals', key: 'stat1' },
-    { header: 'Assists', key: 'stat2' },
-    { header: 'Shots', key: 'stat3' },
-    { header: 'Tackles', key: 'stat4' },
+    { header: 'Goals', key: 'goals' },
+    { header: 'Assists', key: 'assists' },
+    { header: 'Shots', key: 'shots' },
+    { header: 'Tackles', key: 'tackles' },
   ],
 };
 
@@ -180,8 +180,10 @@ const fetchData = async () => {
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">POS</th>
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">GP</th>
                         {playerColumns.map(col => (
-                          <th key={col.key} className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">{col.header}</th>
+                        <th key={col.key} className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">{col.header}</th>
                         ))}
+                        <th></th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
