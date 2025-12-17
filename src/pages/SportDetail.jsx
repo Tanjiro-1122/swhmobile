@@ -187,18 +187,15 @@ const fetchData = async () => {
                     <tbody>
                       {players.map((player, index) => (
                         <tr key={index} className="border-b hover:bg-slate-50">
-                          <td className="p-3 font-bold text-slate-700 sticky left-0 bg-white">{index + 1}</td>
-                          <td className="p-3 font-semibold text-slate-800 sticky left-12 bg-white">{player.name}</td>
-                          <td className="p-3 text-slate-600">{player.team}</td>
-                          <td className="p-3 text-center text-xs text-slate-600">{player.position || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.gamesPlayed || '--'}</td>
-                          <td className="p-3 text-center font-semibold text-slate-700">{player.stat1 || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.stat2 || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.stat3 || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.stat4 || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.stat5 || '--'}</td>
-                          <td className="p-3 text-center text-slate-600">{player.stat6 || '--'}</td>
-                        </tr>
+                            <td className="p-3 font-bold text-slate-700 sticky left-0 bg-white">{index + 1}</td>
+                            <td className="p-3 font-semibold text-slate-800 sticky left-12 bg-white">{player.name}</td>
+                            <td className="p-3 text-slate-600">{player.team}</td>
+                            <td className="p-3 text-center text-xs text-slate-600">{player.position || '--'}</td>
+                            <td className="p-3 text-center text-slate-600">{player.gamesPlayed || '--'}</td>
+                            {playerColumns.map(col => (
+                              <td key={col.key} className={`p-3 text-center text-slate-600 ${col.key === 'stat1' ? 'font-semibold text-slate-700' : ''}`}>{player[col.key] || '--'}</td>
+                            ))}
+                          </tr>
                       ))}
                     </tbody>
                   </table>
