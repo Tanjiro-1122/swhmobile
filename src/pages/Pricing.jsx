@@ -68,7 +68,7 @@ export default function Pricing() {
       setIsAuthenticated(authenticated);
       
       // Check if user just logged in and has a pending Stripe plan (web only)
-      if (authenticated && !isMobile) {
+      if (authenticated && !isMobileDevice) {
         const pendingPlan = localStorage.getItem('pending_stripe_plan');
         if (pendingPlan === 'premium' || pendingPlan === 'vip') {
           localStorage.removeItem('pending_stripe_plan');
