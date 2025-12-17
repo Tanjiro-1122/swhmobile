@@ -51,9 +51,9 @@ export default function TopTen() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 mb-6 shadow-xl shadow-orange-500/30">
             <Trophy className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-3">
-            <span className="text-white drop-shadow-lg">TOP</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">TEN</span>
-          </h1>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-3" style={{filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'}}>
+                            <span className="text-white">TOP</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">TEN</span>
+                          </h1>
           <p className="text-slate-300 text-lg">
             Top players and team rankings across all major sports
           </p>
