@@ -50,27 +50,61 @@ export default function SportDetail() {
   const [teams, setTeams] = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [loadingTeams, setLoadingTeams] = useState(true);
+const playerColumnsConfig = {
+  NFL: [
+    { header: 'Pass Yds', key: 'stat1' },
+    { header: 'TDs', key: 'stat2' },
+    { header: 'Sacks/Rec', key: 'stat3' },
+    { header: 'Tkls/PassTD', key: 'stat4' },
+  ],
+  MLB: [
+    { header: 'AVG/ERA', key: 'stat1' },
+    { header: 'HR/SO', key: 'stat2' },
+    { header: 'RBI/Wins', key: 'stat3' },
+    { header: 'Hits/WHIP', key: 'stat4' },
+  ],
+  NBA: [
+    { header: 'PPG', key: 'stat1' },
+    { header: 'RPG', key: 'stat2' },
+    { header: 'APG', key: 'stat3' },
+    { header: 'FG%', key: 'stat4' },
+  ],
+  NHL: [
+    { header: 'Goals', key: 'stat1' },
+    { header: 'Assists', key: 'stat2' },
+    { header: 'Points', key: 'stat3' },
+    { header: '+/-', key: 'stat4' },
+  ],
+  Soccer: [
+    { header: 'Goals', key: 'stat1' },
+    { header: 'Assists', key: 'stat2' },
+    { header: 'Shots', key: 'stat3' },
+    { header: 'Tackles', key: 'stat4' },
+  ],
+};
 
-  const fetchData = async () => {
-    setLoadingPlayers(true);
-    setLoadingTeams(true);
+const playerColumns = playerColumnsConfig[sport] || [];
 
-    try {
-      const response = await base44.functions.invoke('fetchTopTen', { sport });
-      
-      if (response.data?.players) {
-        setPlayers(response.data.players);
-      }
-      if (response.data?.teams) {
-        setTeams(response.data.teams);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+const fetchData = async () => {
+  setLoadingPlayers(true);
+  setLoadingTeams(true);
+
+  try {
+    const response = await base44.functions.invoke('fetchTopTen', { sport });
+
+    if (response.data?.players) {
+      setPlayers(response.data.players);
     }
+    if (response.data?.teams) {
+      setTeams(response.data.teams);
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
 
-    setLoadingPlayers(false);
-    setLoadingTeams(false);
-  };
+  setLoadingPlayers(false);
+  setLoadingTeams(false);
+};
 
   useEffect(() => {
     fetchData();
@@ -145,12 +179,9 @@ export default function SportDetail() {
                         <th className="text-left p-3 font-semibold text-slate-700 min-w-[140px]">Team</th>
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">POS</th>
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">GP</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 1</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 2</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 3</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 4</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 5</th>
-                        <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">Stat 6</th>
+                        {playerColumns.map(col => (
+                          <th key={col.key} className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">{col.header}</th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
