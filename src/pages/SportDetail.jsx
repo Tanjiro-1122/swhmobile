@@ -66,7 +66,7 @@ const playerColumnsConfig = {
   NBA: [
     { header: 'PPG', key: 'ppg' },
     { header: 'RPG', key: 'rpg' },
-    { header: 'APG', 'key': 'apg' },
+    { header: 'APG', key: 'apg' },
     { header: 'FG%', key: 'fgPercentage' },
   ],
   NHL: [
@@ -180,10 +180,8 @@ const fetchData = async () => {
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">POS</th>
                         <th className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">GP</th>
                         {playerColumns.map(col => (
-                        <th key={col.key} className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">{col.header}</th>
+                          <th key={col.key} className="text-center p-3 font-semibold text-slate-700 whitespace-nowrap">{col.header}</th>
                         ))}
-                        <th></th>
-                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -195,7 +193,7 @@ const fetchData = async () => {
                             <td className="p-3 text-center text-xs text-slate-600">{player.position || '--'}</td>
                             <td className="p-3 text-center text-slate-600">{player.gamesPlayed || '--'}</td>
                             {playerColumns.map(col => (
-                              <td key={col.key} className={`p-3 text-center text-slate-600 ${col.key === 'stat1' ? 'font-semibold text-slate-700' : ''}`}>{player[col.key] || '--'}</td>
+                              <td key={col.key} className="p-3 text-center text-slate-600 font-semibold">{player[col.key] || '--'}</td>
                             ))}
                           </tr>
                       ))}
