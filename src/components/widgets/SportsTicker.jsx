@@ -107,8 +107,11 @@ const SportsTicker = () => {
     );
     
     if (!scores || scores.length === 0) {
-        // Don't show anything if there are no scores to display
-        return null;
+        return (
+            <div className="h-[92px] w-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-500 border-y border-gray-200 dark:border-slate-700">
+                No live or upcoming games for today.
+            </div>
+        );
     }
 
     return (
