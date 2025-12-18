@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
         //     return Response.json({ error: 'Unauthorized' }, { status: 401 });
         // }
 
-        const apiKey = Deno.env.get("THE_ODDS_API_KEY");
+        const apiKey = Deno.env.get("ODDS_API_KEY");
         if (!apiKey) {
             console.error("THE_ODDS_API_KEY is not set.");
             return Response.json({ error: 'API key for scores is not configured.' }, { status: 500 });

@@ -1,124 +1,128 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
-import { Flame, Calendar, BarChart2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleDot } from 'lucide-react';
 import moment from 'moment';
 
 const fetchScores = async () => {
     const { data } = await base44.functions.invoke('getLiveScores');
     if (!Array.isArray(data)) {
-        // If the function returns an error object, throw it
         if (data && data.error) throw new Error(data.error);
         return [];
     }
     return data;
 };
 
-const SportLogo = ({ sportKey }) => {
-    const logos = {
-        americanfootball_nfl: '🏈',
-        basketball_nba: '🏀',
-        baseball_mlb: '⚾️',
-        icehockey_nhl: '🏒',
-    };
-    return <span className="text-lg">{logos[sportKey] || '🏆'}</span>;
-};
+// Simple placeholder for team logos
+const TeamLogo = ({ teamName }) => {
+    const abbr = teamName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    return (
+        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center font-bold text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+            {abbr}
+        </div>
+    );
+}
 
-const TickerItem = ({ game }) => {
+const GameItem = ({ game }) => {
     const isLive = game.completed === false && moment.utc(game.commence_time).isBefore(moment.utc());
     const isFinal = game.completed === true;
-    const isUpcoming = !isLive && !isFinal;
-
     const homeScore = game.scores?.find(s => s.name === game.home_team)?.score || '0';
     const awayScore = game.scores?.find(s => s.name === game.away_team)?.score || '0';
+    const gameTime = moment(game.commence_time).format('h:mm A');
+
+    let statusComponent;
+    if (isLive) {
+        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold"><CircleDot className="w-2 h-2 fill-current" /><span>LIVE</span></div>;
+    } else if (isFinal) {
+        statusComponent = <div className="text-xs font-bold text-gray-500">FINAL</div>;
+    } else {
+        statusComponent = <div className="text-xs text-gray-500">{gameTime} ET</div>;
+    }
 
     return (
-        <div className="flex-shrink-0 w-72 h-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg p-3 flex flex-col justify-between text-white shadow-lg mx-2">
-            <div className="flex justify-between items-center text-xs text-slate-400 font-medium">
-                <div className="flex items-center gap-1.5">
-                    <SportLogo sportKey={game.sport_key} />
-                    <span className="truncate max-w-[120px]">{game.sport_title}</span>
-                </div>
-                {isLive && <div className="flex items-center gap-1.5 text-red-500 animate-pulse"><Flame size={14} /> LIVE</div>}
-                {isFinal && <div className="text-slate-400">FINAL</div>}
-                {isUpcoming && <div className="text-cyan-400">{moment(game.commence_time).fromNow()}</div>}
+        <div className="flex-shrink-0 w-60 border-r border-gray-200 dark:border-gray-700 p-3 flex flex-col justify-center text-sm">
+            <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">{game.sport_title.replace('_', ' ')}</span>
+                {statusComponent}
             </div>
-            
-            <div className="my-2 space-y-1 text-sm">
-                <div className="flex justify-between items-center">
-                    <span className="font-bold truncate max-w-[180px]">{game.away_team}</span>
-                    <span className="font-black text-lg">{awayScore}</span>
+            <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 truncate">
+                        <TeamLogo teamName={game.away_team} />
+                        <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.away_team}</span>
+                    </div>
+                    {(isLive || isFinal) && <span className="font-bold text-lg text-gray-900 dark:text-white">{awayScore}</span>}
                 </div>
-                <div className="flex justify-between items-center">
-                    <span className="font-bold truncate max-w-[180px]">{game.home_team}</span>
-                    <span className="font-black text-lg">{homeScore}</span>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 truncate">
+                        <TeamLogo teamName={game.home_team} />
+                        <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.home_team}</span>
+                    </div>
+                    {(isLive || isFinal) && <span className="font-bold text-lg text-gray-900 dark:text-white">{homeScore}</span>}
                 </div>
-            </div>
-
-            <div className="text-xs text-slate-500 flex items-center justify-between mt-auto">
-                 <div className="flex items-center gap-1"><Calendar size={12}/> {moment(game.commence_time).format('MMM D, h:mm a')}</div>
-                 <BarChart2 size={14} className="text-slate-600 hover:text-cyan-400 cursor-pointer" title="View match stats"/>
             </div>
         </div>
     );
 };
-
 
 const SportsTicker = () => {
     const { data: scores, isLoading, error } = useQuery({
         queryKey: ['liveScores'],
         queryFn: fetchScores,
-        refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-        staleTime: 4 * 60 * 1000,
+        refetchInterval: 60 * 1000,
+        staleTime: 55 * 1000,
     });
+    const scrollContainerRef = useRef(null);
 
-    const tickerVariants = {
-        animate: {
-            x: ['0%', '-100%'],
-            transition: {
-                x: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: (scores?.length || 0) * 8, // Adjust duration based on number of items
-                    ease: "linear",
-                },
-            },
-        },
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = scrollContainerRef.current.offsetWidth * 0.9;
+            scrollContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth',
+            });
+        }
     };
-
+    
     if (isLoading) return (
-        <div className="h-28 w-full bg-slate-900/80 flex items-center justify-center text-slate-400">
-            Loading Live Scores...
+        <div className="h-[92px] w-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-500 border-y border-gray-200 dark:border-slate-700">
+            Loading Live Scores Ticker...
         </div>
     );
 
     if (error) return (
-        <div className="h-28 w-full bg-red-900/50 text-red-300 flex items-center justify-center text-sm p-2">
-            Error loading scores: {error.message}
+        <div className="h-[92px] w-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 flex items-center justify-center text-sm p-4 text-center border-y border-red-200 dark:border-red-800/50">
+           Could not load live scores: {error.message}. Please ensure the API Key is correctly configured.
         </div>
     );
 
-    if (!scores || scores.length === 0) return null; // Don't render if there's nothing to show
+    if (!scores || scores.length === 0) return null;
 
     return (
-        <div className="w-full h-28 bg-slate-900/80 overflow-hidden relative border-y border-slate-800/50">
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-slate-900 to-transparent z-10" />
-            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-slate-900 to-transparent z-10" />
+        <div className="w-full bg-gray-50 dark:bg-slate-800 border-y border-gray-200 dark:border-slate-700 shadow-sm relative group">
+            <div className="max-w-screen-2xl mx-auto flex items-center h-[92px]">
+                <button 
+                    onClick={() => scroll('left')}
+                    className="h-full w-12 flex items-center justify-center bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute left-0"
+                    aria-label="Scroll left"
+                >
+                    <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                </button>
 
-            <motion.div
-                className="h-full flex items-center absolute top-0 left-0"
-                variants={tickerVariants}
-                animate="animate"
-            >
-                {/* Render the list of items twice for a seamless loop */}
-                <div className="flex h-full items-center">
-                    {scores.map((game, index) => <TickerItem key={`${game.id}-${index}`} game={game} />)}
+                <div ref={scrollContainerRef} className="flex overflow-x-auto scrollbar-hide h-full items-center">
+                    {scores.map((game) => (
+                        <GameItem key={game.id} game={game} />
+                    ))}
                 </div>
-                <div className="flex h-full items-center">
-                    {scores.map((game, index) => <TickerItem key={`${game.id}-clone-${index}`} game={game} />)}
-                </div>
-            </motion.div>
+
+                <button 
+                    onClick={() => scroll('right')}
+                    className="h-full w-12 flex items-center justify-center bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute right-0"
+                    aria-label="Scroll right"
+                >
+                    <ChevronRight className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                </button>
+            </div>
         </div>
     );
 };
