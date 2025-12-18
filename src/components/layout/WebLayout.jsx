@@ -12,11 +12,8 @@ export default function WebLayout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen w-full bg-slate-900 text-white font-sans isolate">
-      {/* Fancy background */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-slate-900 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
-      <div 
-        className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#3e3e5b,transparent)] opacity-50 -z-10"
-      ></div>
+      {/* Fancy background from screenshot */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[#0d1224] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
 
       <TopBar />
       <SportsTicker />
@@ -25,7 +22,7 @@ export default function WebLayout({ children, currentPageName }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="pt-[156px]" /* 64px for TopBar + 92px for SportsTicker */
+        className="pt-4"
       >
         <AgeGate />
         <DomainChangeBanner />

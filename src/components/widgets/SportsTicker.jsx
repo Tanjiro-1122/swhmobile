@@ -30,47 +30,26 @@ const TeamLogo = ({ logoUrl, teamName }) => {
 
 const GameItem = ({ game }) => {
     const isLive = game.status && (game.status.includes(':') || (game.period && game.period > 0)) && game.status !== 'Final' && game.status !== 'FT' && game.status !== 'Finished';
-    const isFinal = game.status === 'Final' || game.status === 'FT' || game.status === 'Finished';
-    const isUpcoming = !isLive && !isFinal;
-
-    let statusComponent;
-    if (isLive) {
-        let liveStatus = game.time ? `${game.time}` : 'LIVE';
-        if (game.period_detail) {
-            liveStatus = game.period_detail;
-        } else if (game.period) {
-            liveStatus = `P${game.period} ${liveStatus}`;
-        }
-        
-        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold animate-pulse"><CircleDot className="w-2 h-2 fill-current" /><span>{liveStatus.replace(" - ", " ")}</span></div>;
-    } else if (isFinal) {
-        statusComponent = <div className="text-xs font-bold text-gray-500 dark:text-gray-400">FINAL</div>;
-    } else {
-        statusComponent = <div className="text-xs text-gray-500 dark:text-gray-400">{moment(game.commence_time).format('h:mm A')}</div>;
-    }
 
     return (
-        <div className="flex-shrink-0 w-[220px] border-r border-gray-200 dark:border-gray-700 p-3 flex flex-col justify-center text-sm hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
-            <div className="flex justify-between items-center mb-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{game.league}</span>
-                {statusComponent}
+        <div className="flex-shrink-0 flex items-center gap-4 px-4 border-r border-white/10 text-xs text-gray-300">
+            <TeamLogo logoUrl={game.away_team_badge} teamName={game.away_team} />
+            <div className="flex flex-col items-center">
+                <span className="font-bold text-sm text-white">{game.away_team}</span>
+                <span className="text-xl font-bold text-white">{game.away_score || 0}</span>
             </div>
-            <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 truncate">
-                        <TeamLogo logoUrl={game.away_team_badge} teamName={game.away_team} />
-                        <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.away_team}</span>
-                    </div>
-                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{game.away_score}</span>}
-                </div>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 truncate">
-                        <TeamLogo logoUrl={game.home_team_badge} teamName={game.home_team} />
-                        <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.home_team}</span>
-                    </div>
-                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{game.home_score}</span>}
-                </div>
+            <div className="flex flex-col items-center text-center w-16">
+                 {isLive ? (
+                    <span className="font-bold text-red-400 animate-pulse">{game.time || 'LIVE'}</span>
+                ) : (
+                    <span className="text-gray-400">{game.status === 'Final' || game.status === 'FT' ? 'Final' : moment(game.commence_time).format('h:mm A')}</span>
+                )}
             </div>
+            <div className="flex flex-col items-center">
+                <span className="font-bold text-sm text-white">{game.home_team}</span>
+                <span className="text-xl font-bold text-white">{game.home_score || 0}</span>
+            </div>
+            <TeamLogo logoUrl={game.home_team_badge} teamName={game.home_team} />
         </div>
     );
 };
@@ -115,32 +94,32 @@ const SportsTicker = () => {
     }
 
     return (
-        <div className="w-full bg-gray-50 dark:bg-slate-800 border-y border-gray-200 dark:border-slate-700 shadow-sm relative group">
-            <div className="max-w-screen-3xl mx-auto flex items-center h-[92px]">
-                <button 
-                    onClick={() => scroll('left')}
-                    className="h-full px-2 flex items-center justify-center bg-gradient-to-r from-gray-50 to-transparent dark:from-slate-800 dark:to-transparent hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute left-0"
-                    aria-label="Scroll left"
-                >
-                    <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                </button>
+            <div className="w-full bg-gray-100 dark:bg-gray-800/10 border-y border-gray-200/10 shadow-sm relative group my-6">
+                <div className="max-w-screen-3xl mx-auto flex items-center h-12">
+                    <button 
+                        onClick={() => scroll('left')}
+                        className="h-full px-2 flex items-center justify-center bg-gradient-to-r from-[#0d1224] to-transparent hover:bg-slate-800/50 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute left-0"
+                        aria-label="Scroll left"
+                    >
+                        <ChevronLeft className="w-5 h-5 text-gray-400" />
+                    </button>
 
-                <div ref={scrollContainerRef} className="flex overflow-x-auto scrollbar-hide h-full items-center">
-                    {scores.map((game) => (
-                        <GameItem key={game.id} game={game} />
-                    ))}
+                    <div ref={scrollContainerRef} className="flex overflow-x-auto scrollbar-hide h-full items-center">
+                        {scores.map((game) => (
+                            <GameItem key={game.id} game={game} />
+                        ))}
+                    </div>
+
+                    <button 
+                        onClick={() => scroll('right')}
+                        className="h-full px-2 flex items-center justify-center bg-gradient-to-l from-[#0d1224] to-transparent hover:bg-slate-800/50 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute right-0"
+                        aria-label="Scroll right"
+                    >
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                    </button>
                 </div>
-
-                <button 
-                    onClick={() => scroll('right')}
-                    className="h-full px-2 flex items-center justify-center bg-gradient-to-l from-gray-50 to-transparent dark:from-slate-800 dark:to-transparent hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors z-10 opacity-0 group-hover:opacity-100 absolute right-0"
-                    aria-label="Scroll right"
-                >
-                    <ChevronRight className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                </button>
             </div>
-        </div>
-    );
+        );
 };
 
 export default SportsTicker;

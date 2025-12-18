@@ -59,46 +59,39 @@ const DashboardContent = ({ menuItems, isAdmin }) => {
     return (
         <div className="w-full">
             <TodaysPredictions />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {menuItems.map((item, index) => {
-                    const isHovered = hoveredItem === item.id;
-                    const SportIcon = item.SportIcon;
-                    return (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.05 * index }}
-                        >
-                            <Link to={createPageUrl(item.page)} className="block h-full">
-                                <Card
-                                    className={`h-full relative overflow-hidden border-2 ${item.borderColor} cursor-pointer transition-all duration-300 bg-black/60 backdrop-blur-sm ${isHovered ? 'scale-[1.03] shadow-2xl shadow-white/10' : 'shadow-xl'}`}
-                                    onMouseEnter={() => setHoveredItem(item.id)}
-                                    onMouseLeave={() => setHoveredItem(null)}
-                                >
-                                    <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-80`} />
-                                    <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ${isHovered ? 'translate-x-full' : '-translate-x-full'}`} />
-                                    <CardContent className="relative p-5 flex flex-col h-full">
-                                        {item.tag && (
-                                            <div className={`absolute top-3 right-3 ${item.tagColor} text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>{item.tag}</div>
-                                        )}
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className={`w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center transition-transform duration-300 border border-white/20 flex-shrink-0 text-white ${isHovered ? 'scale-110 rotate-6' : ''}`}>
-                                                <div className="w-8 h-8"><SportIcon /></div>
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-black text-white tracking-wide">{item.title}</h3>
-                                                <div className="text-white/80 font-semibold text-sm">{item.subtitle}</div>
-                                            </div>
-                                        </div>
-                                        <p className="text-white/60 text-sm mt-auto">{item.description}</p>
-                                        <ChevronRight className={`w-6 h-6 text-white/40 transition-transform duration-300 absolute bottom-4 right-4 ${isHovered ? 'translate-x-1 text-white/70' : ''}`} />
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </motion.div>
-                    );
-                })}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                                  {menuItems.map((item, index) => {
+                                      const SportIcon = item.SportIcon;
+                                      return (
+                                          <motion.div
+                                              key={item.id}
+                                              initial={{ opacity: 0, y: 30 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              transition={{ delay: 0.05 * index }}
+                                          >
+                                              <Link to={createPageUrl(item.page)} className="block h-full group">
+                                                  <Card className="h-full relative overflow-hidden border border-white/10 bg-slate-800/50 hover:bg-slate-700/60 transition-all duration-300">
+                                                      <CardContent className="relative p-5 flex flex-col h-full">
+                                                          {item.tag && (
+                                                              <div className={`absolute top-3 right-3 ${item.tagColor} text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>{item.tag}</div>
+                                                          )}
+                                                          <div className="flex items-start gap-4 mb-3">
+                                                              <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 text-indigo-400">
+                                                                  <SportIcon className="w-7 h-7" />
+                                                              </div>
+                                                              <div className="flex-1">
+                                                                  <h3 className="text-md font-bold text-white tracking-wide">{item.title}</h3>
+                                                                  <p className="text-white/60 font-semibold text-sm">{item.subtitle}</p>
+                                                              </div>
+                                                          </div>
+                                                          <p className="text-white/50 text-sm mt-auto mb-4">{item.description}</p>
+                                                          <ChevronRight className="w-5 h-5 text-white/30 transition-transform duration-300 absolute bottom-4 right-4 group-hover:translate-x-1 group-hover:text-white/70" />
+                                                      </CardContent>
+                                                  </Card>
+                                              </Link>
+                                          </motion.div>
+                                      );
+                                  })}
 
                 {isAdmin && (
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * menuItems.length }}>
@@ -134,71 +127,16 @@ const DashboardContent = ({ menuItems, isAdmin }) => {
 
 
 // This is the mobile-specific header and layout for the dashboard.
-const MobileDashboardHeader = ({ currentUser }) => {
-    const [showLoginModal, setShowLoginModal] = useState(false);
+      const MobileDashboardHeader = ({ currentUser }) => {
+          const [showLoginModal, setShowLoginModal] = useState(false);
 
-    const isVIP = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
-
-    const getSubscriptionBadge = () => {
-        if (!currentUser) return { label: 'FREE', color: 'from-gray-400 to-gray-500' };
-        if (currentUser.subscription_type === 'legacy') return { label: 'LEGACY', color: 'from-yellow-400 to-orange-500' };
-        if (currentUser.subscription_type === 'vip_annual') return { label: 'VIP', color: 'from-purple-400 to-pink-500' };
-        if (currentUser.subscription_type === 'premium_monthly') return { label: 'PREMIUM', color: 'from-blue-400 to-cyan-500' };
-        return { label: 'FREE', color: 'from-gray-400 to-gray-500' };
-    };
-
-    const subscription = getSubscriptionBadge();
-
-    return (
-      <>
-        <div className="text-center mb-10">
-            <div className="flex items-center justify-center gap-4 mb-6">
-                <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                    alt="SWH Logo"
-                    className="w-20 h-20 rounded-2xl shadow-2xl border-4 border-white/30"
-                />
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-2">SPORTS WAGER HELPER</h1>
-            <p className="text-white/70 text-lg">AI-Powered Sports Analytics & Insights</p>
-
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="w-full max-w-2xl mx-auto mt-6">
-                {currentUser ? (
-                    <div className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                            {currentUser.full_name?.charAt(0) || currentUser.email?.charAt(0) || 'U'}
-                        </div>
-                        <div className="text-left">
-                            <div className="text-white font-semibold">Welcome, {currentUser.full_name?.split(' ')[0] || 'Player'}!</div>
-                            <div className={`text-xs font-bold bg-gradient-to-r ${subscription.color} bg-clip-text text-transparent`}>{subscription.label} MEMBER</div>
-                        </div>
-                        {isVIP && <Crown className="w-5 h-5 text-yellow-400" />}
-                        <ThemeToggle />
-                        <Button
-                            variant="ghost" size="icon"
-                            onClick={async () => {
-                                localStorage.clear();
-                                await base44.auth.logout();
-                                window.location.href = createPageUrl("Dashboard");
-                            }}
-                            className="text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-full" title="Sign Out">
-                            <LogOut className="w-5 h-5" />
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center gap-3 bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                        <Button onClick={() => setShowLoginModal(true)} className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 rounded-full">
-                            <Mail className="w-4 h-4 mr-2" /> Sign In
-                        </Button>
-                        <ThemeToggle />
-                    </div>
-                )}
-            </motion.div>
-        </div>
-        <EmailLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-      </>
-    );
-};
+          return (
+            <>
+             {/* This component is not used in the new design based on the screenshot. */}
+             {/* The TopBar component now handles header content. */}
+            </>
+          );
+      };
 
 
 // The main Dashboard component that decides what to render.
