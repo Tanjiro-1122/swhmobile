@@ -51,6 +51,10 @@ export default function WebLayout({ children, currentPageName }) {
 
   const subscription = getSubscriptionBadge();
 
+  if (currentPageName === 'Home') {
+    return <>{children}</>;
+  }
+
   return (
     <div className="h-screen w-screen flex bg-slate-900 text-white overflow-hidden">
       <WebSidebar currentPageName={currentPageName} />
