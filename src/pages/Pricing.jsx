@@ -56,7 +56,6 @@ export default function Pricing() {
     // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
     // This prevents mobile web browsers from being detected as native apps
     // WebToNative should set window.WTN.isNativeApp = true in native environment
-    const { isIOSNative, isAndroidNative, isWeb, isNativeApp, isIOSDevice, isAndroidDevice } = usePlatform();
     
     
     
@@ -839,9 +838,9 @@ export default function Pricing() {
               <div>
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
-                  {isIOS 
+                  {isIOSDevice 
                     ? "Payments are securely processed through the App Store using your Apple ID."
-                    : isAndroid
+                    : isAndroidDevice
                     ? "Payments are securely processed through Google Play."
                     : isWeb
                     ? "Payments are securely processed via Stripe for web-based transactions."
