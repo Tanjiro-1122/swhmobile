@@ -157,17 +157,9 @@ export default function MobileLayout({ children, currentPageName }) {
     </div>
   );
 
-  // Dashboard has its own full layout with header built in
+  // The Dashboard page now handles its own mobile layout, so we can just render it.
   if (currentPageName === "Dashboard") {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <DomainChangeBanner />
-        <AgeGate />
-        <div className="flex-1">
-          {children}
-        </div>
-      </div>
-    );
+    return children;
   }
 
   return (
