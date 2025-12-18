@@ -488,6 +488,11 @@ export default function Dashboard() {
           </div>
           
           <div className="mt-6 pt-4 border-t border-white/10 text-center">
+            <div className="flex justify-center mb-4">
+              <a href="https://play.google.com/store/apps/details?id=com.wnapp.id1761803023263" target="_blank" rel="noopener noreferrer">
+                <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" className="h-16" />
+              </a>
+            </div>
             <p className="text-white/40 text-xs">
               © {new Date().getFullYear()} Sports Wager Helper • For entertainment & informational purposes only
             </p>
