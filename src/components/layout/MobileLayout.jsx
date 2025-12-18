@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "../DomainChangeBanner";
 import AgeGate from "../auth/AgeGate";
-import { LiveMarketTicker } from "../widgets/LiveMarketTicker";
+import SportsTicker from "../widgets/SportsTicker";
 
 export default function MobileLayout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -157,10 +157,10 @@ export default function MobileLayout({ children, currentPageName }) {
               )}
                     </div>
                   </div>
-                  </header><LiveMarketTicker/></div>
+                  </header><SportsTicker/></div>
 
-        {/* Main Content - offset for header (56px) + ticker + safe area */}
-          <main className="flex-1" style={{ paddingTop: 'calc(3.5rem + 24px + env(safe-area-inset-top))' }}>
+        {/* Main Content - offset for header (56px) + ticker (92px) + safe area */}
+          <main className="flex-1" style={{ paddingTop: 'calc(3.5rem + 92px + env(safe-area-inset-top))' }}>
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
               {children}
             </div>
