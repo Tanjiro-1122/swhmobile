@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { priceId, mode } = await req.json();
+    const { priceId, mode, trial } = await req.json();
 
     if (!priceId || !mode) {
       return new Response(JSON.stringify({ error: 'priceId and mode are required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     const successUrl = `${Deno.env.get('BASE44_APP_URL')}/Dashboard?payment_success=true`;
     const cancelUrl = `${Deno.env.get('BASE44_APP_URL')}/Pricing?payment_cancelled=true`;
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -39,7 +39,15 @@ Deno.serve(async (req) => {
         user_id: user.id,
         email: user.email,
       },
-    });
+    };
+
+    if (mode === 'subscription' && trial) {
+      sessionParams.subscription_data = {
+        trial_period_days: 3,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ url: session.url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
