@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
-import FloatingDashboardButton from '@/components/navigation/FloatingDashboardButton';
+
 
 const sports = [
   {
@@ -88,7 +88,7 @@ export default function TopTen() {
           ))}
         </div>
       </div>
-      <FloatingDashboardButton />
+      
     </div>
   );
 }
