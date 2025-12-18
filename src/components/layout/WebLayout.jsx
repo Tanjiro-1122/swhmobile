@@ -27,27 +27,24 @@ const AuroraBackground = () => {
 };
 
 export default function WebLayout({ children, currentPageName }) {
-  if (currentPageName === 'Home') {
-    return <>{children}</>;
-  }
+  const isHomePage = currentPageName === 'Home';
 
   return (
-    <div className="min-h-screen w-full bg-black text-white font-sans isolate">
-      <AuroraBackground />
+    <div className={`min-h-screen w-full bg-slate-900 text-white font-sans isolate ${isHomePage ? 'bg-grid-dark' : ''}`}>
+      {!isHomePage && <AuroraBackground />}
       <TopBar />
       <SportsTicker />
-      <motion.main 
+      <AgeGate />
+      <DomainChangeBanner />
+      <motion.main
         key={currentPageName}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="pt-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.35, ease: 'easeInOut' }}
+        className={`${isHomePage ? '' : 'pt-28 pb-12 container mx-auto px-4 sm:px-6 lg:px-8'}`} 
       >
-        <AgeGate />
-        <DomainChangeBanner />
-        <div className="p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto">
-          {children}
-        </div>
+        {children}
       </motion.main>
     </div>
   );
