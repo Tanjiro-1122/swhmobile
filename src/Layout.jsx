@@ -17,6 +17,22 @@ export default function Layout(props) {
   const renderMobileLayout = isNativeApp || (isWeb && isMobileScreen);
 
   useEffect(() => {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const requiredContent = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+
+    if (viewportMeta) {
+      if (viewportMeta.getAttribute('content') !== requiredContent) {
+        viewportMeta.setAttribute('content', requiredContent);
+      }
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = requiredContent;
+      document.head.appendChild(meta);
+    }
+  }, []);
+
+  useEffect(() => {
     const logFrontendError = async (error, contextInfo) => {
       try {
         // Ensure we have a valid error object

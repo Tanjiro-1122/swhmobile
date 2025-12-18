@@ -1,7 +1,8 @@
 // utils/platform.js
 export const detectPlatform = () => {
   const ua = navigator.userAgent || '';
-  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua);
+  // More robust iOS check, looking at platform as a fallback for tricky webviews
+      const isIOSDevice = /iPhone|iPad|iPod/i.test(ua) || (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroidDevice = /Android/i.test(ua);
   
   const isNativeApp = typeof window !== 'undefined' && 
