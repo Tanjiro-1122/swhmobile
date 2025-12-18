@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertTriangle, Newspaper, Star, TrendingUp, Cloudy } from "lucide-react";
-import { usePlatform } from "@/components/hooks/usePlatform";
+import { detectPlatform } from '@/components/utils/platform';
 
 
 const BriefSection = ({ title, icon, children }) => (
@@ -43,15 +43,15 @@ const PickCard = ({ pick }) => (
 
 
 export default function DailyBriefsPage() {
-  const { isDesktop } = usePlatform();
+  const { isWeb } = detectPlatform();
 
   const { data: briefs, isLoading, error } = useQuery({
     queryKey: ["bettingBriefs"],
     queryFn: () => base44.entities.BettingBrief.list("-brief_date", 10), // Get latest 10
-    enabled: isDesktop, // Only fetch data on the web
+    enabled: isWeb, // Only fetch data on the web
   });
 
-  if (!isDesktop) {
+  if (!isWeb) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-slate-100 text-center p-8">
         <Newspaper className="w-16 h-16 text-slate-400 mb-4" />

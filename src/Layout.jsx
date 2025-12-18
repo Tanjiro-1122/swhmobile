@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { usePlatform } from './components/hooks/usePlatform';
+import { detectPlatform } from './components/utils/platform';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 
@@ -13,7 +13,7 @@ const FullScreenLoader = () => (
 );
 
 export default function Layout(props) {
-  const { isDesktop } = usePlatform();
+  const { isWeb } = detectPlatform();
 
   useEffect(() => {
     const logFrontendError = async (error, contextInfo) => {
@@ -63,7 +63,7 @@ export default function Layout(props) {
 
   return (
     <Suspense fallback={<FullScreenLoader />}>
-      {isDesktop ? <WebLayout {...props} /> : <MobileLayout {...props} />}
+      {isWeb ? <WebLayout {...props} /> : <MobileLayout {...props} />}
     </Suspense>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from '@/components/ui/badge';
 import { Home, LayoutGrid, BarChart2, Users, Newspaper, Crown, Cog } from 'lucide-react';
+import { detectPlatform } from '@/components/utils/platform';
 
 const navLinks = [
   { name: 'Dashboard', href: 'Dashboard', icon: Home },
@@ -15,6 +16,7 @@ const navLinks = [
 ];
 
 export default function WebSidebar({ currentPageName }) {
+  const { isWeb } = detectPlatform();
   return (
     <aside className="w-64 flex-shrink-0 bg-slate-800/50 backdrop-blur-lg border-r border-white/10 flex flex-col">
       <div className="h-16 flex items-center px-6 border-b border-white/10">
@@ -43,7 +45,7 @@ export default function WebSidebar({ currentPageName }) {
             >
               <Icon className="w-5 h-5" />
               <span>{link.name}</span>
-              {link.webOnly && <Badge className="ml-auto bg-cyan-500 text-white">WEB</Badge>}
+              {link.webOnly && isWeb && <Badge className="ml-auto bg-cyan-500 text-white">WEB</Badge>}
             </Link>
           );
         })}

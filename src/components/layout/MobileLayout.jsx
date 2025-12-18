@@ -19,13 +19,25 @@ export default function MobileLayout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const { isIOS, isAndroid } = detectPlatform();
     base44.auth.isAuthenticated().then(setIsAuthenticated);
 
     // Preload critical resources
     const preloadLink = document.createElement('link');
+  preloadLink.rel = 'preconnect';
+  preloadLink.href = isIOS
+    ? 'https://apple-cdn-link.com' 
+    : isAndroid
+    ? 'https://google-cdn-link.com'
+    : '';
+  if (preloadLink.href) {
+    document.head.appendChild(preloadLink);
+  }
+
+    const criticalPreloadLink = document.createElement('link');
     preloadLink.rel = 'preconnect';
-    preloadLink.href = 'https://qtrypzzcjebvfcihiynt.supabase.co';
-    preloadLink.crossOrigin = 'anonymous';
+    criticalPreloadLink.href = 'https://qtrypzzcjebvfcihiynt.supabase.co';
+    criticalPreloadLink.crossOrigin = 'anonymous';
     document.head.appendChild(preloadLink);
 
     // Enhanced viewport for iOS/iPadOS
@@ -93,7 +105,8 @@ export default function MobileLayout({ children, currentPageName }) {
     document.head.appendChild(manifestLink);
 
     return () => {
-      document.head.removeChild(preloadLink);
+      if (preloadLink.href) document.head.removeChild(preloadLink);
+      document.head.removeChild(criticalPreloadLink);
       document.head.removeChild(jqueryScript);
       document.head.removeChild(firebaseScript);
       document.head.removeChild(web2appScript);

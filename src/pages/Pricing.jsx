@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
+import { detectPlatform } from '@/components/utils/platform';
 
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
@@ -15,16 +16,23 @@ import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/u
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [processingItem, setProcessingItem] = useState(null);
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
+  
+  
+  
   const [iapReady, setIapReady] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [paymentCancelled, setPaymentCancelled] = useState(false);
   
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment_cancelled') === 'true') {
+      setPaymentCancelled(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     isMountedRef.current = true;
     
     return () => {
@@ -41,19 +49,17 @@ export default function Pricing() {
   useEffect(() => {
     // Check if running in native app (not just mobile browser)
     const ua = navigator.userAgent || '';
-    const isiOS = /iPhone|iPad|iPod/i.test(ua);
-    const isAndroidDevice = /Android/i.test(ua);
+    
+    
     
     // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
     // This prevents mobile web browsers from being detected as native apps
     // WebToNative should set window.WTN.isNativeApp = true in native environment
-    const isActuallyNativeApp = typeof window !== 'undefined' && 
-                                 typeof window.WTN !== 'undefined' &&
-                                 window.WTN.isNativeApp === true;
+    const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
     
-    setIsMobileDevice(isActuallyNativeApp);
-    setIsIOS(isiOS && isActuallyNativeApp);
-    setIsAndroid(isAndroidDevice && isActuallyNativeApp);
+    
+    
+    
     
     console.log('Platform detection:', { 
       ua, 
@@ -68,7 +74,7 @@ export default function Pricing() {
       setIsAuthenticated(authenticated);
       
       // Check if user just logged in and has a pending Stripe plan (web only)
-      if (authenticated && !isMobileDevice) {
+      if (authenticated && isWeb) {
         const pendingPlan = localStorage.getItem('pending_stripe_plan');
         if (pendingPlan === 'premium' || pendingPlan === 'vip') {
           localStorage.removeItem('pending_stripe_plan');
@@ -80,7 +86,7 @@ export default function Pricing() {
     checkAuth();
     
     // Only check for IAP readiness if we detected a native app
-    if (isActuallyNativeApp) {
+    if (isNativeApp) {
       const checkIAPReady = () => {
         const wtnExists = typeof window.WTN !== 'undefined';
         const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
@@ -101,7 +107,7 @@ export default function Pricing() {
       return () => clearInterval(interval);
     } else {
       // Force Stripe for web browsers
-      setIapReady(false);
+      
     }
   }, []);
   
@@ -239,7 +245,7 @@ export default function Pricing() {
   // IAP for native app users only - ANDROID ONLY (iOS subscriptions removed)
   const handleIAPSubscribe = async (plan) => {
     // iOS: Redirect to web for subscriptions
-    if (isIOS) {
+    if (isIOS && isNativeApp) {
       alert('iOS subscriptions are not available. Please use credit packs or visit our website for subscriptions.');
       return;
     }
@@ -366,7 +372,7 @@ export default function Pricing() {
     
     // ONLY use IAP if we're in the actual native app with working IAP bridge
     // Otherwise, ALWAYS use Stripe (including mobile web browsers)
-    if (isMobileDevice && iapReady) {
+    if (isNativeApp && iapReady) {
       console.log('Using IAP for native app');
       await handleIAPSubscribe(plan);
     } else {
@@ -510,6 +516,15 @@ export default function Pricing() {
             Get unlimited AI-powered sports analytics and smart tools for better insights
           </p>
           <link rel="preload" as="image" href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" fetchpriority="high" />
+        {paymentCancelled && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-red-100 border-2 border-red-300 text-red-800 p-4 rounded-lg text-center font-semibold"
+          >
+            Your payment was cancelled. You can try again anytime.
+          </motion.div>
+        )}
         </div>
 
         {/* Legacy Member Notice */}
@@ -751,7 +766,7 @@ export default function Pricing() {
         </Card>
 
         {/* Search Credit Packs - Only show on mobile */}
-        {isMobileDevice && (
+        {isNativeApp && (
           <Card className="border-2 border-cyan-200 mb-12 lg:mb-16">
             <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
               <CardTitle className="text-xl lg:text-2xl font-bold text-center flex items-center justify-center gap-2">
@@ -858,22 +873,19 @@ export default function Pricing() {
                   <p className="text-xs lg:text-sm text-gray-600">
                     • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
-                    • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
                     • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
                   </p>
-                ) : isMobileDevice ? (
+                ) : isAndroid ? (
                   <p className="text-xs lg:text-sm text-gray-600">
-                    • Payment will be charged to your device's app store account at confirmation of purchase.<br/>
-                    • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
-                    • Your account will be charged for renewal within 24 hours prior to the end of the current period.<br/>
-                    • You can manage and cancel your subscriptions by going to your device's app store account settings after purchase.
+                    • Payment will be charged to your Google Play account at confirmation of purchase.<br/>
+                    • Subscription automatically renews unless canceled. <br/>
+                    • Manage your subscriptions in your Google Play account settings.
                   </p>
                 ) : (
                   <p className="text-xs lg:text-sm text-gray-600">
-                    • Payment is processed securely via Stripe.<br/>
-                    • Premium Monthly subscriptions automatically renew each month until canceled.<br/>
-                    • VIP Annual is a one-time payment for 12 months of access.<br/>
-                    • You can manage your subscription from your account settings.
+                    • Web payments are processed securely via Stripe.<br/>
+                    • Premium Monthly subscriptions auto-renew. You can manage this from your account settings.<br/>
+                    • VIP Annual is a one-time payment for 12 months of access.
                   </p>
                 )}
               </div>
@@ -898,7 +910,7 @@ export default function Pricing() {
         </Card>
 
         {/* Restore Purchases Link - Mobile only */}
-        {(isIOS || isAndroid) && (
+        {(isNativeApp) && (
           <div className="text-center mb-8">
             <Button
               variant="link"
