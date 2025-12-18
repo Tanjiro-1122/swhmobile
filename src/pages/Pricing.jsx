@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
 
@@ -918,7 +918,7 @@ export default function Pricing() {
           </p>
         </div>
       </div>
-      <FloatingDashboardButton />
+      
       <RestorePurchasesModal open={showRestoreModal} onOpenChange={setShowRestoreModal} />
     </div>
   );
