@@ -221,7 +221,7 @@ export default function Dashboard() {
     });
 
     const isAdmin = currentUser?.role === 'admin';
-    const menuItems = isNativeApp ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
+    const menuItems = (isNativeApp || isMobileScreen) ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
 
     // Web version doesn't need the background or special header, as the WebLayout provides it.
     // On desktop web, just show the content, as WebLayout provides the structure.
