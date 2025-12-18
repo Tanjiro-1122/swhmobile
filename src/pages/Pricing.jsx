@@ -25,7 +25,7 @@ export default function Pricing() {
   
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
-  const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
+  const { isIOSNative, isAndroidNative, isWeb, isNativeApp, isIOSDevice, isAndroidDevice } = usePlatform();
 
   useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -56,7 +56,7 @@ export default function Pricing() {
     // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
     // This prevents mobile web browsers from being detected as native apps
     // WebToNative should set window.WTN.isNativeApp = true in native environment
-    const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
+    const { isIOSNative, isAndroidNative, isWeb, isNativeApp, isIOSDevice, isAndroidDevice } = usePlatform();
     
     
     
@@ -331,7 +331,7 @@ export default function Pricing() {
 
           // Store minimal markers only
           localStorage.setItem('pending_iap_product', data.productId || productId);
-          localStorage.setItem('pending_iap_platform', data.platform || (isAndroid ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           window.location.href = '/PostPurchaseSignIn';
           return;
         }
@@ -428,7 +428,7 @@ export default function Pricing() {
           
           // Keep small marker only (avoid large base64 in localStorage)
           localStorage.setItem('pending_iap_product', data.productId || pack.productId);
-          localStorage.setItem('pending_iap_platform', data.platform || (isAndroid ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           localStorage.setItem('pending_iap_credits', pack.credits.toString());
           window.location.href = '/PostPurchaseSignIn';
         } else {
@@ -597,7 +597,7 @@ export default function Pricing() {
           </motion.div>
 
           {/* Premium Monthly - Hide on iOS */}
-          {!isIOS && (
+          {!isIOSDevice && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -651,7 +651,7 @@ export default function Pricing() {
           )}
 
           {/* VIP Annual - Hide on iOS */}
-          {!isIOS && (
+          {!isIOSDevice && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
