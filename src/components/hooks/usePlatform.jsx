@@ -1,32 +1,38 @@
 import { useState, useEffect } from 'react';
+import { detectPlatform } from '../utils/platform';
 
-export function usePlatform() {
-  const [platform, setPlatform] = useState({
-    isNative: false,
-    isDesktop: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
+export const usePlatform = () => {
+  const [platform, setPlatform] = useState(() => {
+    if (typeof window === 'undefined') {
+      // Default for SSR or environments without window
+      return { 
+        isNativeApp: false, 
+        isWeb: true, 
+        isDesktopScreen: true, 
+        isMobileScreen: false, 
+        isIOSNative: false, 
+        isAndroidNative: false,
+        isIOSDevice: false,
+        isAndroidDevice: false,
+      };
+    }
+    const detected = detectPlatform();
+    const isDesktopScreen = window.innerWidth >= 768; // Tailwind's 'md' breakpoint
+    const isMobileScreen = !isDesktopScreen;
+    return { ...detected, isDesktopScreen, isMobileScreen };
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const updatePlatform = () => {
-      const isNative =
-        window.WTN?.isNativeApp === true;
-      
-      const isDesktop = window.innerWidth >= 768; // Tailwind's md breakpoint
-
-      setPlatform({
-        isNative,
-        isDesktop,
-      });
+    const handleResize = () => {
+      const detected = detectPlatform();
+      const isDesktopScreen = window.innerWidth >= 768;
+      const isMobileScreen = !isDesktopScreen;
+      setPlatform({ ...detected, isDesktopScreen, isMobileScreen });
     };
 
-    updatePlatform();
-    window.addEventListener('resize', updatePlatform);
-    return () => window.removeEventListener('resize', updatePlatform);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return platform;
-}
+};

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
-import { detectPlatform } from '@/components/utils/platform';
+import { usePlatform } from '@/components/hooks/usePlatform';
 
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
@@ -246,7 +246,7 @@ export default function Pricing() {
   // IAP for native app users only - ANDROID ONLY (iOS subscriptions removed)
   const handleIAPSubscribe = async (plan) => {
     // iOS: Redirect to web for subscriptions
-    if (isIOS && isNativeApp) {
+    if (isIOSNative) {
       alert('iOS subscriptions are not available. Please use credit packs or visit our website for subscriptions.');
       return;
     }
@@ -288,7 +288,7 @@ export default function Pricing() {
       }
 
       let productId;
-      if (isAndroid) {
+      if (isAndroidNative) {
         productId = plan === 'premium' 
           ? 'com.sportswagerhelper.premium.monthly'
           : 'com.sportswagerhelper.vip.annual';
@@ -405,7 +405,7 @@ export default function Pricing() {
 
       const iapConfig = {
         productId: pack.productId,
-        productType: isAndroid ? 'INAPP' : undefined,
+        productType: isAndroidNative ? 'INAPP' : undefined,
         isConsumable: true
       };
 
@@ -875,13 +875,13 @@ export default function Pricing() {
                 </ul>
               </div>
               <div className="border-t pt-4 mt-4">
-                {isIOS ? (
+                {isIOSDevice ? (
                   <p className="text-xs lg:text-sm text-gray-600">
                     • Payment will be charged to your Apple ID account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled at least 24 hours before the end of the current period.<br/>
                     • You can manage and cancel your subscriptions by going to your App Store account settings after purchase.
                   </p>
-                ) : isAndroid ? (
+                ) : isAndroidDevice ? (
                   <p className="text-xs lg:text-sm text-gray-600">
                     • Payment will be charged to your Google Play account at confirmation of purchase.<br/>
                     • Subscription automatically renews unless canceled. <br/>

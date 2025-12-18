@@ -203,7 +203,7 @@ const MobileDashboardHeader = ({ currentUser }) => {
 
 // The main Dashboard component that decides what to render.
 export default function Dashboard() {
-    const { isDesktop, isNative } = usePlatform();
+    const { isNativeApp, isMobileScreen } = usePlatform();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     React.useEffect(() => {
@@ -221,14 +221,15 @@ export default function Dashboard() {
     });
 
     const isAdmin = currentUser?.role === 'admin';
-    const menuItems = isNative ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
+    const menuItems = isNativeApp ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
 
     // Web version doesn't need the background or special header, as the WebLayout provides it.
-    if (isDesktop) {
-        return <DashboardContent menuItems={menuItems} isAdmin={isAdmin} />;
-    }
+    // On desktop web, just show the content, as WebLayout provides the structure.
+              if (!isNativeApp && !isMobileScreen) {
+                  return <DashboardContent menuItems={menuItems} isAdmin={isAdmin} />;
+              }
 
-    // Mobile version gets the full-screen experience with its own background and header.
+    // Native app and mobile web get the full-screen experience with its own background and header.
     return (
         <div className="min-h-screen relative overflow-y-auto">
             {showSuccessMessage && (
