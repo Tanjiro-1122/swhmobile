@@ -1,22 +1,18 @@
 // utils/platform.js
 export const detectPlatform = () => {
-  if (typeof window === 'undefined') {
-    return { isIOS: false, isAndroid: false, isWeb: true, isNativeApp: false };
-  }
-  
   const ua = navigator.userAgent || '';
-  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroidDevice = /Android/i.test(ua);
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const isWeb = !isIOS && !isAndroid;
   
-  // WTN.isNativeApp is the flag set by the native wrapper
-  const isNativeApp = typeof window.WTN !== 'undefined' && window.WTN.isNativeApp === true;
-
-  const isWeb = !isNativeApp;
+  const isNativeApp = typeof window !== 'undefined' && 
+                      typeof window.WTN !== 'undefined' && 
+                      window.WTN.isNativeApp === true;
 
   return {
-    isIOS: isIOSDevice && isNativeApp,
-    isAndroid: isAndroidDevice && isNativeApp,
-    isWeb,
-    isNativeApp
+    isIOS: isIOS && isNativeApp,
+    isAndroid: isAndroid && isNativeApp,
+    isWeb: isWeb || !isNativeApp,
+    isNativeApp: isNativeApp
   };
 };
