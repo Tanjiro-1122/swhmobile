@@ -1,24 +1,25 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ChevronLeft, ChevronRight, CircleDot } from 'lucide-react';
 import moment from 'moment';
 
 const fetchScores = async () => {
-    const { data } = await base44.functions.invoke('getLiveScores');
-    // The backend function now returns an error object on failure.
+    const { data } = await base44.functions.invoke('getNbaLiveScores');
     if (!Array.isArray(data)) {
         if (data && data.error) throw new Error(data.error);
-        // If it's not an array and not an error, it's unexpected.
         return [];
     }
     return data;
 };
 
 const TeamLogo = ({ logoUrl, teamName }) => {
-    if (logoUrl) {
-        return <img src={`${logoUrl}/tiny`} alt={`${teamName} logo`} className="w-5 h-5 object-contain" />;
+    const [logoError, setLogoError] = useState(false);
+
+    if (logoUrl && !logoError) {
+        return <img src={logoUrl} alt={`${teamName} logo`} className="w-5 h-5 object-contain" onError={() => setLogoError(true)} />;
     }
+    
     const abbr = teamName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     return (
         <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center font-bold text-[10px] text-gray-600 dark:text-gray-300 flex-shrink-0">
@@ -28,18 +29,21 @@ const TeamLogo = ({ logoUrl, teamName }) => {
 };
 
 const GameItem = ({ game }) => {
-    const isLive = game.status && game.status.toLowerCase().includes('live');
-    const isFinal = game.status === 'Finished';
-    const homeScore = game.scores?.find(s => s.name === game.home_team)?.score;
-    const awayScore = game.scores?.find(s => s.name === game.away_team)?.score;
+    const isLive = game.period > 0 && game.status !== 'Final';
+    const isFinal = game.status === 'Final';
+    const isUpcoming = !isLive && !isFinal;
+
+    const homeScore = game.home_score;
+    const awayScore = game.away_score;
 
     let statusComponent;
     if (isLive) {
-        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold animate-pulse"><CircleDot className="w-2 h-2 fill-current" /><span>LIVE</span></div>;
+        const liveStatus = game.period_detail || `Q${game.period} ${game.time}`;
+        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold animate-pulse"><CircleDot className="w-2 h-2 fill-current" /><span>{liveStatus}</span></div>;
     } else if (isFinal) {
         statusComponent = <div className="text-xs font-bold text-gray-500 dark:text-gray-400">FINAL</div>;
     } else {
-        statusComponent = <div className="text-xs text-gray-500 dark:text-gray-400">{moment(game.commence_time).format('h:mm A')}</div>;
+        statusComponent = <div className="text-xs text-gray-500 dark:text-gray-400">{game.status}</div>;
     }
 
     return (
@@ -54,14 +58,14 @@ const GameItem = ({ game }) => {
                         <TeamLogo logoUrl={game.away_team_badge} teamName={game.away_team} />
                         <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.away_team}</span>
                     </div>
-                    {(isLive || isFinal) && <span className="font-bold text-lg text-gray-900 dark:text-white">{awayScore}</span>}
+                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{awayScore}</span>}
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 truncate">
                         <TeamLogo logoUrl={game.home_team_badge} teamName={game.home_team} />
                         <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.home_team}</span>
                     </div>
-                    {(isLive || isFinal) && <span className="font-bold text-lg text-gray-900 dark:text-white">{homeScore}</span>}
+                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{homeScore}</span>}
                 </div>
             </div>
         </div>
