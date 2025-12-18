@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
-import { detectPlatform } from '../utils/platform';
+import { detectPlatform } from '@/components/utils/platform';
 
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
