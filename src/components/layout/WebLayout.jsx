@@ -2,6 +2,7 @@ import React from 'react';
 import AgeGate from '../auth/AgeGate';
 import DomainChangeBanner from '../DomainChangeBanner';
 import TopBar from '../navigation/TopBar';
+import SportsTicker from '../widgets/SportsTicker';
 import { motion } from 'framer-motion';
 
 export default function WebLayout({ children, currentPageName }) {
@@ -18,6 +19,7 @@ export default function WebLayout({ children, currentPageName }) {
       ></div>
 
       <TopBar />
+      <SportsTicker />
       <motion.main 
         key={currentPageName}
         initial={{ opacity: 0, y: 20 }}

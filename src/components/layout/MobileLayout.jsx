@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "../DomainChangeBanner";
 import AgeGate from "../auth/AgeGate";
+import SportsTicker from "../widgets/SportsTicker";
 
 export default function MobileLayout({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -87,6 +88,7 @@ export default function MobileLayout({ children, currentPageName }) {
       <div className="relative z-10 flex flex-col min-h-screen">
         <DomainChangeBanner />
         <AgeGate />
+        <SportsTicker />
 
         {/* Fixed Header - 56px height, respects iOS safe area */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
