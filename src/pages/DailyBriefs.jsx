@@ -43,7 +43,7 @@ const PickCard = ({ pick }) => (
 
 
 export default function DailyBriefsPage() {
-  const { isWeb } = usePlatform();
+  const { isDesktop } = usePlatform();
 
   const { data: briefs, isLoading, error } = useQuery({
     queryKey: ["bettingBriefs"],
@@ -51,7 +51,7 @@ export default function DailyBriefsPage() {
     enabled: isWeb, // Only fetch data on the web
   });
 
-  if (!isWeb) {
+  if (!isDesktop) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-slate-100 text-center p-8">
         <Newspaper className="w-16 h-16 text-slate-400 mb-4" />

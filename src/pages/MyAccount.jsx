@@ -182,7 +182,7 @@ function MyAccountContent() {
             <SavedResultsContent />
           </TabsContent>
           </Tabs>
-          <FloatingDashboardButton />
+          
           </div>
           </div>
           );
