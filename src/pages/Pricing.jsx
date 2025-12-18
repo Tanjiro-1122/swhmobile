@@ -175,7 +175,10 @@ export default function Pricing() {
       console.log('Checkout session response:', response);
       
       if (response.data?.url) {
-        console.log('Redirecting to Stripe checkout:', response.data.url);
+        if (response.data.already_subscribed) {
+          alert("You already have an active subscription. You will be redirected to manage it.");
+        }
+        console.log('Redirecting to Stripe:', response.data.url);
         window.location.href = response.data.url;
       } else if (response.data?.error) {
         console.error('Checkout session error:', response.data.error);
