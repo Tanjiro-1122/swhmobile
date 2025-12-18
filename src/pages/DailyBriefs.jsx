@@ -59,7 +59,6 @@ export default function DailyBriefsPage() {
         <p className="text-slate-600 mt-2">
           Daily Briefs are exclusively available on our website for a more detailed reading experience.
         </p>
-        <FloatingDashboardButton />
       </div>
     );
   }
@@ -137,9 +136,8 @@ export default function DailyBriefsPage() {
               </BriefSection>
             </CardContent>
           </Card>
-        )}
-      </div>
-      <FloatingDashboardButton />
-    </div>
+          )}
+          </div>
+          </div>
   );
 }
