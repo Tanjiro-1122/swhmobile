@@ -88,10 +88,10 @@ export default function MobileLayout({ children, currentPageName }) {
       <div className="relative z-10 flex flex-col min-h-screen">
         <DomainChangeBanner />
         <AgeGate />
-        <SportsTicker />
+        
 
         {/* Fixed Header - 56px height, respects iOS safe area */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="fixed top-0 left-0 right-0 z-40"><header className="relative bg-slate-900/95 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex items-center justify-between h-14 px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
@@ -157,10 +157,10 @@ export default function MobileLayout({ children, currentPageName }) {
               )}
                     </div>
                   </div>
-                  </header>
+                  </header><SportsTicker/></div>
 
-        {/* Main Content - offset for fixed header (56px + safe area) */}
-          <main className="flex-1 pt-14" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))' }}>
+        {/* Main Content - offset for header (56px) + ticker (92px) + safe area */}
+          <main className="flex-1" style={{ paddingTop: 'calc(3.5rem + 92px + env(safe-area-inset-top))' }}>
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
               {children}
             </div>

@@ -25,7 +25,7 @@ export default function WebLayout({ children, currentPageName }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="pt-16"
+        className="pt-[156px]" /* 64px for TopBar + 92px for SportsTicker */
       >
         <AgeGate />
         <DomainChangeBanner />
