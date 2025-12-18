@@ -16,10 +16,7 @@ const LEAGUE_IDS = [
 
 Deno.serve(async (req) => {
     try {
-        const apiKey = Deno.env.get("THESPORTSDB_API_KEY");
-        if (!apiKey) {
-            return Response.json({ error: "TheSportsDB API key is not configured." }, { status: 500 });
-        }
+        const apiKey = '1'; // Using the free public test API key from TheSportsDB
 
         const url = `https://www.thesportsdb.com/api/v2/json/${apiKey}/livescore.php?l=${LEAGUE_IDS}`;
         
