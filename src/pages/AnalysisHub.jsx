@@ -2,7 +2,7 @@ import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Users, Sparkles, Target, Brain, Loader2 } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 
 // Lazy load heavy content components
 const MyInsightsContent = lazy(() => import("@/components/hub/MyInsightsContent"));
@@ -105,7 +105,7 @@ function AnalysisHubContent() {
           </TabsContent>
         </Tabs>
       </div>
-      <FloatingDashboardButton />
+      
     </div>
   );
 }
