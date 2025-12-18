@@ -13,6 +13,8 @@ import { detectPlatform } from '@/components/utils/platform';
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
 
+const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
+
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [processingItem, setProcessingItem] = useState(null);
@@ -47,7 +49,6 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
-    // Check if running in native app (not just mobile browser)
     
     
     
@@ -55,19 +56,7 @@ export default function Pricing() {
     // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
     // This prevents mobile web browsers from being detected as native apps
     // WebToNative should set window.WTN.isNativeApp = true in native environment
-    const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
-    
-    
-    
-    
-    
-    console.log('Platform detection:', { 
-      ua, 
-      isiOS, 
-      isAndroidDevice, 
-      hasWTN: typeof window?.WTN !== 'undefined',
-      isActuallyNativeApp 
-    });
+     
 
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
@@ -287,7 +276,7 @@ export default function Pricing() {
       }
 
       let productId;
-      if (isAndroidDevice) {
+      if (isAndroid) {
         productId = plan === 'premium' 
           ? 'com.sportswagerhelper.premium.monthly'
           : 'com.sportswagerhelper.vip.annual';
@@ -330,7 +319,7 @@ export default function Pricing() {
 
           // Store minimal markers only
           localStorage.setItem('pending_iap_product', data.productId || productId);
-          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroid ? 'android' : 'ios'));
           window.location.href = '/PostPurchaseSignIn';
           return;
         }
@@ -368,7 +357,7 @@ export default function Pricing() {
 
   // Main subscribe handler - routes to Stripe or IAP based on platform detection
   const handleSubscribe = async (plan) => {
-    console.log('Subscribe handler:', { plan, isMobileDevice, iapReady, shouldUseIAP: isMobileDevice && iapReady });
+    console.log('Subscribe handler:', { plan, isNativeApp, iapReady, shouldUseIAP: isNativeApp && iapReady });
     
     // ONLY use IAP if we're in the actual native app with working IAP bridge
     // Otherwise, ALWAYS use Stripe (including mobile web browsers)
@@ -388,7 +377,7 @@ export default function Pricing() {
 
   const handleBuyCredits = async (pack) => {
     // Credit packs are only available on mobile via IAP
-    if (!isMobileDevice) {
+    if (!isNativeApp) {
       return;
     }
 
@@ -400,7 +389,7 @@ export default function Pricing() {
 
       const iapConfig = {
         productId: pack.productId,
-        productType: isAndroidDevice ? 'INAPP' : undefined,
+        productType: isAndroid ? 'INAPP' : undefined,
         isConsumable: true
       };
 
@@ -423,7 +412,7 @@ export default function Pricing() {
           
           // Keep small marker only (avoid large base64 in localStorage)
           localStorage.setItem('pending_iap_product', data.productId || pack.productId);
-          localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          localStorage.setItem('pending_iap_platform', data.platform || (isAndroid ? 'android' : 'ios'));
           localStorage.setItem('pending_iap_credits', pack.credits.toString());
           window.location.href = '/PostPurchaseSignIn';
         } else {
@@ -836,10 +825,12 @@ export default function Pricing() {
                 <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What payment methods do you accept?</h3>
                 <p className="text-gray-700 text-sm lg:text-base">
                   {isIOS 
-                    ? "Payments are processed securely through the App Store using your Apple ID."
-                    : isMobileDevice
-                    ? "Payments are processed securely through your device's app store."
-                    : "Web payments are processed securely through Stripe."
+                    ? "Payments are securely processed through the App Store using your Apple ID."
+                    : isAndroid
+                    ? "Payments are securely processed through Google Play."
+                    : isWeb
+                    ? "Payments are securely processed via Stripe for web-based transactions."
+                    : "Unsupported platform for payment."
                   }
                 </p>
               </div>
@@ -865,7 +856,7 @@ export default function Pricing() {
                 <h4 className="font-bold text-gray-900">Sports Wager Helper - VIP Annual</h4>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
                   <li><strong>Price:</strong> $149.99 per year</li>
-                  <li><strong>Duration:</strong> 1 year {isMobileDevice ? '(auto-renewing)' : '(one-time payment)'}</li>
+                  <li><strong>Duration:</strong> 1 year {isNativeApp ? '(auto-renewing)' : '(one-time payment)'}</li>
                 </ul>
               </div>
               <div className="border-t pt-4 mt-4">

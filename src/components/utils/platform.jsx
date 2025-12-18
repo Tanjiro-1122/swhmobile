@@ -1,4 +1,3 @@
-// utils/platform.js
 export const detectPlatform = () => {
   if (typeof window === 'undefined') {
     return { isIOS: false, isAndroid: false, isWeb: true, isNativeApp: false };
@@ -7,15 +6,13 @@ export const detectPlatform = () => {
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   const isAndroid = /Android/i.test(ua);
   
-  const isNativeApp = typeof window.WTN !== 'undefined' && window.WTN.isNativeApp === true;
-
-  // If it's a native app, it's not web. Otherwise, it's web.
-  const isWeb = !isNativeApp;
+  const isNativeApp = typeof window.WTN !== 'undefined' && 
+                      window.WTN.isNativeApp === true;
 
   return {
     isIOS: isIOS && isNativeApp,
     isAndroid: isAndroid && isNativeApp,
-    isWeb: isWeb,
+    isWeb: !isNativeApp,
     isNativeApp: isNativeApp
   };
 };
