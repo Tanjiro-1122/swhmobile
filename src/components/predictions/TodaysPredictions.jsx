@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Zap, Trophy, AlertTriangle } from 'lucide-react';
+import { Loader2, Zap, Trophy, AlertTriangle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,23 +15,23 @@ const PickCard = ({ pick, index }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover-lift transition-all"
+            className="glow-card bg-white/5 rounded-2xl p-5 border border-white/10 h-full flex flex-col"
         >
             <div className="flex justify-between items-start">
                 <div>
-                    <Badge variant="secondary" className="mb-2 bg-slate-700 text-slate-300">{pick.sport}</Badge>
-                    <h4 className="font-bold text-white">{pick.pick}</h4>
-                    <p className="text-sm text-slate-400">{pick.match}</p>
+                    <Badge variant="secondary" className="mb-2 bg-white/10 text-indigo-300 border-indigo-300/20">{pick.sport}</Badge>
+                    <h4 className="font-bold text-white text-lg">{pick.pick}</h4>
+                    <p className="text-sm text-slate-300">{pick.match}</p>
                 </div>
-                <div className="text-right">
-                    <div className="text-lg font-bold text-cyan-400">{pick.odds}</div>
+                <div className="text-right flex-shrink-0 pl-4">
+                    <div className="text-2xl font-bold text-cyan-300">{pick.odds}</div>
                     <p className="text-xs text-slate-400">Odds</p>
                 </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-slate-700">
-                <p className="text-xs text-slate-300 leading-relaxed">{pick.reasoning}</p>
-                <div className="flex justify-between items-center mt-2">
-                    <Badge className={`mt-2 ${pick.confidence === 'High' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
+            <div className="mt-4 pt-4 border-t border-white/10 flex-grow flex flex-col">
+                <p className="text-sm text-slate-300 leading-relaxed flex-grow">{pick.reasoning}</p>
+                <div className="flex justify-between items-center mt-4">
+                     <Badge className={`mt-2 ${pick.confidence === 'High' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'}`}>
                         {pick.confidence} Confidence
                     </Badge>
                 </div>
@@ -92,15 +92,15 @@ export default function TodaysPredictions() {
     };
 
     return (
-        <Card className="bg-slate-900/70 border-slate-800 backdrop-blur-sm mb-6 sm:mb-8">
-            <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="bg-transparent border-none shadow-none mb-6 sm:mb-8">
+            <CardHeader className="flex flex-row items-center justify-between p-0 mb-4">
                 <div className="flex items-center gap-3">
-                    <Zap className="w-6 h-6 text-cyan-400" />
-                    <CardTitle className="text-white text-xl font-bold">Today's Top AI Picks</CardTitle>
+                    <Zap className="w-7 h-7 text-cyan-300" />
+                    <CardTitle className="text-white text-2xl font-bold">Today's Top AI Picks</CardTitle>
                 </div>
                 <Link to={createPageUrl('DailyBriefs')}>
-                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
-                        View All Briefs
+                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10">
+                        View All Briefs <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                 </Link>
             </CardHeader>

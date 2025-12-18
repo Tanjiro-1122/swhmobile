@@ -70,25 +70,25 @@ const DashboardContent = ({ menuItems, isAdmin }) => {
                                               transition={{ delay: 0.05 * index }}
                                           >
                                               <Link to={createPageUrl(item.page)} className="block h-full group">
-                                                  <Card className="h-full relative overflow-hidden border border-white/10 bg-slate-800/50 hover:bg-slate-700/60 transition-all duration-300">
-                                                      <CardContent className="relative p-5 flex flex-col h-full">
-                                                          {item.tag && (
-                                                              <div className={`absolute top-3 right-3 ${item.tagColor} text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>{item.tag}</div>
-                                                          )}
-                                                          <div className="flex items-start gap-4 mb-3">
-                                                              <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 text-indigo-400">
-                                                                  <SportIcon className="w-7 h-7" />
-                                                              </div>
-                                                              <div className="flex-1">
-                                                                  <h3 className="text-md font-bold text-white tracking-wide">{item.title}</h3>
-                                                                  <p className="text-white/60 font-semibold text-sm">{item.subtitle}</p>
-                                                              </div>
-                                                          </div>
-                                                          <p className="text-white/50 text-sm mt-auto mb-4">{item.description}</p>
-                                                          <ChevronRight className="w-5 h-5 text-white/30 transition-transform duration-300 absolute bottom-4 right-4 group-hover:translate-x-1 group-hover:text-white/70" />
-                                                      </CardContent>
-                                                  </Card>
-                                              </Link>
+                                                                                    <Card className="glow-card h-full bg-white/5 border border-white/10 rounded-2xl transition-all duration-300 hover:border-white/20 hover:scale-[1.02]">
+                                                                                        <CardContent className="relative p-6 flex flex-col h-full">
+                                                                                            {item.tag && (
+                                                                                                <div className={`absolute top-4 right-4 ${item.tagColor} text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg`}>{item.tag}</div>
+                                                                                            )}
+                                                                                            <div className="flex items-start gap-4 mb-4">
+                                                                                                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 flex-shrink-0 text-indigo-300">
+                                                                                                    <SportIcon className="w-7 h-7" />
+                                                                                                </div>
+                                                                                                <div className="flex-1">
+                                                                                                    <h3 className="text-lg font-bold text-white tracking-tight">{item.title}</h3>
+                                                                                                    <p className="text-indigo-200/80 font-medium text-sm">{item.subtitle}</p>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <p className="text-white/60 text-sm mt-auto mb-4 group-hover:text-white/80 transition-colors">{item.description}</p>
+                                                                                            <ChevronRight className="w-5 h-5 text-white/30 transition-transform duration-300 absolute bottom-5 right-5 group-hover:translate-x-1 group-hover:text-white/70" />
+                                                                                        </CardContent>
+                                                                                    </Card>
+                                                                                </Link>
                                           </motion.div>
                                       );
                                   })}
