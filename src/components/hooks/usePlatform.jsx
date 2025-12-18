@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export function usePlatform() {
   const [platform, setPlatform] = useState({
     isNative: false,
-    isDesktop: typeof window !== 'undefined' ? window.innerWidth >= 1024 : true,
+    isDesktop: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
   });
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function usePlatform() {
       const isNative =
         window.WTN?.isNativeApp === true;
       
-      const isDesktop = window.innerWidth >= 1024; // Tailwind's lg breakpoint
+      const isDesktop = window.innerWidth >= 768; // Tailwind's md breakpoint
 
       setPlatform({
         isNative,

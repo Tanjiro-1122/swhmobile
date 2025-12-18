@@ -13,7 +13,7 @@ const FullScreenLoader = () => (
 );
 
 export default function Layout(props) {
-  const { isWeb } = usePlatform();
+  const { isDesktop } = usePlatform();
 
   useEffect(() => {
     const logFrontendError = async (error, contextInfo) => {
@@ -63,7 +63,7 @@ export default function Layout(props) {
 
   return (
     <Suspense fallback={<FullScreenLoader />}>
-      {isWeb ? <WebLayout {...props} /> : <MobileLayout {...props} />}
+      {isDesktop ? <WebLayout {...props} /> : <MobileLayout {...props} />}
     </Suspense>
   );
 }
