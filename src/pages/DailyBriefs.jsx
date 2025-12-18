@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertTriangle, Newspaper, Star, TrendingUp, Cloudy } from "lucide-react";
 import { usePlatform } from "@/components/hooks/usePlatform";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 
 const BriefSection = ({ title, icon, children }) => (
   <div className="mb-6">
@@ -48,7 +48,7 @@ export default function DailyBriefsPage() {
   const { data: briefs, isLoading, error } = useQuery({
     queryKey: ["bettingBriefs"],
     queryFn: () => base44.entities.BettingBrief.list("-brief_date", 10), // Get latest 10
-    enabled: isWeb, // Only fetch data on the web
+    enabled: isDesktop, // Only fetch data on the web
   });
 
   if (!isDesktop) {
