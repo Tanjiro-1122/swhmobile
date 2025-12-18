@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, CircleDot } from 'lucide-react';
 import moment from 'moment';
 
 const fetchScores = async () => {
-    const { data } = await base44.functions.invoke('getNbaLiveScores');
+    const { data } = await base44.functions.invoke('getLiveScores');
     if (!Array.isArray(data)) {
         if (data && data.error) throw new Error(data.error);
         return [];
@@ -29,21 +29,24 @@ const TeamLogo = ({ logoUrl, teamName }) => {
 };
 
 const GameItem = ({ game }) => {
-    const isLive = game.period > 0 && game.status !== 'Final';
-    const isFinal = game.status === 'Final';
+    const isLive = game.status && (game.status.includes(':') || (game.period && game.period > 0)) && game.status !== 'Final' && game.status !== 'FT' && game.status !== 'Finished';
+    const isFinal = game.status === 'Final' || game.status === 'FT' || game.status === 'Finished';
     const isUpcoming = !isLive && !isFinal;
-
-    const homeScore = game.home_score;
-    const awayScore = game.away_score;
 
     let statusComponent;
     if (isLive) {
-        const liveStatus = game.period_detail || `Q${game.period} ${game.time}`;
-        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold animate-pulse"><CircleDot className="w-2 h-2 fill-current" /><span>{liveStatus}</span></div>;
+        let liveStatus = game.time ? `${game.time}` : 'LIVE';
+        if (game.period_detail) {
+            liveStatus = game.period_detail;
+        } else if (game.period) {
+            liveStatus = `P${game.period} ${liveStatus}`;
+        }
+        
+        statusComponent = <div className="text-xs flex items-center gap-1 text-red-500 font-bold animate-pulse"><CircleDot className="w-2 h-2 fill-current" /><span>{liveStatus.replace(" - ", " ")}</span></div>;
     } else if (isFinal) {
         statusComponent = <div className="text-xs font-bold text-gray-500 dark:text-gray-400">FINAL</div>;
     } else {
-        statusComponent = <div className="text-xs text-gray-500 dark:text-gray-400">{game.status}</div>;
+        statusComponent = <div className="text-xs text-gray-500 dark:text-gray-400">{moment(game.commence_time).format('h:mm A')}</div>;
     }
 
     return (
@@ -58,14 +61,14 @@ const GameItem = ({ game }) => {
                         <TeamLogo logoUrl={game.away_team_badge} teamName={game.away_team} />
                         <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.away_team}</span>
                     </div>
-                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{awayScore}</span>}
+                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{game.away_score}</span>}
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 truncate">
                         <TeamLogo logoUrl={game.home_team_badge} teamName={game.home_team} />
                         <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{game.home_team}</span>
                     </div>
-                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{homeScore}</span>}
+                    {!isUpcoming && <span className="font-bold text-lg text-gray-900 dark:text-white">{game.home_score}</span>}
                 </div>
             </div>
         </div>
