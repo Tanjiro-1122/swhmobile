@@ -17,7 +17,7 @@ const LoadingSpinner = () => (
 );
 
 function CommunityHubPage() {
-  const [activeTab, setActiveTab] = useState("feeds");
+  const [activeTab, setActiveTab] = useState("learning");
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -25,22 +25,16 @@ function CommunityHubPage() {
         {/* Header - 8-point grid: 24px bottom margin, 16/24px padding */}
         <div className="mb-6 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-            💬 COMMUNITY & LEARNING
+            💬 Community & Learning Hub
           </h1>
-          <p className="text-white/70 text-base md:text-lg">Daily briefs, educational content, and community picks</p>
+          <p className="text-white/70 text-base md:text-lg">Educational content and community discussions</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Horizontally scrollable tabs */}
           <div className="mb-6 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
             <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
-              <TabsTrigger 
-                value="feeds" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-              >
-                <Sparkles className="w-4 h-4 flex-shrink-0" />
-                <span>Feeds</span>
-              </TabsTrigger>
+              
               <TabsTrigger 
                 value="learning" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
@@ -58,11 +52,7 @@ function CommunityHubPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="feeds">
-            <Suspense fallback={<LoadingSpinner />}>
-              <BettingBriefsContent />
-            </Suspense>
-          </TabsContent>
+          
 
           <TabsContent value="learning">
             <Suspense fallback={<LoadingSpinner />}>

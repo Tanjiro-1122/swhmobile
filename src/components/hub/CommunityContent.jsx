@@ -105,14 +105,29 @@ export default function CommunityContent() {
           <DialogTrigger asChild>
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus className="w-4 h-4 mr-2" />
-              Share a Pick
+              Create Post
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Share Your Pick</DialogTitle>
+              <DialogTitle>Create a New Post</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              <div>
+                <div>
+                <label className="block text-sm font-semibold mb-2">Post Type</label>
+                <Select value={newPost.post_type} onValueChange={(v) => setNewPost({...newPost, post_type: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select post type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pick">Pick</SelectItem>
+                    <SelectItem value="analysis">Analysis</SelectItem>
+                    <SelectItem value="question">Question</SelectItem>
+                    <SelectItem value="discussion">Discussion</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <label className="block text-sm font-semibold mb-2">Sport</label>
                 <Select value={newPost.sport} onValueChange={(v) => setNewPost({...newPost, sport: v})}>
@@ -136,6 +151,7 @@ export default function CommunityContent() {
                   onChange={(e) => setNewPost({...newPost, title: e.target.value})}
                 />
               </div>
+              {newPost.post_type === 'pick' && (<>
               <div>
                 <label className="block text-sm font-semibold mb-2">Your Pick</label>
                 <Input 
@@ -144,6 +160,30 @@ export default function CommunityContent() {
                   onChange={(e) => setNewPost({...newPost, pick: e.target.value})}
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Odds</label>
+                  <Input 
+                    placeholder="+110"
+                    value={newPost.odds}
+                    onChange={(e) => setNewPost({...newPost, odds: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Confidence</label>
+                  <Select value={newPost.confidence} onValueChange={(v) => setNewPost({...newPost, confidence: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Confidence" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              </>)}
               <div>
                 <label className="block text-sm font-semibold mb-2">Analysis</label>
                 <Textarea 
@@ -156,9 +196,9 @@ export default function CommunityContent() {
               <Button 
                 onClick={() => createPostMutation.mutate(newPost)}
                 className="w-full"
-                disabled={!newPost.title || !newPost.pick || !newPost.content}
+                disabled={!newPost.title || !newPost.content || (newPost.post_type === 'pick' && !newPost.pick)}
               >
-                Share Pick
+                Create Post
               </Button>
             </div>
           </DialogContent>
@@ -196,6 +236,8 @@ export default function CommunityContent() {
                         <Badge className="bg-blue-100 text-blue-800">{post.post_type}</Badge>
                       </div>
                       <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
+                      {post.created_by && <p className="text-xs text-gray-500 mb-2">Posted by: {post.created_by.split('@')[0]}</p>}
+
                       {post.pick && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                           <span className="font-bold text-green-800">Pick: {post.pick}</span>

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, TrendingUp, Target, Shield, DollarSign, Brain, Zap, Award, Users, MessageSquare, Crown, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import AIAssistantChat from "@/components/learning/AIAssistantChat";
+import ReactMarkdown from 'react-markdown';
 
 export default function LearningCenter() {
   const [selectedLesson, setSelectedLesson] = useState(null);
@@ -519,19 +520,7 @@ Dynamic rating that updates after each game:
               </CardHeader>
               <CardContent className="p-8">
                 <div className="prose prose-lg max-w-none">
-                  {selectedLesson.content.split('\n').map((line, idx) => {
-                    if (line.startsWith('# ')) {
-                      return <h2 key={idx} className="text-3xl font-bold text-gray-900 mb-4 mt-8">{line.replace('# ', '')}</h2>;
-                    } else if (line.startsWith('**') && line.endsWith('**')) {
-                      return <h3 key={idx} className="text-xl font-bold text-gray-900 mb-3 mt-6">{line.replace(/\*\*/g, '')}</h3>;
-                    } else if (line.startsWith('- ')) {
-                      return <li key={idx} className="text-gray-700 ml-6 mb-2">{line.replace('- ', '')}</li>;
-                    } else if (line.trim() === '') {
-                      return <div key={idx} className="h-4" />;
-                    } else {
-                      return <p key={idx} className="text-gray-700 leading-relaxed mb-4">{line}</p>;
-                    }
-                  })}
+                  <ReactMarkdown>{selectedLesson.content}</ReactMarkdown>
                 </div>
               </CardContent>
             </Card>
