@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import RequireAuth from "../components/auth/RequireAuth";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -482,7 +482,7 @@ function AdminPanelContent() {
             </div>
           </CardContent>
         </Card>
-        <FloatingDashboardButton />
+        
       </div>
     </div>
   );

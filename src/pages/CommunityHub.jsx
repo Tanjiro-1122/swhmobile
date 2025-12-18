@@ -2,7 +2,7 @@ import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, BookOpen, Sparkles, Loader2 } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 
 // Lazy load content components
 const BettingBriefsContent = lazy(() => import("@/components/hub/BettingBriefsContent"));
@@ -77,7 +77,7 @@ function CommunityHubPage() {
           </TabsContent>
         </Tabs>
       </div>
-      <FloatingDashboardButton />
+      
     </div>
   );
 }
