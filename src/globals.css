@@ -24,6 +24,7 @@
     --input: 220 13% 91%;
     --ring: 224 71.4% 4.1%;
     --radius: 0.5rem;
+    --brand-accent: 130 90% 55%;
   }
 
   .dark {
@@ -281,6 +282,24 @@
   /* Pull-to-refresh indicator space */
           .pull-refresh-space {
             padding-top: env(safe-area-inset-top);
+          }
+
+          .bg-grid-dark {
+              background-image: linear-gradient(hsl(var(--border) / 0.05) 1px, transparent 1px), linear-gradient(to right, hsl(var(--border) / 0.05) 1px, transparent 1px);
+              background-size: 2.5rem 2.5rem;
+          }
+
+          .lime-glow {
+            box-shadow: 0 0 30px 5px hsl(var(--brand-accent) / 0.4), 0 0 60px 10px hsl(var(--brand-accent) / 0.2);
+          }
+
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+          }
+
+          .animate-float {
+            animation: float 7s ease-in-out infinite;
           }
 
           .aurora-background {
