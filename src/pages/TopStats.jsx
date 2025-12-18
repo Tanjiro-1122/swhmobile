@@ -1,7 +1,7 @@
 import React from "react";
 import { Tv } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+
 import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
 
 export default function TopStats() {
@@ -29,7 +29,7 @@ export default function TopStats() {
 
         <BettingBriefsContent />
       </div>
-      <FloatingDashboardButton />
+      
     </div>
   );
 }
