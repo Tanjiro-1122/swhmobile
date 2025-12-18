@@ -113,36 +113,35 @@ export default function CommunityContent() {
               <DialogTitle>Create a New Post</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div>
                 <div>
-                <label className="block text-sm font-semibold mb-2">Post Type</label>
-                <Select value={newPost.post_type} onValueChange={(v) => setNewPost({...newPost, post_type: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select post type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pick">Pick</SelectItem>
-                    <SelectItem value="analysis">Analysis</SelectItem>
-                    <SelectItem value="question">Question</SelectItem>
-                    <SelectItem value="discussion">Discussion</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Sport</label>
-                <Select value={newPost.sport} onValueChange={(v) => setNewPost({...newPost, sport: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select sport" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NBA">NBA</SelectItem>
-                    <SelectItem value="NFL">NFL</SelectItem>
-                    <SelectItem value="MLB">MLB</SelectItem>
-                    <SelectItem value="NHL">NHL</SelectItem>
-                    <SelectItem value="Soccer">Soccer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <label className="block text-sm font-semibold mb-2">Post Type</label>
+                  <Select value={newPost.post_type} onValueChange={(v) => setNewPost({...newPost, post_type: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select post type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pick">Pick</SelectItem>
+                      <SelectItem value="analysis">Analysis</SelectItem>
+                      <SelectItem value="question">Question</SelectItem>
+                      <SelectItem value="discussion">Discussion</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Sport</label>
+                  <Select value={newPost.sport} onValueChange={(v) => setNewPost({...newPost, sport: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sport" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NBA">NBA</SelectItem>
+                      <SelectItem value="NFL">NFL</SelectItem>
+                      <SelectItem value="MLB">MLB</SelectItem>
+                      <SelectItem value="NHL">NHL</SelectItem>
+                      <SelectItem value="Soccer">Soccer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               <div>
                 <label className="block text-sm font-semibold mb-2">Title</label>
                 <Input 
@@ -151,39 +150,43 @@ export default function CommunityContent() {
                   onChange={(e) => setNewPost({...newPost, title: e.target.value})}
                 />
               </div>
-              {newPost.post_type === 'pick' && (<>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Your Pick</label>
-                <Input 
-                  placeholder="e.g., Lakers -5.5"
-                  value={newPost.pick}
-                  onChange={(e) => setNewPost({...newPost, pick: e.target.value})}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Odds</label>
-                  <Input 
-                    placeholder="+110"
-                    value={newPost.odds}
-                    onChange={(e) => setNewPost({...newPost, odds: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Confidence</label>
-                  <Select value={newPost.confidence} onValueChange={(v) => setNewPost({...newPost, confidence: v})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Confidence" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              </>)}
+
+              {newPost.post_type === 'pick' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Your Pick</label>
+                    <Input 
+                      placeholder="e.g., Lakers -5.5"
+                      value={newPost.pick}
+                      onChange={(e) => setNewPost({...newPost, pick: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Odds</label>
+                      <Input 
+                        placeholder="+110"
+                        value={newPost.odds}
+                        onChange={(e) => setNewPost({...newPost, odds: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Confidence</label>
+                      <Select value={newPost.confidence} onValueChange={(v) => setNewPost({...newPost, confidence: v})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Confidence" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div>
                 <label className="block text-sm font-semibold mb-2">Analysis</label>
                 <Textarea 

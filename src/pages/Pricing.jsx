@@ -48,7 +48,7 @@ export default function Pricing() {
 
   useEffect(() => {
     // Check if running in native app (not just mobile browser)
-    const ua = navigator.userAgent || '';
+    
     
     
     
@@ -268,8 +268,8 @@ export default function Pricing() {
     }, 20000);
 
     try {
-      const ua = navigator.userAgent || '';
-      const isAndroidDevice = /Android/.test(ua);
+      
+      
 
       // Verify native bridge exists
       const hasNativeIAP = typeof window !== 'undefined' &&
@@ -395,8 +395,8 @@ export default function Pricing() {
     setProcessingItem(pack.id);
 
     try {
-      const ua = navigator.userAgent || '';
-      const isAndroidDevice = /Android/.test(ua);
+      
+      
 
       const iapConfig = {
         productId: pack.productId,
