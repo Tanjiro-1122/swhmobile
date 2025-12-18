@@ -8,12 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
-import { detectPlatform } from '@/components/utils/platform';
+import { detectPlatform } from '../utils/platform';
 
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
-
-const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
 
 export default function Pricing() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -49,6 +47,7 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
+    // Check if running in native app (not just mobile browser)
     
     
     
@@ -56,6 +55,12 @@ export default function Pricing() {
     // CRITICAL: Only consider it a native app if WTN explicitly sets isNativeApp flag
     // This prevents mobile web browsers from being detected as native apps
     // WebToNative should set window.WTN.isNativeApp = true in native environment
+    const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
+    
+    
+    
+    
+    
      
 
     const checkAuth = async () => {
