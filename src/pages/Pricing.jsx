@@ -599,7 +599,7 @@ export default function Pricing() {
           </motion.div>
 
           {/* Premium Monthly - Hide on iOS */}
-          {!isIOSNative && (
+          {!isIOSDevice && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -653,7 +653,7 @@ export default function Pricing() {
           )}
 
           {/* VIP Annual - Hide on iOS */}
-          {!isIOSNative && (
+          {!isIOSDevice && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

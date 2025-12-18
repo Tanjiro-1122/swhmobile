@@ -8,7 +8,8 @@ import {
         Home,
         LogOut,
         Crown,
-        Mail
+        Mail,
+        LayoutGrid
       } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -259,6 +260,15 @@ export default function MobileLayout({ children, currentPageName }) {
             </div>
           </main>
 
+        {currentPageName !== 'Dashboard' && (
+            <Link
+                to={createPageUrl("Dashboard")}
+                className="fixed bottom-6 right-6 z-[100] w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
+                aria-label="Go to Dashboard"
+            >
+                <LayoutGrid className="w-8 h-8 text-white" />
+            </Link>
+        )}
       </div>
 
       </div>
