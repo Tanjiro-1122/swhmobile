@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { usePlatform } from '@/components/hooks/usePlatform';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -68,10 +68,16 @@ export default function TopBar() {
     return (
       <Link
         to={pageUrl}
-        className={`text-sm font-semibold transition-colors duration-200 px-3 py-2 rounded-md ${isActive ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
-        onClick={() => setMobileMenuOpen(false)}
+        className={`relative text-sm font-semibold transition-colors duration-200 px-3 py-2 rounded-md ${isActive ? 'text-white' : 'text-slate-300 hover:text-white'}`}
       >
         {name}
+        {isActive && (
+          <motion.div 
+            className="absolute bottom-[-1px] left-2 right-2 h-0.5 bg-purple-500"
+            layoutId="active-nav-link"
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          />
+        )}
       </Link>
     );
   };
@@ -92,7 +98,12 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-lg border-b border-white/10 flex items-center justify-between px-4 sm:px-6 z-40">
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-lg border-b border-white/10 flex items-center justify-between px-4 sm:px-6 z-40"
+      >
         <div className="flex items-center gap-2 sm:gap-4">
           <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" alt="SWH Logo" className="w-10 h-10 rounded-lg" />
@@ -100,12 +111,14 @@ export default function TopBar() {
           </Link>
         </div>
 
-        <nav className="hidden lg:flex items-center gap-2">
-          {menuItems.map(link => <NavLink key={link.page} {...link} />)}
-          <Link to={createPageUrl('AIAssistant')} className="text-sm font-semibold transition-colors duration-200 px-3 py-2 rounded-md text-slate-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
-            <Bot size={16} /> AI Assistant
-          </Link>
-        </nav>
+        <LayoutGroup>
+          <nav className="hidden lg:flex items-center gap-2">
+            {menuItems.map(link => <NavLink key={link.page} {...link} />)}
+            <Link to={createPageUrl('AIAssistant')} className="text-sm font-semibold transition-colors duration-200 px-3 py-2 rounded-md text-slate-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+              <Bot size={16} /> AI Assistant
+            </Link>
+          </nav>
+        </LayoutGroup>
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
@@ -155,7 +168,7 @@ export default function TopBar() {
             </Button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       <AnimatePresence>
         {mobileMenuOpen && (
