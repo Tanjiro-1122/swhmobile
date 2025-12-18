@@ -1,8 +1,8 @@
 import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2 } from "lucide-react";
+import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2, Newspaper } from "lucide-react";
 import RequireAuth from "@/components/auth/RequireAuth";
-import FloatingDashboardButton from "@/components/navigation/FloatingDashboardButton";
+import { usePlatform } from "@/components/hooks/usePlatform";
 
 // Lazy load heavy content components
 const ParlayBuilderContent = lazy(() => import("@/components/poweruser/ParlayBuilderContent"));
@@ -22,7 +22,20 @@ const LoadingSpinner = () => (
 );
 
 function BettingHubContent() {
+  const { isDesktop } = usePlatform();
   const [activeTab, setActiveTab] = useState("tracker");
+
+  if (!isDesktop) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] text-center p-8">
+        <Newspaper className="w-16 h-16 text-slate-400 mb-4" />
+        <h1 className="text-2xl font-bold text-white">Feature Not Available</h1>
+        <p className="text-slate-400 mt-2 max-w-sm">
+          Tracking Tools are exclusively available on our website for a more detailed experience.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -147,7 +160,6 @@ function BettingHubContent() {
           </TabsContent>
         </Tabs>
       </div>
-      <FloatingDashboardButton />
     </div>
   );
 }
