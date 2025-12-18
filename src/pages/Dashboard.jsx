@@ -201,7 +201,7 @@ const MobileDashboardHeader = ({ currentUser }) => {
 
 // The main Dashboard component that decides what to render.
 export default function Dashboard() {
-    const { isWeb } = usePlatform();
+    const { isDesktop, isNative } = usePlatform();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     React.useEffect(() => {
@@ -219,10 +219,10 @@ export default function Dashboard() {
     });
 
     const isAdmin = currentUser?.role === 'admin';
-    const menuItems = isWeb ? allMenuItems : allMenuItems.filter(item => !item.webOnly);
+    const menuItems = isNative ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
 
     // Web version doesn't need the background or special header, as the WebLayout provides it.
-    if (isWeb) {
+    if (isDesktop) {
         return <DashboardContent menuItems={menuItems} isAdmin={isAdmin} />;
     }
 

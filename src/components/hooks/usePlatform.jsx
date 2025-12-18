@@ -1,26 +1,32 @@
 import { useState, useEffect } from 'react';
 
-/**
- * A hook to determine the current platform (native mobile app vs. web browser).
- * This is crucial for showing web-only features.
- */
 export function usePlatform() {
-  const [isNative, setIsNative] = useState(false);
+  const [platform, setPlatform] = useState({
+    isNative: false,
+    isDesktop: typeof window !== 'undefined' ? window.innerWidth >= 1024 : true,
+  });
 
   useEffect(() => {
-    // This check relies on the WebToNative bridge, which sets window.WTN.isNativeApp = true
-    // ONLY in the native mobile app environment. This is the most reliable way to distinguish
-    // from a standard mobile browser.
-    const isNativeApp =
-      typeof window !== 'undefined' &&
-      typeof window.WTN !== 'undefined' &&
-      window.WTN.isNativeApp === true;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
-    setIsNative(isNativeApp);
+    const updatePlatform = () => {
+      const isNative =
+        window.WTN?.isNativeApp === true;
+      
+      const isDesktop = window.innerWidth >= 1024; // Tailwind's lg breakpoint
+
+      setPlatform({
+        isNative,
+        isDesktop,
+      });
+    };
+
+    updatePlatform();
+    window.addEventListener('resize', updatePlatform);
+    return () => window.removeEventListener('resize', updatePlatform);
   }, []);
 
-  return {
-    isNative,
-    isWeb: !isNative,
-  };
+  return platform;
 }
