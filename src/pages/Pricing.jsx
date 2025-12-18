@@ -25,6 +25,7 @@ export default function Pricing() {
   
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
+  const { isIOS, isAndroid, isWeb, isNativeApp } = detectPlatform();
 
   useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -362,7 +363,7 @@ export default function Pricing() {
 
   // Main subscribe handler - routes to Stripe or IAP based on platform detection
   const handleSubscribe = async (plan) => {
-    console.log('Subscribe handler:', { plan, isNativeApp, iapReady, shouldUseIAP: isNativeApp && iapReady });
+    
     
     // ONLY use IAP if we're in the actual native app with working IAP bridge
     // Otherwise, ALWAYS use Stripe (including mobile web browsers)
