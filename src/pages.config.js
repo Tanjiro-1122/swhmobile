@@ -33,6 +33,7 @@ import AdminErrorLogs from './pages/AdminErrorLogs';
 import Home from './pages/Home';
 import TopTen from './pages/TopTen';
 import SportDetail from './pages/SportDetail';
+import DailyBriefs from './pages/DailyBriefs';
 import __Layout from './Layout.jsx';
 
 
@@ -72,6 +73,7 @@ export const PAGES = {
     "Home": Home,
     "TopTen": TopTen,
     "SportDetail": SportDetail,
+    "DailyBriefs": DailyBriefs,
 }
 
 export const pagesConfig = {

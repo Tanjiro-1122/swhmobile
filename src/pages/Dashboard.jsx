@@ -70,7 +70,11 @@ const TrophyIcon = () => (
   </svg>
 );
 
-const menuItems = [
+const FileTextIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-white"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+);
+
+const allMenuItems = [
         {
           id: "analysis",
           title: "ANALYSIS HUB",
@@ -105,6 +109,19 @@ const menuItems = [
           gradient: "from-orange-600 to-red-700",
           borderColor: "border-orange-400",
           tag: null
+        },
+        {
+          id: "briefs",
+          title: "DAILY BRIEFS",
+          subtitle: "AI Market Insights",
+          description: "Daily analysis, top picks, and news",
+          SportIcon: FileTextIcon,
+          page: "DailyBriefs",
+          gradient: "from-slate-600 to-gray-700",
+          borderColor: "border-slate-400",
+          tag: "WEB ONLY",
+          tagColor: "bg-cyan-500",
+          webOnly: true,
         },
         {
           id: "account",
@@ -156,10 +173,18 @@ export default function Dashboard() {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isNativeApp, setIsNativeApp] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  const menuItems = isNativeApp ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
+
   useEffect(() => {
+    const isNative = typeof window !== 'undefined' &&
+                     typeof window.WTN !== 'undefined' &&
+                     window.WTN.isNativeApp === true;
+    setIsNativeApp(isNative);
+
     base44.auth.isAuthenticated()
       .then(setIsAuthenticated)
       .catch((err) => {
