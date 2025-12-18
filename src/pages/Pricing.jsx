@@ -464,7 +464,7 @@ export default function Pricing() {
 
   const features = {
             free: [
-              "Explore AI with 5 free match predictions",
+              "Explore AI with limited free match predictions",
               "Get stats on 5 players",
               "Analyze 5 teams for free",
               "Access the basic odds calculator",
@@ -472,7 +472,7 @@ export default function Pricing() {
               "30-day saved results retention"
             ],
             premium: [
-              "Start with a 3-day free trial",
+              "Access immediately",
               "Unlock unlimited AI match predictions",
               "Access unlimited player stats",
               "Deep-dive with unlimited team analysis",
@@ -570,7 +570,7 @@ export default function Pricing() {
                 <Sparkles className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-blue-500" />
                 <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Free</CardTitle>
                 <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$0</div>
-                <div className="text-sm lg:text-base text-gray-600">5 Free Lookups</div>
+                <div className="text-sm lg:text-base text-gray-600">Limited Free Access</div>
               </CardHeader>
               <CardContent className="p-6 lg:p-8">
                 <ul className="space-y-3 mb-8">
@@ -599,7 +599,7 @@ export default function Pricing() {
           </motion.div>
 
           {/* Premium Monthly - Hide on iOS */}
-          {!isIOSDevice && (
+          {!isIOSNative && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -616,7 +616,7 @@ export default function Pricing() {
                   <Star className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-purple-600" />
                   <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Premium</CardTitle>
                                         <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$19.99<span className="text-base lg:text-xl font-semibold text-gray-600">/month</span></div>
-                                        <div className="text-sm lg:text-base text-gray-600">After 3-day free trial</div>
+                                        <div className="text-sm lg:text-base text-gray-600">Billed monthly</div>
                 </CardHeader>
                 <CardContent className="p-6 lg:p-8">
                   <ul className="space-y-3 mb-8">
@@ -633,7 +633,7 @@ export default function Pricing() {
                     </Button>
                   ) : (
                     <Button 
-                                                onClick={() => handleSubscribe('premium', true)}
+                                                onClick={() => handleSubscribe('premium')}
                                                 disabled={processingItem !== null}
                                                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
                                               >
@@ -643,7 +643,7 @@ export default function Pricing() {
                                                     Processing...
                                                   </div>
                                                 ) : (
-                                                  'Start 3-Day Free Trial'
+                                                  'Get Premium'
                                                 )}
                                               </Button>
                   )}
@@ -653,7 +653,7 @@ export default function Pricing() {
           )}
 
           {/* VIP Annual - Hide on iOS */}
-          {!isIOSDevice && (
+          {!isIOSNative && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

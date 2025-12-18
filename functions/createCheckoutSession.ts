@@ -98,14 +98,7 @@ Deno.serve(async (req) => {
       }),
     };
 
-    if (mode === 'subscription' && trial) {
-      sessionParams.subscription_data = {
-        trial_period_days: 3,
-        metadata: {
-            base44_user_id: user.id,
-        },
-      };
-    }
+ 
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     
