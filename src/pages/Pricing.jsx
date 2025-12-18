@@ -70,13 +70,15 @@ export default function Pricing() {
       
       // Check if user just logged in and has a pending Stripe plan (web only)
       if (authenticated && isWeb) {
-        const pendingPlan = localStorage.getItem('pending_stripe_plan');
-        if (pendingPlan === 'premium' || pendingPlan === 'vip') {
-          localStorage.removeItem('pending_stripe_plan');
-          // Trigger Stripe checkout directly
-          startStripeCheckout(pendingPlan);
-        }
-      }
+                    const pendingPlan = localStorage.getItem('pending_stripe_plan');
+                    if (pendingPlan === 'premium' || pendingPlan === 'vip') {
+                      const withTrial = localStorage.getItem('pending_stripe_trial') === 'true';
+                      localStorage.removeItem('pending_stripe_plan');
+                      localStorage.removeItem('pending_stripe_trial');
+                      // Trigger Stripe checkout directly
+                      startStripeCheckout(pendingPlan, withTrial);
+                    }
+                  }
     };
     checkAuth();
     
@@ -148,27 +150,28 @@ export default function Pricing() {
   };
 
   // Helper function to start Stripe checkout (used after login redirect)
-  const startStripeCheckout = async (plan) => {
-    setProcessingItem(plan);
-    
-    try {
-      let priceId;
-      let mode;
-      
-      if (plan === 'premium') {
-        priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8';
-        mode = 'subscription';
-      } else if (plan === 'vip') {
-        priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp';
-        mode = 'payment';
-      }
-      
-      console.log('Creating Stripe checkout session...', { priceId, mode });
-      
-      const response = await base44.functions.invoke('createCheckoutSession', {
-        priceId,
-        mode
-      });
+  const startStripeCheckout = async (plan, trial = false) => {
+            setProcessingItem(plan);
+
+            try {
+              let priceId;
+              let mode;
+
+              if (plan === 'premium') {
+                priceId = 'price_1SN2OGRrQjRM0rB2u6TnCiP8';
+                mode = 'subscription';
+              } else if (plan === 'vip') {
+                priceId = 'price_1SN2OrRrQjRM0rB2FrP8gDYp';
+                mode = 'payment';
+              }
+
+              console.log('Creating Stripe checkout session...', { priceId, mode, trial });
+
+              const response = await base44.functions.invoke('createCheckoutSession', {
+                priceId,
+                mode,
+                trial: trial && plan === 'premium',
+              });
       
       console.log('Checkout session response:', response);
       
@@ -192,23 +195,26 @@ export default function Pricing() {
   };
 
   // Stripe checkout for web users
-  const handleStripeCheckout = async (plan) => {
-    // If not authenticated, store plan and redirect to login
-    if (!isAuthenticated) {
-      localStorage.setItem('pending_stripe_plan', plan);
-      base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
-    
-    // Already authenticated - go directly to Stripe
-    try {
-      await startStripeCheckout(plan);
-    } catch (err) {
-      console.error('Stripe checkout failed:', err);
-      alert('Failed to start checkout. Please try again or contact support if the issue persists.');
-      setProcessingItem(null);
-    }
-  };
+  const handleStripeCheckout = async (plan, trial = false) => {
+            // If not authenticated, store plan and redirect to login
+            if (!isAuthenticated) {
+              localStorage.setItem('pending_stripe_plan', plan);
+              if (trial) {
+                localStorage.setItem('pending_stripe_trial', 'true');
+              }
+              base44.auth.redirectToLogin(window.location.href);
+              return;
+            }
+
+            // Already authenticated - go directly to Stripe
+            try {
+              await startStripeCheckout(plan, trial);
+            } catch (err) {
+              console.error('Stripe checkout failed:', err);
+              alert('Failed to start checkout. Please try again or contact support if the issue persists.');
+              setProcessingItem(null);
+            }
+          };
 
   // Cancel purchase and clear state
   const cancelPurchase = () => {
@@ -362,24 +368,28 @@ export default function Pricing() {
   };
 
   // Main subscribe handler - routes to Stripe or IAP based on platform detection
-  const handleSubscribe = async (plan) => {
-    
-    
-    // ONLY use IAP if we're in the actual native app with working IAP bridge
-    // Otherwise, ALWAYS use Stripe (including mobile web browsers)
-    if (isNativeApp && iapReady) {
-      console.log('Using IAP for native app');
-      await handleIAPSubscribe(plan);
-    } else {
-      console.log('Using Stripe for web');
-      try {
-        await handleStripeCheckout(plan);
-      } catch (err) {
-        console.error('Stripe checkout failed:', err);
-        setProcessingItem(null);
-      }
-    }
-  };
+  const handleSubscribe = async (plan, trial = false) => {
+            // On web, always use Stripe
+            if (isWeb || !isNativeApp) {
+              console.log('Using Stripe for web');
+              try {
+                await handleStripeCheckout(plan, trial);
+              } catch (err) {
+                console.error('Stripe checkout failed:', err);
+                setProcessingItem(null);
+              }
+              return;
+            }
+
+            // Native App IAP Logic
+            if (isNativeApp && iapReady) {
+                console.log('Using IAP for native app');
+                // Note: IAP trial logic is separate and not part of this change.
+                await handleIAPSubscribe(plan); 
+            } else if (isNativeApp && !iapReady) {
+                alert("In-app purchasing is currently unavailable. Please try again later.");
+            }
+          };
 
   const handleBuyCredits = async (pack) => {
     // Credit packs are only available on mobile via IAP
@@ -451,42 +461,41 @@ export default function Pricing() {
   };
 
   const features = {
-    free: [
-      "5 free match predictions",
-      "5 free player stats lookups",
-      "5 free team analysis",
-      "Basic odds calculator",
-      "Community access",
-      "30-day saved results retention"
-    ],
-    premium: [
-      "Unlimited match predictions",
-      "Unlimited player stats",
-      "Unlimited team analysis",
-      "Live odds comparison",
-      "Today's Top Predictions (AI picks)",
-      "Multi-pick analyzer",
-      "Performance tracker",
-      "Budget manager",
-      "Insight alerts",
-      "Save & track results",
-      "Priority support",
-      "30-day saved results retention"
-    ],
-    vip: [
-      "Everything in Premium",
-      "Annual billing ($149.99/year)",
-      "Save $90/year vs monthly",
-      "VIP MEMBER badge",
-      "Daily AI Insight Briefs",
-      "Sharp vs Public Money indicators",
-      "Early access to new features",
-      "Priority AI processing",
-      "Exclusive VIP Discord channel",
-      "Lifetime feature updates",
-      "UNLIMITED saved results retention"
-    ]
-    };
+            free: [
+              "Explore AI with 5 free match predictions",
+              "Get stats on 5 players",
+              "Analyze 5 teams for free",
+              "Access the basic odds calculator",
+              "Join the community forum",
+              "30-day saved results retention"
+            ],
+            premium: [
+              "Start with a 3-day free trial",
+              "Unlock unlimited AI match predictions",
+              "Access unlimited player stats",
+              "Deep-dive with unlimited team analysis",
+              "Find the best odds with live comparison",
+              "Get daily AI Top Predictions",
+              "Analyze parlays with the multi-pick tool",
+              "Track your performance and ROI",
+              "Manage your betting with the budget tool",
+              "Save & track unlimited results",
+              "Receive priority support"
+            ],
+            vip: [
+              "Everything in Premium, plus:",
+              "Huge savings with annual billing",
+              "Save $90/year vs monthly plan",
+              "Get a VIP MEMBER badge",
+              "Receive Daily AI Insight Briefs",
+              "Track Sharp vs Public Money indicators",
+              "Get early access to new features",
+              "Enjoy priority AI processing queue",
+              "Join the exclusive VIP Discord channel",
+              "Receive lifetime feature updates",
+              "Keep your results forever with UNLIMITED retention"
+            ]
+            };
 
     const creditPacks = [
     { id: 'small', credits: 25, price: 4.99, productId: 'com.sportswagerhelper.credits.25' },
@@ -603,9 +612,9 @@ export default function Pricing() {
                 </div>
                 <CardHeader className="text-center p-6 lg:p-8 bg-gradient-to-br from-purple-50 to-pink-50 pt-8">
                   <Star className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-purple-600" />
-                  <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Premium Monthly</CardTitle>
-                  <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$19.99</div>
-                  <div className="text-sm lg:text-base text-gray-600">/month • Cancel anytime</div>
+                  <CardTitle className="text-2xl lg:text-3xl font-black mb-2">Premium</CardTitle>
+                                        <div className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">$19.99<span className="text-base lg:text-xl font-semibold text-gray-600">/month</span></div>
+                                        <div className="text-sm lg:text-base text-gray-600">After 3-day free trial</div>
                 </CardHeader>
                 <CardContent className="p-6 lg:p-8">
                   <ul className="space-y-3 mb-8">
@@ -622,19 +631,19 @@ export default function Pricing() {
                     </Button>
                   ) : (
                     <Button 
-                      onClick={() => handleSubscribe('premium')}
-                      disabled={processingItem !== null}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                    >
-                      {processingItem === 'premium' ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Processing...
-                        </div>
-                      ) : (
-                        'Subscribe Now'
-                      )}
-                    </Button>
+                                                onClick={() => handleSubscribe('premium', true)}
+                                                disabled={processingItem !== null}
+                                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
+                                              >
+                                                {processingItem === 'premium' ? (
+                                                  <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    Processing...
+                                                  </div>
+                                                ) : (
+                                                  'Start 3-Day Free Trial'
+                                                )}
+                                              </Button>
                   )}
                 </CardContent>
               </Card>

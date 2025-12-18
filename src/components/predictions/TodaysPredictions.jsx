@@ -1,295 +1,112 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Zap, AlertTriangle, RefreshCw, TrendingUp, Trophy, Target } from "lucide-react";
-import { motion } from "framer-motion";
-import AIPredictionCard from "./AIPredictionCard";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Zap, Trophy, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { createPageUrl } from '@/utils';
+import { Link } from 'react-router-dom';
+
+const PickCard = ({ pick, index }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover-lift transition-all"
+        >
+            <div className="flex justify-between items-start">
+                <div>
+                    <Badge variant="secondary" className="mb-2 bg-slate-700 text-slate-300">{pick.sport}</Badge>
+                    <h4 className="font-bold text-white">{pick.pick}</h4>
+                    <p className="text-sm text-slate-400">{pick.match}</p>
+                </div>
+                <div className="text-right">
+                    <div className="text-lg font-bold text-cyan-400">{pick.odds}</div>
+                    <p className="text-xs text-slate-400">Odds</p>
+                </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-700">
+                <p className="text-xs text-slate-300 leading-relaxed">{pick.reasoning}</p>
+                <div className="flex justify-between items-center mt-2">
+                    <Badge className={`mt-2 ${pick.confidence === 'High' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
+                        {pick.confidence} Confidence
+                    </Badge>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
 
 export default function TodaysPredictions() {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [predictions, setPredictions] = useState(null);
-  const [activeTab, setActiveTab] = useState("games");
+    const { data: brief, isLoading, error } = useQuery({
+        queryKey: ['todaysBrief'],
+        queryFn: async () => {
+            // Fetch the most recent brief
+            const briefs = await base44.entities.BettingBrief.list('-brief_date', 1);
+            return briefs[0] || null;
+        },
+        staleTime: 1000 * 60 * 30, // 30 minutes
+    });
 
-  const generatePredictions = useCallback(async () => {
-    setIsGenerating(true);
-    try {
-      const today = new Date().toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
-      });
+    const topPicks = brief?.top_picks?.slice(0, 3) || [];
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert sports analyst. Generate AI predictions for today's major sporting events.
-Date: ${today}
-
-Generate predictions for:
-1. 3-5 major games happening today across NBA, NFL, NHL, Soccer (Premier League, La Liga, etc.), or MLB (if in season)
-2. 3-5 key player performance predictions
-3. 2-3 potential upset alerts where underdogs have a realistic chance
-
-For each GAME prediction include:
-- Teams, league, and matchup details
-- Predicted winner with confidence score (0-100)
-- Predicted score
-- Win probabilities for each team (and draw if applicable)
-- Key factors influencing the prediction
-- Detailed reasoning
-- Flag if it's a potential upset
-
-For each PLAYER prediction include:
-- Player name, team, position
-- Predicted stats for the game (be specific: points, rebounds, yards, goals, etc.)
-- Confidence score
-- Trend (up/down/steady) and reason
-- Reasoning based on matchup, recent form, etc.
-
-For each UPSET ALERT include:
-- Matchup details
-- Upset probability percentage
-- Factors that could cause the upset
-- Detailed reasoning
-
-Be realistic and base predictions on actual current season data, injuries, matchups, and trends.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            game_predictions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  home_team: { type: "string" },
-                  away_team: { type: "string" },
-                  league: { type: "string" },
-                  sport: { type: "string" },
-                  match_date: { type: "string" },
-                  predicted_winner: { type: "string" },
-                  predicted_score: { type: "string" },
-                  confidence: { type: "number" },
-                  home_win_prob: { type: "number" },
-                  away_win_prob: { type: "number" },
-                  draw_prob: { type: "number" },
-                  key_factors: { type: "array", items: { type: "string" } },
-                  reasoning: { type: "string" },
-                  is_upset_alert: { type: "boolean" }
-                }
-              }
-            },
-            player_predictions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  player_name: { type: "string" },
-                  team: { type: "string" },
-                  position: { type: "string" },
-                  sport: { type: "string" },
-                  predicted_stats: { type: "string" },
-                  confidence: { type: "number" },
-                  trend: { type: "string" },
-                  trend_reason: { type: "string" },
-                  reasoning: { type: "string" }
-                }
-              }
-            },
-            upset_alerts: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  matchup: { type: "string" },
-                  sport: { type: "string" },
-                  upset_probability: { type: "number" },
-                  underdog: { type: "string" },
-                  factors: { type: "array", items: { type: "string" } },
-                  reasoning: { type: "string" }
-                }
-              }
-            },
-            generated_at: { type: "string" }
-          }
+    const renderContent = () => {
+        if (isLoading) {
+            return (
+                <div className="flex items-center justify-center h-48">
+                    <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                </div>
+            );
         }
-      });
 
-      setPredictions(result);
-    } catch (error) {
-      console.error("Failed to generate predictions:", error);
-      setPredictions(null);
-    }
-    setIsGenerating(false);
-  }, []);
+        if (error) {
+            return (
+                <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                    <AlertTriangle className="w-8 h-8 mb-2 text-red-400" />
+                    <p>Could not load predictions.</p>
+                </div>
+            );
+        }
 
-  const counts = useMemo(() => ({
-    games: predictions?.game_predictions?.length || 0,
-    players: predictions?.player_predictions?.length || 0,
-    upsets: predictions?.upset_alerts?.length || 0
-  }), [predictions]);
+        if (!brief || topPicks.length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center h-48 text-center text-slate-400">
+                     <Trophy className="w-8 h-8 mb-2" />
+                    <p className="font-semibold">No top picks available for today yet.</p>
+                    <p className="text-sm">Our AI is analyzing the games. Check back soon!</p>
+                </div>
+            );
+        }
 
-  return (
-    <div className="space-y-6 pb-4">
-      {/* Header */}
-      <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">AI Predictions</h2>
-                <p className="text-gray-600">Real-time game outcomes & player performance forecasts</p>
-              </div>
-            </div>
-            <Button
-              onClick={generatePredictions}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold px-6 py-3"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5 mr-2" />
-                  Generate Today's Predictions
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Loading State */}
-      {isGenerating && (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-2 border-purple-100 animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-6 bg-purple-200 rounded w-1/3 mb-4" />
-                <div className="h-4 bg-purple-100 rounded w-2/3 mb-2" />
-                <div className="h-4 bg-purple-100 rounded w-1/2" />
-              </CardContent>
-            </Card>
-          ))}
-          <div className="text-center py-4">
-            <div className="inline-flex items-center gap-2 text-purple-600">
-              <Brain className="w-5 h-5 animate-pulse" />
-              <span className="font-medium">AI is analyzing real-time data...</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Predictions Display */}
-      {predictions && !isGenerating && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border-2 border-purple-200">
-              <TabsTrigger 
-                value="games"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white font-bold"
-              >
-                <Trophy className="w-4 h-4 mr-2" />
-                Games ({counts.games})
-              </TabsTrigger>
-              <TabsTrigger 
-                value="players"
-                className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-bold"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                Players ({counts.players})
-              </TabsTrigger>
-              <TabsTrigger 
-                value="upsets"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white font-bold"
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Upsets ({counts.upsets})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="games">
-              <div className="grid md:grid-cols-2 gap-4">
-                {predictions.game_predictions?.map((pred, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <AIPredictionCard prediction={pred} type="game" />
-                  </motion.div>
+        return (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {topPicks.map((pick, index) => (
+                    <PickCard key={index} pick={pick} index={index} />
                 ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="players">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {predictions.player_predictions?.map((pred, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <AIPredictionCard prediction={pred} type="player" />
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="upsets">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {predictions.upset_alerts?.map((pred, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <AIPredictionCard prediction={pred} type="upset" />
-                  </motion.div>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          {/* Generated timestamp */}
-          <div className="text-center text-sm text-gray-500 mt-4">
-            Generated at {new Date().toLocaleTimeString()}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Empty State */}
-      {!predictions && !isGenerating && (
-        <Card className="border-2 border-dashed border-purple-300 bg-purple-50/50">
-          <CardContent className="p-12 text-center">
-            <Brain className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Predictions Yet</h3>
-            <p className="text-gray-600 mb-6">
-              Click the button above to generate AI-powered predictions for today's games
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Badge className="bg-purple-100 text-purple-700">Game Outcomes</Badge>
-              <Badge className="bg-emerald-100 text-emerald-700">Player Stats</Badge>
-              <Badge className="bg-orange-100 text-orange-700">Upset Alerts</Badge>
             </div>
-          </CardContent>
+        );
+    };
+
+    return (
+        <Card className="bg-slate-900/70 border-slate-800 backdrop-blur-sm mb-6 sm:mb-8">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Zap className="w-6 h-6 text-cyan-400" />
+                    <CardTitle className="text-white text-xl font-bold">Today's Top AI Picks</CardTitle>
+                </div>
+                <Link to={createPageUrl('DailyBriefs')}>
+                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
+                        View All Briefs
+                    </Button>
+                </Link>
+            </CardHeader>
+            <CardContent>
+                {renderContent()}
+            </CardContent>
         </Card>
-      )}
-    </div>
-  );
+    );
 }

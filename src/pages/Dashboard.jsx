@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import EmailLoginModal from "@/components/auth/EmailLoginModal";
 import ThemeToggle from "@/components/ThemeToggle";
+import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 
 
 // Reusable Icon Components
@@ -57,6 +58,7 @@ const DashboardContent = ({ menuItems, isAdmin }) => {
 
     return (
         <div className="w-full">
+            <TodaysPredictions />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {menuItems.map((item, index) => {
                     const isHovered = hoveredItem === item.id;
