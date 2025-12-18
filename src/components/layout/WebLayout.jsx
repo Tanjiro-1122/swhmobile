@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import AgeGate from '../auth/AgeGate';
 import DomainChangeBanner from '../DomainChangeBanner';
 import TopBar from '../navigation/TopBar';
-import SportsTicker from '../widgets/SportsTicker';
+import { LiveMarketTicker } from '../widgets/LiveMarketTicker';
 import { motion } from 'framer-motion';
 
 const AuroraBackground = () => {
@@ -33,7 +33,7 @@ export default function WebLayout({ children, currentPageName }) {
     <div className={`min-h-screen w-full bg-slate-900 text-white font-sans isolate ${isHomePage ? 'bg-grid-dark' : ''}`}>
       {!isHomePage && <AuroraBackground />}
       <TopBar />
-      <SportsTicker />
+      <LiveMarketTicker />
       <AgeGate />
       <DomainChangeBanner />
       <motion.main
