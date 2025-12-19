@@ -35,7 +35,7 @@ const FinalCTA = () => {
                         className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-500 text-lg px-10 py-7 rounded-full shadow-lg shadow-lime-500/20"
                         asChild
                     >
-                        <Link to={createPageUrl('Pricing')}>Join Now - 7 Days Free</Link>
+                        <Link to={createPageUrl('Pricing')}>Get Started</Link>
                     </Button>
                 </motion.div>
             </div>

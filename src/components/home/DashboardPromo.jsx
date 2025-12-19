@@ -43,7 +43,7 @@ const DashboardPromo = () => {
                         transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         className="p-2 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl shadow-2xl"
                     >
-                        <img src="https://i.imgur.com/8V5Q0nS.png" alt="AI Dashboard" className="rounded-xl w-full" />
+                        <img src="https://i.imgur.com/sDy5R6W.png" alt="AI Dashboard" className="rounded-xl w-full" />
                     </motion.div>
                 </div>
             </div>
