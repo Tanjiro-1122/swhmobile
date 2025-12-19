@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Search, Loader2, Info, ArrowRight, Zap, BarChart } from 'lucide-react';
+import { Users, Shield, Search, Loader2, Info, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
 
 // --- Free Search Logic ---
 const useFreeLookups = () => {
@@ -103,7 +104,7 @@ const FreeSearchView = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center bg-slate-800/50 border border-purple-500/30 p-8 rounded-xl">
                 <h3 className="text-2xl font-bold text-white mb-2">Aww, you're all done now!</h3>
                 <p className="text-slate-300 mb-6">Click "Get Started" to unlock unlimited searches and a world of AI difference.</p>
-                <Button asChild size="lg" className="bg-gradient-to-r from-green-400 to-cyan-500 text-white font-bold shadow-lg hover:opacity-90">
+                <Button asChild size="lg" className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-8">
                     <Link to={createPageUrl('Pricing')}>
                         Get Started
                     </Link>
@@ -169,20 +170,23 @@ const HeroSection = () => (
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
         >
-            <span className="inline-block bg-green-400/10 text-green-300 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-block bg-lime-400/10 text-lime-300 text-sm font-medium px-4 py-1.5 rounded-full mb-4 border border-lime-400/20">
                 Revolutionizing Sports Betting Analysis
             </span>
             <h1 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tighter mb-6">
                 The Future
                 <br />
-                of <span className="text-green-400">Winning</span>
+                of <span className="text-lime-400">Winning</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-300 max-w-xl mx-auto lg:mx-0 mb-8">
                 Powered by advanced neural networks, SportWagerHelper transforms chaotic data into precise betting opportunities.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8">
-                <Button size="lg" asChild className="bg-green-400 text-black font-bold hover:bg-green-500 w-full sm:w-auto">
+                <Button size="lg" asChild className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 w-full sm:w-auto rounded-full px-8">
                     <Link to={createPageUrl('Pricing')}>See Predictions <ArrowRight className="w-4 h-4 ml-2" /></Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild className="border-slate-600 text-white hover:bg-white/10 w-full sm:w-auto rounded-full px-8">
+                    <Link to={createPageUrl('AnalysisHub')}>Explore Analysis</Link>
                 </Button>
             </div>
             <div className="flex items-center justify-center lg:justify-start gap-3">
@@ -199,24 +203,7 @@ const HeroSection = () => (
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
         >
-            <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-8 aspect-square flex flex-col justify-center items-center text-center glow-card">
-                 <div className="relative w-32 h-32 flex items-center justify-center mb-6">
-                    <div className="absolute inset-0 bg-green-500/10 rounded-full animate-pulse"></div>
-                    <div className="absolute inset-2 bg-green-500/20 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" alt="SWH Logo" className="w-20 h-20 relative" />
-                </div>
-
-                <div className="bg-green-900/50 text-green-300 text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2 mb-4">
-                    <Zap className="w-4 h-4 text-green-400 animate-pulse" />
-                    ACTIVE PROCESSING
-                </div>
-                <div className="flex items-center gap-3">
-                    <BarChart className="w-5 h-5 text-slate-400" />
-                    <p className="text-lg text-slate-200">
-                        <span className="font-bold text-white">94.2%</span> Historical Precision
-                    </p>
-                </div>
-            </div>
+            <AnimatedAIGraphic />
         </motion.div>
     </div>
 );
@@ -267,7 +254,7 @@ export default function Home() {
                         <Button variant="ghost" onClick={handleLogin} className="text-slate-200 hover:text-white hover:bg-white/10">
                             Log In
                         </Button>
-                         <Button asChild className="bg-green-400 text-black font-bold hover:bg-green-500">
+                         <Button asChild className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-5">
                             <Link to={createPageUrl('Pricing')}>Get Started</Link>
                         </Button>
                     </div>
