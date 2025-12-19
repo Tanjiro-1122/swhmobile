@@ -17,7 +17,7 @@ export const usePlatform = () => {
       };
     }
     const detected = detectPlatform();
-    const isDesktopScreen = window.innerWidth >= 768; // Tailwind's 'md' breakpoint
+    const isDesktopScreen = window.innerWidth >= 1024; // Tailwind's 'md' breakpoint
     const isMobileScreen = !isDesktopScreen;
     return { ...detected, isDesktopScreen, isMobileScreen };
   });
@@ -25,7 +25,7 @@ export const usePlatform = () => {
   useEffect(() => {
     const handleResize = () => {
       const detected = detectPlatform();
-      const isDesktopScreen = window.innerWidth >= 768;
+      const isDesktopScreen = window.innerWidth >= 1024;
       const isMobileScreen = !isDesktopScreen;
       setPlatform({ ...detected, isDesktopScreen, isMobileScreen });
     };

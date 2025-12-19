@@ -41,9 +41,11 @@ const Hero = () => {
                             >
                                 <Link to={createPageUrl('Pricing')}>Deploy AI Assistant</Link>
                             </Button>
-                            <Button size="lg" variant="ghost" className="w-full sm:w-auto text-white/80 hover:bg-white/10 hover:text-white text-lg px-8 py-6 rounded-full">
-                                <PlayCircle className="w-5 h-5 mr-2" />
-                                <Link to={createPageUrl('AnalysisHub')}>See Predictions</Link>
+                            <Button size="lg" variant="ghost" className="w-full sm:w-auto text-white/80 hover:bg-white/10 hover:text-white text-lg px-8 py-6 rounded-full" asChild>
+                                <Link to={createPageUrl('AnalysisHub')}>
+                                    <PlayCircle className="w-5 h-5 mr-2" />
+                                    See Predictions
+                                </Link>
                             </Button>
                         </div>
                         <div className="mt-8 flex items-center justify-center lg:justify-start gap-4">

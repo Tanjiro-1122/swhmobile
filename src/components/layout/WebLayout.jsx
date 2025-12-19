@@ -34,7 +34,7 @@ export default function WebLayout({ children, currentPageName }) {
     <div className={`min-h-screen w-full bg-slate-900 text-white font-sans isolate ${isHomePage ? 'bg-grid-dark' : ''}`}>
       {!isHomePage && <AuroraBackground />}
       <TopBar />
-      <LiveMarketTicker />
+      
       <AgeGate />
       <DomainChangeBanner />
       <motion.main
