@@ -1,47 +1,91 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const stats = [
-    { value: '84.2%', label: 'Bot Accuracy' },
-    { value: '+$42.5k', label: 'User Profit (24h)' },
-    { value: '1,420', label: 'Live Insights' },
-];
+const StatItem = ({ value, label, isLoading }) => {
+    if (isLoading) {
+        return (
+            <div className="text-center">
+                <Skeleton className="h-8 w-24 mb-2 mx-auto bg-slate-700" />
+                <Skeleton className="h-4 w-20 mx-auto bg-slate-700" />
+            </div>
+        );
+    }
+    return (
+        <div className="text-center">
+            <p className="text-3xl sm:text-4xl font-black text-lime-300">{value}</p>
+            <p className="text-xs sm:text-sm text-slate-400 font-medium tracking-wide">{label}</p>
+        </div>
+    );
+};
 
 const Stats = () => {
+    const { data: stats, isLoading, isError } = useQuery({
+        queryKey: ['dashboardStats'],
+        queryFn: async () => {
+            const response = await base44.functions.invoke('getDashboardStats');
+            if (response.error) {
+                throw new Error(response.error);
+            }
+            return response.data;
+        },
+        refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+        staleTime: 1000 * 60 * 1, // 1 minute
+    });
+
+    const formatCurrency = (amount) => {
+        if (typeof amount !== 'number') return '$0';
+        const sign = amount >= 0 ? '+$' : '-$';
+        const formattedAmount = Math.abs(amount).toLocaleString('en-US', {
+            notation: 'compact',
+            compactDisplay: 'short',
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+        });
+        return sign + formattedAmount;
+    };
+
+    const displayStats = [
+        { value: !isLoading && !isError && stats ? `${stats.botAccuracy}%` : '84.2%', label: 'Bot Accuracy' },
+        { value: !isLoading && !isError && stats ? formatCurrency(stats.userProfit24h) : '+$42.5k', label: 'User Profit (24h)' },
+        { value: !isLoading && !isError && stats ? stats.liveInsights.toLocaleString() : '1,420', label: 'Live Insights' },
+    ];
+
     return (
-        <div className="py-12 bg-slate-900">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-                    <div className="grid md:grid-cols-3 lg:grid-cols-4 items-center gap-8">
-                        {stats.map((stat, index) => (
-                             <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 * index }}
-                                className="text-center border-r border-slate-700 last:border-r-0 md:last:border-r"
-                             >
-                                <p className="text-4xl font-black text-lime-300">{stat.value}</p>
-                                <p className="text-slate-400 mt-1">{stat.label}</p>
-                            </motion.div>
+        <section className="bg-slate-900/50 py-12 sm:py-16">
+            <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.5 }}
+                className="container mx-auto px-4"
+            >
+                <div className="mx-auto max-w-4xl rounded-2xl bg-slate-800/60 border border-slate-700 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+                    <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-6">
+                        {displayStats.map((stat, index) => (
+                            <div key={index} className="flex justify-center">
+                               <StatItem value={stat.value} label={stat.label} isLoading={isLoading} />
+                            </div>
                         ))}
-                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="lg:col-span-1 flex justify-center"
-                         >
-                            <Button className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-500 rounded-full text-base px-8 py-6" asChild>
-                                <Link to={createPageUrl('Pricing')}>Get Full Access</Link>
-                            </Button>
-                        </motion.div>
+                         <div className="col-span-2 md:col-span-1 flex justify-center">
+                            <Link to={createPageUrl('Pricing')} className="inline-block">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="bg-lime-300 text-slate-900 font-bold px-6 py-3 rounded-full text-sm sm:text-base hover:bg-lime-400 transition-colors duration-200 shadow-lg shadow-lime-500/10"
+                                >
+                                    Get Full Access
+                                </motion.button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </section>
     );
 };
 
