@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem } from "lucide-react";
+import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -135,6 +135,14 @@ export default function Dashboard() {
         queryKey: ['currentUser'],
         queryFn: () => base44.auth.isAuthenticated().then(isAuth => isAuth ? base44.auth.me() : null),
     });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+            </div>
+        );
+    }
 
     const isAdmin = currentUser?.role === 'admin';
     const menuItems = (isNativeApp || isMobileScreen) ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
