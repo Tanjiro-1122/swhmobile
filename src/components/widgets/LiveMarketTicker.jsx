@@ -12,43 +12,36 @@ const LIVE_ODDS = [
 ];
 
 export const LiveMarketTicker = () => {
+  const TickerItem = ({ odd }) => (
+    <div className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
+      <span className="font-bold text-sm tracking-tight text-slate-100">{odd.match}</span>
+      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{odd.market}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-mono font-bold text-white">{odd.odds.home || odd.odds.over}</span>
+        {odd.trend === 'up' ? (
+          <ArrowUpRight className="w-3 h-3 text-green-400" />
+        ) : odd.trend === 'down' ? (
+          <ArrowDownRight className="w-3 h-3 text-red-400" />
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-white/[0.02] border-y border-white/5 py-3 overflow-hidden whitespace-nowrap relative">
-      <div className="container mx-auto px-4 flex items-center gap-6 animate-marquee">
+      <div className="flex items-center gap-6 animate-marquee">
         <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 flex items-center gap-2 shrink-0">
           <Globe className="w-3 h-3" />
           Global Markets
         </Badge>
         
         {LIVE_ODDS.map((odd) => (
-          <div key={odd.id} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
-            <span className="font-bold text-sm tracking-tight">{odd.match}</span>
-            <span className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">{odd.market}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold">{odd.odds.home || odd.odds.over}</span>
-              {odd.trend === 'up' ? (
-                <ArrowUpRight className="w-3 h-3 text-primary" />
-              ) : odd.trend === 'down' ? (
-                <ArrowDownRight className="w-3 h-3 text-red-500" />
-              ) : null}
-            </div>
-          </div>
+          <TickerItem odd={odd} key={odd.id} />
         ))}
         
         {/* Duplicate for seamless loop */}
         {LIVE_ODDS.map((odd) => (
-          <div key={`dup-${odd.id}`} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
-            <span className="font-bold text-sm tracking-tight">{odd.match}</span>
-            <span className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">{odd.market}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold">{odd.odds.home || odd.odds.over}</span>
-              {odd.trend === 'up' ? (
-                <ArrowUpRight className="w-3 h-3 text-primary" />
-              ) : odd.trend === 'down' ? (
-                <ArrowDownRight className="w-3 h-3 text-red-500" />
-              ) : null}
-            </div>
-          </div>
+          <TickerItem odd={odd} key={`dup-${odd.id}`} />
         ))}
       </div>
     </div>
