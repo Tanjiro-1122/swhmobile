@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { usePlatform } from './components/hooks/usePlatform';
+import { usePlatform } from '@/components/hooks/usePlatform';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 
