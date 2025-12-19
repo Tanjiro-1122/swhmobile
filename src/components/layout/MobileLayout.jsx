@@ -144,13 +144,18 @@ export default function MobileLayout({ children, currentPageName }) {
                   </Button>
                 </>
               ) : (
-                <Button
-                                        onClick={handleLogin}
-                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 min-h-[44px] rounded-full"
-                                      >
-                                        <Mail className="w-4 h-4 mr-2" />
-                                        Sign In
-                                      </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleLogin}
+                    variant="ghost"
+                    className="text-slate-200 hover:text-white hover:bg-white/10 rounded-md text-sm px-4 h-10"
+                  >
+                    Log In
+                  </Button>
+                  <Button asChild className="bg-purple-600 text-white font-bold hover:bg-purple-700 rounded-md text-sm px-4 h-10">
+                    <Link to={createPageUrl('Pricing')}>Get Started</Link>
+                  </Button>
+                </div>
               )}
                     </div>
                   </div>
@@ -163,15 +168,13 @@ export default function MobileLayout({ children, currentPageName }) {
             </div>
           </main>
 
-        {currentPageName !== 'Dashboard' && (
-            <Link
-                to={createPageUrl("Dashboard")}
-                className="fixed bottom-6 right-6 z-[100] w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
-                aria-label="Go to Dashboard"
-            >
-                <LayoutGrid className="w-8 h-8 text-white" />
-            </Link>
-        )}
+        <Link
+            to={createPageUrl("Dashboard")}
+            className="fixed bottom-6 right-6 z-[100] w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
+            aria-label="Go to Dashboard"
+        >
+            <LayoutGrid className="w-8 h-8 text-white" />
+        </Link>
       </div>
 
       </div>
