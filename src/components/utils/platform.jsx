@@ -1,7 +1,5 @@
-// utils/platform.js
 export const detectPlatform = () => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    // Default for SSR or non-browser environments
     return {
       isIOSNative: false,
       isAndroidNative: false,
@@ -15,14 +13,17 @@ export const detectPlatform = () => {
   }
 
   const ua = navigator.userAgent || '';
-  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroidDevice = /Android/i.test(ua);
   
-    const isNativeApp = !!window.WTN;
+  const isNativeApp = !!(window.WTN || window.ReactNativeWebView);
   const isWeb = !isNativeApp;
 
   const screenWidth = window.innerWidth;
-  const isMobileScreen = isNativeApp || screenWidth < 768; // Use < 768 to be definitive
+  // Also check for touch capability as additional mobile indicator
+  const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isMobileScreen = isNativeApp || screenWidth < 768;
 
   return {
     isIOSNative: isIOSDevice && isNativeApp,
@@ -33,5 +34,6 @@ export const detectPlatform = () => {
     isDesktopScreen: !isMobileScreen,
     isIOSDevice,
     isAndroidDevice,
+    hasTouchScreen, // Added for debugging
   };
 };

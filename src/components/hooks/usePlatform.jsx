@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { detectPlatform } from '../utils/platform';
 
 export const usePlatform = () => {
-  const [platform, setPlatform] = useState(detectPlatform);
+  // ✅ FIX: Use lazy initialization to call the function
+  const [platform, setPlatform] = useState(() => detectPlatform());
 
   useEffect(() => {
     const handleResize = () => {
@@ -10,8 +11,8 @@ export const usePlatform = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-
+    // No need to call handleResize() here since useState already has correct value
+    
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
