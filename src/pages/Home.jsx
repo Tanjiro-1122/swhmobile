@@ -144,9 +144,9 @@ const FreeSearchView = () => {
                     <div className="mt-4 min-h-[200px]">
                         {isFetching ? (
                             <div className="flex justify-center items-center h-full pt-10">
-                                <Loader2 className="w-8 h-8 animate-spin text-purple-400"/>
+                                <Loader2 className="w-8 h-8 animate-spin text-lime-400"/>
                             </div>
-                        ) : data ? (
+                        ) : data && Array.isArray(data) ? (
                            <SearchResults data={data} type={activeTab === 'players' ? 'player' : 'team'} />
                         ) : (
                              <div className="text-center text-slate-400 py-8 flex flex-col items-center gap-2">
@@ -240,11 +240,11 @@ export default function Home() {
             <div className="absolute inset-0 bg-grid-dark -z-10"></div>
             
             <main className="max-w-7xl mx-auto px-6 pt-8 lg:pt-16 pb-16">
-                <section className="mb-24 lg:mb-32">
+                <section className="mb-20 lg:mb-28">
                     <HeroSection />
                 </section>
                 
-                <section id="free-search">
+                <section id="free-search" className="mb-16">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4">
                            Try Five Free Searches On Us
@@ -257,6 +257,18 @@ export default function Home() {
                         <FreeSearchView />
                     </div>
                 </section>
+                
+                {/* Footer for Home page */}
+                <footer className="border-t border-slate-800 pt-8 mt-16">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
+                        <p>© {new Date().getFullYear()} SportWagerHelper. All rights reserved.</p>
+                        <div className="flex gap-6">
+                            <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-white transition-colors">Privacy</Link>
+                            <Link to={createPageUrl('TermsOfService')} className="hover:text-white transition-colors">Terms</Link>
+                            <Link to={createPageUrl('ContactUs')} className="hover:text-white transition-colors">Contact</Link>
+                        </div>
+                    </div>
+                </footer>
             </main>
         </div>
     );
