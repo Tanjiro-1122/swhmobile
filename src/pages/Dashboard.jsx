@@ -140,9 +140,23 @@ export default function Dashboard() {
     const menuItems = (isNativeApp || isMobileScreen) ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
     
     const isMobile = isNativeApp || isMobileScreen;
+    
+    if (isMobile) {
+        return (
+            <>
+                {showSuccessMessage && (
+                    <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                        <Check className="w-5 h-5" />
+                        <span className="font-bold">Payment successful!</span>
+                    </motion.div>
+                )}
+                <MobileDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
+            </>
+        );
+    }
 
     return (
-        <div className={`min-h-screen ${isMobile ? 'bg-slate-900' : ''}`}>
+        <div className="min-h-screen">
             {showSuccessMessage && (
                 <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
                     <Check className="w-5 h-5" />
@@ -150,12 +164,8 @@ export default function Dashboard() {
                 </motion.div>
             )}
 
-            <div className={`w-full max-w-5xl mx-auto px-4 sm:px-6 ${isMobile ? 'py-2' : 'py-8'}`}>
-                {isMobile ? (
-                  <MobileDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
-                ) : (
-                  <WebDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
-                )}
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <WebDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
             </div>
         </div>
     );

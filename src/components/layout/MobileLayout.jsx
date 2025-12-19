@@ -68,10 +68,7 @@ export default function MobileLayout({ children, currentPageName }) {
     </div>
   );
 
-  // The Dashboard page now handles its own mobile layout, so we can just render it.
-  if (currentPageName === "Dashboard") {
-    return children;
-  }
+
 
   return (
     <div className="min-h-screen relative flex flex-col">
@@ -85,7 +82,7 @@ export default function MobileLayout({ children, currentPageName }) {
         <div className="fixed top-0 left-0 right-0 z-40"><header className="relative bg-slate-900/95 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex items-center justify-between h-14 px-4 lg:px-6">
             <div className="flex items-center gap-3">
-              <Link to={createPageUrl(isAuthenticated ? "AIAssistant" : "Dashboard")} className="flex items-center gap-3">
+              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
                   alt="SWH Logo"
