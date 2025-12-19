@@ -19,11 +19,7 @@ import AgeGate from "../auth/AgeGate";
 import SportsTicker from "../widgets/SportsTicker";
 
 export default function MobileLayout({ children, currentPageName }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuthenticated);
-  }, []);
+  
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -41,6 +37,7 @@ export default function MobileLayout({ children, currentPageName }) {
 
 
 
+  const isAuthenticated = !!currentUser;
   const isLegacy = currentUser?.subscription_type === 'legacy';
   const isVIP = currentUser?.subscription_type === 'vip_annual';
   const isPremium = currentUser?.subscription_type === 'premium_monthly';

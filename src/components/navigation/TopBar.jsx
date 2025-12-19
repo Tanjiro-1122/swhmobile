@@ -32,7 +32,7 @@ const TopBar = () => {
         <header className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg border-b border-white/10">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
-                    <Link to={createPageUrl('Home')} className="flex items-center gap-2">
+                    <Link to={createPageUrl(user ? 'AIAssistant' : 'Home')} className="flex items-center gap-2">
                         <Bot className="w-8 h-8 text-[hsl(var(--brand-accent))]" />
                         <span className="text-xl font-bold text-white">BettingAI</span>
                     </Link>
