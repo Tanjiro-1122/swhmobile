@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { Trophy } from 'lucide-react';
+import { Trophy, ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 
 const sports = [
@@ -42,6 +43,14 @@ export default function TopTen() {
   return (
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="w-full flex justify-start -mb-8">
+            <Link to={createPageUrl('Dashboard')}>
+                <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Dashboard
+                </Button>
+            </Link>
+        </div>
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
