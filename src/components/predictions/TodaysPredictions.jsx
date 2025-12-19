@@ -11,9 +11,9 @@ import { Link } from 'react-router-dom';
 
 const PickCard = ({ pick, index }) => {
     const confidenceStyles = {
-        High: 'bg-green-700/80 text-green-200 border-green-600',
-        Medium: 'bg-yellow-700/80 text-yellow-200 border-yellow-600',
-        Low: 'bg-red-700/80 text-red-200 border-red-600',
+        High: 'bg-green-500/10 text-green-400 border-green-500/30',
+        Medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+        Low: 'bg-red-500/10 text-red-400 border-red-500/30',
     };
 
     return (
@@ -21,7 +21,7 @@ const PickCard = ({ pick, index }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-5 h-full flex flex-col justify-between group"
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-5 h-full flex flex-col justify-between group transition-all hover:border-slate-600"
         >
             <div>
                 <div className="flex justify-between items-start mb-3">
@@ -58,15 +58,19 @@ export default function TodaysPredictions() {
     const renderContent = () => {
         if (isLoading) {
             return (
-                <div className="flex items-center justify-center h-48">
-                    <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...Array(2)].map((_, i) => (
+                        <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 h-48 flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                        </div>
+                    ))}
                 </div>
             );
         }
 
         if (error) {
             return (
-                <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                <div className="bg-slate-800/50 border border-red-500/30 rounded-xl p-5 h-48 flex flex-col items-center justify-center text-slate-400">
                     <AlertTriangle className="w-8 h-8 mb-2 text-red-400" />
                     <p>Could not load predictions.</p>
                 </div>
@@ -75,7 +79,7 @@ export default function TodaysPredictions() {
 
         if (!brief || topPicks.length === 0) {
             return (
-                <div className="flex flex-col items-center justify-center h-48 text-center text-slate-400">
+                 <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 h-48 flex flex-col items-center justify-center text-center text-slate-400">
                      <Trophy className="w-8 h-8 mb-2" />
                     <p className="font-semibold">No top picks available for today yet.</p>
                     <p className="text-sm">Our AI is analyzing the games. Check back soon!</p>
@@ -100,7 +104,7 @@ export default function TodaysPredictions() {
                     <h2 className="text-2xl font-bold text-white">Today's Top AI Picks</h2>
                 </div>
                 <Link to={createPageUrl('DailyBriefs')}>
-                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10">
+                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10 rounded-lg">
                         View All Briefs <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                 </Link>
