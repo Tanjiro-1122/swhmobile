@@ -1,57 +1,93 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowDownRight, Globe } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import { Loader2, WifiOff, Clock } from 'lucide-react';
 
-const LIVE_ODDS = [
-  { id: 1, match: 'LAL vs GSW', market: 'Moneyline', odds: { home: -120, away: +105 }, trend: 'up' },
-  { id: 2, match: 'MCY vs MAD', market: 'Total Goals', odds: { over: 2.5, under: 2.5 }, trend: 'down' },
-  { id: 3, match: 'KC vs BUF', market: 'Spread', odds: { home: -3.5, away: +3.5 }, trend: 'up' },
-  { id: 4, match: 'NYY vs LAD', market: 'Run Line', odds: { home: -1.5, away: +1.5 }, trend: 'stable' },
-  { id: 5, match: 'BOS vs TBL', market: 'Puck Line', odds: { home: -1.5, away: +1.5 }, trend: 'up' },
-  { id: 6, match: 'LIV vs ARS', market: 'BTTS', odds: { home: -150, away: +120 }, trend: 'down' },
-];
-
-const TickerContent = () => (
-  <div className="flex items-center shrink-0">
-    <Badge variant="outline" className="border-purple-400/30 text-purple-300 bg-purple-900/20 flex items-center gap-2 shrink-0 ml-6">
-        <Globe className="w-3 h-3" />
-        Global Markets
-    </Badge>
-    {LIVE_ODDS.map((odd) => (
-        <div key={odd.id} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
-            <span className="font-bold text-sm tracking-tight text-slate-100">{odd.match}</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{odd.market}</span>
-            <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-white">{odd.odds.home || odd.odds.over}</span>
-                {odd.trend === 'up' ? (
-                    <ArrowUpRight className="w-3 h-3 text-green-400" />
-                ) : odd.trend === 'down' ? (
-                    <ArrowDownRight className="w-3 h-3 text-red-400" />
-                ) : null}
+const TickerContent = ({ scores, isLoading, isError }) => {
+    if (isLoading) {
+        return (
+            <div className="flex items-center gap-2 text-slate-400 px-4">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Loading Live Scores...</span>
             </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex items-center gap-2 text-red-400 px-4">
+                <WifiOff className="w-4 h-4" />
+                <span>Failed to load live scores.</span>
+            </div>
+        );
+    }
+
+    if (!scores || scores.length === 0) {
+        return (
+             <div className="flex items-center gap-2 text-slate-400 px-4">
+                <Clock className="w-4 h-4" />
+                <span>No live or upcoming games right now.</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center shrink-0">
+            <Badge variant="destructive" className="text-sm font-bold flex-shrink-0 animate-pulse ml-6">LIVE</Badge>
+            {scores.map(game => (
+                <div key={game.id} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
+                    <span className="font-bold text-sm tracking-tight text-slate-100">{game.home_team} vs {game.away_team}</span>
+                    {game.status === 'Live' ? (
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-green-400 animate-pulse">{game.score}</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-slate-400">{game.score}</span>
+                        </div>
+                    )}
+                </div>
+            ))}
         </div>
-    ))}
-  </div>
-);
+    );
+};
 
 export const LiveMarketTicker = () => {
-  return (
-    <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative flex items-center">
-      <motion.div
-        className="flex"
-        animate={{
-          x: ['0%', '-100%'],
-        }}
-        transition={{
-          ease: 'linear',
-          duration: 40,
-          repeat: Infinity,
-        }}
-      >
-        <TickerContent />
-        <TickerContent />
-      </motion.div>
-    </div>
-  );
+    const { data: scores, isLoading, isError } = useQuery({
+        queryKey: ['liveScores'],
+        queryFn: () => base44.functions.invoke('getLiveScores').then(res => res.data),
+        refetchInterval: 60000, // Refetch every 60 seconds
+        staleTime: 30000, // Consider data fresh for 30 seconds
+    });
+
+    // Determine if we should render the marquee or a static message
+    const showMarquee = !isLoading && !isError && scores && scores.length > 0;
+    // Key to reset animation when content changes
+    const contentKey = showMarquee ? scores.map(s => s.id + s.score).join(',') : 'static';
+
+    return (
+        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative flex items-center">
+            {showMarquee ? (
+                <motion.div
+                    key={contentKey}
+                    className="flex"
+                    animate={{ x: ['0%', '-100%'] }}
+                    transition={{
+                        ease: 'linear',
+                        duration: scores.length * 8, // Adjust duration based on content length
+                        repeat: Infinity,
+                    }}
+                >
+                    <TickerContent scores={scores} isLoading={false} isError={false} />
+                    <TickerContent scores={scores} isLoading={false} isError={false} />
+                </motion.div>
+            ) : (
+                <div className="w-full flex justify-center">
+                  <TickerContent scores={scores} isLoading={isLoading} isError={isError} />
+                </div>
+            )}
+        </div>
+    );
 };
