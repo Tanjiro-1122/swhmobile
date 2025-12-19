@@ -119,7 +119,7 @@ const FreeSearchView = () => {
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-white">Player & Team Stats</CardTitle>
                     <div className="text-sm font-medium text-slate-300 bg-slate-800 px-3 py-1 rounded-full">
-                        <span className="font-bold text-green-400">{remainingLookups}</span> of 5 free searches left
+                        <span className="font-bold text-lime-400">{remainingLookups}</span> of 5 free searches left
                     </div>
                 </div>
             </CardHeader>
@@ -236,32 +236,12 @@ export default function Home() {
     }
     
     // User is not authenticated, show the free search home page.
+    // Note: TopBar is rendered by WebLayout, so we don't need a header here
     return (
-        <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden">
+        <div className="min-h-screen text-white overflow-x-hidden">
             <div className="absolute inset-0 bg-grid-dark -z-10"></div>
-            <div className="absolute inset-0 aurora-background -z-20"></div>
             
-            <header className="absolute top-0 left-0 right-0 z-10 p-6">
-                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-                        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" alt="SWH Logo" className="w-10 h-10 rounded-lg"/>
-                        <span className="font-bold text-xl text-white">SportWagerHelper</span>
-                    </Link>
-                    <div className="flex items-center gap-2">
-                         <Button variant="ghost" asChild className="text-slate-200 hover:text-white hover:bg-white/10 hidden sm:inline-flex">
-                            <Link to={createPageUrl('Pricing')}>Pricing</Link>
-                        </Button>
-                        <Button variant="ghost" onClick={handleLogin} className="text-slate-200 hover:text-white hover:bg-white/10">
-                            Log In
-                        </Button>
-                         <Button asChild className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-5">
-                            <Link to={createPageUrl('Pricing')}>Get Started</Link>
-                        </Button>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto px-6 pt-32 lg:pt-40 pb-16">
+            <main className="max-w-7xl mx-auto px-6 pt-8 lg:pt-16 pb-16">
                 <section className="mb-24 lg:mb-32">
                     <HeroSection />
                 </section>

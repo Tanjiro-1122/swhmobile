@@ -31,7 +31,7 @@ export default function WebLayout({ children, currentPageName }) {
   const isHomePage = currentPageName === 'Home';
 
   return (
-    <div className={`min-h-screen w-full bg-slate-900 text-white font-sans isolate ${isHomePage ? 'bg-grid-dark' : ''}`}>
+    <div className="min-h-screen w-full bg-slate-900 text-white font-sans isolate">
       {!isHomePage && <AuroraBackground />}
       <TopBar />
       
@@ -43,11 +43,11 @@ export default function WebLayout({ children, currentPageName }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.35, ease: 'easeInOut' }}
-        className={`block ${isHomePage ? 'pt-24' : 'pt-28 pb-12 container mx-auto px-4 sm:px-6 lg:px-8'}`} 
+        className={`block ${isHomePage ? 'pt-20' : 'pt-28 pb-12 container mx-auto px-4 sm:px-6 lg:px-8'}`} 
       >
         {children}
       </motion.main>
-      <Footer />
+      {!isHomePage && <Footer />}
     </div>
   );
 }
