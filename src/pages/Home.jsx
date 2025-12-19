@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Shield, Search, Loader2, Info, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
@@ -210,27 +210,25 @@ const HeroSection = () => (
 
 // --- Main Home Page ---
 export default function Home() {
+    const navigate = useNavigate();
+    
     const { data: user, isLoading: isAuthLoading } = useQuery({
         queryKey: ['currentUser'],
         queryFn: () => base44.auth.isAuthenticated().then(isAuth => isAuth ? base44.auth.me() : null),
         staleTime: 5 * 60 * 1000,
     });
-    
-    const handleLogin = () => {
-        base44.auth.redirectToLogin(createPageUrl('Dashboard'));
-    };
 
     useEffect(() => {
         if (!isAuthLoading && user) {
-            // Using replace to avoid breaking back button after login
-            window.location.replace(createPageUrl('Dashboard'));
+            // Use React Router navigation instead of window.location for smoother transition
+            navigate(createPageUrl('Dashboard'), { replace: true });
         }
-    }, [user, isAuthLoading]);
+    }, [user, isAuthLoading, navigate]);
 
     if (isAuthLoading || user) {
         return (
             <div className="fixed inset-0 bg-slate-900 flex items-center justify-center">
-              <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+              <Loader2 className="w-12 h-12 text-lime-400 animate-spin" />
             </div>
         );
     }
