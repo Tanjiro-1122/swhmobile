@@ -23,13 +23,7 @@ export default function MobileLayout({ children, currentPageName }) {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch (error) {
-        return null;
-      }
-    },
+    queryFn: () => base44.auth.isAuthenticated().then(isAuth => isAuth ? base44.auth.me() : null),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
@@ -161,20 +155,23 @@ export default function MobileLayout({ children, currentPageName }) {
                   </div>
                   </header><LiveMarketTicker/></div>
 
-        {/* Main Content - offset for header (56px) + ticker (~40px) + safe area */}
-          <main className="flex-1" style={{ paddingTop: 'calc(3.5rem + 40px + env(safe-area-inset-top))' }}>
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full box-border overflow-x-hidden page-transition scroll-smooth-native">
+        {/* Main Content - offset for header (56px) + ticker (40px) = 96px */}
+          <main className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(56px + 40px)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full">
               {children}
             </div>
           </main>
 
-        <Link
-            to={createPageUrl("Dashboard")}
-            className="fixed bottom-6 right-6 z-[100] w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
-            aria-label="Go to Dashboard"
-        >
-            <LayoutGrid className="w-8 h-8 text-cyan-400" />
-        </Link>
+        {currentPageName !== 'Dashboard' && (
+          <Link
+              to={createPageUrl("Dashboard")}
+              className="fixed right-4 z-[100] w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
+              aria-label="Go to Dashboard"
+              style={{ bottom: `calc(1rem + env(safe-area-inset-bottom))` }}
+          >
+              <LayoutGrid className="w-7 h-7 text-cyan-300" />
+          </Link>
+        )}
       </div>
 
       </div>
