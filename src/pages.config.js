@@ -35,6 +35,7 @@ import TopTen from './pages/TopTen';
 import SportDetail from './pages/SportDetail';
 import DailyBriefs from './pages/DailyBriefs';
 import AIAssistant from './pages/AIAssistant';
+import Index from './pages/Index';
 import __Layout from './Layout.jsx';
 
 
@@ -76,6 +77,7 @@ export const PAGES = {
     "SportDetail": SportDetail,
     "DailyBriefs": DailyBriefs,
     "AIAssistant": AIAssistant,
+    "Index": Index,
 }
 
 export const pagesConfig = {
