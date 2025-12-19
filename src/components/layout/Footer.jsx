@@ -1,105 +1,53 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { Bot, Twitter, MessageCircle } from 'lucide-react';
 
-const navigation = {
-  solutions: [
-    { name: 'Analysis Hub', href: createPageUrl('AnalysisHub') },
-    { name: 'Betting Hub', href: createPageUrl('BettingHub') },
-    { name: 'Community', href: createPageUrl('CommunityHub') },
-    { name: 'AI Assistant', href: createPageUrl('AIAssistant') },
-  ],
-  support: [
-    { name: 'Pricing', href: createPageUrl('Pricing') },
-    { name: 'Contact Us', href: createPageUrl('ContactUs') },
-  ],
-  company: [
-    { name: 'About', href: '#' },
-    { name: 'Blog', href: '#' },
-  ],
-  legal: [
-    { name: 'Privacy', href: createPageUrl('PrivacyPolicy') },
-    { name: 'Terms', href: createPageUrl('TermsOfService') },
-  ],
-}
+const Footer = () => {
+    return (
+        <footer className="bg-slate-900 border-t border-slate-800">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="grid md:grid-cols-4 gap-8">
+                    <div className="md:col-span-2">
+                        <Link to={createPageUrl('Home')} className="flex items-center gap-2 mb-4">
+                            <Bot className="w-7 h-7 text-lime-400" />
+                            <span className="text-xl font-bold text-white">SportWagerHelper</span>
+                        </Link>
+                        <p className="text-slate-400 max-w-sm">
+                            Revolutionizing sports betting with machine learning and real-time data analysis. Join the smart money revolution.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-4">Product</h3>
+                        <ul className="space-y-2">
+                            <li><Link to={createPageUrl('AnalysisHub')} className="text-slate-400 hover:text-lime-300 transition-colors">Analysis Engine</Link></li>
+                            <li><Link to={createPageUrl('Dashboard')} className="text-slate-400 hover:text-lime-300 transition-colors">Dashboard</Link></li>
+                            <li><Link to={createPageUrl('Pricing')} className="text-slate-400 hover:text-lime-300 transition-colors">Pricing</Link></li>
+                            <li><Link to={createPageUrl('AIAssistant')} className="text-slate-400 hover:text-lime-300 transition-colors">AI Assistant</Link></li>
+                        </ul>
+                    </div>
+                     <div>
+                        <h3 className="font-bold text-white mb-4">Company</h3>
+                        <ul className="space-y-2">
+                            <li><Link to={createPageUrl('Community')} className="text-slate-400 hover:text-lime-300 transition-colors">Community</Link></li>
+                            <li><Link to={createPageUrl('PrivacyPolicy')} className="text-slate-400 hover:text-lime-300 transition-colors">Privacy Policy</Link></li>
+                            <li><Link to={createPageUrl('TermsOfService')} className="text-slate-400 hover:text-lime-300 transition-colors">Terms of Service</Link></li>
+                             <li><Link to={createPageUrl('ContactUs')} className="text-slate-400 hover:text-lime-300 transition-colors">Contact</Link></li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="mt-12 border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                     <p className="text-slate-500 text-sm mb-4 md:mb-0">
+                        &copy; {new Date().getFullYear()} SportWagerHelper AI. All rights reserved.
+                    </p>
+                    <div className="flex items-center gap-4">
+                        <a href="#" className="text-slate-500 hover:text-lime-300 transition-colors"><Twitter className="w-5 h-5" /></a>
+                        <a href="#" className="text-slate-500 hover:text-lime-300 transition-colors"><MessageCircle className="w-5 h-5" /></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+};
 
-export default function Footer() {
-  return (
-    <footer className="bg-slate-900" aria-labelledby="footer-heading">
-      <h2 id="footer-heading" className="sr-only">
-        Footer
-      </h2>
-      <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-          <div className="space-y-8">
-            <img
-              className="h-12"
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-              alt="SWH Logo"
-            />
-            <p className="text-sm leading-6 text-slate-300">
-              The ultimate AI-powered sports betting companion.
-            </p>
-          </div>
-          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Solutions</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-slate-300 hover:text-white">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Support</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-slate-300 hover:text-white">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Company</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.company.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-slate-300 hover:text-white">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Legal</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
-                    <li key={item.name}>
-                      <a href={item.href} className="text-sm leading-6 text-slate-300 hover:text-white">
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-16 border-t border-white/10 pt-8 sm:mt-20 lg:mt-24">
-          <p className="text-xs leading-5 text-slate-400">&copy; {new Date().getFullYear()} Sports Wager Helper. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-  )
-}
+export default Footer;
