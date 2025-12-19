@@ -1,6 +1,9 @@
 import React, { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, Sparkles, Target, Brain, Loader2 } from "lucide-react";
+import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 
@@ -24,6 +27,14 @@ function AnalysisHubContent() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full">
+        <div className="w-full flex justify-start mb-2">
+            <Link to={createPageUrl('Dashboard')}>
+                <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Dashboard
+                </Button>
+            </Link>
+        </div>
         {/* Header - 8-point grid: 24px bottom margin, 16/24px padding */}
         <div className="mb-6 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">

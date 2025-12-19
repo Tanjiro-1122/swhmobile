@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2 } from "lucide-react";
+import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { base44 } from "@/api/base44Client";
 import RequireAuth from "@/components/auth/RequireAuth";
@@ -106,6 +109,14 @@ function MyAccountContent() {
   return (
         <div className="min-h-screen overflow-x-hidden">
           <div className="max-w-5xl mx-auto">
+            <div className="w-full flex justify-start mb-2">
+                <Link to={createPageUrl('Dashboard')}>
+                    <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Dashboard
+                    </Button>
+                </Link>
+            </div>
             {/* Header - 8-point grid: 32px bottom margin, 24px padding */}
             <div className="mb-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
