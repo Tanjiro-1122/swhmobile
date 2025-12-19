@@ -169,16 +169,12 @@ function LiveOddsContent() {
     setError(null);
     
     try {
-      const apiKey = '4961807ff18b92da83549a2e55ab8f64';
-      const response = await fetch(
-        `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
-      );
+      const response = await base44.functions.invoke('getLiveOdds', { sportKey });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch odds');
+      if (response.data.error) {
+        throw new Error(response.data.error);
       }
-
-      const data = await response.json();
+      const data = response.data;
 
       if (!isPaidMember && !hasLoadedOnce) {
         recordLookup();

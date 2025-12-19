@@ -16,11 +16,11 @@ export default function OddsWidget({ sport, gameId }) {
 
   const fetchOdds = async () => {
     try {
-      // If you have The Odds API key
-      const response = await fetch(
-        `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=YOUR_API_KEY&regions=us&markets=h2h`
-      );
-      const data = await response.json();
+      const response = await base44.functions.invoke('getLiveOdds', { sportKey: sport });
+      if (response.data.error) {
+          throw new Error(response.data.error);
+      }
+      const data = response.data;
       setOdds(data);
     } catch (error) {
       console.error("Error fetching odds:", error);
