@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
+import { usePlatform } from '@/components/hooks/usePlatform';
 
 const PickCard = ({ pick, index }) => {
     const confidenceStyles = {
@@ -44,6 +45,7 @@ const PickCard = ({ pick, index }) => {
 
 
 export default function TodaysPredictions() {
+    const { isMobileScreen, isNativeApp } = usePlatform();
     const { data: brief, isLoading, error } = useQuery({
         queryKey: ['todaysBrief'],
         queryFn: async () => {
@@ -103,11 +105,13 @@ export default function TodaysPredictions() {
                     <Zap className="w-6 h-6 text-cyan-400" />
                     <h2 className="text-2xl font-bold text-white">Today's Top AI Picks</h2>
                 </div>
-                <Link to={createPageUrl('DailyBriefs')}>
-                    <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10 rounded-lg">
-                        View All Briefs <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                </Link>
+                {!isMobileScreen && !isNativeApp && (
+                    <Link to={createPageUrl('DailyBriefs')}>
+                        <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/10 rounded-lg">
+                            View All Briefs <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </Link>
+                )}
             </div>
             {renderContent()}
         </div>
