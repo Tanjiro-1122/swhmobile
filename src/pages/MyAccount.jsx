@@ -107,7 +107,7 @@ function MyAccountContent() {
   };
 
   return (
-        <div className="min-h-screen overflow-x-hidden">
+        <div className="overflow-x-hidden">
           <div className="max-w-5xl mx-auto">
             <div className="w-full flex justify-start mb-2">
                 <Link to={createPageUrl('Dashboard')}>

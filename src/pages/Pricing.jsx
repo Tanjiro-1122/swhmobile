@@ -508,7 +508,7 @@ export default function Pricing() {
   const currentPlan = currentUser?.subscription_type || 'free';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-10 lg:mb-16">

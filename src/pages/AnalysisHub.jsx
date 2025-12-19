@@ -25,7 +25,7 @@ function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full">
         <div className="w-full flex justify-start mb-2">
             <Link to={createPageUrl('Dashboard')}>

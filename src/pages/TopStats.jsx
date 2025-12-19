@@ -9,7 +9,7 @@ import BettingBriefsContent from "@/components/hub/BettingBriefsContent";
 
 export default function TopStats() {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="pb-24">
       <div className="max-w-7xl mx-auto">
         <div className="w-full flex justify-start mb-2">
             <Link to={createPageUrl('Dashboard')}>
