@@ -10,7 +10,6 @@ import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, Use
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
-import { LiveMarketTicker } from '@/components/widgets/LiveMarketTicker';
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
@@ -36,7 +35,7 @@ const MenuGrid = ({ menuItems, isAdmin, gridClasses }) => (
                     className="h-full"
                 >
                     <Link to={createPageUrl(item.page)} className="block h-full group">
-                        <Card className="h-full bg-slate-800/50 border border-slate-700 rounded-xl transition-all duration-300 hover:border-purple-500/50 hover:bg-slate-800/80 glow-card">
+                        <Card className="h-full bg-slate-800/50 border border-slate-700 rounded-xl transition-all duration-300 hover:border-lime-500/50 hover:bg-slate-800/80 glow-card">
                             <CardContent className="relative p-5 flex flex-col h-full">
                                 {item.tag && (
                                     <div className={`absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${item.tagColor}`}>{item.tag}</div>
@@ -87,7 +86,6 @@ const MenuGrid = ({ menuItems, isAdmin, gridClasses }) => (
 const WebDashboardContent = ({ menuItems, isAdmin }) => {
     return (
         <div className="w-full">
-            <div className="mb-8"><LiveMarketTicker /></div>
             <TodaysPredictions />
             <div className="mt-8">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
