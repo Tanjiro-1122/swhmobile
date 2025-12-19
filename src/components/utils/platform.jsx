@@ -18,7 +18,7 @@ export const detectPlatform = () => {
   const isIOSDevice = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroidDevice = /Android/i.test(ua);
   
-  const isNativeApp = !!(window.WTN && window.WTN.isNativeApp);
+    const isNativeApp = !!window.WTN;
   const isWeb = !isNativeApp;
 
   const screenWidth = window.innerWidth;
