@@ -14,7 +14,7 @@ const sportPrompts = {
   },
   MLB: {
     players: "Search espn.com/mlb/stats for the top 10 players. Return name, team, position, gamesPlayed, and key stats: avgOrEra, hrOrSo, rbiOrWins, hitsOrWhip. Use the exact schema provided.",
-    teams: "Search espn.com/mlb/standings for top 10 MLB teams. Include name, wins, losses, win%, runs per game, runs allowed, run differential, home/away record, and last 10 games. Order by best record.",
+    teams: "Search espn.com/mlb/standings for top 10 MLB teams. Include name, wins, losses, winPct, pointsFor (as PF or Runs For), pointsAgainst (as PA or Runs Against), differential, ats (against the spread record), ou (over/under record), lastGames (last 10 games record as W-L string), homeRecord, and awayRecord. Order by best record.",
     playerSchema: { type: "object", properties: { players: { type: "array", items: { type: "object", properties: { name: { type: "string" }, team: { type: "string" }, position: { type: "string" }, gamesPlayed: { type: "string" }, avgOrEra: { type: "string" }, hrOrSo: { type: "string" }, rbiOrWins: { type: "string" }, hitsOrWhip: { type: "string" } } } } } }
   },
   NBA: {

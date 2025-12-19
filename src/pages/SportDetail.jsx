@@ -142,8 +142,8 @@ const fetchData = async () => {
         <div className="flex justify-end mb-4">
           <Button 
             onClick={fetchData}
-            variant="outline"
-            className="bg-white shadow-sm"
+            variant="secondary"
+            className="shadow-sm"
             disabled={loadingPlayers || loadingTeams}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${(loadingPlayers || loadingTeams) ? 'animate-spin' : ''}`} />
