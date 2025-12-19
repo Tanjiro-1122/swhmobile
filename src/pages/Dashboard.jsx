@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
+import { LiveMarketTicker } from '@/components/widgets/LiveMarketTicker';
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
@@ -26,7 +27,8 @@ const allMenuItems = [
 const DashboardContent = ({ menuItems, isAdmin }) => {
     return (
         <div className="w-full">
-            <TodaysPredictions />
+            <div className="mb-8"><LiveMarketTicker /></div>
+                  <TodaysPredictions />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {menuItems.map((item, index) => {
                     const Icon = item.Icon;
