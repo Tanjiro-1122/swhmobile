@@ -16,11 +16,18 @@ export default function TeamStatsContent() {
   const [currentTeam, setCurrentTeam] = useState(null);
   const queryClient = useQueryClient();
 
-  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
+  const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading } = useFreeLookupTracker();
 
   const handleSearch = async (query, retryCount = 0) => {
+    // Wait for lookup tracker to load before checking
+    if (isLoading) {
+      setError("Please wait, loading your account status...");
+      return;
+    }
+    
     if (!canLookup()) {
       setShowLimitModal(true);
+      setError(null); // Clear any previous error
       return;
     }
 
