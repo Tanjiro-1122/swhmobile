@@ -3,7 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 const API_KEY = Deno.env.get('ODDS_API_KEY');
 const SPORTS = [
     'americanfootball_nfl',
+    'americanfootball_ncaaf',
     'basketball_nba',
+    'basketball_ncaab',
     'icehockey_nhl',
     'baseball_mlb'
 ];
