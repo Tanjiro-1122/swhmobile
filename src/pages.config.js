@@ -36,6 +36,7 @@ import SportDetail from './pages/SportDetail';
 import DailyBriefs from './pages/DailyBriefs';
 import AIAssistant from './pages/AIAssistant';
 import Index from './pages/Index';
+import SportsNewsTicker from './pages/SportsNewsTicker';
 import __Layout from './Layout.jsx';
 
 
@@ -78,6 +79,7 @@ export const PAGES = {
     "DailyBriefs": DailyBriefs,
     "AIAssistant": AIAssistant,
     "Index": Index,
+    "SportsNewsTicker": SportsNewsTicker,
 }
 
 export const pagesConfig = {

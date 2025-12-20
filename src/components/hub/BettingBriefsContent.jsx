@@ -63,7 +63,7 @@ export default function BettingBriefsContent() {
           variant="outline"
           size="sm"
           disabled={isGenerating || isLoading}
-          className="gap-2"
+          className="gap-2 bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
         >
           <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
           {isGenerating ? 'Generating...' : 'Refresh'}
