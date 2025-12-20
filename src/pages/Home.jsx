@@ -183,13 +183,41 @@ const HeroSection = () => (
                 Powered by advanced neural networks, SportWagerHelper transforms chaotic data into precise betting opportunities.
             </p>
 
-            <div className="flex items-center justify-center lg:justify-start gap-3">
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-8">
                  <div className="flex -space-x-2 overflow-hidden">
                     <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-800" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Bettor 1" />
                     <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-800" src="https://images.unsplash.com/photo-1531746020798-1b1580858f91?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Bettor 2" />
                     <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-800" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Bettor 3" />
                  </div>
                  <p className="text-sm text-slate-400"><span className="font-bold text-white">15,000+</span> Smart Money Bettors</p>
+            </div>
+
+            {/* App Store Download Links */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <a 
+                    href="https://apps.apple.com/us/app/sports-wager-helper/id6755343785" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="transition-transform hover:scale-105"
+                >
+                    <img 
+                        src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                        alt="Download on the App Store" 
+                        className="h-12"
+                    />
+                </a>
+                <a 
+                    href="https://play.google.com/store/apps/details?id=com.sportswagerhelper.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="transition-transform hover:scale-105"
+                >
+                    <img 
+                        src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                        alt="Get it on Google Play" 
+                        className="h-[72px] -my-3"
+                    />
+                </a>
             </div>
         </motion.div>
         <motion.div
