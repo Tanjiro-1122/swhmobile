@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Shield, Search, Loader2, Info, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
+import DailyFreePicks from '@/components/home/DailyFreePicks';
 
 // --- Free Search Logic ---
 const useFreeLookups = () => {
@@ -244,6 +245,11 @@ export default function Home() {
                     <HeroSection />
                 </section>
                 
+                {/* Daily Free AI Picks - Always visible */}
+                <section className="mb-16">
+                    <DailyFreePicks />
+                </section>
+
                 <section id="free-search" className="mb-16">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4">
