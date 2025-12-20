@@ -182,14 +182,7 @@ const HeroSection = () => (
             <p className="text-lg md:text-xl text-slate-300 max-w-xl mx-auto lg:mx-0 mb-8">
                 Powered by advanced neural networks, SportWagerHelper transforms chaotic data into precise betting opportunities.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8">
-                <Button size="lg" asChild className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 w-full sm:w-auto rounded-full px-8">
-                    <Link to={createPageUrl('Pricing')}>See Predictions <ArrowRight className="w-4 h-4 ml-2" /></Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="border-slate-600 text-white hover:bg-white/10 w-full sm:w-auto rounded-full px-8">
-                    <Link to={createPageUrl('AnalysisHub')}>Explore Analysis</Link>
-                </Button>
-            </div>
+
             <div className="flex items-center justify-center lg:justify-start gap-3">
                  <div className="flex -space-x-2 overflow-hidden">
                     <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-800" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Bettor 1" />
