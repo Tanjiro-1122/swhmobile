@@ -73,20 +73,22 @@ const TopBar = () => {
                                 Log Out
                             </Button>
                         ) : (
-                            <Button 
-                                onClick={handleLogin} 
-                                variant="ghost" 
-                                className="text-white/80 hover:text-white hover:bg-white/10"
-                            >
-                                Log In
-                            </Button>
+                            <>
+                                <Button 
+                                    onClick={handleLogin} 
+                                    variant="ghost" 
+                                    className="text-white/80 hover:text-white hover:bg-white/10"
+                                >
+                                    Log In
+                                </Button>
+                                <Button 
+                                    asChild 
+                                    className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-5"
+                                >
+                                    <Link to={createPageUrl('Pricing')}>Get Started</Link>
+                                </Button>
+                            </>
                         )}
-                        <Button 
-                            asChild 
-                            className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-5"
-                        >
-                            <Link to={createPageUrl('Pricing')}>Get Started</Link>
-                        </Button>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -123,20 +125,22 @@ const TopBar = () => {
                                     Log Out
                                 </Button>
                             ) : (
-                                <Button 
-                                    onClick={handleLogin} 
-                                    variant="ghost" 
-                                    className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                                >
-                                    Log In
-                                </Button>
+                                <>
+                                    <Button 
+                                        onClick={handleLogin} 
+                                        variant="ghost" 
+                                        className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                                    >
+                                        Log In
+                                    </Button>
+                                    <Button 
+                                        asChild 
+                                        className="w-full bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full"
+                                    >
+                                        <Link to={createPageUrl('Pricing')}>Get Started</Link>
+                                    </Button>
+                                </>
                             )}
-                            <Button 
-                                asChild 
-                                className="w-full bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full"
-                            >
-                                <Link to={createPageUrl('Pricing')}>Get Started</Link>
-                            </Button>
                         </div>
                     </div>
                 </div>
