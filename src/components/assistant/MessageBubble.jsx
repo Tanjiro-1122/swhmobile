@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Bot, User, CheckCircle2, AlertCircle, Loader2, Zap } from 'lucide-react';
+import { User, CheckCircle2, AlertCircle, Loader2, Zap } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 const FunctionDisplay = ({ toolCall }) => {
@@ -37,9 +37,11 @@ export default function MessageBubble({ message }) {
     return (
         <div className={cn("flex gap-4", isUser ? "justify-end" : "justify-start")}>
             {isAssistant && (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="w-5 h-5 text-indigo-100" />
-                </div>
+                <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                    alt="SAPL"
+                    className="h-8 w-8 rounded-full object-cover flex-shrink-0 mt-1 border border-purple-500/50"
+                />
             )}
             <div className={cn("max-w-[90%] sm:max-w-[80%] flex flex-col", isUser && "items-end")}>
                 {renderableContent && (
