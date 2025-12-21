@@ -38,8 +38,8 @@ export const detectPlatform = () => {
   // Check for touch capability as additional mobile indicator
   const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   
-  // Consider mobile if: native app, small screen, or mobile device with touch
-  const isMobileScreen = isNativeApp || screenWidth < 768 || ((isIOSDevice || isAndroidDevice) && hasTouchScreen);
+  // Consider mobile only if: native app or small screen (ignore device type for web)
+  const isMobileScreen = isNativeApp || screenWidth < 768;
 
   return {
     isIOSNative: isIOSDevice && isNativeApp,
