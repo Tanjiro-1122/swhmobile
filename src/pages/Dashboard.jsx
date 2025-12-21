@@ -131,10 +131,21 @@ export default function Dashboard() {
 
     const { data: currentUser, isLoading } = useQuery({
         queryKey: ['currentUser'],
-        queryFn: () => base44.auth.isAuthenticated().then(isAuth => isAuth ? base44.auth.me() : null),
+        queryFn: async () => {
+            const isAuth = await base44.auth.isAuthenticated();
+            if (!isAuth) return null;
+            return base44.auth.me();
+        },
     });
 
-    if (isLoading) {
+    // Redirect unauthenticated users to Home
+    React.useEffect(() => {
+        if (!isLoading && !currentUser) {
+            window.location.href = createPageUrl('Home');
+        }
+    }, [isLoading, currentUser]);
+
+    if (isLoading || !currentUser) {
         return (
             <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
                 <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
