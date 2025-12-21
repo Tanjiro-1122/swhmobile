@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
       if (activeOrTrialingSubs.length > 0) {
         const portalSession = await stripe.billingPortal.sessions.create({
           customer: customer.id,
-          return_url: `${Deno.env.get('APP_HOST_URL')}/MyAccount?tab=plan`,
+          return_url: `${appHostUrl}/MyAccount?tab=plan`,
         });
         return new Response(JSON.stringify({ url: portalSession.url, already_subscribed: true }), {
           status: 200,
