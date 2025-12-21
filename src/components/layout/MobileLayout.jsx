@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "../DomainChangeBanner";
 import AgeGate from "../auth/AgeGate";
-import { LiveMarketTicker } from "../widgets/LiveMarketTicker";
 
 export default function MobileLayout({ children, currentPageName }) {
 
