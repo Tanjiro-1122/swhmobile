@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Bot, Send, Loader2, BrainCircuit } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import MessageBubble from './MessageBubble';
@@ -83,9 +83,11 @@ export default function ChatInterface({ conversationId, agentName }) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}>
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center mb-6 shadow-2xl shadow-indigo-600/30">
-                        <BrainCircuit className="w-12 h-12 text-indigo-100" />
-                    </div>
+                    <img 
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                        alt="SAPL - Sports AI Prediction Librarian"
+                        className="w-28 h-28 rounded-2xl object-cover mb-6 shadow-2xl shadow-purple-600/30 border-2 border-purple-500/50"
+                    />
                 </motion.div>
                 <motion.h2 
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}

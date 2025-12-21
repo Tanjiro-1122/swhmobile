@@ -140,9 +140,9 @@ const AnimatedAIGraphic = () => {
               }}
             />
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-              alt="SWH AI"
-              className="w-20 h-20 rounded-2xl relative z-10 border-2 border-lime-400/50"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+              alt="SAPL - Sports AI Prediction Librarian"
+              className="w-24 h-24 rounded-2xl relative z-10 border-2 border-lime-400/50 object-cover"
             />
           </div>
         </motion.div>
