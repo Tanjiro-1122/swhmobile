@@ -10,6 +10,7 @@ import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, Use
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
+import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
