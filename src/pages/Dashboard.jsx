@@ -17,7 +17,8 @@ const allMenuItems = [
     { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Daily briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
     { id: "briefs", title: "DAILY BRIEFS", subtitle: "AI Market Insights", description: "Daily analysis, top picks, and news", Icon: FileText, page: "DailyBriefs", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true },
     { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, preferences, subscription", Icon: User, page: "MyAccount", tag: null },
-    { id: "thenews", title: "THE NEWS", subtitle: "Latest Updates", description: "Sports betting briefs & news", Icon: Newspaper, page: "TopStats", tag: "FREE", tagColor: "bg-slate-500 text-white" },
+    { id: "sportsnews", title: "SPORTS NEWS & SCORES", subtitle: "Live Updates", description: "Live scores, news ticker & RSS feeds", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
+    { id: "thenews", title: "TODAY'S INSIGHTS", subtitle: "Latest Updates", description: "Sports betting briefs & news", Icon: Newspaper, page: "TopStats", tag: "FREE", tagColor: "bg-slate-500 text-white" },
     { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white" },
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
