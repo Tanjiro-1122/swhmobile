@@ -120,7 +120,7 @@ export default function PlatformBenefits() {
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-3 text-slate-200">
                                     <MessageCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                                    <span>AI Assistant - ask anything!</span>
+                                    <span>Your Sports AI Prediction Librarian</span>
                                 </li>
                                 <li className="flex items-center gap-3 text-slate-200">
                                     <BarChart3 className="w-5 h-5 text-purple-400 flex-shrink-0" />
