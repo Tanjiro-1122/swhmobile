@@ -259,8 +259,9 @@ export default function Home() {
     // User is not authenticated, show the free search home page.
     // Note: TopBar is rendered by WebLayout, so we don't need a header here
     return (
-        <div className="min-h-screen text-white overflow-x-hidden">
-            <div className="absolute inset-0 bg-grid-dark -z-10"></div>
+                  <div className="min-h-screen text-white overflow-x-hidden">
+                      <div className="absolute inset-0 bg-grid-dark -z-10"></div>
+                      <WalkingRobot />
             
             <main className="max-w-7xl mx-auto px-6 pt-8 lg:pt-16 pb-16">
                 <section className="mb-20 lg:mb-28">
