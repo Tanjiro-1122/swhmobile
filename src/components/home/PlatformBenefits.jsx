@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Smartphone, Monitor, Zap, BarChart3, Clock, Calculator, MessageCircle } from "lucide-react";
+import { Smartphone, Monitor, Zap, BarChart3, Clock, Calculator, BookOpen, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PlatformBenefits() {
@@ -119,7 +119,10 @@ export default function PlatformBenefits() {
                             
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-3 text-slate-200">
-                                    <MessageCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                                    <div className="relative flex-shrink-0">
+                                        <BookOpen className="w-5 h-5 text-purple-400" />
+                                        <Sparkles className="w-3 h-3 text-lime-400 absolute -top-1 -right-1" />
+                                    </div>
                                     <span>Your Sports AI Prediction Librarian</span>
                                 </li>
                                 <li className="flex items-center gap-3 text-slate-200">
