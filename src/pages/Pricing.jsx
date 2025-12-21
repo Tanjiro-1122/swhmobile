@@ -69,15 +69,30 @@ export default function Pricing() {
       
       // Check if user just logged in and has a pending Stripe plan (web only)
       if (authenticated && isWeb) {
-                    const pendingPlan = localStorage.getItem('pending_stripe_plan');
-                    if (pendingPlan === 'premium' || pendingPlan === 'vip') {
-                      const withTrial = localStorage.getItem('pending_stripe_trial') === 'true';
-                      localStorage.removeItem('pending_stripe_plan');
-                      localStorage.removeItem('pending_stripe_trial');
-                      // Trigger Stripe checkout directly
-                      startStripeCheckout(pendingPlan, withTrial);
-                    }
-                  }
+        const pendingPlan = localStorage.getItem('pending_stripe_plan');
+        if (pendingPlan === 'premium' || pendingPlan === 'vip') {
+          const withTrial = localStorage.getItem('pending_stripe_trial') === 'true';
+          localStorage.removeItem('pending_stripe_plan');
+          localStorage.removeItem('pending_stripe_trial');
+
+          // Get user to check subscription status
+          try {
+            const user = await base44.auth.me();
+            const userPlan = user?.subscription_type || 'free';
+
+            // Skip checkout for legacy/admin users or already subscribed
+            if (userPlan === 'legacy' || user?.role === 'admin' || userPlan === 'premium_monthly' || userPlan === 'vip_annual') {
+              // Already has access - stay on pricing page
+              return;
+            }
+
+            // Proceed to Stripe checkout for free users
+            startStripeCheckout(pendingPlan, withTrial);
+          } catch (err) {
+            console.error('Error checking user status:', err);
+          }
+        }
+      }
     };
     checkAuth();
     
