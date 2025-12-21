@@ -56,6 +56,9 @@ Deno.serve(async (req) => {
     }
 
     const { priceId, mode, trial } = await req.json();
+    
+    // Get app host URL from env or use production URL
+    const appHostUrl = Deno.env.get('APP_HOST_URL') || 'https://sportswagerhelper.com';
 
     const customer = await getOrCreateCustomer(base44, user);
     
