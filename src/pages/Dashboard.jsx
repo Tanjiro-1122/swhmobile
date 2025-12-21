@@ -176,7 +176,7 @@ export default function Dashboard() {
                         <span className="font-bold">Payment successful!</span>
                     </motion.div>
                 )}
-                <MobileDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
+                <MobileDashboardContent menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} />
             </>
         );
     }
