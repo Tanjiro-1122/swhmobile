@@ -11,9 +11,14 @@ const TopBar = () => {
     const { isNativeApp } = usePlatform();
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
     
-    const { data: user } = useQuery({
+    const { data: user, isLoading } = useQuery({
         queryKey: ['currentUser'],
-        queryFn: () => base44.auth.me().catch(() => null),
+        queryFn: async () => {
+            const isAuth = await base44.auth.isAuthenticated();
+            if (!isAuth) return null;
+            return base44.auth.me();
+        },
+        staleTime: 5 * 60 * 1000,
     });
 
     // Different nav links based on auth status

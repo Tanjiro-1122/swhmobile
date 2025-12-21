@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Bot, Twitter, MessageCircle } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -40,10 +40,6 @@ const Footer = () => {
                      <p className="text-slate-500 text-sm mb-4 md:mb-0">
                         &copy; {new Date().getFullYear()} SportWagerHelper AI. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-4">
-                        <a href="#" className="text-slate-500 hover:text-lime-300 transition-colors"><Twitter className="w-5 h-5" /></a>
-                        <a href="#" className="text-slate-500 hover:text-lime-300 transition-colors"><MessageCircle className="w-5 h-5" /></a>
-                    </div>
                 </div>
             </div>
         </footer>
