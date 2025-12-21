@@ -421,17 +421,42 @@ export default function Pricing() {
 
     setProcessingItem(pack.id);
 
-    try {
-      
-      
+    // Clear any previous timeout
+    if (iapTimeoutRef.current) {
+      clearTimeout(iapTimeoutRef.current);
+      iapTimeoutRef.current = null;
+    }
 
+    // Safety timeout for credit purchases
+    iapTimeoutRef.current = setTimeout(() => {
+      iapTimeoutRef.current = null;
+      if (isMountedRef.current) {
+        console.log('Credit purchase timeout - clearing processing state');
+        setProcessingItem(null);
+        alert('Purchase timed out. Please try again.');
+      }
+    }, 30000);
+
+    try {
       const iapConfig = {
         productId: pack.productId,
-        productType: isAndroidNative ? 'INAPP' : undefined,
+        productType: isAndroidNative ? 'INAPP' : 'CONSUMABLE',
         isConsumable: true
       };
 
       function handleIAPCallback(data) {
+        // Clear timeout
+        if (iapTimeoutRef.current) {
+          clearTimeout(iapTimeoutRef.current);
+          iapTimeoutRef.current = null;
+        }
+
+        // Don't process if component unmounted
+        if (!isMountedRef.current) {
+          console.log('Credit IAP callback ignored - component unmounted');
+          return;
+        }
+
         if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
           // Immediately submit to server for verification
           if (data.receiptData) {
@@ -477,6 +502,10 @@ export default function Pricing() {
 
       await callNativeIAPWithCallback(iapConfig, handleIAPCallback);
     } catch (error) {
+      if (iapTimeoutRef.current) {
+        clearTimeout(iapTimeoutRef.current);
+        iapTimeoutRef.current = null;
+      }
       console.error('Credit purchase error:', error);
       setProcessingItem(null);
     }
