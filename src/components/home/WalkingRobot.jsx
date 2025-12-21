@@ -3,44 +3,71 @@ import { motion } from 'framer-motion';
 import { Bot } from 'lucide-react';
 
 export default function WalkingRobot() {
-  const [position, setPosition] = useState({ x: 100, y: 300 });
-  const [direction, setDirection] = useState(1); // 1 = right, -1 = left
+  // Edges: 0=top, 1=right, 2=bottom, 3=left
+  const [edge, setEdge] = useState(0);
+  const [progress, setProgress] = useState(0); // 0 to 1 along current edge
   const [isJumping, setIsJumping] = useState(false);
+
+  const getPosition = (currentEdge, currentProgress) => {
+    const padding = 30;
+    const maxX = window.innerWidth - 60;
+    const maxY = window.innerHeight - 60;
+
+    switch (currentEdge) {
+      case 0: // Top edge - moving right
+        return { x: padding + currentProgress * (maxX - padding), y: padding };
+      case 1: // Right edge - moving down
+        return { x: maxX, y: padding + currentProgress * (maxY - padding) };
+      case 2: // Bottom edge - moving left
+        return { x: maxX - currentProgress * (maxX - padding), y: maxY };
+      case 3: // Left edge - moving up
+        return { x: padding, y: maxY - currentProgress * (maxY - padding) };
+      default:
+        return { x: padding, y: padding };
+    }
+  };
+
+  const [position, setPosition] = useState(() => getPosition(0, 0));
 
   useEffect(() => {
     const moveRobot = () => {
-      setPosition(prev => {
-        const maxX = window.innerWidth - 80;
-        let newX = prev.x + (direction * (30 + Math.random() * 20));
-        let newDirection = direction;
-
-        // Bounce off edges
-        if (newX >= maxX) {
-          newX = maxX;
-          newDirection = -1;
-        } else if (newX <= 20) {
-          newX = 20;
-          newDirection = 1;
+      setProgress(prev => {
+        const newProgress = prev + 0.08;
+        
+        if (newProgress >= 1) {
+          // Move to next edge
+          setEdge(currentEdge => (currentEdge + 1) % 4);
+          return 0;
         }
-
-        setDirection(newDirection);
-
-        // Random vertical movement
-        const newY = Math.max(200, Math.min(window.innerHeight - 150, prev.y + (Math.random() - 0.5) * 40));
-
-        return { x: newX, y: newY };
+        
+        return newProgress;
       });
 
       // Random jump
-      if (Math.random() < 0.15) {
+      if (Math.random() < 0.12) {
         setIsJumping(true);
         setTimeout(() => setIsJumping(false), 400);
       }
     };
 
-    const interval = setInterval(moveRobot, 1500);
+    const interval = setInterval(moveRobot, 800);
     return () => clearInterval(interval);
-  }, [direction]);
+  }, []);
+
+  useEffect(() => {
+    setPosition(getPosition(edge, progress));
+  }, [edge, progress]);
+
+  // Direction robot faces based on edge
+  const getDirection = () => {
+    switch (edge) {
+      case 0: return 1;  // Right
+      case 1: return 1;  // Down (face right)
+      case 2: return -1; // Left
+      case 3: return -1; // Up (face left)
+      default: return 1;
+    }
+  };
 
   return (
     <motion.div
