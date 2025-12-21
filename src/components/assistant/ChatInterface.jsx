@@ -85,19 +85,24 @@ export default function ChatInterface({ conversationId, agentName }) {
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}>
                     <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                        alt="S.A.L. - Sports AI Prediction Librarian"
+                        alt="S.A.L. the Owl - Sports AI Librarian"
                         className="w-28 h-28 rounded-2xl object-cover mb-6 shadow-2xl shadow-purple-600/30 border-2 border-purple-500/50"
                     />
                 </motion.div>
                 <motion.h2 
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
                     className="text-3xl font-bold text-white mb-2">
-                    AI Betting Assistant
+                    Meet S.A.L. the Owl
                 </motion.h2>
                 <motion.p 
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-                    className="text-slate-400 max-w-md">
-                    Select a chat or start a new one to get AI-powered betting insights, predictions, and analysis.
+                    className="text-slate-400 max-w-md mb-3">
+                    Your Sports AI Librarian
+                </motion.p>
+                <motion.p 
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+                    className="text-slate-500 text-sm max-w-md">
+                    Visit S.A.L. the Owl for all your unique betting questions. Start a new chat to get AI-powered insights, predictions, and analysis.
                 </motion.p>
             </div>
         );
