@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { Loader2, WifiOff, Clock } from 'lucide-react';
 
-const TickerContent = ({ scores, isLoading, isError }) => {
+const TickerContent = ({ scores, isLoading, isError, showBadge = true }) => {
     if (isLoading) {
         return (
             <div className="flex items-center gap-2 text-slate-400 px-4">
@@ -35,9 +35,9 @@ const TickerContent = ({ scores, isLoading, isError }) => {
 
     return (
         <div className="flex items-center shrink-0">
-            <Badge variant="destructive" className="text-sm font-bold flex-shrink-0 animate-pulse ml-6">LIVE</Badge>
-            {scores.map(game => (
-                <div key={game.id} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
+            {showBadge && <Badge variant="destructive" className="text-sm font-bold flex-shrink-0 animate-pulse ml-6">LIVE</Badge>}
+            {scores.map((game, index) => (
+                <div key={`${game.id}-${index}`} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
                     <span className="font-bold text-sm tracking-tight text-slate-100">{game.home_team} vs {game.away_team}</span>
                     {game.status === 'Live' ? (
                         <div className="flex items-center gap-2">
