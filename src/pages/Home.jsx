@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
 import DailyFreePicks from '@/components/home/DailyFreePicks';
 import WalkingRobot from '@/components/home/WalkingRobot';
+import PlatformBenefits from '@/components/home/PlatformBenefits';
 
 // --- Free Search Logic ---
 const useFreeLookups = () => {
