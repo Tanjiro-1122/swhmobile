@@ -23,12 +23,12 @@ export const detectPlatform = () => {
   const isAndroidDevice = /Android/i.test(ua);
   
   // Detect if running in a native app wrapper (WebView)
+  // CRITICAL: Only consider it a native app if WTN exists AND has isNativeApp flag
+  // This prevents Safari/Chrome on web from being detected as native apps
   const isNativeApp = !!(
-    window.WTN || 
-    window.ReactNativeWebView || 
-    window.webkit?.messageHandlers ||
-    /wv/.test(ua) || // Android WebView
-    (isAndroidDevice && /Version\/[\d.]+/.test(ua) && !/Chrome\/[\d.]+/.test(ua))
+    (window.WTN && window.WTN.isNativeApp === true) || 
+    window.ReactNativeWebView ||
+    (isAndroidDevice && /wv/.test(ua)) // Android WebView marker
   );
   
   const isWeb = !isNativeApp;
