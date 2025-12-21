@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode,
-      success_url: `${Deno.env.get('APP_HOST_URL')}/MyAccount?tab=plan&payment_success=true`,
-      cancel_url: `${Deno.env.get('APP_HOST_URL')}/Pricing?payment_cancelled=true`,
+      success_url: `${appHostUrl}/MyAccount?tab=plan&payment_success=true`,
+      cancel_url: `${appHostUrl}/Pricing?payment_cancelled=true`,
       customer: customer.id,
       metadata: {
         base44_user_id: user.id,
