@@ -101,7 +101,7 @@ const WebDashboardContent = ({ menuItems, isAdmin }) => {
     );
 };
 
-const MobileDashboardContent = ({ menuItems, isAdmin }) => {
+const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
     return (
         <div className="w-full">
             <div className="text-center pt-2 pb-8">
@@ -117,7 +117,7 @@ const MobileDashboardContent = ({ menuItems, isAdmin }) => {
                     AI-Powered Sports Analytics & Insights
                 </p>
             </div>
-            <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
+            <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
         </div>
     );
 };
