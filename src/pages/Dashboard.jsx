@@ -24,7 +24,7 @@ const allMenuItems = [
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
 
-const MenuGrid = ({ menuItems, isAdmin, gridClasses }) => (
+const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) => (
     <div className={`grid ${gridClasses} gap-4`}>
         {menuItems.map((item, index) => {
             const Icon = item.Icon;
@@ -59,6 +59,11 @@ const MenuGrid = ({ menuItems, isAdmin, gridClasses }) => (
                 </motion.div>
             );
         })}
+        
+        {/* Web Exclusive Cards for Mobile */}
+        {webExclusiveItems.map((item, index) => (
+            <WebExclusiveCard key={item.id} item={item} index={menuItems.length + index} />
+        ))}
 
         {isAdmin && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + menuItems.length * 0.05 }} className="h-full">
