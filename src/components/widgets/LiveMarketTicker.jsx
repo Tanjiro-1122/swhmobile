@@ -70,9 +70,14 @@ export const LiveMarketTicker = () => {
     return (
         <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
             {showMarquee ? (
-                <div className="animate-marquee flex w-max">
-                    <TickerContent scores={scores} isLoading={false} isError={false} />
-                    <TickerContent scores={scores} isLoading={false} isError={false} />
+                <div className="flex animate-marquee">
+                    {/* Two copies for seamless loop - content scrolls left, second copy follows */}
+                    <div className="flex shrink-0">
+                        <TickerContent scores={scores} isLoading={false} isError={false} />
+                    </div>
+                    <div className="flex shrink-0">
+                        <TickerContent scores={scores} isLoading={false} isError={false} />
+                    </div>
                 </div>
             ) : (
                 <div className="w-full flex justify-center">
