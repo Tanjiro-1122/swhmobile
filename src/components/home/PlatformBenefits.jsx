@@ -59,7 +59,7 @@ export default function PlatformBenefits() {
                                 <p className="text-sm text-slate-400 mb-4">
                                     Available on <span className="text-cyan-300 font-semibold">iOS</span> and <span className="text-cyan-300 font-semibold">Android</span>
                                 </p>
-                                <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex flex-col items-start gap-2">
                                     <a 
                                         href="https://apps.apple.com/us/app/sports-wager-helper/id6755343785" 
                                         target="_blank" 
@@ -81,7 +81,7 @@ export default function PlatformBenefits() {
                                         <img 
                                             src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
                                             alt="Get it on Google Play" 
-                                            className="h-[60px] -my-2"
+                                            className="h-[58px] -ml-3"
                                         />
                                     </a>
                                 </div>
@@ -119,16 +119,16 @@ export default function PlatformBenefits() {
                             
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-3 text-slate-200">
+                                    <MessageCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                                    <span>AI Assistant - ask anything!</span>
+                                </li>
+                                <li className="flex items-center gap-3 text-slate-200">
                                     <BarChart3 className="w-5 h-5 text-purple-400 flex-shrink-0" />
                                     <span>Performance tracking & ROI analysis</span>
                                 </li>
                                 <li className="flex items-center gap-3 text-slate-200">
                                     <Calculator className="w-5 h-5 text-purple-400 flex-shrink-0" />
                                     <span>Betting calculators & odds comparison</span>
-                                </li>
-                                <li className="flex items-center gap-3 text-slate-200">
-                                    <Monitor className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                                    <span>Daily AI briefs & advanced tools</span>
                                 </li>
                             </ul>
                             
