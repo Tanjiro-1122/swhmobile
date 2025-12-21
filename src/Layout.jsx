@@ -13,7 +13,7 @@ const FullScreenLoader = () => (
   <div className="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center gap-4">
     <img 
       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-      alt="SAPL - Loading"
+      alt="S.A.L. - Loading"
       className="w-20 h-20 rounded-2xl object-cover animate-pulse border-2 border-purple-500/50"
     />
     <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />

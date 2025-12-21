@@ -121,10 +121,10 @@ export default function PlatformBenefits() {
                                 <li className="flex items-center gap-3 text-slate-200">
                                     <img 
                                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                        alt="SAPL"
+                                        alt="S.A.L. the Owl"
                                         className="w-6 h-6 rounded-md object-cover flex-shrink-0"
                                     />
-                                    <span>SAPL - Your AI Prediction Librarian</span>
+                                    <span>S.A.L. - Sports AI Librarian</span>
                                 </li>
                                 <li className="flex items-center gap-3 text-slate-200">
                                     <BarChart3 className="w-5 h-5 text-purple-400 flex-shrink-0" />

@@ -39,7 +39,7 @@ export default function MessageBubble({ message }) {
             {isAssistant && (
                 <img 
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                    alt="SAPL"
+                    alt="S.A.L."
                     className="h-8 w-8 rounded-full object-cover flex-shrink-0 mt-1 border border-purple-500/50"
                 />
             )}

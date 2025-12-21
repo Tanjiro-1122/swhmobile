@@ -85,7 +85,7 @@ export default function ChatInterface({ conversationId, agentName }) {
                 <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}>
                     <img 
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                        alt="SAPL - Sports AI Prediction Librarian"
+                        alt="S.A.L. - Sports AI Prediction Librarian"
                         className="w-28 h-28 rounded-2xl object-cover mb-6 shadow-2xl shadow-purple-600/30 border-2 border-purple-500/50"
                     />
                 </motion.div>

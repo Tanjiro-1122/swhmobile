@@ -95,7 +95,7 @@ export default function WalkingRobot() {
         >
           <img 
             src={SAPL_OWL_URL}
-            alt="SAPL"
+            alt="S.A.L. the Owl"
             className="w-14 h-14 rounded-xl object-cover shadow-lg shadow-purple-500/40 border-2 border-purple-500/50"
           />
           
