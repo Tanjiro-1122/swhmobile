@@ -161,9 +161,11 @@ export default function Dashboard() {
     }
 
     const isAdmin = currentUser?.role === 'admin';
-    const menuItems = (isNativeApp || isMobileScreen) ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
-    
     const isMobile = isNativeApp || isMobileScreen;
+    
+    // For mobile: separate regular items from web-exclusive items
+    const menuItems = isMobile ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
+    const webExclusiveItems = isMobile ? allMenuItems.filter(item => item.webOnly) : [];
     
     if (isMobile) {
         return (
