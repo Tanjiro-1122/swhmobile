@@ -11,6 +11,7 @@ import { Users, Shield, Search, Loader2, Info, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
 import DailyFreePicks from '@/components/home/DailyFreePicks';
+import WalkingRobot from '@/components/home/WalkingRobot';
 
 // --- Free Search Logic ---
 const useFreeLookups = () => {
