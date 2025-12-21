@@ -162,11 +162,10 @@ export default function MobileLayout({ children, currentPageName }) {
               </div>
             </div>
           </header>
-          <LiveMarketTicker />
         </div>
 
-        {/* Main Content - offset for header (56px) + ticker (40px) = 96px */}
-        <main className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(56px + 40px + env(safe-area-inset-top))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* Main Content - offset for header (56px) */}
+        <main className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(56px + env(safe-area-inset-top))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full">
             {children}
           </div>
