@@ -37,20 +37,35 @@ export const getAgeSignals = async () => {
  * @param {function} callback - The function to call with the result of the purchase attempt.
  */
 export const callNativeIAPWithCallback = async (iapConfig, callback) => {
-  console.log('Initiating native IAP with config:', iapConfig);
-  if (window.WTN && typeof window.WTN.inAppPurchase === 'function') {
-    try {
-      // The native side will call the callback function passed here.
-      // In WebToNative, the callback is often passed as an argument and invoked from native.
-      // We are calling the native function and expecting it to handle the callback.
-      window.WTN.inAppPurchase(iapConfig, callback);
-    } catch (error) {
-      console.error('Error calling native inAppPurchase function:', error);
-      callback({ isSuccess: false, error: 'Native call failed' });
-    }
-  } else {
-    console.error('window.WTN.inAppPurchase is not a function.');
+  console.log('Initiating native IAP with config:', JSON.stringify(iapConfig));
+  
+  // Check if native bridge exists
+  if (!window.WTN) {
+    console.error('window.WTN is not available');
+    callback({ isSuccess: false, error: 'Native bridge not available' });
+    return;
+  }
+  
+  if (typeof window.WTN.inAppPurchase !== 'function') {
+    console.error('window.WTN.inAppPurchase is not a function. Available methods:', Object.keys(window.WTN));
     callback({ isSuccess: false, error: 'IAP not available' });
+    return;
+  }
+
+  try {
+    console.log('Calling window.WTN.inAppPurchase...');
+    
+    // WebToNative expects the callback to be invoked from native side
+    // The callback receives: { isSuccess: boolean, receiptData?: string, purchaseToken?: string, error?: string }
+    window.WTN.inAppPurchase(iapConfig, (result) => {
+      console.log('Native IAP callback received:', JSON.stringify(result));
+      callback(result);
+    });
+    
+    console.log('Native IAP call initiated successfully');
+  } catch (error) {
+    console.error('Error calling native inAppPurchase function:', error);
+    callback({ isSuccess: false, error: error.message || 'Native call failed' });
   }
 };
 
