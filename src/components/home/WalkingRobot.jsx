@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot } from 'lucide-react';
+
+const SAPL_OWL_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
 
 export default function WalkingRobot() {
   // Edges: 0=top, 1=right, 2=bottom, 3=left
@@ -86,39 +87,20 @@ export default function WalkingRobot() {
       }}
     >
       <div className="relative">
-        {/* Robot body */}
+        {/* SAPL Owl */}
         <motion.div
-          animate={{ rotate: [0, -5, 5, -5, 0] }}
-          transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ rotate: [0, -3, 3, -3, 0] }}
+          transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
           className="relative"
         >
-          <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 border border-white/20">
-            <Bot className="w-7 h-7 text-white" />
-          </div>
+          <img 
+            src={SAPL_OWL_URL}
+            alt="SAPL"
+            className="w-14 h-14 rounded-xl object-cover shadow-lg shadow-purple-500/40 border-2 border-purple-500/50"
+          />
           
-          {/* Antenna */}
-          <motion.div
-            animate={{ rotate: [-10, 10, -10] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-            className="absolute -top-3 left-1/2 -translate-x-1/2"
-          >
-            <div className="w-1 h-3 bg-cyan-400 rounded-full" />
-            <div className="w-2 h-2 bg-lime-400 rounded-full -mt-0.5 -ml-0.5 animate-pulse" />
-          </motion.div>
-
-          {/* Legs walking animation */}
-          <div className="absolute -bottom-2 left-1 flex gap-4">
-            <motion.div
-              animate={{ rotate: [-20, 20, -20] }}
-              transition={{ duration: 0.3, repeat: Infinity }}
-              className="w-2 h-3 bg-slate-600 rounded-b-full origin-top"
-            />
-            <motion.div
-              animate={{ rotate: [20, -20, 20] }}
-              transition={{ duration: 0.3, repeat: Infinity }}
-              className="w-2 h-3 bg-slate-600 rounded-b-full origin-top"
-            />
-          </div>
+          {/* Glowing effect */}
+          <div className="absolute inset-0 rounded-xl bg-lime-400/20 animate-pulse" />
         </motion.div>
 
         {/* Speech bubble - shows occasionally */}
@@ -130,7 +112,7 @@ export default function WalkingRobot() {
           }}
           className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-800 text-xs font-bold px-2 py-1 rounded-lg whitespace-nowrap shadow-md"
         >
-          Beep! 🤖
+          Hoot! 🦉
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45" />
         </motion.div>
       </div>
