@@ -136,6 +136,8 @@ export default function Pricing() {
     queryKey: ['currentUser'],
     queryFn: async () => {
       try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) return null;
         return await base44.auth.me();
       } catch {
         return null;
