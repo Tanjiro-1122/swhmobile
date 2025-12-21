@@ -208,7 +208,7 @@ const HeroSection = () => (
                     />
                 </a>
                 <a 
-                    href="https://play.google.com/store/apps/details?id=com.sportswagerhelper.app" 
+                    href="https://play.google.com/store/apps/details?id=com.wnapp.id1761803023263&hl=en_US" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="transition-transform hover:scale-105"
