@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 
-const API_KEY = Deno.env.get('ODDS_API_KEY');
+// Try both possible API key names
+const API_KEY = Deno.env.get('ODDS_API_KEY') || Deno.env.get('THE_ODDS_API_KEY');
 const SPORTS = [
     'americanfootball_nfl',
     'americanfootball_ncaaf',
@@ -13,10 +14,10 @@ const BASE_URL = 'https://api.the-odds-api.com/v4/sports';
 
 Deno.serve(async (req) => {
     try {
-        // No auth needed for this public data endpoint, but good practice to have the client available
         const base44 = createClientFromRequest(req);
 
         if (!API_KEY) {
+            console.error('No API key found. Checked ODDS_API_KEY and THE_ODDS_API_KEY');
             return new Response(JSON.stringify({ error: 'API key for odds is not configured.' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
@@ -24,21 +25,31 @@ Deno.serve(async (req) => {
         }
 
         // Fetch scores for all sports concurrently
+        // Use daysFrom=3 to catch games from past 3 days (including today's games)
         const fetchPromises = SPORTS.map(sport => {
-            const url = `${BASE_URL}/${sport}/scores/?daysFrom=1&apiKey=${API_KEY}`;
-            return fetch(url).then(res => {
+            const url = `${BASE_URL}/${sport}/scores/?daysFrom=3&apiKey=${API_KEY}`;
+            console.log(`Fetching: ${sport}`);
+            return fetch(url).then(async res => {
                 if (!res.ok) {
-                    // Log error but don't fail the whole request
-                    console.error(`Failed to fetch scores for ${sport}: ${res.statusText}`);
-                    return []; // Return empty array for this sport
+                    const errorText = await res.text();
+                    console.error(`Failed to fetch scores for ${sport}: ${res.status} - ${errorText}`);
+                    return [];
                 }
-                return res.json();
+                const data = await res.json();
+                console.log(`${sport}: ${data.length} games found`);
+                return data;
+            }).catch(err => {
+                console.error(`Error fetching ${sport}:`, err.message);
+                return [];
             });
         });
 
         const results = await Promise.all(fetchPromises);
+        const allGames = results.flat();
+        console.log(`Total games from API: ${allGames.length}`);
 
-        const liveScores = results.flat().filter(game => game && game.completed === false).map(game => {
+        // Filter to only show games that are not completed
+        const liveScores = allGames.filter(game => game && game.completed === false).map(game => {
             const homeScore = game.scores?.find(s => s.name === game.home_team)?.score ?? '0';
             const awayScore = game.scores?.find(s => s.name === game.away_team)?.score ?? '0';
             
@@ -56,6 +67,8 @@ Deno.serve(async (req) => {
             };
         });
         
+        console.log(`Filtered live/upcoming games: ${liveScores.length}`);
+        
         // Sort by status (Live first) then by time
         liveScores.sort((a, b) => {
             if (a.status === 'Live' && b.status !== 'Live') return -1;
@@ -67,7 +80,7 @@ Deno.serve(async (req) => {
             status: 200,
             headers: { 
               'Content-Type': 'application/json',
-              'Cache-Control': 'public, max-age=60' // Cache for 60 seconds
+              'Cache-Control': 'public, max-age=60'
             },
         });
 
