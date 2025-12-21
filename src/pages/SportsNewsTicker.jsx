@@ -66,6 +66,25 @@ export default function SportsNewsTicker() {
               Latest Sports News
             </h2>
           </div>
+          <style>{`
+            /* Hide broken image icons in RSS widget */
+            rssapp-wall img[src=""], 
+            rssapp-wall img:not([src]),
+            rssapp-wall img[src*="undefined"] {
+              display: none !important;
+            }
+            /* Style containers with missing images */
+            rssapp-wall .rssapp-item:has(img[src=""]),
+            rssapp-wall .rssapp-item:has(img:not([src])) {
+              background: linear-gradient(135deg, #1e293b, #334155) !important;
+            }
+            /* Hide the empty image placeholder boxes */
+            rssapp-wall [class*="image"]:empty,
+            rssapp-wall [class*="thumb"]:empty,
+            rssapp-wall .rssapp-image:has(img[src=""]) {
+              display: none !important;
+            }
+          `}</style>
           <div className="bg-white rounded-lg overflow-hidden min-h-[600px]">
             <rssapp-wall id="tZXFs6qB7XkfmdxB"></rssapp-wall>
           </div>
