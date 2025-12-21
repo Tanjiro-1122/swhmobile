@@ -56,9 +56,35 @@ export default function PlatformBenefits() {
                             </ul>
                             
                             <div className="mt-8 pt-6 border-t border-cyan-500/20">
-                                <p className="text-sm text-slate-400">
+                                <p className="text-sm text-slate-400 mb-4">
                                     Available on <span className="text-cyan-300 font-semibold">iOS</span> and <span className="text-cyan-300 font-semibold">Android</span>
                                 </p>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <a 
+                                        href="https://apps.apple.com/us/app/sports-wager-helper/id6755343785" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="transition-transform hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                                            alt="Download on the App Store" 
+                                            className="h-10"
+                                        />
+                                    </a>
+                                    <a 
+                                        href="https://play.google.com/store/apps/details?id=com.wnapp.id1761803023263&hl=en_US" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="transition-transform hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                                            alt="Get it on Google Play" 
+                                            className="h-[60px] -my-2"
+                                        />
+                                    </a>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
