@@ -200,27 +200,28 @@ export default function Pricing() {
 
   // Stripe checkout for web users
   const handleStripeCheckout = async (plan, trial = false) => {
-            // If not authenticated, store plan and redirect to login
-            console.log('handleStripeCheckout called, isAuthenticated:', isAuthenticated);
-            if (!isAuthenticated) {
-              console.log('User not authenticated, redirecting to login...');
-              localStorage.setItem('pending_stripe_plan', plan);
-              if (trial) {
-                localStorage.setItem('pending_stripe_trial', 'true');
-              }
-              base44.auth.redirectToLogin(window.location.href);
-              return;
-            }
+    // Always check auth status fresh before proceeding
+    const currentlyAuthenticated = await base44.auth.isAuthenticated();
 
-            // Already authenticated - go directly to Stripe
-            try {
-              await startStripeCheckout(plan, trial);
-            } catch (err) {
-              console.error('Stripe checkout failed:', err);
-              alert('Failed to start checkout. Please try again or contact support if the issue persists.');
-              setProcessingItem(null);
-            }
-          };
+    // If not authenticated, store plan and redirect to login
+    if (!currentlyAuthenticated) {
+      localStorage.setItem('pending_stripe_plan', plan);
+      if (trial) {
+        localStorage.setItem('pending_stripe_trial', 'true');
+      }
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+
+    // Already authenticated - go directly to Stripe
+    try {
+      await startStripeCheckout(plan, trial);
+    } catch (err) {
+      console.error('Stripe checkout failed:', err);
+      alert('Failed to start checkout. Please try again or contact support if the issue persists.');
+      setProcessingItem(null);
+    }
+  };
 
   // Cancel purchase and clear state
   const cancelPurchase = () => {
