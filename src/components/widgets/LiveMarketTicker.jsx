@@ -68,21 +68,12 @@ export const LiveMarketTicker = () => {
     const contentKey = showMarquee ? scores.map(s => s.id + s.score).join(',') : 'static';
 
     return (
-        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative flex items-center">
+        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
             {showMarquee ? (
-                <motion.div
-                    key={contentKey}
-                    className="flex"
-                    animate={{ x: ['0%', '-100%'] }}
-                    transition={{
-                        ease: 'linear',
-                        duration: scores.length * 8, // Adjust duration based on content length
-                        repeat: Infinity,
-                    }}
-                >
+                <div className="animate-marquee flex w-max">
                     <TickerContent scores={scores} isLoading={false} isError={false} />
                     <TickerContent scores={scores} isLoading={false} isError={false} />
-                </motion.div>
+                </div>
             ) : (
                 <div className="w-full flex justify-center">
                   <TickerContent scores={scores} isLoading={isLoading} isError={isError} />
