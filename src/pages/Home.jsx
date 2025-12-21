@@ -288,6 +288,9 @@ export default function Home() {
                     </div>
                 </section>
                 
+                {/* Platform Benefits Section */}
+                <PlatformBenefits />
+                
                 {/* Footer for Home page */}
                 <footer className="border-t border-slate-800 pt-8 mt-16">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
