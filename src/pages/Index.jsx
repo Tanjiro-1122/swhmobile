@@ -11,14 +11,15 @@ export default function Index() {
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
+        // Try to fetch the actual user - this will fail with 401 if not authenticated
+        const user = await base44.auth.me();
+        if (user && user.id) {
           navigate(createPageUrl('Dashboard'), { replace: true });
         } else {
           navigate(createPageUrl('Home'), { replace: true });
         }
       } catch (error) {
-        // If auth check fails, default to Home
+        // Any error (including 401 Unauthorized) means not authenticated
         navigate(createPageUrl('Home'), { replace: true });
       } finally {
         setChecking(false);
