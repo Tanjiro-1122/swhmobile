@@ -65,7 +65,7 @@ export const submitReceiptToServer = async (receiptData) => {
     let response;
     if (receiptData.platform === 'ios') {
       response = await base44.functions.invoke('handleAppleIAP', {
-        receiptData: receiptData.receipt,
+        receipt: receiptData.receipt,
         productId: receiptData.productId,
       });
     } else if (receiptData.platform === 'android') {
