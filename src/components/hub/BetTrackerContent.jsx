@@ -582,11 +582,15 @@ export default function BetTrackerContent() {
           ) : filteredBets.length === 0 ? (
             <Card className="border-2 border-gray-200">
               <CardContent className="p-12 text-center">
-                <Target className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                  alt="S.A.L. the Owl"
+                  className="w-20 h-20 mx-auto rounded-2xl mb-4"
+                />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">No bets found</h3>
                 <p className="text-gray-600 mb-4">
                   {bets.length === 0 
-                    ? "Start tracking your bets to see detailed performance analysis!"
+                    ? "S.A.L. says: Track your bets to unlock powerful performance insights!"
                     : "Try adjusting your filters to see more results."}
                 </p>
                 {bets.length === 0 && (

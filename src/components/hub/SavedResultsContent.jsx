@@ -144,8 +144,13 @@ export default function SavedResultsContent() {
           ) : (
             <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <Trophy className="w-16 h-16 mx-auto text-white/30 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">No saved matches</h3>
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                  alt="S.A.L. the Owl"
+                  className="w-20 h-20 mx-auto rounded-2xl mb-4 opacity-70"
+                />
+                <h3 className="text-xl font-bold text-white mb-2">No saved matches yet</h3>
+                <p className="text-slate-400 text-sm mb-4">Ask S.A.L. about any matchup to get started!</p>
                 <Button onClick={() => window.location.href = '/Dashboard'}>Go to Dashboard</Button>
               </CardContent>
             </Card>
@@ -177,8 +182,13 @@ export default function SavedResultsContent() {
           ) : (
             <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <User className="w-16 h-16 mx-auto text-white/30 mb-4" />
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                  alt="S.A.L. the Owl"
+                  className="w-20 h-20 mx-auto rounded-2xl mb-4 opacity-70"
+                />
                 <h3 className="text-xl font-bold text-white mb-2">No saved player stats</h3>
+                <p className="text-slate-400 text-sm">Search for any player and S.A.L. will analyze their performance!</p>
               </CardContent>
             </Card>
           )}
@@ -209,8 +219,13 @@ export default function SavedResultsContent() {
           ) : (
             <Card className="border border-white/20 bg-white/10 backdrop-blur-sm">
               <CardContent className="p-12 text-center">
-                <Users className="w-16 h-16 mx-auto text-white/30 mb-4" />
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                  alt="S.A.L. the Owl"
+                  className="w-20 h-20 mx-auto rounded-2xl mb-4 opacity-70"
+                />
                 <h3 className="text-xl font-bold text-white mb-2">No saved team stats</h3>
+                <p className="text-slate-400 text-sm">Look up any team and let S.A.L. break down the numbers!</p>
               </CardContent>
             </Card>
           )}

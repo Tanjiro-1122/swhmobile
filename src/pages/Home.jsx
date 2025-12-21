@@ -181,8 +181,16 @@ const HeroSection = () => (
                 <br />
                 of <span className="text-lime-400">Winning</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 max-w-xl mx-auto lg:mx-0 mb-8">
+            <p className="text-lg md:text-xl text-slate-300 max-w-xl mx-auto lg:mx-0 mb-4">
                 Powered by advanced neural networks, SportWagerHelper transforms chaotic data into precise betting opportunities.
+            </p>
+            <p className="text-base text-purple-300/80 max-w-xl mx-auto lg:mx-0 mb-8 flex items-center gap-2 justify-center lg:justify-start">
+                <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                    alt="S.A.L."
+                    className="w-6 h-6 rounded-md"
+                />
+                Visit <span className="font-semibold text-purple-200">S.A.L. the Owl</span> for all your unique betting questions
             </p>
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8">
