@@ -75,8 +75,8 @@ export default function WalkingRobot() {
       animate={{
         x: position.x,
         y: position.y,
-        scaleX: direction,
-        translateY: isJumping ? -20 : 0,
+        scaleX: getDirection(),
+        translateY: isJumping ? -15 : 0,
       }}
       transition={{
         x: { duration: 1.2, ease: "easeInOut" },
