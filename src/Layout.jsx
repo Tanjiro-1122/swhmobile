@@ -104,7 +104,7 @@ export default function Layout(props) {
       // Add manifest for PWA capabilities (served from backend function)
       const manifestLink = document.createElement("link");
       manifestLink.rel = "manifest";
-      manifestLink.href = "/api/manifest";
+      manifestLink.href = "/api/getManifest";
       document.head.appendChild(manifestLink);
     };
 
