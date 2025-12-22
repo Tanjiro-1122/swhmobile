@@ -904,7 +904,8 @@ export default function Pricing() {
           </CardContent>
         </Card>
 
-        {/* Subscription Details */}
+        {/* Subscription Details - Hide on iOS native */}
+        {!isIOSNative && (
         <Card className="border-2 border-gray-200 mb-8">
           <CardHeader className="bg-gray-50">
             <CardTitle className="text-lg lg:text-xl font-bold text-center">Subscription Information</CardTitle>
