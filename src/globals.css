@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,6 +49,8 @@
     --border: 215 28% 17%;
     --input: 215 28% 17%;
     --ring: 210 90% 60%;
+    --magenta: 300 100% 50%;
+    --cyber-cyan: 190 100% 50%;
   }
 }
 
@@ -56,12 +60,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
   }
   
   /* iOS-specific optimizations */
@@ -356,6 +365,82 @@
 
           .animate-marquee {
             animation: marquee 30s linear infinite;
+          }
+
+          /* Border Beam Animation for Premium CTAs */
+          @keyframes border-beam {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+
+          .border-beam {
+            position: relative;
+            overflow: hidden;
+          }
+
+          .border-beam::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, 
+              hsl(var(--brand-accent)), 
+              hsl(var(--magenta, 300 100% 50%)), 
+              hsl(var(--cyber-cyan, 190 100% 50%)), 
+              hsl(var(--brand-accent))
+            );
+            background-size: 300% 100%;
+            animation: border-beam 3s ease infinite;
+            border-radius: inherit;
+            z-index: -1;
+          }
+
+          .border-beam::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: hsl(var(--background));
+            border-radius: inherit;
+            z-index: -1;
+          }
+
+          /* Text Glow Effects */
+          .text-glow-primary {
+            text-shadow: 0 0 10px hsl(var(--brand-accent) / 0.8), 
+                         0 0 20px hsl(var(--brand-accent) / 0.6), 
+                         0 0 40px hsl(var(--brand-accent) / 0.4);
+          }
+
+          .text-glow-magenta {
+            text-shadow: 0 0 10px hsl(300 100% 50% / 0.8), 
+                         0 0 20px hsl(300 100% 50% / 0.6), 
+                         0 0 40px hsl(300 100% 50% / 0.4);
+          }
+
+          .text-glow-cyan {
+            text-shadow: 0 0 10px hsl(190 100% 50% / 0.8), 
+                         0 0 20px hsl(190 100% 50% / 0.6), 
+                         0 0 40px hsl(190 100% 50% / 0.4);
+          }
+
+          /* High Confidence Badge Glow */
+          .high-confidence {
+            background: linear-gradient(135deg, hsl(300 100% 50% / 0.2), hsl(300 100% 60% / 0.3));
+            border: 1px solid hsl(300 100% 50% / 0.5);
+            box-shadow: 0 0 15px hsl(300 100% 50% / 0.3), inset 0 0 10px hsl(300 100% 50% / 0.1);
+          }
+
+          /* Neon Shadow Utilities */
+          .shadow-neon-lime {
+            box-shadow: 0 0 20px hsl(var(--brand-accent) / 0.4), 0 0 40px hsl(var(--brand-accent) / 0.2);
+          }
+
+          .shadow-neon-magenta {
+            box-shadow: 0 0 20px hsl(300 100% 50% / 0.4), 0 0 40px hsl(300 100% 50% / 0.2);
+          }
+
+          .shadow-neon-cyan {
+            box-shadow: 0 0 20px hsl(190 100% 50% / 0.4), 0 0 40px hsl(190 100% 50% / 0.2);
           }
 
   /* iPad-optimized modals */
