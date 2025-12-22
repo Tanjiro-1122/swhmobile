@@ -965,11 +965,11 @@ export default function Pricing() {
               </div>
             </div>
             </CardContent>
-            </Card>
-            )}
+          </Card>
+        )}
 
-            {/* Restore Purchases Link - Mobile only */}
-        {(isNativeApp) && (
+        {/* Restore Purchases Link - Mobile only */}
+        {isNativeApp && (
           <div className="text-center mb-8">
             <Button
               variant="link"
