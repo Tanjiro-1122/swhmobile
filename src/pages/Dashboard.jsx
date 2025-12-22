@@ -27,41 +27,32 @@ const allMenuItems = [
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
 
+// Assign glow colors based on card type
+const getGlowColor = (id) => {
+    const colorMap = {
+        analysis: "purple",
+        tracking: "cyan",
+        community: "lime",
+        briefs: "cyan",
+        account: "purple",
+        sportsnews: "orange",
+        thenews: "lime",
+        topten: "cyan",
+        pricing: "gold",
+    };
+    return colorMap[id] || "purple";
+};
+
 const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) => (
-    <div className={`grid ${gridClasses} gap-4`}>
-        {menuItems.map((item, index) => {
-            const Icon = item.Icon;
-            return (
-                <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + index * 0.05 }}
-                    className="h-full"
-                >
-                    <Link to={createPageUrl(item.page)} className="block h-full group">
-                        <Card className="h-full bg-slate-800/50 border border-slate-700 rounded-xl transition-all duration-300 hover:border-lime-500/50 hover:bg-slate-800/80 glow-card">
-                            <CardContent className="relative p-5 flex flex-col h-full">
-                                {item.tag && (
-                                    <div className={`absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${item.tagColor}`}>{item.tag}</div>
-                                )}
-                                <div className="flex items-center gap-4 mb-3">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center border border-slate-600 flex-shrink-0 text-slate-300">
-                                        <Icon className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-base font-bold text-white tracking-tight">{item.title}</h3>
-                                        <p className="text-slate-400 text-xs font-medium">{item.subtitle}</p>
-                                    </div>
-                                </div>
-                                <p className="text-slate-400 text-sm mt-auto group-hover:text-slate-300 transition-colors">{item.description}</p>
-                                <ChevronRight className="w-4 h-4 text-slate-600 transition-transform duration-300 absolute bottom-4 right-4 group-hover:translate-x-0.5 group-hover:text-slate-400" />
-                            </CardContent>
-                        </Card>
-                    </Link>
-                </motion.div>
-            );
-        })}
+    <div className={`grid ${gridClasses} gap-5`}>
+        {menuItems.map((item, index) => (
+            <NeonCard 
+                key={item.id} 
+                item={item} 
+                index={index} 
+                glowColor={getGlowColor(item.id)}
+            />
+        ))}
         
         {/* Web Exclusive Cards for Mobile */}
         {webExclusiveItems.map((item, index) => (
@@ -69,26 +60,20 @@ const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) =
         ))}
 
         {isAdmin && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + menuItems.length * 0.05 }} className="h-full">
-                <Link to={createPageUrl("AdminPanel")} className="block h-full group">
-                    <Card className="h-full bg-red-900/40 border border-red-700/80 rounded-xl transition-all duration-300 hover:border-red-600 hover:bg-red-900/60 glow-card">
-                        <CardContent className="relative p-5 flex flex-col h-full">
-                             <div className={`absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full bg-red-500 text-white`}>ADMIN</div>
-                             <div className="flex items-center gap-4 mb-3">
-                                <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center border border-slate-600 flex-shrink-0 text-slate-300">
-                                    <Settings className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-base font-bold text-white tracking-tight">ADMIN PANEL</h3>
-                                    <p className="text-slate-400 text-xs font-medium">Manage App</p>
-                                </div>
-                            </div>
-                            <p className="text-slate-400 text-sm mt-auto group-hover:text-slate-300 transition-colors">Administrative tools</p>
-                            <ChevronRight className="w-4 h-4 text-slate-600 transition-transform duration-300 absolute bottom-4 right-4 group-hover:translate-x-0.5 group-hover:text-slate-400" />
-                        </CardContent>
-                    </Card>
-                </Link>
-            </motion.div>
+            <NeonCard 
+                item={{
+                    id: "admin",
+                    title: "ADMIN PANEL",
+                    subtitle: "Manage App",
+                    description: "Administrative tools",
+                    Icon: Settings,
+                    page: "AdminPanel",
+                    tag: "ADMIN",
+                    tagColor: "bg-red-500 text-white"
+                }}
+                index={menuItems.length}
+                glowColor="orange"
+            />
         )}
     </div>
 );
