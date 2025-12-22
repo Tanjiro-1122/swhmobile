@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import AgeGate from '../auth/AgeGate';
 import DomainChangeBanner from '../DomainChangeBanner';
 import TopBar from '../navigation/TopBar';
-import { LiveMarketTicker } from '../widgets/LiveMarketTicker';
 import { motion } from 'framer-motion';
 import Footer from './Footer';
 
