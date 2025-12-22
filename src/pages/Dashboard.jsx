@@ -93,19 +93,29 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
 const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
     return (
         <div className="w-full">
-            <div className="text-center pt-2 pb-8">
-                <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                    alt="SWH Logo"
-                    className="w-24 h-24 rounded-3xl object-cover mx-auto mb-6 shadow-2xl border-2 border-slate-700"
-                />
-                <h1 className="text-3xl font-black text-white tracking-tighter">
-                    SPORTS WAGER HELPER
+            <motion.div 
+                className="text-center pt-2 pb-8"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                {/* Glowing logo container */}
+                <div className="relative inline-block mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-3xl blur-xl opacity-40 animate-pulse" />
+                    <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                        alt="SWH Logo"
+                        className="relative w-24 h-24 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
+                    />
+                </div>
+                <h1 className="text-3xl font-black tracking-tighter">
+                    <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
+                        SPORTS WAGER HELPER
+                    </span>
                 </h1>
-                <p className="text-slate-300 mt-1 text-md">
+                <p className="text-slate-400 mt-2 text-md font-medium">
                     AI-Powered Sports Analytics & Insights
                 </p>
-            </div>
+            </motion.div>
             <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
         </div>
     );
