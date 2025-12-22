@@ -5,12 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Globe } from "lucide-react";
+import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
+import NeonCard from "@/components/dashboard/NeonCard";
+import CircuitBackground from "@/components/dashboard/CircuitBackground";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
