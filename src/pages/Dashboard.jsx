@@ -78,11 +78,12 @@ const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) =
     </div>
 );
 
-const WebDashboardContent = ({ menuItems, isAdmin }) => {
+const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
     return (
-        <div className="w-full">
+        <div className="w-full relative z-10">
+            <DashboardHeader userName={userName} />
             <TodaysPredictions />
-            <div className="mt-8">
+            <div className="mt-10">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
             </div>
         </div>
