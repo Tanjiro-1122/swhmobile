@@ -70,10 +70,16 @@ export const LiveMarketTicker = () => {
     return (
         <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
             {showMarquee ? (
-                <div 
+                <motion.div 
                     className="flex"
-                    style={{
-                        animation: 'marquee 30s linear infinite',
+                    animate={{ x: [0, '-50%'] }}
+                    transition={{
+                        x: {
+                            repeat: Infinity,
+                            repeatType: 'loop',
+                            duration: 30,
+                            ease: 'linear',
+                        },
                     }}
                 >
                     {/* Two copies for seamless loop - second copy has no LIVE badge */}
@@ -83,7 +89,7 @@ export const LiveMarketTicker = () => {
                     <div className="flex shrink-0">
                         <TickerContent scores={scores} isLoading={false} isError={false} showBadge={false} />
                     </div>
-                </div>
+                </motion.div>
             ) : (
                 <div className="w-full flex justify-center">
                   <TickerContent scores={scores} isLoading={isLoading} isError={isError} />
