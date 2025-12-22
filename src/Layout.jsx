@@ -101,11 +101,23 @@ export default function Layout(props) {
         document.head.appendChild(script);
       });
 
-      // Add manifest for PWA capabilities
+      // Add manifest for PWA capabilities (served from backend function)
       const manifestLink = document.createElement("link");
       manifestLink.rel = "manifest";
-      manifestLink.href = "/manifest.json";
+      manifestLink.href = "https://sportswagerhelper.base44.app/api/manifest";
+      manifestLink.crossOrigin = "use-credentials";
       document.head.appendChild(manifestLink);
+
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('https://sportswagerhelper.base44.app/api/serviceWorker', {
+          scope: '/'
+        }).then((registration) => {
+          console.log('Service Worker registered:', registration.scope);
+        }).catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+      }
     };
 
     // Run setup only once
