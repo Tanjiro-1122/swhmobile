@@ -2,8 +2,8 @@ Deno.serve(async (req) => {
   // Base URL for the app
   const baseUrl = "https://sportswagerhelper.base44.app";
   
-  // Icon URL (the owl mascot)
-  const iconUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
+  // New SWH Logo
+  const iconUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/a74a99ab3_logo2.png";
 
   const manifest = {
     "name": "Sports Wager Helper",
@@ -12,28 +12,29 @@ Deno.serve(async (req) => {
     "description": "AI-powered sports analytics and betting insights. Get match predictions, player stats, team analysis, live odds comparison, and smart betting tools.",
     "start_url": "/",
     "scope": "/",
+    "dir": "ltr",
     "display": "standalone",
-    "background_color": "#0f172a",
-    "theme_color": "#200d44",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
     "orientation": "any",
     "categories": ["sports", "entertainment", "utilities"],
     "icons": [
       {
         "src": iconUrl,
         "sizes": "192x192",
-        "type": "image/jpeg",
+        "type": "image/png",
         "purpose": "any"
       },
       {
         "src": iconUrl,
         "sizes": "512x512",
-        "type": "image/jpeg",
+        "type": "image/png",
         "purpose": "any"
       },
       {
         "src": iconUrl,
         "sizes": "512x512",
-        "type": "image/jpeg",
+        "type": "image/png",
         "purpose": "maskable"
       }
     ],
