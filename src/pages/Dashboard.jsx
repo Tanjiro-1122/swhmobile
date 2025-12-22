@@ -171,16 +171,18 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen relative">
+            <CircuitBackground />
+            
             {showSuccessMessage && (
-                <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-xl shadow-2xl shadow-green-500/30 flex items-center gap-2 border border-green-400/30">
                     <Check className="w-5 h-5" />
                     <span className="font-bold">Payment successful!</span>
                 </motion.div>
             )}
 
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <WebDashboardContent menuItems={menuItems} isAdmin={isAdmin} />
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <WebDashboardContent menuItems={menuItems} isAdmin={isAdmin} userName={currentUser?.full_name} />
             </div>
         </div>
     );
