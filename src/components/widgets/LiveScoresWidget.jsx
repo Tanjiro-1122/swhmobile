@@ -257,11 +257,11 @@ export default function LiveScoresWidget() {
       </div>
       
       {/* Footer Stats */}
-      <div className="px-4 md:px-6 pb-4 md:pb-6">
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-white/5">
+      <div className="px-4 pb-3">
+        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-white/5">
           <span className="flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" />
-            Auto-updates every 30s
+            <TrendingUp className="w-2.5 h-2.5" />
+            Updates every 30s
           </span>
           <span>Powered by ESPN</span>
         </div>
