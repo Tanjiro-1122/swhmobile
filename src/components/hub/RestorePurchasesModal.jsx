@@ -17,6 +17,24 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
     setIsAndroid(/Android/i.test(ua));
   }, []);
 
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setRestoring(false);
+      setResult(null);
+    }
+  }, [open]);
+
+  // Handle immediate close - cancel any pending operations
+  const handleClose = (newOpen) => {
+    if (!newOpen) {
+      // Immediately reset state and close
+      setRestoring(false);
+      setResult(null);
+    }
+    onOpenChange(newOpen);
+  };
+
   const handleRestore = async () => {
     setRestoring(true);
     setResult(null);
@@ -155,7 +173,7 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
   const accountType = isIOS ? "Apple ID" : isAndroid ? "Google account" : "account";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

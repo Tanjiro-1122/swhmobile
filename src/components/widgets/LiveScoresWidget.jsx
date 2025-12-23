@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, 
   Trophy, 
   Clock, 
   Zap,
   Radio,
-  TrendingUp
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,69 +40,111 @@ const LivePulse = () => (
   </span>
 );
 
-const GameCard = ({ game }) => {
+const GameCard = ({ game, index }) => {
   const isLive = game.status === 'Live';
   const colors = sportColors[game.sport_title] || sportColors['NFL'];
   const icon = sportIcons[game.sport_title] || '🏆';
   
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
       className={`
-        relative overflow-hidden rounded-xl 
+        relative overflow-hidden rounded-2xl 
         bg-gradient-to-br ${colors.bg}
         border ${colors.border}
         backdrop-blur-xl
         ${isLive ? `shadow-lg ${colors.glow}` : ''}
-        min-w-[240px] flex-shrink-0
+        hover:scale-[1.02] transition-transform duration-300
+        min-w-[280px] md:min-w-[320px] flex-shrink-0
       `}
     >
-      <div className="relative p-3">
+      {/* Animated background glow for live games */}
+      {isLive && (
+        <div className="absolute inset-0 overflow-hidden">
+          <div className={`absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br ${colors.bg} rounded-full blur-3xl animate-pulse opacity-50`} />
+        </div>
+      )}
+      
+      <div className="relative p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">{icon}</span>
-            <span className={`${colors.text} text-[10px] font-bold uppercase`}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{icon}</span>
+            <Badge variant="outline" className={`${colors.text} ${colors.border} text-xs font-medium`}>
               {game.sport_title}
-            </span>
+            </Badge>
           </div>
           {isLive ? (
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/30">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-red-500/20 border border-red-500/30">
               <LivePulse />
-              <span className="text-red-400 text-[10px] font-bold uppercase">Live</span>
+              <span className="text-red-400 text-xs font-bold uppercase tracking-wide">Live</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-slate-400 text-[10px]">
-              <Clock className="w-2.5 h-2.5" />
+            <div className="flex items-center gap-1 text-slate-400 text-xs">
+              <Clock className="w-3 h-3" />
               <span>{game.score}</span>
             </div>
           )}
         </div>
         
-        {/* Teams - Compact */}
-        <div className="space-y-1">
+        {/* Teams */}
+        <div className="space-y-2">
+          {/* Away Team */}
           <div className="flex items-center justify-between">
-            <span className="text-white font-medium text-xs truncate max-w-[140px]">
-              {game.away_team}
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
+                {game.away_team.charAt(0)}
+              </div>
+              <span className="text-white font-medium text-sm truncate max-w-[140px]">
+                {game.away_team}
+              </span>
+            </div>
             {isLive && (
-              <span className="text-lg font-bold text-white tabular-nums">
+              <span className="text-2xl font-bold text-white tabular-nums">
                 {game.score.split(' - ')[0]}
               </span>
             )}
           </div>
+          
+          {/* Divider with VS */}
+          <div className="flex items-center gap-2 px-2">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <span className="text-[10px] text-slate-500 font-medium">VS</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          </div>
+          
+          {/* Home Team */}
           <div className="flex items-center justify-between">
-            <span className="text-white font-medium text-xs truncate max-w-[140px]">
-              {game.home_team}
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
+                {game.home_team.charAt(0)}
+              </div>
+              <span className="text-white font-medium text-sm truncate max-w-[140px]">
+                {game.home_team}
+              </span>
+            </div>
             {isLive && (
-              <span className="text-lg font-bold text-white tabular-nums">
+              <span className="text-2xl font-bold text-white tabular-nums">
                 {game.score.split(' - ')[1]}
               </span>
             )}
           </div>
         </div>
+        
+        {/* Game Detail */}
+        {isLive && game.detail && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-center gap-2">
+              <Zap className="w-3 h-3 text-yellow-400" />
+              <span className="text-xs text-slate-300">{game.detail}</span>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -142,7 +186,10 @@ const SportFilter = ({ sports, activeSport, onSelect }) => (
 
 export default function LiveScoresWidget() {
   const [activeSport, setActiveSport] = useState('all');
-  const [isPaused, setIsPaused] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const scrollRef = useRef(null);
+  const pauseTimeoutRef = useRef(null);
 
   const { data: scores = [], isLoading, error } = useQuery({
     queryKey: ['liveScores'],
@@ -157,8 +204,74 @@ export default function LiveScoresWidget() {
   const filteredScores = activeSport === 'all' 
     ? scores 
     : scores.filter(g => g.sport_title === activeSport);
-
+  
   const liveCount = scores.filter(g => g.status === 'Live').length;
+
+  // Smooth continuous auto-scroll with requestAnimationFrame
+  useEffect(() => {
+    if (!isAutoScrolling || filteredScores.length <= 1 || !scrollRef.current) return;
+    
+    const scrollContainer = scrollRef.current;
+    let animationId;
+    const scrollSpeed = 0.8; // Smooth speed - pixels per frame
+    
+    const animate = () => {
+      if (!scrollContainer) return;
+      
+      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+      
+      if (maxScroll > 0) {
+        if (scrollContainer.scrollLeft >= maxScroll - 1) {
+          // Reset to beginning smoothly
+          scrollContainer.scrollLeft = 0;
+        } else {
+          scrollContainer.scrollLeft += scrollSpeed;
+        }
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    animationId = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [isAutoScrolling, filteredScores.length]);
+
+  // Pause auto-scroll on user interaction
+  const handleUserInteraction = () => {
+    setIsAutoScrolling(false);
+    
+    // Clear any existing timeout
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+    }
+    
+    // Resume auto-scroll after 5 seconds of no interaction
+    pauseTimeoutRef.current = setTimeout(() => setIsAutoScrolling(true), 5000);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const scroll = (direction) => {
+    handleUserInteraction();
+    if (scrollRef.current) {
+      const scrollAmount = 320;
+      const newPosition = direction === 'left' 
+        ? scrollRef.current.scrollLeft - scrollAmount 
+        : scrollRef.current.scrollLeft + scrollAmount;
+      scrollRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
+      setScrollPosition(newPosition);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -187,33 +300,54 @@ export default function LiveScoresWidget() {
   return (
     <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-white/5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+      <div className="p-4 md:p-6 border-b border-white/5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
               </div>
               {liveCount > 0 && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
-                  <span className="text-[8px] font-bold text-white">{liveCount}</span>
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-white">{liveCount}</span>
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 Live Scores
                 {liveCount > 0 && (
-                  <span className="flex items-center gap-1 text-[10px] font-normal text-red-400">
-                    <Radio className="w-2.5 h-2.5 animate-pulse" />
+                  <span className="flex items-center gap-1 text-xs font-normal text-red-400">
+                    <Radio className="w-3 h-3 animate-pulse" />
                     {liveCount} live
                   </span>
                 )}
               </h2>
+              <p className="text-xs text-slate-400">{scores.length} games today</p>
             </div>
           </div>
+          
+          {/* Scroll Controls */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
+              onClick={() => scroll('left')}
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
+              onClick={() => scroll('right')}
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </Button>
+          </div>
         </div>
-
+        
         {/* Sport Filters */}
         <SportFilter 
           sports={sports} 
@@ -222,46 +356,39 @@ export default function LiveScoresWidget() {
         />
       </div>
       
-      {/* Games Marquee */}
-      <div className="py-4 overflow-hidden">
+      {/* Games Carousel */}
+      <div className="p-4 md:p-6">
         {filteredScores.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-3">
-              <Trophy className="w-6 h-6 text-slate-500" />
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+              <Trophy className="w-8 h-8 text-slate-500" />
             </div>
             <p className="text-slate-400 text-sm">No games scheduled right now</p>
+            <p className="text-slate-500 text-xs mt-1">Check back later for live updates</p>
           </div>
         ) : (
           <div 
-            className="relative"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+            onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
+            onMouseEnter={handleUserInteraction}
+            onTouchStart={handleUserInteraction}
           >
-            <div 
-              className={`flex gap-4 ${isPaused ? '' : 'animate-marquee-scroll'}`}
-              style={{ width: 'max-content' }}
-            >
-              {/* First set */}
-              {filteredScores.map((game) => (
-                <GameCard key={game.id} game={game} />
+            <AnimatePresence mode="popLayout">
+              {filteredScores.map((game, index) => (
+                <GameCard key={game.id} game={game} index={index} />
               ))}
-              {/* Duplicate set for seamless loop */}
-              {filteredScores.map((game) => (
-                <GameCard key={`dup-${game.id}`} game={game} />
-              ))}
-            </div>
+            </AnimatePresence>
           </div>
         )}
       </div>
       
       {/* Footer Stats */}
-      <div className="px-4 pb-3">
-        <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-white/5">
+      <div className="px-4 md:px-6 pb-4 md:pb-6">
+        <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-white/5">
           <span className="flex items-center gap-1">
-            <TrendingUp className="w-2.5 h-2.5" />
-            Updates every 30s
+            <TrendingUp className="w-3 h-3" />
+            Auto-updates every 30s
           </span>
           <span>Powered by ESPN</span>
         </div>
