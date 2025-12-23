@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Bot } from 'lucide-react';
+import { Bot, Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -40,6 +40,24 @@ const Footer = () => {
                      <p className="text-slate-500 text-sm mb-4 md:mb-0">
                         &copy; {new Date().getFullYear()} SportWagerHelper AI. All rights reserved.
                     </p>
+                    <div className="flex items-center gap-4">
+                        <a 
+                            href="https://www.facebook.com/profile.php?id=61582630155332" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-blue-500 transition-colors"
+                        >
+                            <Facebook className="w-5 h-5" />
+                        </a>
+                        <a 
+                            href="https://www.instagram.com/swh_javierhuertas/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-pink-500 transition-colors"
+                        >
+                            <Instagram className="w-5 h-5" />
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>
