@@ -104,8 +104,17 @@ export default function Layout(props) {
       // Add manifest for PWA capabilities (served from backend function)
       const manifestLink = document.createElement("link");
       manifestLink.rel = "manifest";
-      manifestLink.href = "/api/pwaManifest";
+      manifestLink.href = "/api/manifest";
       document.head.appendChild(manifestLink);
+
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/api/sw').then((registration) => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        }).catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+      }
     };
 
     // Run setup only once
