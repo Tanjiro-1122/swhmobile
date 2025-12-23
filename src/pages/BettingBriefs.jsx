@@ -1,5 +1,4 @@
 import React from "react";
-import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles, TrendingUp, AlertTriangle, CloudRain, Activity, Target, RefreshCw } from "lucide-react";
@@ -332,9 +331,6 @@ function FeedsContent() {
 }
 
 export default function Feeds() {
-  return (
-    <RequireAuth pageName="Feeds">
-      <FeedsContent />
-    </RequireAuth>
-  );
+  // Betting Briefs is now free for all users (part of free tier value)
+  return <FeedsContent />;
 }

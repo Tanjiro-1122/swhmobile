@@ -7,12 +7,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
 
+// Helper to get the first day of next month
+const getNextMonthResetDate = () => {
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return nextMonth.toISOString().split('T')[0];
+};
+
+// Helper to check if we should reset the monthly lookups
+const shouldResetMonthlyLookups = (resetDateStr) => {
+  if (!resetDateStr) return true; // No reset date set, needs initialization
+  const today = new Date();
+  const resetDate = new Date(resetDateStr);
+  return today >= resetDate;
+};
+
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userTier, setUserTier] = useState('free');
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileApp, setIsMobileApp] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     // Check if running in mobile app - comprehensive detection
@@ -34,27 +50,39 @@ export function useFreeLookupTracker() {
         if (authenticated) {
           try {
             const user = await base44.auth.me();
+            setCurrentUser(user);
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
             
             // Legacy, VIP Annual, and Premium Monthly users have UNLIMITED searches
             if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
               setLookupsRemaining(999); // Unlimited
-              // Clear any localStorage restrictions for paid users
-              localStorage.removeItem('freeLookups');
             } else {
-              // Free users - check their usage
-              const used = parseInt(localStorage.getItem('freeLookups') || '0');
-              setLookupsRemaining(Math.max(0, 5 - used));
+              // Free authenticated users - check monthly renewable lookups
+              let monthlyUsed = user.monthly_free_lookups_used || 0;
+              const resetDate = user.free_lookups_reset_date;
+              
+              // Check if we need to reset monthly lookups
+              if (shouldResetMonthlyLookups(resetDate)) {
+                // Reset the counter for the new month
+                monthlyUsed = 0;
+                const newResetDate = getNextMonthResetDate();
+                await base44.auth.updateMe({
+                  monthly_free_lookups_used: 0,
+                  free_lookups_reset_date: newResetDate
+                });
+              }
+              
+              setLookupsRemaining(Math.max(0, 5 - monthlyUsed));
             }
           } catch (error) {
             console.error('Error fetching user:', error);
-            // If error fetching user, treat as free
+            // If error fetching user, treat as free with localStorage fallback
             const used = parseInt(localStorage.getItem('freeLookups') || '0');
             setLookupsRemaining(Math.max(0, 5 - used));
           }
         } else {
-          // Not authenticated - check localStorage for free lookups
+          // Not authenticated - use localStorage (non-renewable for guests)
           const used = parseInt(localStorage.getItem('freeLookups') || '0');
           setLookupsRemaining(Math.max(0, 5 - used));
         }
@@ -71,13 +99,34 @@ export function useFreeLookupTracker() {
     checkAuth();
   }, []);
 
-  const recordLookup = () => {
+  const recordLookup = async () => {
     // NEVER count lookups for paid tiers
     if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
       return true;
     }
     
-    // For free users (authenticated or not)
+    // For authenticated free users - update server-side counter
+    if (isAuthenticated && currentUser) {
+      const currentUsed = currentUser.monthly_free_lookups_used || 0;
+      if (currentUsed >= 5) return false;
+      
+      try {
+        await base44.auth.updateMe({
+          monthly_free_lookups_used: currentUsed + 1
+        });
+        setLookupsRemaining(Math.max(0, 5 - (currentUsed + 1)));
+        setCurrentUser(prev => ({
+          ...prev,
+          monthly_free_lookups_used: currentUsed + 1
+        }));
+        return true;
+      } catch (error) {
+        console.error('Error updating lookup count:', error);
+        return false;
+      }
+    }
+    
+    // For non-authenticated users - use localStorage (one-time, non-renewable)
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     if (used >= 5) return false;
     
@@ -92,7 +141,13 @@ export function useFreeLookupTracker() {
       return true;
     }
     
-    // Check free lookups for free users
+    // For authenticated free users - check server-side counter
+    if (isAuthenticated && currentUser) {
+      const currentUsed = currentUser.monthly_free_lookups_used || 0;
+      return currentUsed < 5;
+    }
+    
+    // For non-authenticated users - check localStorage
     const used = parseInt(localStorage.getItem('freeLookups') || '0');
     return used < 5;
   };
@@ -217,7 +272,9 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                   You've used all 5 free lookups!
                 </p>
                 <p className="text-sm sm:text-base text-gray-600">
-                  Subscribe for unlimited searches + data storage
+                  {isAuthenticated 
+                    ? "Your 5 free searches reset next month! Subscribe for unlimited." 
+                    : "Create a free account to get 5 renewable searches/month, or subscribe for unlimited."}
                 </p>
               </div>
 
@@ -364,7 +421,7 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
   }
 
   // Don't show banner if user has all lookups remaining (hasn't used any yet)
-  if (lookupsRemaining === 5) return null;
+  if (lookupsRemaining === 5 && userTier === 'free') return null;
 
   const handleUpgrade = () => {
     window.location.href = '/Pricing';

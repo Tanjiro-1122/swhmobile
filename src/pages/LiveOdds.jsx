@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from "framer-motion";
-import RequireAuth from "../components/auth/RequireAuth";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
 function LiveOddsContent() {
@@ -807,9 +806,6 @@ function LiveOddsContent() {
 }
 
 export default function LiveOdds() {
-  return (
-    <RequireAuth pageName="Live Odds">
-      <LiveOddsContent />
-    </RequireAuth>
-  );
+  // Live Odds is now free for all users (part of free tier value)
+  return <LiveOddsContent />;
 }
