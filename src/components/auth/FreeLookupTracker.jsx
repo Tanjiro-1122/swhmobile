@@ -54,10 +54,24 @@ export function useFreeLookupTracker() {
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
             
-            // Legacy, VIP Annual, and Premium Monthly users have UNLIMITED searches
-            if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
+            // Check if VIP annual has expired
+            if (tier === 'vip_annual' && user.subscription_expiry_date) {
+              const expiryDate = new Date(user.subscription_expiry_date);
+              if (new Date() > expiryDate) {
+                // VIP expired, treat as free user
+                setUserTier('free');
+                // Continue to free user logic below
+              } else {
+                setLookupsRemaining(999); // Unlimited - still valid
+                return;
+              }
+            } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
+              // Legacy, VIP Annual (no expiry set), and Premium Monthly users have UNLIMITED searches
               setLookupsRemaining(999); // Unlimited
-            } else {
+              return;
+            }
+            
+            // Free user logic
               // Free authenticated users - check monthly renewable lookups
               let monthlyUsed = user.monthly_free_lookups_used || 0;
               const resetDate = user.free_lookups_reset_date;
