@@ -207,27 +207,30 @@ export default function LiveScoresWidget() {
   
   const liveCount = scores.filter(g => g.status === 'Live').length;
 
-  // Auto-scroll effect
+  // Smooth continuous auto-scroll effect
   React.useEffect(() => {
     if (!isAutoScrolling || filteredScores.length <= 1 || !scrollRef.current) return;
     
     const scrollContainer = scrollRef.current;
-    const cardWidth = 320; // Approximate card width + gap
+    let animationId;
+    let scrollSpeed = 0.5; // Pixels per frame - smooth and slow
     
-    autoScrollRef.current = setInterval(() => {
+    const animate = () => {
       const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-      const currentScroll = scrollContainer.scrollLeft;
       
-      if (currentScroll >= maxScroll - 10) {
-        // Reset to start smoothly
-        scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+      if (scrollContainer.scrollLeft >= maxScroll) {
+        scrollContainer.scrollLeft = 0;
       } else {
-        scrollContainer.scrollTo({ left: currentScroll + cardWidth, behavior: 'smooth' });
+        scrollContainer.scrollLeft += scrollSpeed;
       }
-    }, 4000); // Scroll every 4 seconds
+      
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    animationId = requestAnimationFrame(animate);
     
     return () => {
-      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+      if (animationId) cancelAnimationFrame(animationId);
     };
   }, [isAutoScrolling, filteredScores.length]);
 
