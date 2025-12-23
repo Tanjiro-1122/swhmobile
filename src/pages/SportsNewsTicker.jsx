@@ -58,35 +58,36 @@ export default function SportsNewsTicker() {
           <LiveMarketTicker />
         </div>
 
-        {/* RSS News Widget */}
+        {/* Sports News Links */}
         <div className="bg-slate-800/50 rounded-xl border border-white/10 p-4">
           <div className="mb-4">
             <h2 className="text-white font-bold text-lg flex items-center gap-2">
               <Newspaper className="w-5 h-5 text-cyan-400" />
               Latest Sports News
             </h2>
+            <p className="text-white/60 text-sm mt-1">Click to read the latest updates from top sports sources</p>
           </div>
-          <style>{`
-            /* Hide broken image icons in RSS widget */
-            rssapp-wall img[src=""], 
-            rssapp-wall img:not([src]),
-            rssapp-wall img[src*="undefined"] {
-              display: none !important;
-            }
-            /* Style containers with missing images */
-            rssapp-wall .rssapp-item:has(img[src=""]),
-            rssapp-wall .rssapp-item:has(img:not([src])) {
-              background: linear-gradient(135deg, #1e293b, #334155) !important;
-            }
-            /* Hide the empty image placeholder boxes */
-            rssapp-wall [class*="image"]:empty,
-            rssapp-wall [class*="thumb"]:empty,
-            rssapp-wall .rssapp-image:has(img[src=""]) {
-              display: none !important;
-            }
-          `}</style>
-          <div className="bg-white rounded-lg overflow-hidden min-h-[600px]">
-            <rssapp-wall id="tZXFs6qB7XkfmdxB"></rssapp-wall>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              { name: 'ESPN', url: 'https://www.espn.com', color: 'from-red-600 to-red-700' },
+              { name: 'CBS Sports', url: 'https://www.cbssports.com', color: 'from-blue-600 to-blue-700' },
+              { name: 'Bleacher Report', url: 'https://www.bleacherreport.com', color: 'from-orange-500 to-orange-600' },
+              { name: 'The Athletic', url: 'https://www.theathletic.com', color: 'from-slate-700 to-slate-800' },
+              { name: 'Fox Sports', url: 'https://www.foxsports.com', color: 'from-blue-500 to-blue-600' },
+              { name: 'NBC Sports', url: 'https://www.nbcsports.com', color: 'from-purple-600 to-purple-700' },
+              { name: 'NFL', url: 'https://www.nfl.com/news', color: 'from-blue-800 to-blue-900' },
+              { name: 'NBA', url: 'https://www.nba.com/news', color: 'from-orange-600 to-red-600' },
+            ].map((source) => (
+              <a
+                key={source.name}
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`bg-gradient-to-r ${source.color} text-white font-bold py-4 px-4 rounded-lg text-center hover:opacity-90 transition-opacity shadow-lg`}
+              >
+                {source.name}
+              </a>
+            ))}
           </div>
         </div>
       </div>
