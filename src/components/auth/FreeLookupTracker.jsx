@@ -66,6 +66,18 @@ export function useFreeLookupTracker() {
                 setIsLoading(false);
                 return;
               }
+            } else if (tier === 'influencer' && user.subscription_expiry_date) {
+              // Check if influencer access has expired (7 days)
+              const expiryDate = new Date(user.subscription_expiry_date);
+              if (new Date() > expiryDate) {
+                // Influencer expired, treat as free user
+                setUserTier('free');
+                // Continue to free user logic below
+              } else {
+                setLookupsRemaining(999); // Unlimited - still valid
+                setIsLoading(false);
+                return;
+              }
             } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly' || tier === 'influencer') {
               // Legacy, VIP Annual (no expiry set), Premium Monthly, and Influencer users have UNLIMITED searches
               setLookupsRemaining(999); // Unlimited
@@ -448,12 +460,18 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
   if (userTier === 'influencer') {
     return (
       <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 border-b-4 border-pink-300 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-center gap-3">
-            <Sparkles className="w-6 h-6 text-white" />
-            <span className="text-white font-bold text-lg">
-              🌟 INFLUENCER - Full Access for Review! 🌟
-            </span>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-white" />
+              <span className="text-white font-bold text-lg">
+                🌟 YOU'VE BEEN CHOSEN! 🌟
+              </span>
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <p className="text-white/90 text-sm text-center">
+              Enjoy a unique 7-day VIP experience with full access to all features. Thank you for reviewing us!
+            </p>
           </div>
         </div>
       </div>
