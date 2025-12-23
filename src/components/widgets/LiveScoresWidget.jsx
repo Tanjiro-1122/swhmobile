@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Activity, 
   Trophy, 
   Clock, 
-  ChevronLeft, 
-  ChevronRight,
   Zap,
   Radio,
   TrendingUp
