@@ -7,17 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { LiveMarketTicker } from "@/components/widgets/LiveMarketTicker";
 
 export default function SportsNewsTicker() {
-  useEffect(() => {
-    // Load the RSS widget script
-    const existingScript = document.querySelector('script[src="https://widget.rss.app/v1/wall.js"]');
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = "https://widget.rss.app/v1/wall.js";
-      script.type = "text/javascript";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
+
 
   return (
     <div className="pb-24">
