@@ -54,7 +54,14 @@ Deno.serve(async (req) => {
                 status = 'Final';
             }
 
-            // Include Final games for ticker display (shows recent results)
+            // Include recent Final games (last 6 hours) for ticker display
+
+            // Skip old Final games (more than 6 hours ago)
+            if (status === 'Final') {
+                const gameTime = new Date(event.date);
+                const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+                if (gameTime < sixHoursAgo) return null;
+            }
 
             const homeScore = homeTeam.score || '0';
             const awayScore = awayTeam.score || '0';

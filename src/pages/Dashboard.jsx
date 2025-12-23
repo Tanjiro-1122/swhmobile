@@ -133,9 +133,10 @@ export default function Dashboard() {
 
     React.useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
+        // Handle payment success from both Dashboard and MyAccount redirects
         if (urlParams.get('payment_success') === 'true') {
             setShowSuccessMessage(true);
-            window.history.replaceState({}, '', window.location.pathname);
+            window.history.replaceState({}, document.title, window.location.pathname);
             setTimeout(() => setShowSuccessMessage(false), 5000);
         }
     }, []);

@@ -14,15 +14,26 @@ import DailyFreePicks from '@/components/home/DailyFreePicks';
 import WalkingRobot from '@/components/home/WalkingRobot';
 import PlatformBenefits from '@/components/home/PlatformBenefits';
 
-// --- Free Search Logic ---
+// --- Free Search Logic (resets monthly) ---
 const useFreeLookups = () => {
     const MAX_FREE_LOOKUPS = 5;
     const LOOKUP_KEY = 'freeLookupsCount';
+    const MONTH_KEY = 'freeLookupsMonth';
     const [lookups, setLookups] = useState(0);
 
     useEffect(() => {
-        const storedLookups = parseInt(localStorage.getItem(LOOKUP_KEY) || '0', 10);
-        setLookups(storedLookups);
+        const currentMonth = new Date().toISOString().slice(0, 7); // "2025-01"
+        const storedMonth = localStorage.getItem(MONTH_KEY);
+        
+        // Reset if it's a new month
+        if (storedMonth !== currentMonth) {
+            localStorage.setItem(MONTH_KEY, currentMonth);
+            localStorage.setItem(LOOKUP_KEY, '0');
+            setLookups(0);
+        } else {
+            const storedLookups = parseInt(localStorage.getItem(LOOKUP_KEY) || '0', 10);
+            setLookups(storedLookups);
+        }
     }, []);
 
     const incrementLookups = useCallback(() => {

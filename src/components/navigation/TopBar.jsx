@@ -31,7 +31,7 @@ const TopBar = () => {
           ]
         : [
             { name: 'Pricing', page: 'Pricing' },
-            { name: 'Affiliates', page: 'CommunityHub' },
+            { name: 'Community', page: 'CommunityHub' },
           ];
     
     if (isNativeApp) return null;
