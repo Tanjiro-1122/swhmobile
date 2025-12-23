@@ -17,14 +17,14 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import LiveScoresWidget from "@/components/widgets/LiveScoresWidget";
 
 const allMenuItems = [
-    { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
-    { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds comparison", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true },
+    { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
+    { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds comparison", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
     { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Daily briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
-    { id: "briefs", title: "DAILY BRIEFS", subtitle: "AI Market Insights", description: "Daily analysis, top picks, and news", Icon: FileText, page: "DailyBriefs", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true },
+    { id: "briefs", title: "DAILY BRIEFS", subtitle: "AI Market Insights", description: "Daily analysis, top picks, and news", Icon: FileText, page: "DailyBriefs", tag: "FREE", tagColor: "bg-green-500 text-white", webOnly: true },
     { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, preferences, subscription", Icon: User, page: "MyAccount", tag: null },
     { id: "sportsnews", title: "SPORTS NEWS & SCORES", subtitle: "Live Updates", description: "Live scores, news ticker & RSS feeds", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
-    { id: "thenews", title: "TODAY'S INSIGHTS", subtitle: "Latest Updates", description: "Sports betting briefs & news", Icon: Newspaper, page: "TopStats", tag: "FREE", tagColor: "bg-slate-500 text-white" },
-    { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white" },
+    { id: "thenews", title: "TODAY'S INSIGHTS", subtitle: "Latest Updates", description: "Sports betting briefs & news", Icon: Newspaper, page: "TopStats", tag: "FREE", tagColor: "bg-green-500 text-white" },
+    { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
 
@@ -171,10 +171,22 @@ export default function Dashboard() {
 
     const isAdmin = currentUser?.role === 'admin';
     const isMobile = isNativeApp || isMobileScreen;
+    const userTier = currentUser?.subscription_type || 'free';
+    const isPaidUser = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly';
+    
+    // Filter menu items based on user tier and platform
+    const filterMenuItems = (items) => {
+        return items.filter(item => {
+            // If user is free, hide paid-only items
+            if (!isPaidUser && item.paidOnly) return false;
+            return true;
+        });
+    };
     
     // For mobile: separate regular items from web-exclusive items
-    const menuItems = isMobile ? allMenuItems.filter(item => !item.webOnly) : allMenuItems;
-    const webExclusiveItems = isMobile ? allMenuItems.filter(item => item.webOnly) : [];
+    const filteredItems = filterMenuItems(allMenuItems);
+    const menuItems = isMobile ? filteredItems.filter(item => !item.webOnly) : filteredItems;
+    const webExclusiveItems = isMobile ? filteredItems.filter(item => item.webOnly) : [];
     
     if (isMobile) {
         return (
