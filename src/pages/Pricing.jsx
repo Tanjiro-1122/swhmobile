@@ -281,14 +281,15 @@ export default function Pricing() {
       iapTimeoutRef.current = null;
     }
 
-    // Safety timeout - keep shorter since bridge has its own timeout
+    // Safety timeout - but check if user cancelled first
     iapTimeoutRef.current = setTimeout(() => {
       iapTimeoutRef.current = null;
       if (isMountedRef.current && processingItem) {
         console.log('Page-level IAP timeout - clearing processing state');
         setProcessingItem(null);
+        alert('Purchase timed out. Please try again.');
       }
-    }, 20000);
+    }, 60000); // Longer timeout - let native handle most cancellations
 
     try {
       

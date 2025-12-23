@@ -55,10 +55,36 @@ export const callNativeIAPWithCallback = async (iapConfig, callback) => {
   try {
     console.log('Calling window.WTN.inAppPurchase...');
     
+    // Track if callback has been called to prevent duplicate handling
+    let callbackCalled = false;
+    
     // WebToNative expects the callback to be invoked from native side
     // The callback receives: { isSuccess: boolean, receiptData?: string, purchaseToken?: string, error?: string }
     window.WTN.inAppPurchase(iapConfig, (result) => {
+      if (callbackCalled) {
+        console.log('IAP callback already processed, ignoring duplicate');
+        return;
+      }
+      callbackCalled = true;
       console.log('Native IAP callback received:', JSON.stringify(result));
+      
+      // Normalize cancellation responses from different native implementations
+      if (!result.isSuccess && !result.receiptData && !result.purchaseToken) {
+        const errorStr = (result.error || '').toLowerCase();
+        const isCancelled = 
+          result.isCancelled === true ||
+          result.status === 'cancelled' ||
+          errorStr.includes('cancel') ||
+          errorStr.includes('user') ||
+          errorStr === '' ||
+          result.error === undefined;
+        
+        if (isCancelled) {
+          callback({ isSuccess: false, error: 'user_cancelled', isCancelled: true });
+          return;
+        }
+      }
+      
       callback(result);
     });
     
