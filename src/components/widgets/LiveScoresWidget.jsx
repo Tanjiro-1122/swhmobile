@@ -38,111 +38,69 @@ const LivePulse = () => (
   </span>
 );
 
-const GameCard = ({ game, index }) => {
+const GameCard = ({ game }) => {
   const isLive = game.status === 'Live';
   const colors = sportColors[game.sport_title] || sportColors['NFL'];
   const icon = sportIcons[game.sport_title] || '🏆';
   
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+    <div
       className={`
-        relative overflow-hidden rounded-2xl 
+        relative overflow-hidden rounded-xl 
         bg-gradient-to-br ${colors.bg}
         border ${colors.border}
         backdrop-blur-xl
         ${isLive ? `shadow-lg ${colors.glow}` : ''}
-        hover:scale-[1.02] transition-transform duration-300
-        min-w-[280px] md:min-w-[320px]
+        min-w-[240px] flex-shrink-0
       `}
     >
-      {/* Animated background glow for live games */}
-      {isLive && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div className={`absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br ${colors.bg} rounded-full blur-3xl animate-pulse opacity-50`} />
-        </div>
-      )}
-      
-      <div className="relative p-4">
+      <div className="relative p-3">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">{icon}</span>
-            <Badge variant="outline" className={`${colors.text} ${colors.border} text-xs font-medium`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{icon}</span>
+            <span className={`${colors.text} text-[10px] font-bold uppercase`}>
               {game.sport_title}
-            </Badge>
+            </span>
           </div>
           {isLive ? (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-red-500/20 border border-red-500/30">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/30">
               <LivePulse />
-              <span className="text-red-400 text-xs font-bold uppercase tracking-wide">Live</span>
+              <span className="text-red-400 text-[10px] font-bold uppercase">Live</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-slate-400 text-xs">
-              <Clock className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-slate-400 text-[10px]">
+              <Clock className="w-2.5 h-2.5" />
               <span>{game.score}</span>
             </div>
           )}
         </div>
         
-        {/* Teams */}
-        <div className="space-y-2">
-          {/* Away Team */}
+        {/* Teams - Compact */}
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
-                {game.away_team.charAt(0)}
-              </div>
-              <span className="text-white font-medium text-sm truncate max-w-[140px]">
-                {game.away_team}
-              </span>
-            </div>
+            <span className="text-white font-medium text-xs truncate max-w-[140px]">
+              {game.away_team}
+            </span>
             {isLive && (
-              <span className="text-2xl font-bold text-white tabular-nums">
+              <span className="text-lg font-bold text-white tabular-nums">
                 {game.score.split(' - ')[0]}
               </span>
             )}
           </div>
-          
-          {/* Divider with VS */}
-          <div className="flex items-center gap-2 px-2">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <span className="text-[10px] text-slate-500 font-medium">VS</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          </div>
-          
-          {/* Home Team */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
-                {game.home_team.charAt(0)}
-              </div>
-              <span className="text-white font-medium text-sm truncate max-w-[140px]">
-                {game.home_team}
-              </span>
-            </div>
+            <span className="text-white font-medium text-xs truncate max-w-[140px]">
+              {game.home_team}
+            </span>
             {isLive && (
-              <span className="text-2xl font-bold text-white tabular-nums">
+              <span className="text-lg font-bold text-white tabular-nums">
                 {game.score.split(' - ')[1]}
               </span>
             )}
           </div>
         </div>
-        
-        {/* Game Detail */}
-        {isLive && game.detail && (
-          <div className="mt-3 pt-3 border-t border-white/10">
-            <div className="flex items-center justify-center gap-2">
-              <Zap className="w-3 h-3 text-yellow-400" />
-              <span className="text-xs text-slate-300">{game.detail}</span>
-            </div>
-          </div>
-        )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
