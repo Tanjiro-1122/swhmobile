@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -23,6 +23,15 @@ const LoadingSpinner = () => (
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
+  
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['predictions', 'insights', 'players', 'teams', 'performance'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, []);
 
   return (
     <div className="overflow-x-hidden">
