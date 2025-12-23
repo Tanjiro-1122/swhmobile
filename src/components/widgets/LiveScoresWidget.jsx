@@ -187,54 +187,33 @@ export default function LiveScoresWidget() {
   return (
     <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-white/5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+      <div className="p-4 border-b border-white/5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Activity className="w-4 h-4 text-white" />
               </div>
               {liveCount > 0 && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-white">{liveCount}</span>
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
+                  <span className="text-[8px] font-bold text-white">{liveCount}</span>
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
                 Live Scores
                 {liveCount > 0 && (
-                  <span className="flex items-center gap-1 text-xs font-normal text-red-400">
-                    <Radio className="w-3 h-3 animate-pulse" />
+                  <span className="flex items-center gap-1 text-[10px] font-normal text-red-400">
+                    <Radio className="w-2.5 h-2.5 animate-pulse" />
                     {liveCount} live
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-slate-400">{scores.length} games today</p>
             </div>
           </div>
-          
-          {/* Scroll Controls */}
-          <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
-              onClick={() => scroll('left')}
-            >
-              <ChevronLeft className="w-4 h-4 text-white" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
-              onClick={() => scroll('right')}
-            >
-              <ChevronRight className="w-4 h-4 text-white" />
-            </Button>
-          </div>
         </div>
-        
+
         {/* Sport Filters */}
         <SportFilter 
           sports={sports} 
