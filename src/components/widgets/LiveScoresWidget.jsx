@@ -167,10 +167,7 @@ const SportFilter = ({ sports, activeSport, onSelect }) => (
 
 export default function LiveScoresWidget() {
   const [activeSport, setActiveSport] = useState('all');
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
-  const scrollRef = useRef(null);
-  const pauseTimeoutRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const { data: scores = [], isLoading, error } = useQuery({
     queryKey: ['liveScores'],
@@ -187,72 +184,6 @@ export default function LiveScoresWidget() {
     : scores.filter(g => g.sport_title === activeSport);
   
   const liveCount = scores.filter(g => g.status === 'Live').length;
-
-  // Smooth continuous auto-scroll with requestAnimationFrame
-  useEffect(() => {
-    if (!isAutoScrolling || filteredScores.length <= 1 || !scrollRef.current) return;
-    
-    const scrollContainer = scrollRef.current;
-    let animationId;
-    const scrollSpeed = 0.8; // Smooth speed - pixels per frame
-    
-    const animate = () => {
-      if (!scrollContainer) return;
-      
-      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-      
-      if (maxScroll > 0) {
-        if (scrollContainer.scrollLeft >= maxScroll - 1) {
-          // Reset to beginning smoothly
-          scrollContainer.scrollLeft = 0;
-        } else {
-          scrollContainer.scrollLeft += scrollSpeed;
-        }
-      }
-      
-      animationId = requestAnimationFrame(animate);
-    };
-    
-    animationId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, [isAutoScrolling, filteredScores.length]);
-
-  // Pause auto-scroll on user interaction
-  const handleUserInteraction = () => {
-    setIsAutoScrolling(false);
-    
-    // Clear any existing timeout
-    if (pauseTimeoutRef.current) {
-      clearTimeout(pauseTimeoutRef.current);
-    }
-    
-    // Resume auto-scroll after 5 seconds of no interaction
-    pauseTimeoutRef.current = setTimeout(() => setIsAutoScrolling(true), 5000);
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const scroll = (direction) => {
-    handleUserInteraction();
-    if (scrollRef.current) {
-      const scrollAmount = 320;
-      const newPosition = direction === 'left' 
-        ? scrollRef.current.scrollLeft - scrollAmount 
-        : scrollRef.current.scrollLeft + scrollAmount;
-      scrollRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
-      setScrollPosition(newPosition);
-    }
-  };
 
   if (isLoading) {
     return (
