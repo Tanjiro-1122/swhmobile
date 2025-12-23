@@ -367,6 +367,19 @@
             animation: marquee 30s linear infinite;
           }
 
+          @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+
+          .animate-marquee-scroll {
+            animation: marquee-scroll 20s linear infinite;
+          }
+
+          .animate-marquee-scroll:hover {
+            animation-play-state: paused;
+          }
+
           /* Border Beam Animation for Premium CTAs */
           @keyframes border-beam {
             0% { background-position: 0% 50%; }
