@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -22,16 +22,18 @@ function MyAccountContent() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     
-    // Handle tab parameter
-    const tabParam = params.get('tab');
-    if (tabParam && ['profile', 'subscription', 'preferences', 'saved'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-    
-    // Handle payment success
+    // Handle payment success first (before tab param since it also sets tab)
     if (params.get('payment_success') === 'true') {
       setPaymentSuccess(true);
       setActiveTab("subscription");
+      // Auto-hide after 8 seconds
+      setTimeout(() => setPaymentSuccess(false), 8000);
+    } else {
+      // Handle tab parameter only if not payment success
+      const tabParam = params.get('tab');
+      if (tabParam && ['profile', 'subscription', 'preferences', 'saved'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
     }
     
     // Handle pending IAP activation after login
