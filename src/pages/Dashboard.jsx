@@ -168,7 +168,7 @@ export default function Dashboard() {
     const isAdmin = currentUser?.role === 'admin';
     const isMobile = isNativeApp || isMobileScreen;
     const userTier = currentUser?.subscription_type || 'free';
-    const isPaidUser = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly';
+    const isPaidUser = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer';
     
     // Filter menu items based on user tier and platform
     const filterMenuItems = (items) => {
