@@ -873,8 +873,8 @@ export default function Pricing() {
           <CardContent className="p-6 lg:p-8">
             <div className="space-y-6 lg:space-y-8">
               <div>
-                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What happens after I use my 5 free lookups?</h3>
-                <p className="text-gray-700 text-sm lg:text-base">Your account will be locked and you'll need to subscribe to Premium or VIP to continue using the app.</p>
+                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">What happens after I use my 5 free searches this month?</h3>
+                <p className="text-gray-700 text-sm lg:text-base">You'll need to wait until next month for your searches to reset, or subscribe to Premium or VIP for unlimited access right away.</p>
               </div>
               
               <div>
