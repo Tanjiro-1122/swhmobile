@@ -4,6 +4,7 @@ import DomainChangeBanner from '../DomainChangeBanner';
 import TopBar from '../navigation/TopBar';
 import { motion } from 'framer-motion';
 import Footer from './Footer';
+import SalFloatingButton from '../assistant/SalFloatingButton';
 
 const AuroraBackground = () => {
   const ref = useRef(null);
@@ -47,6 +48,7 @@ export default function WebLayout({ children, currentPageName }) {
         {children}
       </motion.main>
       {!isHomePage && <Footer />}
+      {!isHomePage && currentPageName !== 'AIAssistant' && <SalFloatingButton />}
     </div>
   );
 }
