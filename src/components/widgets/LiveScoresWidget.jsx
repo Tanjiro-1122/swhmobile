@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
@@ -52,15 +52,13 @@ const GameCard = ({ game }) => {
         min-w-[280px] md:min-w-[320px] flex-shrink-0
       `}
     >
-      {/* Animated background glow for live games */}
       {isLive && (
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className={`absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br ${colors.bg} rounded-full blur-3xl animate-pulse opacity-50`} />
         </div>
       )}
       
       <div className="relative p-4">
-        {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">{icon}</span>
@@ -81,9 +79,7 @@ const GameCard = ({ game }) => {
           )}
         </div>
         
-        {/* Teams */}
         <div className="space-y-2">
-          {/* Away Team */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
@@ -100,14 +96,12 @@ const GameCard = ({ game }) => {
             )}
           </div>
           
-          {/* Divider with VS */}
           <div className="flex items-center gap-2 px-2">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <span className="text-[10px] text-slate-500 font-medium">VS</span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           </div>
           
-          {/* Home Team */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold text-white/80">
@@ -167,7 +161,10 @@ const SportFilter = ({ sports, activeSport, onSelect }) => (
 
 export default function LiveScoresWidget() {
   const [activeSport, setActiveSport] = useState('all');
+  const scrollRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
+  const animationRef = useRef(null);
+  const scrollPosRef = useRef(0);
 
   const { data: scores = [], isLoading, error } = useQuery({
     queryKey: ['liveScores'],
@@ -176,6 +173,7 @@ export default function LiveScoresWidget() {
       return response.data || [];
     },
     refetchInterval: 30000,
+    staleTime: 25000,
   });
 
   const sports = [...new Set(scores.map(g => g.sport_title))];
@@ -184,6 +182,52 @@ export default function LiveScoresWidget() {
     : scores.filter(g => g.sport_title === activeSport);
   
   const liveCount = scores.filter(g => g.status === 'Live').length;
+
+  // Fast smooth auto-scroll using requestAnimationFrame
+  useEffect(() => {
+    if (!scrollRef.current || filteredScores.length <= 2 || isPaused) {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      return;
+    }
+
+    const container = scrollRef.current;
+    const speed = 1; // pixels per frame - adjust for faster/slower
+    
+    const animate = () => {
+      if (!container || isPaused) return;
+      
+      scrollPosRef.current += speed;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      
+      if (scrollPosRef.current >= maxScroll) {
+        scrollPosRef.current = 0;
+      }
+      
+      container.scrollLeft = scrollPosRef.current;
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [filteredScores.length, isPaused]);
+
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+    if (scrollRef.current) {
+      scrollPosRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
 
   if (isLoading) {
     return (
@@ -194,7 +238,7 @@ export default function LiveScoresWidget() {
         </div>
         <div className="flex gap-4 overflow-hidden">
           {[1, 2, 3].map(i => (
-            <div key={i} className="min-w-[280px] h-[180px] rounded-2xl bg-white/5 animate-pulse" />
+            <div key={i} className="min-w-[280px] h-[140px] rounded-2xl bg-white/5 animate-pulse" />
           ))}
         </div>
       </div>
@@ -240,7 +284,6 @@ export default function LiveScoresWidget() {
           </div>
         </div>
         
-        {/* Sport Filters */}
         <SportFilter 
           sports={sports} 
           activeSport={activeSport} 
@@ -248,8 +291,8 @@ export default function LiveScoresWidget() {
         />
       </div>
       
-      {/* Games Marquee */}
-      <div className="py-4 overflow-hidden">
+      {/* Games Ticker */}
+      <div className="p-4 md:p-6">
         {filteredScores.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
@@ -260,30 +303,26 @@ export default function LiveScoresWidget() {
           </div>
         ) : (
           <div 
-            className="relative"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleMouseEnter}
+            onTouchEnd={handleMouseLeave}
+            style={{ scrollBehavior: 'auto' }}
           >
-            <div 
-              className={`flex gap-4 px-4 md:px-6 ${isPaused ? '' : 'animate-marquee-scroll'}`}
-              style={{ width: 'max-content' }}
-            >
-              {/* First set */}
-              {filteredScores.map((game) => (
-                <GameCard key={game.id} game={game} />
-              ))}
-              {/* Duplicate set for seamless loop */}
-              {filteredScores.map((game) => (
-                <GameCard key={`dup-${game.id}`} game={game} />
-              ))}
-            </div>
+            {filteredScores.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+            {/* Duplicate for seamless loop */}
+            {filteredScores.map((game) => (
+              <GameCard key={`dup-${game.id}`} game={game} />
+            ))}
           </div>
         )}
       </div>
       
-      {/* Footer Stats */}
+      {/* Footer */}
       <div className="px-4 md:px-6 pb-4 md:pb-6">
         <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-white/5">
           <span className="flex items-center gap-1">
