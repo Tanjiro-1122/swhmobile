@@ -248,8 +248,8 @@ export default function LiveScoresWidget() {
         />
       </div>
       
-      {/* Games Carousel */}
-      <div className="p-4 md:p-6">
+      {/* Games Marquee */}
+      <div className="py-4 overflow-hidden">
         {filteredScores.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
@@ -260,17 +260,25 @@ export default function LiveScoresWidget() {
           </div>
         ) : (
           <div 
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
-            onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
-            onMouseEnter={handleUserInteraction}
-            onTouchStart={handleUserInteraction}
+            className="relative"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
           >
-            <AnimatePresence mode="popLayout">
-              {filteredScores.map((game, index) => (
-                <GameCard key={game.id} game={game} index={index} />
+            <div 
+              className={`flex gap-4 px-4 md:px-6 ${isPaused ? '' : 'animate-marquee-scroll'}`}
+              style={{ width: 'max-content' }}
+            >
+              {/* First set */}
+              {filteredScores.map((game) => (
+                <GameCard key={game.id} game={game} />
               ))}
-            </AnimatePresence>
+              {/* Duplicate set for seamless loop */}
+              {filteredScores.map((game) => (
+                <GameCard key={`dup-${game.id}`} game={game} />
+              ))}
+            </div>
           </div>
         )}
       </div>
