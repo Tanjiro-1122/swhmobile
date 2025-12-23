@@ -176,7 +176,7 @@ export default function SportsNewsTicker() {
                       {article.description}
                     </p>
                     <div className="flex items-center text-cyan-400 text-sm font-semibold">
-                      Read More <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      Read Article <ExternalLink className="w-4 h-4 ml-1" />
                     </div>
                   </CardContent>
                 </Card>
