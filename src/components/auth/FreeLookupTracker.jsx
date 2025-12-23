@@ -71,24 +71,22 @@ export function useFreeLookupTracker() {
               return;
             }
             
-            // Free user logic
-              // Free authenticated users - check monthly renewable lookups
-              let monthlyUsed = user.monthly_free_lookups_used || 0;
-              const resetDate = user.free_lookups_reset_date;
-              
-              // Check if we need to reset monthly lookups
-              if (shouldResetMonthlyLookups(resetDate)) {
-                // Reset the counter for the new month
-                monthlyUsed = 0;
-                const newResetDate = getNextMonthResetDate();
-                await base44.auth.updateMe({
-                  monthly_free_lookups_used: 0,
-                  free_lookups_reset_date: newResetDate
-                });
-              }
-              
-              setLookupsRemaining(Math.max(0, 5 - monthlyUsed));
+            // Free user logic - check monthly renewable lookups
+            let monthlyUsed = user.monthly_free_lookups_used || 0;
+            const resetDate = user.free_lookups_reset_date;
+            
+            // Check if we need to reset monthly lookups
+            if (shouldResetMonthlyLookups(resetDate)) {
+              // Reset the counter for the new month
+              monthlyUsed = 0;
+              const newResetDate = getNextMonthResetDate();
+              await base44.auth.updateMe({
+                monthly_free_lookups_used: 0,
+                free_lookups_reset_date: newResetDate
+              });
             }
+            
+            setLookupsRemaining(Math.max(0, 5 - monthlyUsed));
           } catch (error) {
             console.error('Error fetching user:', error);
             // If error fetching user, treat as free with localStorage fallback
