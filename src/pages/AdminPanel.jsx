@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Crown, Sparkles, Star, Users, TrendingUp, DollarSign, Search, Target, RefreshCw, Loader2 } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ import RequireAuth from "../components/auth/RequireAuth";
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState("all");
-  const [isRefreshingAccuracy, setIsRefreshingAccuracy] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -44,60 +44,7 @@ function AdminPanelContent() {
     initialData: [],
   });
 
-  const { data: predictionOutcomes, isLoading: isLoadingAccuracy, refetch: refetchAccuracy } = useQuery({
-    queryKey: ['predictionAccuracy'],
-    queryFn: async () => {
-      return await base44.entities.PredictionOutcome.list('-outcome_recorded_date', 1000);
-    },
-    initialData: [],
-  });
 
-  const handleRefreshAccuracy = async () => {
-    setIsRefreshingAccuracy(true);
-    await refetchAccuracy();
-    setIsRefreshingAccuracy(false);
-  };
-
-  // Calculate accuracy stats
-  const accuracyStats = React.useMemo(() => {
-    if (!predictionOutcomes || predictionOutcomes.length === 0) {
-      return { overall: 0, bySport: {}, byConfidence: {}, total: 0, correct: 0, recent: [] };
-    }
-
-    const total = predictionOutcomes.length;
-    const correct = predictionOutcomes.filter(p => p.was_correct).length;
-    const overall = total > 0 ? ((correct / total) * 100).toFixed(1) : 0;
-
-    // By sport
-    const bySport = {};
-    const sports = ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'];
-    sports.forEach(sport => {
-      const sportPredictions = predictionOutcomes.filter(p => p.sport?.toLowerCase() === sport.toLowerCase());
-      const sportCorrect = sportPredictions.filter(p => p.was_correct).length;
-      bySport[sport] = {
-        total: sportPredictions.length,
-        correct: sportCorrect,
-        accuracy: sportPredictions.length > 0 ? ((sportCorrect / sportPredictions.length) * 100).toFixed(1) : 0
-      };
-    });
-
-    // By confidence
-    const byConfidence = {};
-    ['High', 'Medium', 'Low'].forEach(conf => {
-      const confPredictions = predictionOutcomes.filter(p => p.predicted_confidence === conf);
-      const confCorrect = confPredictions.filter(p => p.was_correct).length;
-      byConfidence[conf] = {
-        total: confPredictions.length,
-        correct: confCorrect,
-        accuracy: confPredictions.length > 0 ? ((confCorrect / confPredictions.length) * 100).toFixed(1) : 0
-      };
-    });
-
-    // Recent 10 predictions
-    const recent = predictionOutcomes.slice(0, 10);
-
-    return { overall, bySport, byConfidence, total, correct, recent };
-  }, [predictionOutcomes]);
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, updates }) => {
@@ -109,9 +56,18 @@ function AdminPanelContent() {
   });
 
   const handleSubscriptionChange = async (userId, newTier) => {
+    const updates = { subscription_type: newTier };
+    
+    // If setting to influencer, automatically set expiry to 7 days from now
+    if (newTier === 'influencer') {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 7);
+      updates.subscription_expiry_date = expiryDate.toISOString().split('T')[0];
+    }
+    
     await updateUserMutation.mutateAsync({
       userId,
-      updates: { subscription_type: newTier }
+      updates
     });
   };
 
@@ -156,6 +112,8 @@ function AdminPanelContent() {
         return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold">💎 VIP ANNUAL</Badge>;
       case 'premium_monthly':
         return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold">⭐ PREMIUM</Badge>;
+      case 'influencer':
+        return <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold">🌟 INFLUENCER</Badge>;
       default:
         return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 font-semibold">Free</Badge>;
     }
@@ -253,134 +211,6 @@ function AdminPanelContent() {
           </motion.div>
         </div>
 
-        {/* Prediction Accuracy Dashboard */}
-        <Card className="border-2 border-blue-300 bg-white shadow-md mb-8">
-          <CardHeader className="bg-gradient-to-r from-blue-100 to-cyan-100 border-b-2 border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Target className="w-8 h-8 text-blue-600" />
-                <CardTitle className="text-2xl font-black text-gray-900">AI Prediction Accuracy</CardTitle>
-              </div>
-              <Button 
-                onClick={handleRefreshAccuracy} 
-                disabled={isRefreshingAccuracy}
-                variant="outline"
-                className="border-2 border-blue-400 text-blue-700 hover:bg-blue-50 font-bold"
-              >
-                {isRefreshingAccuracy ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                )}
-                Refresh
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            {isLoadingAccuracy ? (
-              <div className="text-center py-8 text-gray-700 text-lg font-semibold">Loading accuracy data...</div>
-            ) : accuracyStats.total === 0 ? (
-              <div className="text-center py-8 text-gray-600">
-                <Target className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p className="text-lg font-semibold">No prediction outcomes recorded yet</p>
-                <p className="text-sm text-gray-500 mt-1">Outcomes will appear here as predictions are verified</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Overall Stats */}
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
-                    <div className="text-5xl font-black text-blue-700">{accuracyStats.overall}%</div>
-                    <div className="text-sm font-semibold text-gray-700 mt-1">Overall Accuracy</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
-                    <div className="text-5xl font-black text-green-700">{accuracyStats.correct}</div>
-                    <div className="text-sm font-semibold text-gray-700 mt-1">Correct Predictions</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border-2 border-gray-200">
-                    <div className="text-5xl font-black text-gray-700">{accuracyStats.total}</div>
-                    <div className="text-sm font-semibold text-gray-700 mt-1">Total Predictions</div>
-                  </div>
-                </div>
-
-                {/* By Sport */}
-                <div>
-                  <h3 className="text-lg font-black text-gray-900 mb-3">Accuracy by Sport</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    {Object.entries(accuracyStats.bySport).map(([sport, data]) => (
-                      <div key={sport} className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
-                        <div className="text-2xl mb-1">
-                          {sport === 'NFL' ? '🏈' : sport === 'NBA' ? '🏀' : sport === 'MLB' ? '⚾' : sport === 'NHL' ? '🏒' : '⚽'}
-                        </div>
-                        <div className="text-lg font-black text-gray-900">{data.accuracy}%</div>
-                        <div className="text-xs font-semibold text-gray-600">{sport}</div>
-                        <div className="text-xs text-gray-500">{data.correct}/{data.total}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* By Confidence */}
-                <div>
-                  <h3 className="text-lg font-black text-gray-900 mb-3">Accuracy by Confidence Level</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {Object.entries(accuracyStats.byConfidence).map(([conf, data]) => (
-                      <div key={conf} className={`rounded-lg p-4 border-2 ${
-                        conf === 'High' ? 'bg-green-50 border-green-300' :
-                        conf === 'Medium' ? 'bg-yellow-50 border-yellow-300' :
-                        'bg-red-50 border-red-300'
-                      }`}>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-bold text-gray-700">{conf} Confidence</div>
-                            <div className="text-2xl font-black text-gray-900">{data.accuracy}%</div>
-                          </div>
-                          <div className="text-right text-sm text-gray-600">
-                            <div>{data.correct} correct</div>
-                            <div>{data.total} total</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Recent Predictions */}
-                <div>
-                  <h3 className="text-lg font-black text-gray-900 mb-3">Recent Prediction Results</h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {accuracyStats.recent.map((prediction, idx) => (
-                      <div key={prediction.id || idx} className={`flex items-center justify-between p-3 rounded-lg border-2 ${
-                        prediction.was_correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            prediction.was_correct ? 'bg-green-500' : 'bg-red-500'
-                          }`}>
-                            <span className="text-white font-bold text-sm">{prediction.was_correct ? '✓' : '✗'}</span>
-                          </div>
-                          <div>
-                            <div className="font-bold text-gray-900">{prediction.predicted_winner || 'Unknown'}</div>
-                            <div className="text-xs text-gray-600">{prediction.sport} • {prediction.predicted_confidence} confidence</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge className={prediction.was_correct ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}>
-                            {prediction.was_correct ? 'CORRECT' : 'WRONG'}
-                          </Badge>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {prediction.outcome_recorded_date ? new Date(prediction.outcome_recorded_date).toLocaleDateString() : 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Revenue Card */}
         <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
           <CardContent className="p-8">
@@ -471,6 +301,7 @@ function AdminPanelContent() {
                               <SelectItem value="premium_monthly" className="font-semibold">Premium Monthly ($19.99/mo)</SelectItem>
                               <SelectItem value="vip_annual" className="font-semibold">VIP Annual ($149.99/yr)</SelectItem>
                               <SelectItem value="legacy" className="font-semibold">Legacy (Lifetime)</SelectItem>
+                              <SelectItem value="influencer" className="font-semibold">🌟 Influencer (7-day VIP)</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
