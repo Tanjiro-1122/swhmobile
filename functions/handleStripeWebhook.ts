@@ -47,7 +47,19 @@ Deno.serve(async (req) => {
 
       if (subscription_type) {
         console.log(`Updating user ${base44UserId} to ${subscription_type}`);
-        await base44Admin.entities.User.update(base44UserId, { subscription_type });
+        const updateData = { 
+          subscription_type,
+          subscription_status: 'active'
+        };
+        
+        // For VIP annual, set expiry date 1 year from now
+        if (subscription_type === 'vip_annual') {
+          const expiryDate = new Date();
+          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+          updateData.subscription_expiry_date = expiryDate.toISOString().split('T')[0];
+        }
+        
+        await base44Admin.entities.User.update(base44UserId, updateData);
       }
     }
     
@@ -59,8 +71,25 @@ Deno.serve(async (req) => {
       // Find user by stripe_customer_id
       const users = await base44Admin.entities.User.filter({ stripe_customer_id: customerId });
       if (users.length > 0) {
-        await base44Admin.entities.User.update(users[0].id, { subscription_type: 'free' });
+        await base44Admin.entities.User.update(users[0].id, { 
+          subscription_type: 'free',
+          subscription_status: 'canceled'
+        });
         console.log(`Subscription cancelled for user ${users[0].id}`);
+      }
+    }
+    
+    // Handle subscription status updates (past_due, etc.)
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+      
+      const users = await base44Admin.entities.User.filter({ stripe_customer_id: customerId });
+      if (users.length > 0) {
+        await base44Admin.entities.User.update(users[0].id, { 
+          subscription_status: subscription.status
+        });
+        console.log(`Subscription status updated to ${subscription.status} for user ${users[0].id}`);
       }
     }
 
