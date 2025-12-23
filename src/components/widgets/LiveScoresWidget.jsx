@@ -210,25 +210,25 @@ export default function LiveScoresWidget() {
   // Smooth continuous auto-scroll effect
   React.useEffect(() => {
     if (!isAutoScrolling || filteredScores.length <= 1 || !scrollRef.current) return;
-    
+
     const scrollContainer = scrollRef.current;
     let animationId;
-    let scrollSpeed = 0.5; // Pixels per frame - smooth and slow
-    
+    let scrollSpeed = 1.5; // Pixels per frame - faster scrolling
+
     const animate = () => {
       const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-      
+
       if (scrollContainer.scrollLeft >= maxScroll) {
         scrollContainer.scrollLeft = 0;
       } else {
         scrollContainer.scrollLeft += scrollSpeed;
       }
-      
+
       animationId = requestAnimationFrame(animate);
     };
-    
+
     animationId = requestAnimationFrame(animate);
-    
+
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
