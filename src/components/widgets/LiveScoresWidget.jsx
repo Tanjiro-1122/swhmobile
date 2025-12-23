@@ -243,29 +243,36 @@ export default function LiveScoresWidget() {
         />
       </div>
       
-      {/* Games Carousel */}
-      <div className="p-4 md:p-6">
+      {/* Games Marquee */}
+      <div className="py-4 overflow-hidden">
         {filteredScores.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-              <Trophy className="w-8 h-8 text-slate-500" />
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-3">
+              <Trophy className="w-6 h-6 text-slate-500" />
             </div>
             <p className="text-slate-400 text-sm">No games scheduled right now</p>
-            <p className="text-slate-500 text-xs mt-1">Check back later for live updates</p>
           </div>
         ) : (
           <div 
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
-            onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
-            onMouseEnter={handleUserInteraction}
-            onTouchStart={handleUserInteraction}
+            className="relative"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
           >
-            <AnimatePresence mode="popLayout">
-              {filteredScores.map((game, index) => (
-                <GameCard key={game.id} game={game} index={index} />
+            <div 
+              className={`flex gap-4 ${isPaused ? '' : 'animate-marquee-scroll'}`}
+              style={{ width: 'max-content' }}
+            >
+              {/* First set */}
+              {filteredScores.map((game) => (
+                <GameCard key={game.id} game={game} />
               ))}
-            </AnimatePresence>
+              {/* Duplicate set for seamless loop */}
+              {filteredScores.map((game) => (
+                <GameCard key={`dup-${game.id}`} game={game} />
+              ))}
+            </div>
           </div>
         )}
       </div>
