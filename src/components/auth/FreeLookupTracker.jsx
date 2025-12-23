@@ -66,8 +66,8 @@ export function useFreeLookupTracker() {
                 setIsLoading(false);
                 return;
               }
-            } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
-              // Legacy, VIP Annual (no expiry set), and Premium Monthly users have UNLIMITED searches
+            } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly' || tier === 'influencer') {
+              // Legacy, VIP Annual (no expiry set), Premium Monthly, and Influencer users have UNLIMITED searches
               setLookupsRemaining(999); // Unlimited
               setIsLoading(false);
               return;
@@ -115,7 +115,7 @@ export function useFreeLookupTracker() {
 
   const recordLookup = async () => {
     // NEVER count lookups for paid tiers
-    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
+    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer') {
       return true;
     }
     
@@ -151,7 +151,7 @@ export function useFreeLookupTracker() {
 
   const canLookup = () => {
     // ALWAYS allow paid tiers
-    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly') {
+    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer') {
       return true;
     }
     
@@ -437,6 +437,22 @@ export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }
             <Crown className="w-6 h-6 text-white" />
             <span className="text-white font-bold text-lg">
               💎 VIP ANNUAL MEMBER - Unlimited Access! 💎
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Influencer members
+  if (userTier === 'influencer') {
+    return (
+      <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 border-b-4 border-pink-300 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-3">
+            <Sparkles className="w-6 h-6 text-white" />
+            <span className="text-white font-bold text-lg">
+              🌟 INFLUENCER - Full Access for Review! 🌟
             </span>
           </div>
         </div>
