@@ -155,9 +155,19 @@ export function useFreeLookupTracker() {
   return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
 }
 
-export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
+export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticated: isAuthProp }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMobileApp, setIsMobileApp] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(isAuthProp ?? false);
+  
+  useEffect(() => {
+    // Check auth if not passed as prop
+    if (isAuthProp === undefined) {
+      base44.auth.isAuthenticated().then(setIsAuthenticated).catch(() => setIsAuthenticated(false));
+    } else {
+      setIsAuthenticated(isAuthProp);
+    }
+  }, [isAuthProp]);
 
   useEffect(() => {
     const checkMobileApp = () => {
@@ -345,7 +355,23 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining }) {
                 </div>
               </div>
 
-              <p className="text-center text-xs text-gray-500">
+              {/* Sign up option for unauthenticated users */}
+              {!isAuthenticated && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-center text-sm text-gray-700 mb-3">
+                    <strong>Or create a free account</strong> to get 5 renewable searches every month!
+                  </p>
+                  <Button
+                    onClick={() => base44.auth.redirectToLogin()}
+                    variant="outline"
+                    className="w-full border-2 border-green-500 text-green-700 hover:bg-green-50"
+                  >
+                    Create Free Account (5 searches/month)
+                  </Button>
+                </div>
+              )}
+
+              <p className="text-center text-xs text-gray-500 mt-4">
                 ✅ 14-day money-back guarantee • Secure payment
               </p>
             </CardContent>
