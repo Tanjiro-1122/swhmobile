@@ -14,6 +14,7 @@ import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
 import NeonCard from "@/components/dashboard/NeonCard";
 import CircuitBackground from "@/components/dashboard/CircuitBackground";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import LiveScoresWidget from "@/components/widgets/LiveScoresWidget";
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black" },
@@ -82,6 +83,9 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
     return (
         <div className="w-full relative z-10">
             <DashboardHeader userName={userName} />
+            <div className="mb-8">
+                <LiveScoresWidget />
+            </div>
             <TodaysPredictions />
             <div className="mt-10">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
@@ -94,28 +98,34 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
     return (
         <div className="w-full">
             <motion.div 
-                className="text-center pt-2 pb-8"
+                className="text-center pt-2 pb-6"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
                 {/* Glowing logo container */}
-                <div className="relative inline-block mb-6">
+                <div className="relative inline-block mb-4">
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-3xl blur-xl opacity-40 animate-pulse" />
                     <img
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
                         alt="SWH Logo"
-                        className="relative w-24 h-24 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
+                        className="relative w-20 h-20 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
                     />
                 </div>
-                <h1 className="text-3xl font-black tracking-tighter">
+                <h1 className="text-2xl font-black tracking-tighter">
                     <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
                         SPORTS WAGER HELPER
                     </span>
                 </h1>
-                <p className="text-slate-400 mt-2 text-md font-medium">
-                    AI-Powered Sports Analytics & Insights
+                <p className="text-slate-400 mt-1 text-sm font-medium">
+                    AI-Powered Sports Analytics
                 </p>
             </motion.div>
+            
+            {/* Live Scores Widget for Mobile */}
+            <div className="mb-6">
+                <LiveScoresWidget />
+            </div>
+            
             <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
         </div>
     );
