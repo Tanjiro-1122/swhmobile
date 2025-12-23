@@ -238,26 +238,6 @@ export default function LiveScoresWidget() {
               <p className="text-xs text-slate-400">{scores.length} games today</p>
             </div>
           </div>
-          
-          {/* Scroll Controls */}
-          <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
-              onClick={() => scroll('left')}
-            >
-              <ChevronLeft className="w-4 h-4 text-white" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-8 h-8 rounded-full bg-white/5 border-white/10 hover:bg-white/10"
-              onClick={() => scroll('right')}
-            >
-              <ChevronRight className="w-4 h-4 text-white" />
-            </Button>
-          </div>
         </div>
         
         {/* Sport Filters */}
