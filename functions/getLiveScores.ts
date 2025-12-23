@@ -54,8 +54,7 @@ Deno.serve(async (req) => {
                 status = 'Final';
             }
 
-            // Skip completed games
-            if (status === 'Final') return null;
+            // Include Final games for ticker display (shows recent results)
 
             const homeScore = homeTeam.score || '0';
             const awayScore = awayTeam.score || '0';
