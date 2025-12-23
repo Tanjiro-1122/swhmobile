@@ -187,7 +187,9 @@ const SportFilter = ({ sports, activeSport, onSelect }) => (
 export default function LiveScoresWidget() {
   const [activeSport, setActiveSport] = useState('all');
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const scrollRef = React.useRef(null);
+  const autoScrollRef = React.useRef(null);
   
   const { data: scores = [], isLoading, error } = useQuery({
     queryKey: ['liveScores'],
@@ -205,7 +207,39 @@ export default function LiveScoresWidget() {
   
   const liveCount = scores.filter(g => g.status === 'Live').length;
 
+  // Auto-scroll effect
+  React.useEffect(() => {
+    if (!isAutoScrolling || filteredScores.length <= 1 || !scrollRef.current) return;
+    
+    const scrollContainer = scrollRef.current;
+    const cardWidth = 320; // Approximate card width + gap
+    
+    autoScrollRef.current = setInterval(() => {
+      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+      const currentScroll = scrollContainer.scrollLeft;
+      
+      if (currentScroll >= maxScroll - 10) {
+        // Reset to start smoothly
+        scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        scrollContainer.scrollTo({ left: currentScroll + cardWidth, behavior: 'smooth' });
+      }
+    }, 4000); // Scroll every 4 seconds
+    
+    return () => {
+      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+    };
+  }, [isAutoScrolling, filteredScores.length]);
+
+  // Pause auto-scroll on user interaction
+  const handleUserInteraction = () => {
+    setIsAutoScrolling(false);
+    // Resume auto-scroll after 10 seconds of no interaction
+    setTimeout(() => setIsAutoScrolling(true), 10000);
+  };
+
   const scroll = (direction) => {
+    handleUserInteraction();
     if (scrollRef.current) {
       const scrollAmount = 300;
       const newPosition = direction === 'left' 
@@ -314,6 +348,8 @@ export default function LiveScoresWidget() {
             ref={scrollRef}
             className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
             onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
+            onMouseEnter={handleUserInteraction}
+            onTouchStart={handleUserInteraction}
           >
             <AnimatePresence mode="popLayout">
               {filteredScores.map((game, index) => (
