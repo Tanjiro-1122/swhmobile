@@ -14,7 +14,7 @@ import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
 import NeonCard from "@/components/dashboard/NeonCard";
 import CircuitBackground from "@/components/dashboard/CircuitBackground";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import LiveScoresWidget from "@/components/widgets/LiveScoresWidget";
+
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
@@ -83,9 +83,7 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
     return (
         <div className="w-full relative z-10">
             <DashboardHeader userName={userName} />
-            <div className="mb-8">
-                <LiveScoresWidget />
-            </div>
+
             <TodaysPredictions />
             <div className="mt-10">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
@@ -121,10 +119,7 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
                 </p>
             </motion.div>
             
-            {/* Live Scores Widget for Mobile */}
-            <div className="mb-6">
-                <LiveScoresWidget />
-            </div>
+
             
             <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
         </div>
