@@ -63,11 +63,13 @@ export function useFreeLookupTracker() {
                 // Continue to free user logic below
               } else {
                 setLookupsRemaining(999); // Unlimited - still valid
+                setIsLoading(false);
                 return;
               }
             } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly') {
               // Legacy, VIP Annual (no expiry set), and Premium Monthly users have UNLIMITED searches
               setLookupsRemaining(999); // Unlimited
+              setIsLoading(false);
               return;
             }
             
