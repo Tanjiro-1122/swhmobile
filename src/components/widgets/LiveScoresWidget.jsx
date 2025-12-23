@@ -36,24 +36,19 @@ const LivePulse = () => (
   </span>
 );
 
-const GameCard = ({ game, index }) => {
+const GameCard = ({ game }) => {
   const isLive = game.status === 'Live';
   const colors = sportColors[game.sport_title] || sportColors['NFL'];
   const icon = sportIcons[game.sport_title] || '🏆';
   
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+    <div
       className={`
         relative overflow-hidden rounded-2xl 
         bg-gradient-to-br ${colors.bg}
         border ${colors.border}
         backdrop-blur-xl
         ${isLive ? `shadow-lg ${colors.glow}` : ''}
-        hover:scale-[1.02] transition-transform duration-300
         min-w-[280px] md:min-w-[320px] flex-shrink-0
       `}
     >
@@ -129,18 +124,8 @@ const GameCard = ({ game, index }) => {
             )}
           </div>
         </div>
-        
-        {/* Game Detail */}
-        {isLive && game.detail && (
-          <div className="mt-3 pt-3 border-t border-white/10">
-            <div className="flex items-center justify-center gap-2">
-              <Zap className="w-3 h-3 text-yellow-400" />
-              <span className="text-xs text-slate-300">{game.detail}</span>
-            </div>
-          </div>
-        )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
