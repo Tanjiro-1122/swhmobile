@@ -15,7 +15,6 @@ import NeonCard from "@/components/dashboard/NeonCard";
 import CircuitBackground from "@/components/dashboard/CircuitBackground";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import LiveScoresWidget from "@/components/widgets/LiveScoresWidget";
-import AdBanner from "@/components/ads/AdBanner";
 
 const allMenuItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
@@ -87,17 +86,9 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
             <div className="mb-8">
                 <LiveScoresWidget />
             </div>
-            {/* Ad for free users */}
-            <div className="mb-6">
-                <AdBanner slot="1234567890" format="horizontal" />
-            </div>
             <TodaysPredictions />
             <div className="mt-10">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
-            </div>
-            {/* Bottom ad for free users */}
-            <div className="mt-8">
-                <AdBanner slot="0987654321" format="auto" />
             </div>
         </div>
     );
@@ -134,18 +125,8 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
             <div className="mb-6">
                 <LiveScoresWidget />
             </div>
-
-            {/* Ad for free users */}
-            <div className="mb-4">
-                <AdBanner slot="1234567890" format="rectangle" />
-            </div>
             
             <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
-            
-            {/* Bottom ad for free users */}
-            <div className="mt-6">
-                <AdBanner slot="0987654321" format="auto" />
-            </div>
         </div>
     );
 };
