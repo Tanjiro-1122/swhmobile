@@ -99,7 +99,7 @@ export default function TodaysPredictions() {
     };
 
     return (
-        <div className="w-full mb-12">
+        <div className="w-full">
             <div className="flex items-center justify-between mb-4">
                  <div className="flex items-center gap-3">
                     <Zap className="w-6 h-6 text-cyan-400" />
