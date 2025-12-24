@@ -61,10 +61,58 @@ export default function AnimatedSAL3D({ onPromptClick, isExiting = false }) {
             {/* Animated Owl Video Container */}
             <motion.div
                 className="relative w-64 h-64"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, scale: 0.5, y: 100, rotate: -10 }}
+                animate={isExiting ? { 
+                    opacity: 0, 
+                    scale: 0.3, 
+                    x: 300, 
+                    y: -100,
+                    rotate: 15
+                } : { 
+                    opacity: 1, 
+                    scale: 1, 
+                    y: 0,
+                    rotate: 0
+                }}
+                transition={{ 
+                    type: "spring", 
+                    stiffness: 100, 
+                    damping: 15,
+                    duration: isExiting ? 0.5 : 0.8 
+                }}
             >
+                {/* Entry greeting speech bubble */}
+                <AnimatePresence>
+                    {showGreeting && !hasEntered && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0, y: -20 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                            className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap"
+                        >
+                            <div className="bg-gradient-to-r from-purple-600 to-cyan-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                                {greeting}
+                            </div>
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Exit message */}
+                <AnimatePresence>
+                    {isExiting && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute -top-12 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap"
+                        >
+                            <div className="bg-gradient-to-r from-lime-500 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                                Let me look that up! 🔍
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 {/* Ambient glow layers */}
                 <motion.div 
                     className="absolute inset-0 rounded-full"
