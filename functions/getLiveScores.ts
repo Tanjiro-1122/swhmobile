@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // ESPN hidden API endpoints for scoreboards
 const ESPN_ENDPOINTS = {
