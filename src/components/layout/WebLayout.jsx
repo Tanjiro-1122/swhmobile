@@ -5,6 +5,7 @@ import TopBar from '../navigation/TopBar';
 import { motion } from 'framer-motion';
 import Footer from './Footer';
 import SalFloatingButton from '../assistant/SalFloatingButton';
+import WhatsAppButton from '../widgets/WhatsAppButton';
 
 const AuroraBackground = () => {
   const ref = useRef(null);
