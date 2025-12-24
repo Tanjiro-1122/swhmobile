@@ -25,7 +25,7 @@ const TopBar = () => {
     const navLinks = user 
         ? [
             { name: 'Dashboard', page: 'Dashboard' },
-            { name: 'AI Assistant', page: 'AIAssistant' },
+            { name: 'S.A.L. The Detective', page: 'AskSAL' },
             { name: 'Analysis', page: 'AnalysisHub' },
             { name: 'Pricing', page: 'Pricing' },
           ]
