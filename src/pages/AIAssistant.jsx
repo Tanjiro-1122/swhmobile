@@ -182,20 +182,9 @@ function SALHubPage() {
                     <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm min-h-[500px]">
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 md:p-6">
-                            <AnimatePresence>
-                                {messages.length === 0 && !isLoading && !isSending && (
-                                    <motion.div
-                                        key="sal-intro"
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <AnimatedSAL3D 
-                                            onPromptClick={(text) => handleQuickPrompt(text)} 
-                                            isExiting={false}
-                                        />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {messages.length === 0 && !isLoading && (
+                                <AnimatedSAL3D onPromptClick={(text) => handleQuickPrompt(text)} />
+                            )}
 
                             {isLoading && (
                                 <div className="flex items-center justify-center h-full">
