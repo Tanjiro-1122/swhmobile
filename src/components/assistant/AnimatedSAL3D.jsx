@@ -13,7 +13,7 @@ export default function AnimatedSAL3D({ onPromptClick }) {
         { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: "LearningCenter" },
         { text: "Read today's daily brief", icon: Newspaper, color: "from-amber-500 to-orange-500", link: "DailyBriefs" },
         { text: "Discuss it amongst your peers", icon: Users, color: "from-green-500 to-emerald-500", link: "CommunityHub" },
-        { text: "Ask S.A.L.", icon: Zap, color: "from-cyan-500 to-blue-500", link: "AIAssistant" },
+        { text: "Ask S.A.L.", icon: null, color: "from-cyan-500 to-blue-500", link: "AskSAL", owlImage: true },
     ];
 
     return (
@@ -122,9 +122,17 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                                             transition={{ delay: 0.5 + idx * 0.1 }}
                                             className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-white/10 hover:border-white/30 hover:from-slate-700/80 hover:to-slate-600/80 transition-all text-left group"
                                         >
-                                            <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color}`}>
-                                                <IconComponent className="w-4 h-4 text-white" />
-                                            </div>
+                                            {action.owlImage ? (
+                                                <img 
+                                                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                                    alt="S.A.L."
+                                                    className="w-7 h-7 rounded-lg object-cover border border-purple-400/50"
+                                                />
+                                            ) : (
+                                                <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color}`}>
+                                                    <IconComponent className="w-4 h-4 text-white" />
+                                                </div>
+                                            )}
                                             <span className="text-white/80 text-sm group-hover:text-white transition-colors">{action.text}</span>
                                         </motion.div>
                                     </Link>

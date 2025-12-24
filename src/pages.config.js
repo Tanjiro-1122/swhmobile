@@ -38,6 +38,7 @@ import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
 import AIAssistant from './pages/AIAssistant';
+import AskSAL from './pages/AskSAL';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +83,7 @@ export const PAGES = {
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
     "AIAssistant": AIAssistant,
+    "AskSAL": AskSAL,
 }
 
 export const pagesConfig = {

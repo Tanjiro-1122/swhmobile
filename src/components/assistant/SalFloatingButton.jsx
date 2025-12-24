@@ -37,7 +37,7 @@ export default function SalFloatingButton() {
         )}
       </AnimatePresence>
 
-      <Link to={createPageUrl('AIAssistant')}>
+      <Link to={createPageUrl('AskSAL')}>
         <motion.div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
