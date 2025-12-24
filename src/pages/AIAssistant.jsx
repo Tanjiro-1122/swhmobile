@@ -255,32 +255,6 @@ function SALHubPage() {
                                 </div>
                             </div>
                         </motion.div>
-                    </TabsContent>
-
-                    {/* Learn Tab */}
-                    <TabsContent value="learn">
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <LearningCenterContent />
-                        </Suspense>
-                    </TabsContent>
-
-                    {/* Briefs Tab */}
-                    <TabsContent value="briefs">
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <BettingBriefsContent />
-                        </Suspense>
-                    </TabsContent>
-
-                    {/* Community Tab */}
-                    <TabsContent value="community">
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <div className="space-y-6">
-                                <VIPDiscordCard />
-                                <CommunityContent />
-                            </div>
-                        </Suspense>
-                    </TabsContent>
-                </Tabs>
             </div>
         </div>
     );
