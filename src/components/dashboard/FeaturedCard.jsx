@@ -22,8 +22,12 @@ export default function FeaturedCard({ item, index }) {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 p-[1px]">
-                  <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center">
-                    <Icon className="w-7 h-7 text-white" />
+                  <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden">
+                    {item.customIcon ? (
+                      <img src={item.customIcon} alt={item.title} className="w-full h-full object-cover rounded-xl" />
+                    ) : Icon ? (
+                      <Icon className="w-7 h-7 text-white" />
+                    ) : null}
                   </div>
                 </div>
                 <div>
