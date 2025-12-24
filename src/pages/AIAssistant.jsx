@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
 import MessageBubble from '@/components/assistant/MessageBubble';
+import AnimatedSAL3D from '@/components/assistant/AnimatedSAL3D';
 import ProcessingSteps from '@/components/assistant/ProcessingSteps';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -24,7 +25,6 @@ function SALHubPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [processingStep, setProcessingStep] = useState(null); // 'gathering' | 'analyzing' | 'complete'
-    const [showAskScreen, setShowAskScreen] = useState(true);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -74,7 +74,6 @@ function SALHubPage() {
 
     const startNewChat = async (initialMessage = null) => {
         setIsLoading(true);
-        setShowAskScreen(false);
         try {
             const newConversation = await base44.agents.createConversation({
                 agent_name: AGENT_NAME,
@@ -127,83 +126,9 @@ function SALHubPage() {
         }
     };
 
-    // Ask screen - first screen when user arrives
-    if (showAskScreen && messages.length === 0 && !isLoading) {
-        return (
-            <div className="overflow-x-hidden">
-                <div className="max-w-6xl mx-auto w-full">
-                    <div className="w-full flex justify-start mb-2">
-                        <Link to={createPageUrl('Dashboard')}>
-                            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back to Dashboard
-                            </Button>
-                        </Link>
-                    </div>
-
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4"
-                    >
-                        {/* Animated Owl */}
-                        <motion.div
-                            className="relative mb-8"
-                            animate={{ y: [0, -10, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        >
-                            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-2xl opacity-40" />
-                            <video 
-                                src={ANIMATED_OWL_VIDEO}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl object-cover border-2 border-purple-400/50 shadow-2xl"
-                            />
-                        </motion.div>
-
-                        {/* Title */}
-                        <h1 className="text-3xl md:text-4xl font-black mb-3">
-                            <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
-                                Ask S.A.L.
-                            </span>
-                        </h1>
-                        <p className="text-slate-400 text-lg mb-8 max-w-md">
-                            Greetings, my curious friend! What sporting mystery shall we unravel together today?
-                        </p>
-
-                        {/* Input */}
-                        <div className="w-full max-w-lg">
-                            <form onSubmit={handleSendMessage} className="relative">
-                                <Textarea
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="State your case... What do you wish to know?"
-                                    className="bg-slate-800/80 border-2 border-purple-500/30 rounded-xl pr-14 text-base focus:ring-purple-500 focus:border-purple-500 min-h-[80px] resize-none"
-                                    rows={3}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSendMessage(e);
-                                        }
-                                    }}
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={!newMessage.trim()}
-                                    className="absolute right-3 bottom-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl"
-                                    size="sm"
-                                >
-                                    <Send className="w-4 h-4" />
-                                </Button>
-                            </form>
-                        </div>
-                    </motion.div>
-                </div>
-            </div>
-        );
-    }
+    const handleQuickPrompt = (promptText) => {
+        handleSendMessage(null, promptText);
+    };
 
     return (
         <div className="overflow-x-hidden">
@@ -276,6 +201,10 @@ function SALHubPage() {
                     <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm min-h-[500px]">
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                            {messages.length === 0 && !isLoading && (
+                                <AnimatedSAL3D onPromptClick={(text) => handleQuickPrompt(text)} />
+                            )}
+
                             {isLoading && (
                                 <div className="flex items-center justify-center h-full">
                                     <div className="text-center">
