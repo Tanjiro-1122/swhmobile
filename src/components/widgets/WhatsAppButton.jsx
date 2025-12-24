@@ -9,7 +9,7 @@ export default function WhatsAppButton() {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <div className="fixed bottom-6 right-20 z-50">
+    <div className="fixed bottom-6 right-28 z-50">
       {/* Chat Popup */}
       <AnimatePresence>
         {isOpen && (
