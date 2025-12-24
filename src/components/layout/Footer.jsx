@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Bot, Facebook, Instagram } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -9,9 +9,13 @@ const Footer = () => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid md:grid-cols-4 gap-8">
                     <div className="md:col-span-2">
-                        <Link to={createPageUrl('Home')} className="flex items-center gap-2 mb-4">
-                            <Bot className="w-7 h-7 text-lime-400" />
-                            <span className="text-xl font-bold text-white">SportWagerHelper</span>
+                        <Link to={createPageUrl('Home')} className="flex items-center gap-3 mb-4">
+                            <img
+                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                                alt="Sports Wager Helper"
+                                className="w-10 h-10 rounded-xl object-cover"
+                            />
+                            <span className="text-xl font-bold text-white">Sports Wager Helper</span>
                         </Link>
                         <p className="text-slate-400 max-w-sm">
                             Revolutionizing sports betting with machine learning and real-time data analysis. Join the smart money revolution.
@@ -38,7 +42,7 @@ const Footer = () => {
                 </div>
                 <div className="mt-12 border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center">
                      <p className="text-slate-500 text-sm mb-4 md:mb-0">
-                        &copy; {new Date().getFullYear()} SportWagerHelper AI. All rights reserved.
+                        &copy; {new Date().getFullYear()} Sports Wager Helper AI. All rights reserved.
                     </p>
                     <div className="flex items-center gap-4">
                         <a 
