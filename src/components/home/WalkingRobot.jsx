@@ -10,6 +10,7 @@ export default function WalkingRobot() {
   const [walkCycle, setWalkCycle] = useState(0);
 
   const getPosition = (currentEdge, currentProgress) => {
+    if (typeof window === 'undefined') return { x: 80, y: 80 };
     const padding = 80;
     const maxX = window.innerWidth - 100;
     const maxY = window.innerHeight - 100;
@@ -23,7 +24,11 @@ export default function WalkingRobot() {
     }
   };
 
-  const [position, setPosition] = useState(() => getPosition(0, 0));
+  const [position, setPosition] = useState({ x: 80, y: 80 });
+  
+  useEffect(() => {
+    setPosition(getPosition(0, 0));
+  }, []);
 
   // Smooth walking animation at 60fps feel
   useEffect(() => {
