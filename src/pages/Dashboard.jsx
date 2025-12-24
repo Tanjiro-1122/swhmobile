@@ -26,16 +26,14 @@ const featuredItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
 ];
 
-// Secondary menu items in the grid below
+// Secondary menu items - reduced to most essential (6 max for cleaner layout)
 const secondaryMenuItems = [
-    { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds comparison", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
-    { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Daily briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
-    { id: "briefs", title: "DAILY BRIEFS", subtitle: "AI Market Insights", description: "Daily analysis, top picks, and news", Icon: FileText, page: "DailyBriefs", tag: "FREE", tagColor: "bg-green-500 text-white", webOnly: true },
-    { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, preferences, subscription", Icon: User, page: "MyAccount", tag: null },
-    { id: "sportsnews", title: "SPORTS NEWS & SCORES", subtitle: "Live Updates", description: "Live scores, news ticker & RSS feeds", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
-    { id: "thenews", title: "TODAY'S INSIGHTS", subtitle: "Latest Updates", description: "Sports betting briefs & news", Icon: Newspaper, page: "TopStats", tag: "FREE", tagColor: "bg-green-500 text-white" },
+    { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
+    { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
+    { id: "sportsnews", title: "LIVE SCORES", subtitle: "Live Updates", description: "Live scores & news ticker", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
     { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
-    { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
+    { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, subscription", Icon: User, page: "MyAccount", tag: null },
+    { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
 
 // Combined for mobile view
@@ -125,11 +123,11 @@ const WebDashboardContent = ({ featuredItems, menuItems, isAdmin, userName, isPa
                 </div>
             </div>
             
-            {/* Secondary Navigation Grid */}
+            {/* Secondary Navigation Grid - Compact 3-column */}
             <div className="mb-4">
                 <h2 className="text-lg font-bold text-slate-300 mb-4">More Tools</h2>
             </div>
-            <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
+            <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-2 lg:grid-cols-3" />
         </div>
     );
 };

@@ -88,115 +88,70 @@ export default function AIAccuracyWidget() {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="h-full"
         >
-            <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700 h-full overflow-hidden relative group hover:border-purple-500/50 transition-colors">
-                {/* Subtle glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                <CardContent className="p-5 relative">
+            <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700 overflow-hidden relative group hover:border-purple-500/50 transition-colors">
+                <CardContent className="p-4 relative">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-purple-500/20 rounded-lg">
-                                <Target className="w-5 h-5 text-purple-400" />
-                            </div>
-                            <span className="font-bold text-white">AI Performance</span>
+                            <Target className="w-4 h-4 text-purple-400" />
+                            <span className="font-bold text-white text-sm">AI Performance</span>
                         </div>
                         {streak >= 3 && (
-                            <div className="flex items-center gap-1 bg-orange-500/20 border border-orange-500/30 rounded-full px-2 py-1">
+                            <div className="flex items-center gap-1 bg-orange-500/20 rounded-full px-2 py-0.5">
                                 <Flame className="w-3 h-3 text-orange-400" />
-                                <span className="text-orange-400 text-xs font-bold">{streak} Streak!</span>
+                                <span className="text-orange-400 text-xs font-bold">{streak}🔥</span>
                             </div>
                         )}
                     </div>
 
-                    {/* Main Stats */}
-                    <div className="flex items-center gap-6 mb-4">
-                        {/* Accuracy Circle */}
-                        <div className="relative">
-                            <svg className="w-20 h-20 -rotate-90">
-                                <circle
-                                    cx="40"
-                                    cy="40"
-                                    r="35"
-                                    stroke="currentColor"
-                                    strokeWidth="6"
-                                    fill="none"
-                                    className="text-slate-700"
-                                />
-                                <circle
-                                    cx="40"
-                                    cy="40"
-                                    r="35"
-                                    stroke="url(#gradient)"
-                                    strokeWidth="6"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    strokeDasharray={`${accuracy * 2.2} 220`}
-                                    className="transition-all duration-1000"
-                                />
+                    {/* Compact Stats Row */}
+                    <div className="flex items-center gap-4 mb-3">
+                        {/* Smaller Accuracy Circle */}
+                        <div className="relative flex-shrink-0">
+                            <svg className="w-14 h-14 -rotate-90">
+                                <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="none" className="text-slate-700" />
+                                <circle cx="28" cy="28" r="24" stroke="url(#gradientCompact)" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray={`${accuracy * 1.5} 150`} className="transition-all duration-1000" />
                                 <defs>
-                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <linearGradient id="gradientCompact" x1="0%" y1="0%" x2="100%" y2="0%">
                                         <stop offset="0%" stopColor="#a855f7" />
                                         <stop offset="100%" stopColor="#06b6d4" />
                                     </linearGradient>
                                 </defs>
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-2xl font-black text-white">{accuracy}%</span>
+                                <span className="text-lg font-black text-white">{accuracy}%</span>
                             </div>
                         </div>
 
-                        {/* Stats Grid */}
-                        <div className="flex-1 grid grid-cols-2 gap-3">
-                            <div className="text-center p-2 bg-slate-800/50 rounded-lg">
-                                <p className="text-xl font-bold text-green-400">{wins}</p>
-                                <p className="text-xs text-slate-400">Wins</p>
+                        {/* Stats */}
+                        <div className="flex gap-4 flex-1">
+                            <div className="text-center">
+                                <p className="text-lg font-bold text-green-400">{wins}</p>
+                                <p className="text-xs text-slate-500">Wins</p>
                             </div>
-                            <div className="text-center p-2 bg-slate-800/50 rounded-lg">
-                                <p className="text-xl font-bold text-slate-300">{total}</p>
-                                <p className="text-xs text-slate-400">Total</p>
+                            <div className="text-center">
+                                <p className="text-lg font-bold text-slate-300">{total}</p>
+                                <p className="text-xs text-slate-500">Total</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Recent Results Strip */}
-                    {recentResults.length > 0 && (
-                        <div className="mb-4">
-                            <p className="text-xs text-slate-500 mb-2">Last 10 predictions</p>
-                            <div className="flex gap-1">
-                                {recentResults.map((won, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
-                                            won 
-                                                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                        }`}
-                                    >
-                                        {won ? 'W' : 'L'}
-                                    </div>
-                                ))}
-                            </div>
+                    {/* High Confidence - Compact */}
+                    <div className="flex items-center justify-between p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg mb-2">
+                        <div className="flex items-center gap-1">
+                            <Award className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-slate-300">High Confidence</span>
                         </div>
-                    )}
-
-                    {/* High Confidence Stat */}
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg">
-                        <div className="flex items-center gap-2">
-                            <Award className="w-4 h-4 text-yellow-400" />
-                            <span className="text-sm text-slate-300">High Confidence Picks</span>
-                        </div>
-                        <span className="text-lg font-bold text-yellow-400">{highConfidenceAccuracy}%</span>
+                        <span className="text-sm font-bold text-yellow-400">{highConfidenceAccuracy}%</span>
                     </div>
 
                     {/* View More Link */}
                     <Link 
                         to={createPageUrl('AnalysisHub') + '?tab=performance'} 
-                        className="mt-4 flex items-center justify-center gap-1 text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors"
+                        className="flex items-center justify-center gap-1 text-purple-400 hover:text-purple-300 text-xs font-medium transition-colors"
                     >
-                        View Full Stats <ChevronRight className="w-4 h-4" />
+                        View Full Stats <ChevronRight className="w-3 h-3" />
                     </Link>
                 </CardContent>
             </Card>
