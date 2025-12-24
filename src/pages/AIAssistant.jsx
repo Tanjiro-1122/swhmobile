@@ -169,44 +169,8 @@ function SALHubPage() {
                     </div>
                 </motion.div>
 
-                {/* Tabs Navigation */}
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <div className="mb-4 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
-                        <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
-                            <TabsTrigger 
-                                value="chat" 
-                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                            >
-                                <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                                <span>Chat with S.A.L.</span>
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="learn" 
-                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                            >
-                                <BookOpen className="w-4 h-4 flex-shrink-0" />
-                                <span>Learn</span>
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="briefs" 
-                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                            >
-                                <Newspaper className="w-4 h-4 flex-shrink-0" />
-                                <span>Daily Briefs</span>
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="community" 
-                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                            >
-                                <Users className="w-4 h-4 flex-shrink-0" />
-                                <span>Community</span>
-                            </TabsTrigger>
-                        </TabsList>
-                    </div>
-
-                    {/* Chat Tab */}
-                    <TabsContent value="chat" className="mt-0">
-                        <motion.div 
+                {/* Chat Section */}
+                <motion.div 
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             className="relative min-h-[500px] rounded-2xl overflow-hidden"
