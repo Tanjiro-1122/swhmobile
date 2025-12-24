@@ -47,10 +47,10 @@ const TopBar = () => {
                     <Link to={createPageUrl(user ? 'Dashboard' : 'Home')} className="flex items-center gap-3">
                         <img
                             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                            alt="SportWagerHelper"
+                            alt="Sports Wager Helper"
                             className="w-9 h-9 rounded-lg"
                         />
-                        <span className="text-xl font-bold text-white hidden sm:inline">SportWagerHelper</span>
+                        <span className="text-xl font-bold text-white hidden sm:inline">Sports Wager Helper</span>
                     </Link>
 
                     {/* Navigation Links - Center (Desktop) */}
