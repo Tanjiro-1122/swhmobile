@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export default function WhatsAppButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
   const phoneNumber = "13527050624";
   const message = "Hi! I'm interested in Sports Wager Helper.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="fixed bottom-6 right-28 z-50">
+    <div ref={containerRef} className="fixed bottom-6 right-28 z-50">
       {/* Chat Popup */}
       <AnimatePresence>
         {isOpen && (
