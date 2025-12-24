@@ -1,43 +1,43 @@
-// LRU Cache utility for predictions and API results
-import { LRUCache } from 'lru-cache';
+// Simple in-memory cache for Deno (no external dependencies)
+// Note: Cache resets on cold starts, but helps reduce duplicate API calls within a session
 
-// Cache configurations for different use cases
-const caches = {
-  // Predictions cache - 10 minutes TTL, 1000 entries max
-  predictions: new LRUCache({
-    max: 1000,
-    ttl: 1000 * 60 * 10, // 10 minutes
-    updateAgeOnGet: true,
-  }),
-  
-  // Player stats cache - 5 minutes TTL, 500 entries max
-  playerStats: new LRUCache({
-    max: 500,
-    ttl: 1000 * 60 * 5, // 5 minutes
-    updateAgeOnGet: true,
-  }),
-  
-  // Team stats cache - 5 minutes TTL, 500 entries max
-  teamStats: new LRUCache({
-    max: 500,
-    ttl: 1000 * 60 * 5, // 5 minutes
-    updateAgeOnGet: true,
-  }),
-  
-  // External API cache - 2 minutes TTL (odds change frequently)
-  externalAPI: new LRUCache({
-    max: 500,
-    ttl: 1000 * 60 * 2, // 2 minutes
-    updateAgeOnGet: true,
-  }),
-  
-  // Sports stats cache - 24 hours TTL (refreshes daily)
-  sportsStats: new LRUCache({
-    max: 200,
-    ttl: 1000 * 60 * 60 * 24, // 24 hours
-    updateAgeOnGet: false,
-  }),
+const caches = new Map();
+
+const CACHE_CONFIG = {
+  predictions: { ttl: 10 * 60 * 1000, max: 1000 },     // 10 minutes
+  playerStats: { ttl: 5 * 60 * 1000, max: 500 },       // 5 minutes
+  teamStats: { ttl: 5 * 60 * 1000, max: 500 },         // 5 minutes
+  externalAPI: { ttl: 2 * 60 * 1000, max: 500 },       // 2 minutes
+  sportsStats: { ttl: 24 * 60 * 60 * 1000, max: 200 }, // 24 hours
 };
+
+function getCache(cacheType) {
+  if (!caches.has(cacheType)) {
+    caches.set(cacheType, new Map());
+  }
+  return caches.get(cacheType);
+}
+
+function isExpired(entry, ttl) {
+  return Date.now() - entry.timestamp > ttl;
+}
+
+function pruneCache(cache, config) {
+  // Remove expired entries
+  for (const [key, entry] of cache.entries()) {
+    if (isExpired(entry, config.ttl)) {
+      cache.delete(key);
+    }
+  }
+  
+  // If still over max, remove oldest entries
+  if (cache.size > config.max) {
+    const entries = Array.from(cache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const toRemove = entries.slice(0, cache.size - config.max);
+    toRemove.forEach(([key]) => cache.delete(key));
+  }
+}
 
 /**
  * Generate a cache key from an object by sorting and stringifying
@@ -54,29 +54,30 @@ export function generateCacheKey(prefix, data) {
 
 /**
  * Wrapper for cached computation
- * @param {string} cacheType - Type of cache to use ('predictions', 'playerStats', 'teamStats', 'externalAPI')
- * @param {string} key - Cache key
- * @param {Function} computeFn - Async function to compute value if cache miss
- * @returns {Promise} Cached or computed value
  */
 export async function withCache(cacheType, key, computeFn) {
-  const cache = caches[cacheType];
-  if (!cache) {
+  const config = CACHE_CONFIG[cacheType];
+  if (!config) {
     console.warn(`Unknown cache type: ${cacheType}`);
     return await computeFn();
   }
 
+  const cache = getCache(cacheType);
+  
   // Check cache
   const cached = cache.get(key);
-  if (cached !== undefined) {
+  if (cached && !isExpired(cached, config.ttl)) {
     console.log(`Cache HIT: ${cacheType}:${key.substring(0, 50)}...`);
-    return cached;
+    return cached.value;
   }
 
   // Cache miss - compute and store
   console.log(`Cache MISS: ${cacheType}:${key.substring(0, 50)}...`);
   const value = await computeFn();
-  cache.set(key, value);
+  
+  cache.set(key, { value, timestamp: Date.now() });
+  pruneCache(cache, config);
+  
   return value;
 }
 
@@ -84,11 +85,11 @@ export async function withCache(cacheType, key, computeFn) {
  * Clear specific cache or all caches
  */
 export function clearCache(cacheType = null) {
-  if (cacheType && caches[cacheType]) {
-    caches[cacheType].clear();
+  if (cacheType && caches.has(cacheType)) {
+    caches.get(cacheType).clear();
     console.log(`Cleared ${cacheType} cache`);
   } else if (!cacheType) {
-    Object.keys(caches).forEach(type => caches[type].clear());
+    caches.clear();
     console.log('Cleared all caches');
   }
 }
@@ -97,13 +98,14 @@ export function clearCache(cacheType = null) {
  * Get cache statistics
  */
 export function getCacheStats() {
-  return Object.keys(caches).reduce((stats, type) => {
-    const cache = caches[type];
+  const stats = {};
+  for (const [type, cache] of caches.entries()) {
+    const config = CACHE_CONFIG[type] || { ttl: 0, max: 0 };
     stats[type] = {
       size: cache.size,
-      max: cache.max,
-      ttl: cache.ttl,
+      max: config.max,
+      ttl: config.ttl,
     };
-    return stats;
-  }, {});
+  }
+  return stats;
 }

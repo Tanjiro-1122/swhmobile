@@ -92,8 +92,8 @@ export default function PlayerStatsContent() {
       <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
 
       {error && (
-        <Alert variant="destructive" className="bg-red-50 border-2 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert variant="destructive" className="bg-red-900/50 border border-red-500/50 backdrop-blur-sm">
+          <AlertDescription className="text-red-200">{error}</AlertDescription>
         </Alert>
       )}
 
