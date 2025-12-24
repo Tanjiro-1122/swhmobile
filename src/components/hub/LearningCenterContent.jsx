@@ -1,127 +1,134 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Clock, ArrowLeft, GraduationCap, TrendingUp, Brain } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  BookOpen, Clock, ArrowLeft, GraduationCap, TrendingUp, Brain, 
+  CheckCircle2, Lock, Play, Trophy, Star, ChevronRight 
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { motion, AnimatePresence } from "framer-motion";
+import { lessons, getLessonById, getAllLessons } from "@/components/learning/LessonContent";
+import QuizComponent from "@/components/learning/QuizComponent";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const lessons = {
-  beginner: [
-    {
-      id: 1,
-      title: "Understanding Odds Formats",
-      duration: "5 min",
-      content: `## Understanding Odds Formats
-
-There are three main odds formats used worldwide:
-
-### American Odds (Moneyline)
-- **Positive odds (+150)**: Shows how much you win on a $100 bet
-- **Negative odds (-150)**: Shows how much you need to bet to win $100
-
-### Decimal Odds
-- Simply multiply your stake by the decimal to get total payout
-- Example: $100 at 2.50 odds = $250 total ($150 profit)
-
-### Fractional Odds
-- Common in UK betting
-- Example: 3/1 means you win $3 for every $1 bet`
-    },
-    {
-      id: 2,
-      title: "Types of Sports Bets",
-      duration: "7 min",
-      content: `## Types of Sports Bets
-
-### Moneyline
-Pick the winner of the game. Simplest bet type.
-
-### Point Spread
-The favorite must win by more than the spread, or the underdog must lose by less.
-
-### Over/Under (Totals)
-Bet on whether the total combined score will be over or under a set number.
-
-### Parlays
-Combine multiple bets into one. All selections must win, but payouts are higher.
-
-### Props
-Bet on specific events within a game (e.g., "Player X scores 30+ points")`
-    }
-  ],
-  intermediate: [
-    {
-      id: 3,
-      title: "Bankroll Management",
-      duration: "10 min",
-      content: `## Bankroll Management
-
-### The Golden Rules
-1. **Never bet more than 1-5% of your bankroll** on a single bet
-2. **Set a budget** and stick to it
-3. **Track every bet** you make
-
-### Unit Sizing
-- Define a "unit" as 1-2% of your total bankroll
-- Bet 1-3 units per wager based on confidence
-
-### Avoid These Mistakes
-- Chasing losses with bigger bets
-- Betting your entire bankroll on "sure things"
-- Emotional betting after a big win or loss`
-    }
-  ],
-  advanced: [
-    {
-      id: 4,
-      title: "Finding Value Bets",
-      duration: "15 min",
-      content: `## Finding Value Bets
-
-A value bet occurs when the probability of an outcome is greater than what the odds suggest.
-
-### Expected Value Formula
-EV = (Probability of Win × Potential Profit) - (Probability of Loss × Stake)
-
-### Key Principles
-1. **Do your own research** - Don't just follow public opinion
-2. **Look for line movement** - Sharp money often moves lines
-3. **Specialize** - Focus on sports/leagues you know well
-
-### Signs of Value
-- Odds that don't match your calculated probability
-- Late line movement against public consensus
-- Under-hyped teams with strong fundamentals`
-    }
-  ]
+const levelConfig = {
+  beginner: { 
+    label: "Beginner", 
+    icon: GraduationCap, 
+    color: "green",
+    bgClass: "data-[state=active]:bg-green-500 data-[state=active]:text-white"
+  },
+  intermediate: { 
+    label: "Intermediate", 
+    icon: TrendingUp, 
+    color: "yellow",
+    bgClass: "data-[state=active]:bg-yellow-500 data-[state=active]:text-black"
+  },
+  advanced: { 
+    label: "Advanced", 
+    icon: Brain, 
+    color: "red",
+    bgClass: "data-[state=active]:bg-red-500 data-[state=active]:text-white"
+  }
 };
 
-export default function LearningCenterContent() {
-  const [selectedLesson, setSelectedLesson] = useState(null);
+const LessonCard = ({ lesson, level, isCompleted, onSelect }) => {
+  const config = levelConfig[level];
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card 
+        className={`border-2 cursor-pointer transition-all hover:shadow-lg ${
+          isCompleted 
+            ? 'border-green-500/30 bg-green-500/5' 
+            : 'border-slate-700 bg-slate-800/50 hover:border-purple-500/50'
+        }`}
+        onClick={() => onSelect(lesson)}
+      >
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              {isCompleted ? (
+                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-purple-400 ml-0.5" />
+                </div>
+              )}
+            </div>
+            {lesson.quiz && (
+              <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-400">
+                <Trophy className="w-3 h-3 mr-1" />
+                Has Quiz
+              </Badge>
+            )}
+          </div>
+          
+          <h3 className="text-lg font-bold text-white mb-2">{lesson.title}</h3>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Clock className="w-4 h-4" />
+              {lesson.duration}
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-500" />
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
-  if (selectedLesson) {
+const LessonViewer = ({ lesson, onBack, onComplete, isCompleted }) => {
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [hasReadLesson, setHasReadLesson] = useState(false);
+
+  useEffect(() => {
+    // Mark lesson as read after 10 seconds of viewing
+    const timer = setTimeout(() => setHasReadLesson(true), 10000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showQuiz && lesson.quiz) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" onClick={() => setSelectedLesson(null)} className="mb-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => setShowQuiz(false)} 
+          className="text-slate-400 hover:text-white"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Lessons
+          Back to Lesson
         </Button>
-        <Card className="border-2 border-blue-200">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-blue-600" />
-              {selectedLesson.title}
+        
+        <Card className="border-2 border-purple-500/30 bg-slate-800/50">
+          <CardHeader className="border-b border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Trophy className="w-5 h-5 text-purple-400" />
+              Quiz: {lesson.title}
             </CardTitle>
-            <Badge variant="secondary" className="w-fit">
-              <Clock className="w-3 h-3 mr-1" />
-              {selectedLesson.duration}
-            </Badge>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="prose prose-gray max-w-none">
-              <ReactMarkdown>{selectedLesson.content}</ReactMarkdown>
-            </div>
+            <QuizComponent 
+              quiz={lesson.quiz}
+              lessonTitle={lesson.title}
+              onComplete={() => {
+                onComplete(lesson.id);
+                onBack();
+              }}
+              onRetry={() => setShowQuiz(false)}
+            />
           </CardContent>
         </Card>
       </div>
@@ -130,42 +137,210 @@ export default function LearningCenterContent() {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="beginner">
-        <TabsList className="bg-gray-100 p-1">
-          <TabsTrigger value="beginner" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-            <GraduationCap className="w-4 h-4 mr-2" />
-            Beginner
-          </TabsTrigger>
-          <TabsTrigger value="intermediate" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Intermediate
-          </TabsTrigger>
-          <TabsTrigger value="advanced" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
-            <Brain className="w-4 h-4 mr-2" />
-            Advanced
-          </TabsTrigger>
+      <Button 
+        variant="ghost" 
+        onClick={onBack} 
+        className="text-slate-400 hover:text-white"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Lessons
+      </Button>
+      
+      <Card className="border-2 border-slate-700 bg-slate-800/50 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-900/50 to-slate-800 border-b border-slate-700">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-3 text-white">
+              <BookOpen className="w-6 h-6 text-purple-400" />
+              {lesson.title}
+            </CardTitle>
+            {isCompleted && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Completed
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <Badge variant="outline" className="text-slate-400 border-slate-600">
+              <Clock className="w-3 h-3 mr-1" />
+              {lesson.duration}
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="p-6">
+          <ScrollArea className="h-[500px] pr-4">
+            <div className="prose prose-invert prose-purple max-w-none 
+              prose-headings:text-white prose-headings:font-bold
+              prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4
+              prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-2 prose-h3:text-purple-300
+              prose-p:text-slate-300 prose-p:leading-relaxed
+              prose-li:text-slate-300
+              prose-strong:text-white
+              prose-code:bg-slate-700 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-purple-300
+            ">
+              <ReactMarkdown>{lesson.content}</ReactMarkdown>
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* Quiz CTA */}
+      {lesson.quiz && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="border-2 border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-slate-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Ready to Test Your Knowledge?</h4>
+                    <p className="text-sm text-slate-400">
+                      Take the quiz to complete this lesson ({lesson.quiz.length} questions)
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowQuiz(true)}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  Start Quiz
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+const ProgressOverview = ({ completedLessons, totalLessons }) => {
+  const percentage = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0;
+  
+  return (
+    <Card className="border-slate-700 bg-slate-800/50 mb-6">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <GraduationCap className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h4 className="font-bold text-white">Your Progress</h4>
+              <p className="text-sm text-slate-400">
+                {completedLessons.length} of {totalLessons} lessons completed
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-2xl font-bold text-purple-400">{percentage}%</span>
+          </div>
+        </div>
+        <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default function LearningCenterContent() {
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Get user's completed lessons from their profile
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const completedLessons = user?.completed_lessons || [];
+  const allLessons = getAllLessons();
+
+  const updateCompletedLessons = useMutation({
+    mutationFn: async (lessonId) => {
+      const updated = [...new Set([...completedLessons, lessonId])];
+      await base44.auth.updateMe({ completed_lessons: updated });
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['currentUser']);
+    }
+  });
+
+  const handleCompleteLesson = (lessonId) => {
+    if (!completedLessons.includes(lessonId)) {
+      updateCompletedLessons.mutate(lessonId);
+    }
+  };
+
+  if (selectedLesson) {
+    return (
+      <LessonViewer
+        lesson={selectedLesson}
+        onBack={() => setSelectedLesson(null)}
+        onComplete={handleCompleteLesson}
+        isCompleted={completedLessons.includes(selectedLesson.id)}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <ProgressOverview 
+        completedLessons={completedLessons} 
+        totalLessons={allLessons.length} 
+      />
+
+      <Tabs defaultValue="beginner" className="space-y-6">
+        <TabsList className="bg-slate-800 p-1 border border-slate-700">
+          {Object.entries(levelConfig).map(([level, config]) => {
+            const Icon = config.icon;
+            const levelLessons = lessons[level] || [];
+            const completedCount = levelLessons.filter(l => completedLessons.includes(l.id)).length;
+            
+            return (
+              <TabsTrigger 
+                key={level}
+                value={level} 
+                className={`${config.bgClass} relative`}
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {config.label}
+                {completedCount > 0 && (
+                  <Badge className="ml-2 bg-white/20 text-xs px-1.5">
+                    {completedCount}/{levelLessons.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         {Object.entries(lessons).map(([level, levelLessons]) => (
-          <TabsContent key={level} value={level}>
+          <TabsContent key={level} value={level} className="mt-6">
             <div className="grid md:grid-cols-2 gap-4">
               {levelLessons.map((lesson) => (
-                <Card 
-                  key={lesson.id} 
-                  className="border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all hover:shadow-lg"
-                  onClick={() => setSelectedLesson(lesson)}
-                >
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{lesson.title}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      {lesson.duration}
-                    </div>
-                    <Button className="mt-4 w-full" variant="outline">
-                      Start Lesson
-                    </Button>
-                  </CardContent>
-                </Card>
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  level={level}
+                  isCompleted={completedLessons.includes(lesson.id)}
+                  onSelect={setSelectedLesson}
+                />
               ))}
             </div>
           </TabsContent>
