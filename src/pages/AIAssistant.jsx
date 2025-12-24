@@ -164,7 +164,7 @@ function SALHubPage() {
                         <div>
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black">
                                 <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
-                                    S.A.L. the Detective
+                                    S.A.L. The Detective
                                 </span>
                             </h1>
                             <p className="text-slate-400 text-sm md:text-base">Your Sports AI Librarian • The game is afoot!</p>
