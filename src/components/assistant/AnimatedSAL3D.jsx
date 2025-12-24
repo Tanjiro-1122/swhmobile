@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
@@ -10,14 +10,41 @@ const DEFAULT_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
 // Default static owl image
 const DEFAULT_OWL_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg';
 
-export default function AnimatedSAL3D({ onPromptClick }) {
+const greetings = [
+    "Hoot hoot! Ready to win big? 🦉",
+    "Welcome back, sports fan!",
+    "Let's find you some winners today!",
+    "The owl sees all... including great bets! 🎯",
+];
+
+export default function AnimatedSAL3D({ onPromptClick, isExiting = false }) {
     const [mascotUrl, setMascotUrl] = useState(DEFAULT_OWL_VIDEO);
+    const [showGreeting, setShowGreeting] = useState(false);
+    const [greeting, setGreeting] = useState('');
+    const [hasEntered, setHasEntered] = useState(false);
 
     useEffect(() => {
         const customUrl = localStorage.getItem('sal_mascot_url');
         if (customUrl) {
             setMascotUrl(customUrl);
         }
+        // Random greeting
+        setGreeting(greetings[Math.floor(Math.random() * greetings.length)]);
+        
+        // Show greeting after owl enters
+        const greetTimer = setTimeout(() => {
+            setShowGreeting(true);
+        }, 800);
+        
+        // Hide greeting and show main content
+        const hideTimer = setTimeout(() => {
+            setHasEntered(true);
+        }, 2500);
+        
+        return () => {
+            clearTimeout(greetTimer);
+            clearTimeout(hideTimer);
+        };
     }, []);
 
     const isVideo = mascotUrl.endsWith('.mp4') || mascotUrl.includes('video') || mascotUrl.includes('imgur.com');
