@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
 
-// Animated owl video URL
-const ANIMATED_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
+// Default animated owl video URL
+const DEFAULT_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
+
+// Default static owl image
+const DEFAULT_OWL_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg';
 
 export default function AnimatedSAL3D({ onPromptClick }) {
+    const [mascotUrl, setMascotUrl] = useState(DEFAULT_OWL_VIDEO);
+
+    useEffect(() => {
+        const customUrl = localStorage.getItem('sal_mascot_url');
+        if (customUrl) {
+            setMascotUrl(customUrl);
+        }
+    }, []);
+
+    const isVideo = mascotUrl.endsWith('.mp4') || mascotUrl.includes('video') || mascotUrl.includes('imgur.com');
 
     const quickActions = [
         { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: "LearningCenter" },
