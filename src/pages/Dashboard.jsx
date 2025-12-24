@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
 import NeonCard from "@/components/dashboard/NeonCard";
+import FeaturedCard from "@/components/dashboard/FeaturedCard";
 import CircuitBackground from "@/components/dashboard/CircuitBackground";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QuickStatsBar from "@/components/dashboard/QuickStatsBar";
@@ -19,9 +20,14 @@ import AIAccuracyWidget from "@/components/dashboard/AIAccuracyWidget";
 import SportsNewsWidget from "@/components/dashboard/SportsNewsWidget";
 
 
-const allMenuItems = [
+// Featured items shown prominently at the top
+const featuredItems = [
     { id: "assistant", title: "AI ASSISTANT", subtitle: "Chat with S.A.L.", description: "Ask about predictions, stats & strategies", Icon: Bot, page: "AIAssistant", tag: "NEW", tagColor: "bg-purple-500 text-white" },
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
+];
+
+// Secondary menu items in the grid below
+const secondaryMenuItems = [
     { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds comparison", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
     { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Daily briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
     { id: "briefs", title: "DAILY BRIEFS", subtitle: "AI Market Insights", description: "Daily analysis, top picks, and news", Icon: FileText, page: "DailyBriefs", tag: "FREE", tagColor: "bg-green-500 text-white", webOnly: true },
@@ -31,6 +37,9 @@ const allMenuItems = [
     { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade your account", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
+
+// Combined for mobile view
+const allMenuItems = [...featuredItems, ...secondaryMenuItems];
 
 // Assign glow colors based on card type
 const getGlowColor = (id) => {
@@ -84,13 +93,23 @@ const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) =
     </div>
 );
 
-const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
+const WebDashboardContent = ({ featuredItems, menuItems, isAdmin, userName, isPaidUser }) => {
+    // Filter featured items based on subscription
+    const visibleFeatured = featuredItems.filter(item => isPaidUser || !item.paidOnly);
+    
     return (
         <div className="w-full relative z-10">
             <DashboardHeader userName={userName} />
             
             {/* Quick Stats Bar */}
             <QuickStatsBar />
+
+            {/* Featured Actions - Primary CTAs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {visibleFeatured.map((item, index) => (
+                    <FeaturedCard key={item.id} item={item} index={index} />
+                ))}
+            </div>
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
@@ -106,9 +125,11 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
                 </div>
             </div>
             
-            <div className="mt-6">
-              <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
+            {/* Secondary Navigation Grid */}
+            <div className="mb-4">
+                <h2 className="text-lg font-bold text-slate-300 mb-4">More Tools</h2>
             </div>
+            <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
         </div>
     );
 };
@@ -140,9 +161,8 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
                 </p>
             </motion.div>
             
-
-            
-            <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1" />
+            {/* 2-column grid for tablets, 1-column for phones */}
+            <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2" />
         </div>
     );
 };
@@ -200,10 +220,13 @@ export default function Dashboard() {
         });
     };
     
-    // For mobile: separate regular items from web-exclusive items
-    const filteredItems = filterMenuItems(allMenuItems);
-    const menuItems = isMobile ? filteredItems.filter(item => !item.webOnly) : filteredItems;
-    const webExclusiveItems = isMobile ? filteredItems.filter(item => item.webOnly) : [];
+    // For mobile: use all items combined, for web: use secondary items only (featured shown separately)
+    const filteredAllItems = filterMenuItems(allMenuItems);
+    const filteredSecondaryItems = filterMenuItems(secondaryMenuItems);
+    const filteredFeaturedItems = filterMenuItems(featuredItems);
+    
+    const menuItems = isMobile ? filteredAllItems.filter(item => !item.webOnly) : filteredSecondaryItems;
+    const webExclusiveItems = isMobile ? filteredAllItems.filter(item => item.webOnly) : [];
     
     if (isMobile) {
         return (
@@ -231,7 +254,13 @@ export default function Dashboard() {
             )}
 
             <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <WebDashboardContent menuItems={menuItems} isAdmin={isAdmin} userName={currentUser?.full_name} />
+                <WebDashboardContent 
+                    featuredItems={filteredFeaturedItems}
+                    menuItems={menuItems} 
+                    isAdmin={isAdmin} 
+                    userName={currentUser?.full_name}
+                    isPaidUser={isPaidUser}
+                />
             </div>
         </div>
     );
