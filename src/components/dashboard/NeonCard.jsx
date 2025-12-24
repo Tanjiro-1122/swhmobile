@@ -64,8 +64,12 @@ export default function NeonCard({ item, index, glowColor = "purple" }) {
               <div className="relative mb-4">
                 <div className={`absolute inset-0 bg-gradient-to-r ${gradient} rounded-xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500`} />
                 <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} p-[1px]`}>
-                  <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center">
-                    <Icon className="w-7 h-7 text-white" />
+                  <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden">
+                    {item.customIcon ? (
+                      <img src={item.customIcon} alt={item.title} className="w-full h-full object-cover rounded-xl" />
+                    ) : Icon ? (
+                      <Icon className="w-7 h-7 text-white" />
+                    ) : null}
                   </div>
                 </div>
               </div>
