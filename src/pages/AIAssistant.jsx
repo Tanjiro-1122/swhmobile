@@ -183,13 +183,7 @@ function SALHubPage() {
                                 {/* Messages Area */}
                                 <div className="flex-1 overflow-y-auto p-4 md:p-6">
                                     {messages.length === 0 && !isLoading && (
-                                          <AnimatedSAL3D onPromptClick={(text, tab) => {
-                                              if (tab) {
-                                                  setActiveTab(tab);
-                                              } else {
-                                                  handleQuickPrompt(text);
-                                              }
-                                          }} />
+                                          <AnimatedSAL3D onPromptClick={(text) => handleQuickPrompt(text)} />
                                       )}
 
                                     {isLoading && (
