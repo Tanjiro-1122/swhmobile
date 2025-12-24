@@ -230,48 +230,7 @@ function SALHubPage() {
                                 {/* Messages Area */}
                                 <div className="flex-1 overflow-y-auto p-4 md:p-6">
                                     {messages.length === 0 && !isLoading && (
-                                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                                            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="relative mb-6">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-2xl opacity-40" />
-                                                <img 
-                                                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                                    alt="S.A.L."
-                                                    className="relative w-24 h-24 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
-                                                />
-                                            </motion.div>
-
-                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                                                <h2 className="text-xl font-black mb-2">
-                                                    <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
-                                                        Ready to Help!
-                                                    </span>
-                                                </h2>
-                                                <p className="text-slate-500 max-w-md mb-6 text-sm">
-                                                    Ask about predictions, player stats, team analysis, or betting strategies.
-                                                </p>
-                                            </motion.div>
-
-                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full max-w-lg">
-                                                <p className="text-slate-600 text-sm mb-3">Try asking:</p>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                    {quickPrompts.map((prompt, idx) => (
-                                                        <motion.button
-                                                            key={idx}
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ delay: 0.6 + idx * 0.1 }}
-                                                            onClick={() => handleQuickPrompt(prompt.text)}
-                                                            className={`group p-3 rounded-xl bg-gradient-to-r ${prompt.color} hover:scale-105 transition-all text-left shadow-lg`}
-                                                        >
-                                                            <div className="flex items-start gap-2">
-                                                                <prompt.icon className="w-4 h-4 text-white mt-0.5 flex-shrink-0" />
-                                                                <span className="text-white text-xs font-medium">{prompt.text}</span>
-                                                            </div>
-                                                        </motion.button>
-                                                    ))}
-                                                </div>
-                                            </motion.div>
-                                        </div>
+                                        <AnimatedSAL3D onPromptClick={handleQuickPrompt} />
                                     )}
 
                                     {isLoading && (
