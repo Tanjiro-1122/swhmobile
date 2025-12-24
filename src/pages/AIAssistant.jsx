@@ -171,90 +171,90 @@ function SALHubPage() {
 
                 {/* Chat Section */}
                 <motion.div 
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="relative min-h-[500px] rounded-2xl overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl p-[2px]">
-                                <div className="absolute inset-[2px] bg-slate-900 rounded-2xl" />
-                            </div>
-                            
-                            <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm min-h-[500px]">
-                                {/* Messages Area */}
-                                <div className="flex-1 overflow-y-auto p-4 md:p-6">
-                                    {messages.length === 0 && !isLoading && (
-                                          <AnimatedSAL3D onPromptClick={(text) => handleQuickPrompt(text)} />
-                                      )}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative min-h-[500px] rounded-2xl overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl p-[2px]">
+                        <div className="absolute inset-[2px] bg-slate-900 rounded-2xl" />
+                    </div>
+                    
+                    <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm min-h-[500px]">
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                            {messages.length === 0 && !isLoading && (
+                                <AnimatedSAL3D onPromptClick={(text) => handleQuickPrompt(text)} />
+                            )}
 
-                                    {isLoading && (
-                                        <div className="flex items-center justify-center h-full">
-                                            <div className="text-center">
-                                                <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto" />
-                                                <p className="text-slate-400 mt-4">Starting conversation...</p>
+                            {isLoading && (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="text-center">
+                                        <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto" />
+                                        <p className="text-slate-400 mt-4">Starting conversation...</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {messages.length > 0 && (
+                                <div className="space-y-4">
+                                    <AnimatePresence>
+                                        {messages.map((msg, index) => (
+                                            <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                                <MessageBubble message={msg} />
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                    
+                                    {isSending && messages[messages.length - 1]?.role === 'user' && (
+                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-3">
+                                            <img 
+                                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                                alt="S.A.L."
+                                                className="h-8 w-8 rounded-full object-cover flex-shrink-0 border border-purple-500/50"
+                                            />
+                                            <div className="bg-slate-800/80 border border-white/10 rounded-2xl rounded-bl-lg px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                                    <span className="text-slate-400 text-sm">Searching for sports data...</span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
-
-                                    {messages.length > 0 && (
-                                        <div className="space-y-4">
-                                            <AnimatePresence>
-                                                {messages.map((msg, index) => (
-                                                    <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                                        <MessageBubble message={msg} />
-                                                    </motion.div>
-                                                ))}
-                                            </AnimatePresence>
-                                            
-                                            {isSending && messages[messages.length - 1]?.role === 'user' && (
-                                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-3">
-                                                    <img 
-                                                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                                        alt="S.A.L."
-                                                        className="h-8 w-8 rounded-full object-cover flex-shrink-0 border border-purple-500/50"
-                                                    />
-                                                    <div className="bg-slate-800/80 border border-white/10 rounded-2xl rounded-bl-lg px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
-                                                            <span className="text-slate-400 text-sm">Searching for sports data...</span>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                            
-                                            <div ref={messagesEndRef} />
-                                        </div>
-                                    )}
+                                    
+                                    <div ref={messagesEndRef} />
                                 </div>
+                            )}
+                        </div>
 
-                                {/* Input Area */}
-                                <div className="p-3 md:p-4 border-t border-white/10 bg-slate-900/80">
-                                    <form onSubmit={handleSendMessage} className="relative">
-                                        <Textarea
-                                            value={newMessage}
-                                            onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder="Ask S.A.L. anything about sports betting..."
-                                            className="bg-slate-800/80 border-slate-700 rounded-xl pr-20 text-sm focus:ring-purple-500 focus:border-purple-500 min-h-[50px] resize-none"
-                                            rows={2}
-                                            disabled={isLoading}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSendMessage(e);
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            type="submit"
-                                            disabled={!newMessage.trim() || isSending || isLoading}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl px-3"
-                                            size="sm"
-                                        >
-                                            {isSending || isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                        </Button>
-                                    </form>
-                                </div>
-                            </div>
-                        </motion.div>
+                        {/* Input Area */}
+                        <div className="p-3 md:p-4 border-t border-white/10 bg-slate-900/80">
+                            <form onSubmit={handleSendMessage} className="relative">
+                                <Textarea
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    placeholder="Ask S.A.L. anything about sports betting..."
+                                    className="bg-slate-800/80 border-slate-700 rounded-xl pr-20 text-sm focus:ring-purple-500 focus:border-purple-500 min-h-[50px] resize-none"
+                                    rows={2}
+                                    disabled={isLoading}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSendMessage(e);
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    type="submit"
+                                    disabled={!newMessage.trim() || isSending || isLoading}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl px-3"
+                                    size="sm"
+                                >
+                                    {isSending || isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                </Button>
+                            </form>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );
