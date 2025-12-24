@@ -122,16 +122,13 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                     />
                 ))}
 
-                {/* Main S.A.L. Container - 3D effect */}
+                {/* Main S.A.L. Container - Idle animations */}
                 <motion.div
                     className="relative w-full h-full flex items-center justify-center"
-                    animate={{ 
-                        y: [0, -8, 0],
-                        rotateZ: isHovered ? [0, -2, 2, 0] : 0,
-                    }}
+                    animate={getOwlAnimation()}
                     transition={{ 
-                        y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                        rotateZ: { duration: 0.5 }
+                        duration: 0.6,
+                        ease: "easeInOut"
                     }}
                     style={{ transformStyle: 'preserve-3d' }}
                 >
