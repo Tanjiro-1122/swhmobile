@@ -207,15 +207,15 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                             }}
                         />
 
-                        {/* Floating lightbulb */}
+                        {/* Floating lightbulb - brighter on hoot */}
                         <motion.div
                             className="absolute -top-4 -right-2 text-2xl"
                             style={{ transform: 'translateZ(40px)' }}
                             animate={{
-                                y: [0, -5, 0],
-                                rotate: [0, 10, -10, 0],
+                                scale: currentAction === 'hoot' ? [1, 1.3, 1] : 1,
+                                filter: currentAction === 'hoot' ? 'brightness(1.5)' : 'brightness(1)',
                             }}
-                            transition={{ duration: 2, repeat: Infinity }}
+                            transition={{ duration: 0.4 }}
                         >
                             💡
                         </motion.div>
