@@ -36,8 +36,13 @@ const secondaryMenuItems = [
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
 ];
 
+// S.A.L. owl logo for AI Assistant
+const SAL_OWL_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
+
 // Combined for mobile view
-const allMenuItems = [...featuredItems, ...secondaryMenuItems];
+const allMenuItems = [...featuredItems, ...secondaryMenuItems].map(item => 
+    item.id === 'assistant' ? { ...item, customIcon: SAL_OWL_LOGO } : item
+);
 
 // Assign glow colors based on card type
 const getGlowColor = (id) => {
