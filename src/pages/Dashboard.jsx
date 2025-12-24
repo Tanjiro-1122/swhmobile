@@ -23,7 +23,7 @@ import SportsNewsWidget from "@/components/dashboard/SportsNewsWidget";
 
 // Featured items shown prominently at the top
 const featuredItems = [
-    { id: "assistant", title: "AI ASSISTANT", subtitle: "Chat with S.A.L.", description: "Ask about predictions, stats & strategies", Icon: null, customIcon: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg", page: "AIAssistant", tag: "NEW", tagColor: "bg-purple-500 text-white" },
+    { id: "assistant", title: "S.A.L. HUB", subtitle: "Chat, Learn & Connect", description: "AI chat, lessons, briefs & community", Icon: null, customIcon: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg", page: "AIAssistant", tag: "ALL-IN-ONE", tagColor: "bg-gradient-to-r from-purple-500 to-cyan-500 text-white" },
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
 ];
 
