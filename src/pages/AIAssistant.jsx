@@ -11,17 +11,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import RequireAuth from '@/components/auth/RequireAuth';
 
-// Lazy load content components
-const LearningCenterContent = lazy(() => import("@/components/hub/LearningCenterContent"));
-const CommunityContent = lazy(() => import("@/components/hub/CommunityContent"));
-const BettingBriefsContent = lazy(() => import("@/components/hub/BettingBriefsContent"));
-const VIPDiscordCard = lazy(() => import("@/components/community/VIPDiscordCard"));
 
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center py-12">
-    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-  </div>
-);
 
 const AGENT_NAME = 'bettingAssistant';
 
