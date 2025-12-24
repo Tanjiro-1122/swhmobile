@@ -30,7 +30,7 @@ const featuredItems = [
 // Secondary menu items - reduced to most essential (6 max for cleaner layout)
 const secondaryMenuItems = [
     { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
-    { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
+    { id: "community", title: "S.A.L. HUB", subtitle: "Chat, Learn & Connect", description: "AI chat, lessons, briefs, community", Icon: Users, page: "AIAssistant", tag: "UPGRADED", tagColor: "bg-purple-500 text-white" },
     { id: "sportsnews", title: "LIVE SCORES", subtitle: "Live Updates", description: "Live scores & news ticker", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
     { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
     { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, subscription", Icon: User, page: "MyAccount", tag: null },

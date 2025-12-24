@@ -1,10 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, Loader2, Sparkles, Brain, Zap, Trophy, TrendingUp, Users, Lightbulb, MessageCircle, RefreshCw } from 'lucide-react';
+import { Send, Loader2, Sparkles, Brain, Zap, Trophy, TrendingUp, Users, Lightbulb, MessageCircle, BookOpen, Newspaper, RefreshCw, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MessageBubble from '@/components/assistant/MessageBubble';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import RequireAuth from '@/components/auth/RequireAuth';
+
+// Lazy load content components
+const LearningCenterContent = lazy(() => import("@/components/hub/LearningCenterContent"));
+const CommunityContent = lazy(() => import("@/components/hub/CommunityContent"));
+const BettingBriefsContent = lazy(() => import("@/components/hub/BettingBriefsContent"));
+const VIPDiscordCard = lazy(() => import("@/components/community/VIPDiscordCard"));
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+  </div>
+);
 
 const AGENT_NAME = 'bettingAssistant';
 
@@ -15,7 +31,8 @@ const quickPrompts = [
   { icon: MessageCircle, text: "Analyze tonight's NBA games", color: "from-orange-500 to-red-600" },
 ];
 
-export default function AIAssistantPage() {
+function SALHubPage() {
+    const [activeTab, setActiveTab] = useState("chat");
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState(null);
@@ -27,10 +44,8 @@ export default function AIAssistantPage() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Subscribe to conversation updates when we have one
     useEffect(() => {
         if (!conversation) return;
-
         const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
             setMessages(data.messages || []);
             const lastMessage = data.messages[data.messages.length - 1];
@@ -38,25 +53,20 @@ export default function AIAssistantPage() {
                 setIsSending(false);
             }
         });
-
         return () => unsubscribe();
     }, [conversation?.id]);
 
-    // Timeout for stuck responses
     useEffect(() => {
         if (!isSending) return;
-        
         const timeout = setTimeout(() => {
             if (isSending) {
                 setIsSending(false);
-                // Add a timeout message
                 setMessages(prev => [...prev, {
                     role: 'assistant',
-                    content: "I'm having trouble getting a response right now. This can happen when searching for real-time data. Please try asking again or rephrase your question."
+                    content: "I'm having trouble getting a response right now. Please try again."
                 }]);
             }
-        }, 60000); // 60 second timeout
-
+        }, 60000);
         return () => clearTimeout(timeout);
     }, [isSending]);
 
@@ -71,9 +81,7 @@ export default function AIAssistantPage() {
             setMessages([]);
             setIsLoading(false);
             
-            // If there's an initial message, send it after conversation is set up
             if (initialMessage) {
-                // Add user message to UI immediately
                 setMessages([{ role: 'user', content: initialMessage }]);
                 setIsSending(true);
                 await base44.agents.addMessage(newConversation, {
@@ -92,7 +100,6 @@ export default function AIAssistantPage() {
         const content = (promptText || newMessage).trim();
         if (!content) return;
 
-        // If no conversation exists, start one with this message
         if (!conversation) {
             setNewMessage('');
             await startNewChat(content);
@@ -118,234 +125,258 @@ export default function AIAssistantPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-150px)] flex flex-col">
-            {/* Hero Header */}
-            <motion.div 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-6"
-            >
-                <div className="flex items-center justify-center gap-4 mb-4">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
-                        <img 
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                            alt="S.A.L. the Owl"
-                            className="relative w-20 h-20 rounded-2xl object-cover border-2 border-purple-500/50 shadow-2xl"
-                        />
-                    </div>
-                    <div className="text-left">
-                        <h1 className="text-3xl sm:text-4xl font-black">
-                            <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
-                                S.A.L. the Owl
-                            </span>
-                        </h1>
-                        <p className="text-slate-400 text-lg">Your Sports AI Librarian</p>
-                    </div>
+        <div className="overflow-x-hidden">
+            <div className="max-w-6xl mx-auto w-full">
+                {/* Back Button */}
+                <div className="w-full flex justify-start mb-2">
+                    <Link to={createPageUrl('Dashboard')}>
+                        <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Dashboard
+                        </Button>
+                    </Link>
                 </div>
-                
-                {/* Feature badges */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <div className="flex items-center gap-2 bg-purple-500/20 border border-purple-500/30 rounded-full px-4 py-1.5">
-                        <Brain className="w-4 h-4 text-purple-400" />
-                        <span className="text-purple-300 text-sm font-medium">AI-Powered</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-cyan-500/20 border border-cyan-500/30 rounded-full px-4 py-1.5">
-                        <Zap className="w-4 h-4 text-cyan-400" />
-                        <span className="text-cyan-300 text-sm font-medium">Real-Time Data</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-lime-500/20 border border-lime-500/30 rounded-full px-4 py-1.5">
-                        <Trophy className="w-4 h-4 text-lime-400" />
-                        <span className="text-lime-300 text-sm font-medium">Expert Insights</span>
-                    </div>
-                </div>
-            </motion.div>
 
-            {/* Main Chat Container */}
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="relative flex-1 min-h-[500px] rounded-2xl overflow-hidden"
-            >
-                {/* Gradient border effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl p-[2px]">
-                    <div className="absolute inset-[2px] bg-slate-900 rounded-2xl" />
-                </div>
-                
-                {/* Content */}
-                <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm">
-                    {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-6">
-                        {/* Welcome screen when no messages */}
-                        {messages.length === 0 && !isLoading && (
-                            <div className="flex flex-col items-center justify-center h-full text-center">
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.8 }} 
-                                    animate={{ opacity: 1, scale: 1 }} 
-                                    className="relative mb-8"
-                                >
-                                    <div className="absolute inset-0 -m-8">
-                                        <div className="absolute inset-0 border-2 border-purple-500/20 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-                                        <div className="absolute inset-2 border-2 border-cyan-500/20 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
-                                    </div>
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-2xl opacity-40" />
-                                        <img 
-                                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                            alt="S.A.L."
-                                            className="relative w-28 h-28 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
-                                        />
-                                    </div>
-                                </motion.div>
+                {/* Hero Header with S.A.L. */}
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 bg-gradient-to-br from-purple-900/40 via-slate-900/60 to-cyan-900/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-purple-500/20"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="relative flex-shrink-0">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
+                            <img 
+                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                alt="S.A.L. the Owl"
+                                className="relative w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover border-2 border-purple-500/50 shadow-2xl"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black">
+                                <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
+                                    S.A.L. Hub
+                                </span>
+                            </h1>
+                            <p className="text-slate-400 text-sm md:text-base">Your Sports AI Librarian • Chat, Learn & Connect</p>
+                        </div>
+                    </div>
+                    
+                    {/* Feature badges */}
+                    <div className="flex flex-wrap items-center gap-2 mt-4">
+                        <div className="flex items-center gap-1.5 bg-purple-500/20 border border-purple-500/30 rounded-full px-3 py-1">
+                            <Brain className="w-3 h-3 text-purple-400" />
+                            <span className="text-purple-300 text-xs font-medium">AI Chat</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-cyan-500/20 border border-cyan-500/30 rounded-full px-3 py-1">
+                            <BookOpen className="w-3 h-3 text-cyan-400" />
+                            <span className="text-cyan-300 text-xs font-medium">Lessons</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-lime-500/20 border border-lime-500/30 rounded-full px-3 py-1">
+                            <Users className="w-3 h-3 text-lime-400" />
+                            <span className="text-lime-300 text-xs font-medium">Community</span>
+                        </div>
+                    </div>
+                </motion.div>
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.3 }}
-                                >
-                                    <h2 className="text-2xl font-black mb-2">
-                                        <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
-                                            Ready to Help!
-                                        </span>
-                                    </h2>
-                                    <p className="text-slate-500 max-w-md mb-6">
-                                        Ask me about predictions, player stats, team analysis, or betting strategies.
-                                    </p>
-                                </motion.div>
+                {/* Tabs Navigation */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <div className="mb-4 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
+                        <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
+                            <TabsTrigger 
+                                value="chat" 
+                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                                <MessageCircle className="w-4 h-4 flex-shrink-0" />
+                                <span>Chat with S.A.L.</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="learn" 
+                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                                <BookOpen className="w-4 h-4 flex-shrink-0" />
+                                <span>Learn</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="briefs" 
+                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                                <Newspaper className="w-4 h-4 flex-shrink-0" />
+                                <span>Daily Briefs</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="community" 
+                                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-4 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                                <Users className="w-4 h-4 flex-shrink-0" />
+                                <span>Community</span>
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
 
-                                {/* Quick Prompts - Now clickable */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="w-full max-w-lg"
-                                >
-                                    <p className="text-slate-600 text-sm mb-4">Try asking:</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {quickPrompts.map((prompt, idx) => (
-                                            <motion.button
-                                                key={idx}
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.6 + idx * 0.1 }}
-                                                onClick={() => handleQuickPrompt(prompt.text)}
-                                                className={`group p-4 rounded-xl bg-gradient-to-r ${prompt.color} hover:scale-105 transition-all text-left shadow-lg`}
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <prompt.icon className="w-5 h-5 text-white mt-0.5" />
-                                                    <span className="text-white text-sm font-medium">{prompt.text}</span>
-                                                </div>
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                </motion.div>
+                    {/* Chat Tab */}
+                    <TabsContent value="chat" className="mt-0">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative min-h-[500px] rounded-2xl overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-2xl p-[2px]">
+                                <div className="absolute inset-[2px] bg-slate-900 rounded-2xl" />
                             </div>
-                        )}
+                            
+                            <div className="relative h-full flex flex-col rounded-2xl overflow-hidden border border-transparent bg-slate-900/80 backdrop-blur-sm min-h-[500px]">
+                                {/* Messages Area */}
+                                <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                                    {messages.length === 0 && !isLoading && (
+                                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                                            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="relative mb-6">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-2xl opacity-40" />
+                                                <img 
+                                                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                                    alt="S.A.L."
+                                                    className="relative w-24 h-24 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
+                                                />
+                                            </motion.div>
 
-                        {/* Loading state */}
-                        {isLoading && (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center">
-                                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto" />
-                                    <p className="text-slate-400 mt-4">Starting conversation...</p>
+                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                                                <h2 className="text-xl font-black mb-2">
+                                                    <span className="bg-gradient-to-r from-purple-400 via-cyan-400 to-lime-400 bg-clip-text text-transparent">
+                                                        Ready to Help!
+                                                    </span>
+                                                </h2>
+                                                <p className="text-slate-500 max-w-md mb-6 text-sm">
+                                                    Ask about predictions, player stats, team analysis, or betting strategies.
+                                                </p>
+                                            </motion.div>
+
+                                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full max-w-lg">
+                                                <p className="text-slate-600 text-sm mb-3">Try asking:</p>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                    {quickPrompts.map((prompt, idx) => (
+                                                        <motion.button
+                                                            key={idx}
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: 0.6 + idx * 0.1 }}
+                                                            onClick={() => handleQuickPrompt(prompt.text)}
+                                                            className={`group p-3 rounded-xl bg-gradient-to-r ${prompt.color} hover:scale-105 transition-all text-left shadow-lg`}
+                                                        >
+                                                            <div className="flex items-start gap-2">
+                                                                <prompt.icon className="w-4 h-4 text-white mt-0.5 flex-shrink-0" />
+                                                                <span className="text-white text-xs font-medium">{prompt.text}</span>
+                                                            </div>
+                                                        </motion.button>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        </div>
+                                    )}
+
+                                    {isLoading && (
+                                        <div className="flex items-center justify-center h-full">
+                                            <div className="text-center">
+                                                <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto" />
+                                                <p className="text-slate-400 mt-4">Starting conversation...</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {messages.length > 0 && (
+                                        <div className="space-y-4">
+                                            <AnimatePresence>
+                                                {messages.map((msg, index) => (
+                                                    <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                                        <MessageBubble message={msg} />
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
+                                            
+                                            {isSending && messages[messages.length - 1]?.role === 'user' && (
+                                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-3">
+                                                    <img 
+                                                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                                        alt="S.A.L."
+                                                        className="h-8 w-8 rounded-full object-cover flex-shrink-0 border border-purple-500/50"
+                                                    />
+                                                    <div className="bg-slate-800/80 border border-white/10 rounded-2xl rounded-bl-lg px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                                            <span className="text-slate-400 text-sm">Searching for sports data...</span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                            
+                                            <div ref={messagesEndRef} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Input Area */}
+                                <div className="p-3 md:p-4 border-t border-white/10 bg-slate-900/80">
+                                    <form onSubmit={handleSendMessage} className="relative">
+                                        <Textarea
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            placeholder="Ask S.A.L. anything about sports betting..."
+                                            className="bg-slate-800/80 border-slate-700 rounded-xl pr-20 text-sm focus:ring-purple-500 focus:border-purple-500 min-h-[50px] resize-none"
+                                            rows={2}
+                                            disabled={isLoading}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendMessage(e);
+                                                }
+                                            }}
+                                        />
+                                        <Button
+                                            type="submit"
+                                            disabled={!newMessage.trim() || isSending || isLoading}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl px-3"
+                                            size="sm"
+                                        >
+                                            {isSending || isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                        </Button>
+                                    </form>
                                 </div>
                             </div>
-                        )}
+                        </motion.div>
+                    </TabsContent>
 
-                        {/* Messages */}
-                        {messages.length > 0 && (
+                    {/* Learn Tab */}
+                    <TabsContent value="learn">
+                        <Suspense fallback={<LoadingSpinner />}>
+                            <LearningCenterContent />
+                        </Suspense>
+                    </TabsContent>
+
+                    {/* Briefs Tab */}
+                    <TabsContent value="briefs">
+                        <Suspense fallback={<LoadingSpinner />}>
+                            <BettingBriefsContent />
+                        </Suspense>
+                    </TabsContent>
+
+                    {/* Community Tab */}
+                    <TabsContent value="community">
+                        <Suspense fallback={<LoadingSpinner />}>
                             <div className="space-y-6">
-                                <AnimatePresence>
-                                    {messages.map((msg, index) => (
-                                        <motion.div
-                                            key={index}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <MessageBubble message={msg} />
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                                
-                                {isSending && messages[messages.length - 1]?.role === 'user' && (
-                                    <motion.div 
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="flex items-start gap-4"
-                                    >
-                                        <img 
-                                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                            alt="S.A.L."
-                                            className="h-8 w-8 rounded-full object-cover flex-shrink-0 mt-1 border border-purple-500/50"
-                                        />
-                                        <div className="bg-slate-800/80 border border-white/10 rounded-2xl rounded-bl-lg px-4 py-3">
-                                            <div className="flex items-center gap-2">
-                                                <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
-                                                <span className="text-slate-400 text-sm">Searching for sports data...</span>
-                                            </div>
-                                            <p className="text-slate-500 text-xs mt-2">This may take 10-30 seconds for real-time info</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                                
-                                <div ref={messagesEndRef} />
+                                <VIPDiscordCard />
+                                <CommunityContent />
                             </div>
-                        )}
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="p-4 border-t border-white/10 bg-slate-900/80 backdrop-blur-sm">
-                        <form onSubmit={handleSendMessage} className="relative">
-                            <div className="relative">
-                                <Textarea
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Ask S.A.L. about predictions, stats, or betting advice..."
-                                    className="bg-slate-800/80 border-slate-700 rounded-xl pr-24 text-base focus:ring-purple-500 focus:border-purple-500 min-h-[60px] resize-none"
-                                    rows={2}
-                                    disabled={isLoading}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSendMessage(e);
-                                        }
-                                    }}
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={!newMessage.trim() || isSending || isLoading}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl px-4"
-                                    size="lg"
-                                >
-                                    {isSending || isLoading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <Send className="w-5 h-5" />
-                                    )}
-                                </Button>
-                            </div>
-                            <p className="text-slate-600 text-xs mt-2 text-center">
-                                Press Enter to send • Shift+Enter for new line
-                            </p>
-                        </form>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Bottom tips */}
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="mt-4 text-center"
-            >
-                <p className="text-slate-500 text-sm">
-                    <Sparkles className="w-4 h-4 inline mr-1 text-purple-400" />
-                    Ask about predictions, player stats, team analysis, or betting strategies
-                </p>
-            </motion.div>
+                        </Suspense>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
+    );
+}
+
+export default function AIAssistant() {
+    return (
+        <RequireAuth pageName="S.A.L. Hub">
+            <SALHubPage />
+        </RequireAuth>
     );
 }
