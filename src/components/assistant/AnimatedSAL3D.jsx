@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
 
 export default function AnimatedSAL3D({ onPromptClick }) {
     const [isHovered, setIsHovered] = useState(false);
