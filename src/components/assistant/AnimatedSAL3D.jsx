@@ -216,13 +216,32 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                     <div className="flex flex-col gap-2">
                         {quickActions.map((action, idx) => {
                             const IconComponent = action.icon;
+                            
+                            if (action.link) {
+                                return (
+                                    <Link key={idx} to={createPageUrl(action.link)}>
+                                        <motion.div
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.5 + idx * 0.1 }}
+                                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-white/10 hover:border-white/30 hover:from-slate-700/80 hover:to-slate-600/80 transition-all text-left group"
+                                        >
+                                            <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color}`}>
+                                                <IconComponent className="w-4 h-4 text-white" />
+                                            </div>
+                                            <span className="text-white/80 text-sm group-hover:text-white transition-colors">{action.text}</span>
+                                        </motion.div>
+                                    </Link>
+                                );
+                            }
+                            
                             return (
                                 <motion.button
                                     key={idx}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.5 + idx * 0.1 }}
-                                    onClick={() => onPromptClick(action.text, action.tab)}
+                                    onClick={() => onPromptClick(action.text)}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-white/10 hover:border-white/30 hover:from-slate-700/80 hover:to-slate-600/80 transition-all text-left group"
                                 >
                                     <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color}`}>
