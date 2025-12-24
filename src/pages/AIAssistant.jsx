@@ -51,9 +51,12 @@ export default function AIAssistantPage() {
             });
             setConversation(newConversation);
             setMessages([]);
+            setIsLoading(false);
             
-            // If there's an initial message, send it
+            // If there's an initial message, send it after conversation is set up
             if (initialMessage) {
+                // Add user message to UI immediately
+                setMessages([{ role: 'user', content: initialMessage }]);
                 setIsSending(true);
                 await base44.agents.addMessage(newConversation, {
                     role: 'user',
@@ -62,7 +65,6 @@ export default function AIAssistantPage() {
             }
         } catch (error) {
             console.error("Failed to create conversation:", error);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -253,22 +255,19 @@ export default function AIAssistantPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="flex items-start gap-3"
+                                        className="flex items-start gap-4"
                                     >
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center flex-shrink-0">
-                                            <img 
-                                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                                alt="S.A.L."
-                                                className="w-full h-full rounded-xl object-cover"
-                                            />
-                                        </div>
-                                        <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3">
+                                        <img 
+                                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                                            alt="S.A.L."
+                                            className="h-8 w-8 rounded-full object-cover flex-shrink-0 mt-1 border border-purple-500/50"
+                                        />
+                                        <div className="bg-slate-800/80 border border-white/10 rounded-2xl rounded-bl-lg px-4 py-3">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                                <div className="w-2 h-2 bg-lime-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                                <span className="text-slate-400 text-sm ml-2">S.A.L. is thinking...</span>
+                                                <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                                                <span className="text-slate-400 text-sm">Searching for sports data...</span>
                                             </div>
+                                            <p className="text-slate-500 text-xs mt-2">This may take 10-30 seconds for real-time info</p>
                                         </div>
                                     </motion.div>
                                 )}
