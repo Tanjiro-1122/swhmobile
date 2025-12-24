@@ -1,26 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
 
-// Default animated owl video URL
-const DEFAULT_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
-
-// Default static owl image
-const DEFAULT_OWL_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg';
+// Animated owl video URL
+const ANIMATED_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
 
 export default function AnimatedSAL3D({ onPromptClick }) {
-    const [mascotUrl, setMascotUrl] = useState(DEFAULT_OWL_VIDEO);
-
-    useEffect(() => {
-        const customUrl = localStorage.getItem('sal_mascot_url');
-        if (customUrl) {
-            setMascotUrl(customUrl);
-        }
-    }, []);
-
-    const isVideo = mascotUrl.endsWith('.mp4') || mascotUrl.includes('video') || mascotUrl.includes('imgur.com');
 
     const quickActions = [
         { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: "LearningCenter" },
@@ -84,23 +71,15 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                         {/* Gradient border glow */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-sm opacity-75" />
                         
-                        {/* The animated owl - video or image */}
-                        {isVideo ? (
-                            <video 
-                                src={mascotUrl}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
-                            />
-                        ) : (
-                            <img 
-                                src={mascotUrl}
-                                alt="S.A.L. the Owl"
-                                className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
-                            />
-                        )}
+                        {/* The animated owl video */}
+                        <video 
+                            src={ANIMATED_OWL_VIDEO}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
+                        />
                     </motion.div>
                 </div>
             </motion.div>
