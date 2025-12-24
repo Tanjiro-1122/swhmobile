@@ -53,10 +53,10 @@ function SALHubPage() {
                 setIsSending(false);
                 setMessages(prev => [...prev, {
                     role: 'assistant',
-                    content: "I'm having trouble getting a response right now. Please try again."
+                    content: "I'm still searching for the latest data. This can take a moment for live sports info. Please try asking again!"
                 }]);
             }
-        }, 60000);
+        }, 90000); // Extended timeout for web search
         return () => clearTimeout(timeout);
     }, [isSending]);
 
