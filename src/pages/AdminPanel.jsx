@@ -22,6 +22,10 @@ import RequireAuth from "../components/auth/RequireAuth";
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState("all");
+  const [mascotUrl, setMascotUrl] = useState(localStorage.getItem('sal_mascot_url') || '');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   const queryClient = useQueryClient();
 
