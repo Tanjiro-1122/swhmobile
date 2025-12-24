@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
+import Footer from "@/components/layout/Footer";
 
 import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
 
@@ -248,7 +249,7 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen relative">
             <CircuitBackground />
-            
+
             {showSuccessMessage && (
                 <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-xl shadow-2xl shadow-green-500/30 flex items-center gap-2 border border-green-400/30">
                     <Check className="w-5 h-5" />
@@ -265,6 +266,8 @@ export default function Dashboard() {
                     isPaidUser={isPaidUser}
                 />
             </div>
+
+            <Footer />
         </div>
     );
-}
+    }
