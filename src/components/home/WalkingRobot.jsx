@@ -7,12 +7,12 @@ export default function WalkingRobot() {
   const [edge, setEdge] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
-  const [walkFrame, setWalkFrame] = useState(0);
+  const [walkCycle, setWalkCycle] = useState(0);
 
   const getPosition = (currentEdge, currentProgress) => {
-    const padding = 30;
-    const maxX = window.innerWidth - 80;
-    const maxY = window.innerHeight - 80;
+    const padding = 80;
+    const maxX = window.innerWidth - 100;
+    const maxY = window.innerHeight - 100;
 
     switch (currentEdge) {
       case 0: return { x: padding + currentProgress * (maxX - padding), y: padding };
@@ -25,10 +25,18 @@ export default function WalkingRobot() {
 
   const [position, setPosition] = useState(() => getPosition(0, 0));
 
+  // Smooth walking animation at 60fps feel
+  useEffect(() => {
+    const walkAnimation = setInterval(() => {
+      setWalkCycle(prev => (prev + 1) % 8);
+    }, 100);
+    return () => clearInterval(walkAnimation);
+  }, []);
+
   useEffect(() => {
     const moveRobot = () => {
       setProgress(prev => {
-        const newProgress = prev + 0.06;
+        const newProgress = prev + 0.025;
         if (newProgress >= 1) {
           setEdge(currentEdge => (currentEdge + 1) % 4);
           return 0;
@@ -36,17 +44,13 @@ export default function WalkingRobot() {
         return newProgress;
       });
 
-      // Toggle walk frame for animation
-      setWalkFrame(f => (f + 1) % 2);
-
-      // Random jump
-      if (Math.random() < 0.08) {
+      if (Math.random() < 0.05) {
         setIsJumping(true);
-        setTimeout(() => setIsJumping(false), 350);
+        setTimeout(() => setIsJumping(false), 400);
       }
     };
 
-    const interval = setInterval(moveRobot, 600);
+    const interval = setInterval(moveRobot, 150);
     return () => clearInterval(interval);
   }, []);
 
@@ -64,6 +68,12 @@ export default function WalkingRobot() {
     }
   };
 
+  // Smooth leg rotation based on walk cycle
+  const leftLegRotation = Math.sin(walkCycle * Math.PI / 4) * 35;
+  const rightLegRotation = Math.sin((walkCycle + 4) * Math.PI / 4) * 35;
+  const bodyBob = Math.abs(Math.sin(walkCycle * Math.PI / 4)) * 4;
+  const bodyTilt = Math.sin(walkCycle * Math.PI / 4) * 3;
+
   return (
     <motion.div
       className="fixed z-30 pointer-events-none select-none"
@@ -73,84 +83,130 @@ export default function WalkingRobot() {
         scaleX: getDirection(),
       }}
       transition={{
-        x: { duration: 0.55, ease: "linear" },
-        y: { duration: 0.55, ease: "linear" },
-        scaleX: { duration: 0.15 },
+        x: { duration: 0.14, ease: "linear" },
+        y: { duration: 0.14, ease: "linear" },
+        scaleX: { duration: 0.2 },
       }}
     >
       <div className="relative">
-        {/* S.A.L. Owl Body */}
         <motion.div
           animate={{ 
-            y: isJumping ? -20 : 0,
-            rotate: isJumping ? 5 : 0,
+            y: isJumping ? -30 : 0,
+            rotate: isJumping ? 10 : 0,
           }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
           className="relative"
         >
-          {/* Glow behind owl */}
-          <div className="absolute -inset-2 bg-gradient-to-r from-purple-500/40 to-lime-400/40 rounded-full blur-lg animate-pulse" />
+          {/* Shadow on ground */}
+          <motion.div 
+            className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-14 h-4 bg-black/30 rounded-full blur-md"
+            animate={{
+              scale: isJumping ? 0.6 : 1,
+              opacity: isJumping ? 0.3 : 0.5,
+            }}
+          />
+
+          {/* Glow effect */}
+          <div className="absolute -inset-3 bg-gradient-to-r from-purple-500/30 to-lime-400/30 rounded-full blur-xl animate-pulse" />
           
-          {/* Main owl image with bobbing */}
+          {/* Main owl body with walking bob */}
           <motion.div
             animate={{ 
-              y: walkFrame === 0 ? -2 : 2,
-              rotate: walkFrame === 0 ? -2 : 2,
+              y: -bodyBob,
+              rotate: bodyTilt,
             }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.08, ease: "linear" }}
             className="relative"
           >
             <img 
               src={SAL_OWL_URL}
               alt="S.A.L. the Owl"
-              className="w-16 h-16 rounded-2xl object-cover shadow-xl shadow-purple-500/50 border-2 border-purple-400/60"
+              className="w-20 h-20 rounded-2xl object-cover shadow-2xl shadow-purple-500/60 border-2 border-purple-400/70"
+            />
+            
+            {/* Eye blink overlay */}
+            <motion.div
+              animate={{ scaleY: walkCycle === 0 ? 0.1 : 1 }}
+              transition={{ duration: 0.05 }}
+              className="absolute top-4 left-3 right-3 h-3 bg-transparent"
             />
           </motion.div>
 
-          {/* Walking legs */}
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-            {/* Left leg */}
-            <motion.div
-              animate={{ 
-                rotate: walkFrame === 0 ? -25 : 25,
-                y: walkFrame === 0 ? 0 : -2,
-              }}
-              transition={{ duration: 0.15 }}
-              style={{ transformOrigin: 'top center' }}
-              className="w-2 h-5 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full shadow-md"
-            />
-            {/* Right leg */}
-            <motion.div
-              animate={{ 
-                rotate: walkFrame === 0 ? 25 : -25,
-                y: walkFrame === 0 ? -2 : 0,
-              }}
-              transition={{ duration: 0.15 }}
-              style={{ transformOrigin: 'top center' }}
-              className="w-2 h-5 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full shadow-md"
-            />
+          {/* Animated walking legs */}
+          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex gap-3">
+            {/* Left leg with foot */}
+            <div className="relative">
+              <motion.div
+                animate={{ rotate: leftLegRotation }}
+                transition={{ duration: 0.08, ease: "linear" }}
+                style={{ transformOrigin: 'top center' }}
+                className="relative"
+              >
+                {/* Thigh */}
+                <div className="w-3 h-6 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full shadow-lg" />
+                {/* Foot */}
+                <motion.div
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-2 bg-gradient-to-b from-orange-500 to-orange-700 rounded-full shadow-md"
+                  animate={{ rotate: -leftLegRotation * 0.5 }}
+                  style={{ transformOrigin: 'center top' }}
+                />
+              </motion.div>
+            </div>
+            
+            {/* Right leg with foot */}
+            <div className="relative">
+              <motion.div
+                animate={{ rotate: rightLegRotation }}
+                transition={{ duration: 0.08, ease: "linear" }}
+                style={{ transformOrigin: 'top center' }}
+                className="relative"
+              >
+                {/* Thigh */}
+                <div className="w-3 h-6 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full shadow-lg" />
+                {/* Foot */}
+                <motion.div
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-2 bg-gradient-to-b from-orange-500 to-orange-700 rounded-full shadow-md"
+                  animate={{ rotate: -rightLegRotation * 0.5 }}
+                  style={{ transformOrigin: 'center top' }}
+                />
+              </motion.div>
+            </div>
           </div>
 
-          {/* Dust/motion trail */}
-          <motion.div
-            animate={{ opacity: [0.6, 0], scale: [0.5, 1.5], x: getDirection() === 1 ? -20 : 20 }}
-            transition={{ duration: 0.4, repeat: Infinity }}
-            className="absolute bottom-0 left-1/2 w-3 h-3 bg-slate-400/40 rounded-full blur-sm"
-          />
+          {/* Dust puffs when walking */}
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              animate={{ 
+                opacity: [0.5, 0], 
+                scale: [0.3, 1], 
+                x: getDirection() === 1 ? [-5 - i * 8, -15 - i * 12] : [5 + i * 8, 15 + i * 12],
+                y: [0, -5]
+              }}
+              transition={{ 
+                duration: 0.5, 
+                repeat: Infinity, 
+                delay: i * 0.15,
+                ease: "easeOut"
+              }}
+              className="absolute -bottom-1 left-1/2 w-2 h-2 bg-slate-300/50 rounded-full blur-sm"
+            />
+          ))}
         </motion.div>
 
-        {/* Speech bubble */}
+        {/* Speech bubble on jump */}
         <motion.div
           initial={{ opacity: 0, scale: 0 }}
           animate={{ 
             opacity: isJumping ? 1 : 0, 
             scale: isJumping ? 1 : 0,
-            y: isJumping ? -5 : 0,
+            y: isJumping ? -10 : 0,
           }}
-          className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl whitespace-nowrap shadow-lg border border-white/20"
+          transition={{ duration: 0.15 }}
+          className="absolute -top-14 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-2xl whitespace-nowrap shadow-xl border border-white/30"
         >
-          Hoot hoot! 🦉✨
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 rotate-45" />
+          Whoo-hoo! 🦉💫
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-indigo-600 rotate-45 rounded-sm" />
         </motion.div>
       </div>
     </motion.div>
