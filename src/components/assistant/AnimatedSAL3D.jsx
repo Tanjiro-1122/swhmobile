@@ -13,7 +13,7 @@ export default function AnimatedSAL3D({ onPromptClick }) {
         { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: "LearningCenter" },
         { text: "Read today's daily brief", icon: Newspaper, color: "from-amber-500 to-orange-500", link: "DailyBriefs" },
         { text: "Discuss it amongst your peers", icon: Users, color: "from-green-500 to-emerald-500", link: "CommunityHub" },
-        { text: "Today's betting tips", icon: Zap, color: "from-cyan-500 to-blue-500", link: null },
+        { text: "Best NBA bets tonight", icon: Zap, color: "from-cyan-500 to-blue-500", link: null },
     ];
 
     return (
