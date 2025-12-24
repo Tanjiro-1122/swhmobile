@@ -240,6 +240,75 @@ function AdminPanelContent() {
           </motion.div>
         </div>
 
+        {/* S.A.L. Mascot Upload Card */}
+        <Card className="border-2 border-purple-300 bg-white shadow-md mb-8">
+          <CardHeader className="bg-gradient-to-r from-purple-100 to-cyan-100 border-b-2 border-gray-200">
+            <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
+              <Image className="w-5 h-5" />
+              S.A.L. Mascot Animation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              {/* Preview */}
+              <div className="w-32 h-32 rounded-2xl bg-slate-900 border-2 border-purple-400/50 flex items-center justify-center overflow-hidden">
+                {mascotUrl ? (
+                  mascotUrl.endsWith('.mp4') || mascotUrl.includes('video') ? (
+                    <video src={mascotUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={mascotUrl} alt="S.A.L. Mascot" className="w-full h-full object-cover" />
+                  )
+                ) : (
+                  <img 
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
+                    alt="Default S.A.L."
+                    className="w-full h-full object-cover opacity-50"
+                  />
+                )}
+              </div>
+              
+              {/* Upload controls */}
+              <div className="flex-1 space-y-3">
+                <p className="text-gray-600 text-sm">
+                  Upload a GIF, video (MP4), or image to use as the animated S.A.L. mascot in the AI Assistant.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/mp4,.gif"
+                    onChange={handleMascotUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isUploading ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
+                    ) : uploadSuccess ? (
+                      <><Check className="w-4 h-4 mr-2" /> Uploaded!</>
+                    ) : (
+                      <><Upload className="w-4 h-4 mr-2" /> Upload File</>
+                    )}
+                  </Button>
+                  {mascotUrl && (
+                    <Button variant="outline" onClick={clearMascot}>
+                      Reset to Default
+                    </Button>
+                  )}
+                </div>
+                {mascotUrl && (
+                  <p className="text-xs text-green-600 font-medium">
+                    ✓ Custom mascot active
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Revenue Card */}
         <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
           <CardContent className="p-8">
