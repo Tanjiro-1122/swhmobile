@@ -89,7 +89,7 @@ export default function TeamStatsContent() {
         lookupsRemaining={lookupsRemaining}
       />
 
-      <Card className="p-6 border-2 border-blue-200 bg-white shadow-xl">
+      <Card className="p-6 border border-blue-500/30 bg-slate-800/50 backdrop-blur-sm shadow-xl">
         <TeamSearchBar onSearch={handleSearch} isSearching={isSearching} />
       </Card>
 
@@ -102,7 +102,7 @@ export default function TeamStatsContent() {
       {isSearching && (
         <div className="space-y-6 animate-fade-in">
           {/* Skeleton loader while searching */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl border-2 border-blue-200 overflow-hidden shadow-xl">
+          <div className="bg-slate-800/90 backdrop-blur-sm rounded-xl border border-blue-500/30 overflow-hidden shadow-xl">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 sm:p-6">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-white/20 animate-pulse flex-shrink-0" />
@@ -118,15 +118,15 @@ export default function TeamStatsContent() {
             <div className="p-4 sm:p-6 space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-blue-50 rounded-lg p-2 sm:p-3 space-y-2">
-                    <div className="h-6 sm:h-8 bg-blue-200 rounded animate-pulse" />
-                    <div className="h-3 sm:h-4 bg-blue-100 rounded w-1/2 animate-pulse" />
+                  <div key={i} className="bg-slate-700/50 rounded-lg p-2 sm:p-3 space-y-2">
+                    <div className="h-6 sm:h-8 bg-slate-600 rounded animate-pulse" />
+                    <div className="h-3 sm:h-4 bg-slate-700 rounded w-1/2 animate-pulse" />
                   </div>
                 ))}
               </div>
               <div className="space-y-2">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-10 sm:h-12 bg-gray-100 rounded-lg animate-pulse" />
+                  <div key={i} className="h-10 sm:h-12 bg-slate-700/50 rounded-lg animate-pulse" />
                 ))}
               </div>
             </div>
@@ -136,11 +136,11 @@ export default function TeamStatsContent() {
             <div className="text-center">
               <div className="relative w-16 h-16 mx-auto mb-4">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full opacity-20 animate-ping" />
-                <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-8 h-8 text-blue-500 animate-spin" />
+                <div className="absolute inset-2 bg-slate-800 rounded-full flex items-center justify-center shadow-lg border border-blue-500/30">
+                  <Sparkles className="w-8 h-8 text-blue-400 animate-spin" />
                 </div>
               </div>
-              <p className="text-gray-600 font-medium">Analyzing team data...</p>
+              <p className="text-slate-300 font-medium">Analyzing team data...</p>
             </div>
           </div>
         </div>
@@ -154,9 +154,9 @@ export default function TeamStatsContent() {
             exit={{ opacity: 0, y: -20 }}
           >
             <TeamStatsDisplay team={currentTeam} />
-            <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
-              <AlertDescription className="text-blue-900">
-                ✅ Team analysis saved! View in <a href="/MyAccount?tab=saved" className="underline font-bold">Saved Results</a>
+            <Alert className="mt-6 bg-emerald-900/30 border border-emerald-500/50 backdrop-blur-sm">
+              <AlertDescription className="text-emerald-200">
+                ✅ Team analysis saved! View in <a href="/MyAccount?tab=saved" className="underline font-bold text-emerald-300 hover:text-emerald-100">Saved Results</a>
               </AlertDescription>
             </Alert>
           </motion.div>
