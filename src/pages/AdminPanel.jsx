@@ -75,6 +75,31 @@ function AdminPanelContent() {
     });
   };
 
+  const handleMascotUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadSuccess(false);
+    
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setMascotUrl(file_url);
+      localStorage.setItem('sal_mascot_url', file_url);
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 3000);
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const clearMascot = () => {
+    setMascotUrl('');
+    localStorage.removeItem('sal_mascot_url');
+  };
+
   if (!currentUser || currentUser.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
