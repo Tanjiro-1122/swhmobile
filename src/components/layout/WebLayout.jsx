@@ -50,6 +50,7 @@ export default function WebLayout({ children, currentPageName }) {
       </motion.main>
       {!isHomePage && <Footer />}
       {!isHomePage && currentPageName !== 'AIAssistant' && <SalFloatingButton />}
+      <WhatsAppButton />
     </div>
   );
 }
