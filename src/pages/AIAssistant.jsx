@@ -23,7 +23,6 @@ const quickPrompts = [
 ];
 
 function SALHubPage() {
-    const [activeTab, setActiveTab] = useState("chat");
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState(null);
