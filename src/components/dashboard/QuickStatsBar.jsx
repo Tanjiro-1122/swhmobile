@@ -5,35 +5,41 @@ import { motion } from 'framer-motion';
 import { Target, Flame, Trophy, TrendingUp, Calendar, Zap } from 'lucide-react';
 
 export default function QuickStatsBar() {
-    const { data: stats, isLoading } = useQuery({
+    const { data: stats, isLoading, isError } = useQuery({
         queryKey: ['quickStats'],
         queryFn: async () => {
-            const [outcomes, briefs, bets] = await Promise.all([
+            // Fetch all data in parallel with safe defaults
+            const results = await Promise.allSettled([
                 base44.entities.PredictionOutcome.list('-outcome_recorded_date', 50),
                 base44.entities.BettingBrief.list('-brief_date', 1),
-                base44.entities.TrackedBet.filter({ result: 'pending' }, '-bet_date', 10)
+                base44.entities.TrackedBet.list('-bet_date', 20)
             ]);
             
-            // Calculate accuracy
-            const wins = outcomes.filter(o => o.was_correct).length;
+            const outcomes = results[0].status === 'fulfilled' ? results[0].value : [];
+            const briefs = results[1].status === 'fulfilled' ? results[1].value : [];
+            const allBets = results[2].status === 'fulfilled' ? results[2].value : [];
+            
+            // Calculate accuracy safely
+            const wins = outcomes.filter(o => o?.was_correct).length;
             const accuracy = outcomes.length > 0 ? Math.round((wins / outcomes.length) * 100) : 0;
             
-            // Calculate streak
+            // Calculate streak safely
             let streak = 0;
             for (const outcome of outcomes) {
-                if (outcome.was_correct) streak++;
+                if (outcome?.was_correct) streak++;
                 else break;
             }
             
             // Today's picks count
             const todaysPicks = briefs[0]?.top_picks?.length || 0;
             
-            // Pending bets count
-            const pendingBets = bets.length;
+            // Pending bets count - filter client-side for reliability
+            const pendingBets = allBets.filter(b => b?.result === 'pending').length;
             
             return { accuracy, streak, todaysPicks, pendingBets, totalPredictions: outcomes.length };
         },
         staleTime: 1000 * 60 * 5,
+        retry: 2,
     });
 
     if (isLoading) {
@@ -44,6 +50,11 @@ export default function QuickStatsBar() {
                 ))}
             </div>
         );
+    }
+
+    // Show placeholder stats on error instead of breaking
+    if (isError) {
+        return null;
     }
 
     const { accuracy = 0, streak = 0, todaysPicks = 0, pendingBets = 0 } = stats || {};

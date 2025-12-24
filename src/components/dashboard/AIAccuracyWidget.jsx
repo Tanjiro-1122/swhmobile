@@ -8,16 +8,11 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function AIAccuracyWidget() {
-    const { data: stats, isLoading } = useQuery({
+    const { data: stats, isLoading, isError } = useQuery({
         queryKey: ['aiAccuracyStats'],
         queryFn: async () => {
-            // Get prediction outcomes from the last 30 days
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
-            const outcomes = await base44.entities.PredictionOutcome.filter({
-                outcome_recorded_date: { $gte: thirtyDaysAgo.toISOString() }
-            }, '-outcome_recorded_date', 100);
+            // Get recent prediction outcomes - simpler query, more reliable
+            const outcomes = await base44.entities.PredictionOutcome.list('-outcome_recorded_date', 50);
             
             if (!outcomes || outcomes.length === 0) {
                 return { 
@@ -66,7 +61,13 @@ export default function AIAccuracyWidget() {
             };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
+        retry: 2,
     });
+
+    // Don't render anything on error to avoid broken UI
+    if (isError) {
+        return null;
+    }
 
     if (isLoading) {
         return (
