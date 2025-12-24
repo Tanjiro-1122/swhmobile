@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, Loader2, Sparkles, Brain, Zap, Trophy, TrendingUp, Users, Lightbulb, MessageCircle } from 'lucide-react';
+import { Send, Loader2, Sparkles, Brain, Zap, Trophy, TrendingUp, Users, Lightbulb, MessageCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import MessageBubble from '@/components/assistant/MessageBubble';
@@ -41,6 +41,24 @@ export default function AIAssistantPage() {
 
         return () => unsubscribe();
     }, [conversation?.id]);
+
+    // Timeout for stuck responses
+    useEffect(() => {
+        if (!isSending) return;
+        
+        const timeout = setTimeout(() => {
+            if (isSending) {
+                setIsSending(false);
+                // Add a timeout message
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: "I'm having trouble getting a response right now. This can happen when searching for real-time data. Please try asking again or rephrase your question."
+                }]);
+            }
+        }, 60000); // 60 second timeout
+
+        return () => clearTimeout(timeout);
+    }, [isSending]);
 
     const startNewChat = async (initialMessage = null) => {
         setIsLoading(true);
