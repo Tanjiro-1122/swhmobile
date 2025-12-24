@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { GoogleAuth } from 'npm:google-auth-library@9.4.1';
 
 // Map Google Play Product IDs to subscription types

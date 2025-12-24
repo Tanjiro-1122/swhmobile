@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // Apple Receipt Verification URLs
 const PRODUCTION_URL = 'https://buy.itunes.apple.com/verifyReceipt';
