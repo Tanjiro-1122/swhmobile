@@ -4,10 +4,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
 
+// Random idle actions the owl can perform
+const IDLE_ACTIONS = ['idle', 'turn', 'squat', 'hoot', 'jump', 'wiggle', 'nod'];
+
 export default function AnimatedSAL3D({ onPromptClick }) {
     const [isHovered, setIsHovered] = useState(false);
     const [eyeBlink, setEyeBlink] = useState(false);
     const [bookGlow, setBookGlow] = useState(0);
+    const [currentAction, setCurrentAction] = useState('idle');
 
     // Blink effect
     useEffect(() => {
@@ -25,6 +29,40 @@ export default function AnimatedSAL3D({ onPromptClick }) {
         }, 800);
         return () => clearInterval(glowInterval);
     }, []);
+
+    // Random idle action cycle
+    useEffect(() => {
+        const doRandomAction = () => {
+            const randomAction = IDLE_ACTIONS[Math.floor(Math.random() * IDLE_ACTIONS.length)];
+            setCurrentAction(randomAction);
+            // Reset to idle after action completes
+            setTimeout(() => setCurrentAction('idle'), 800);
+        };
+        
+        // Do a random action every 2-4 seconds
+        const actionInterval = setInterval(doRandomAction, 2000 + Math.random() * 2000);
+        return () => clearInterval(actionInterval);
+    }, []);
+
+    // Get animation based on current action
+    const getOwlAnimation = () => {
+        switch (currentAction) {
+            case 'turn':
+                return { rotateY: [0, 180, 180, 0], scale: 1 };
+            case 'squat':
+                return { scaleY: [1, 0.8, 1], y: [0, 5, 0], scale: 1 };
+            case 'hoot':
+                return { scale: [1, 1.08, 1.08, 1], y: [0, -3, -3, 0] };
+            case 'jump':
+                return { y: [0, -20, 0], scale: [1, 1.05, 1] };
+            case 'wiggle':
+                return { rotateZ: [0, -8, 8, -8, 8, 0], scale: 1 };
+            case 'nod':
+                return { rotateX: [0, 15, 0, 15, 0], scale: 1 };
+            default:
+                return { scale: 1, y: 0, rotateY: 0, rotateZ: 0, rotateX: 0, scaleY: 1 };
+        }
+    };
 
     const quickActions = [
         { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: "LearningCenter" },
