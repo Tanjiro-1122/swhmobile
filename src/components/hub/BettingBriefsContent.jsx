@@ -45,11 +45,11 @@ export default function BettingBriefsContent() {
 
   if (briefs.length === 0) {
     return (
-      <Card className="border-2 border-gray-200">
+      <Card className="border-2 border-slate-700 bg-slate-800/50">
         <CardContent className="p-12 text-center">
-          <Sparkles className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No Betting Briefs Yet</h3>
-          <p className="text-gray-600">Daily AI-generated betting briefs will appear here.</p>
+          <Sparkles className="w-16 h-16 mx-auto mb-4 text-slate-500" />
+          <h3 className="text-xl font-bold text-white mb-2">No Betting Briefs Yet</h3>
+          <p className="text-slate-400">Daily AI-generated betting briefs will appear here.</p>
         </CardContent>
       </Card>
     );
@@ -59,11 +59,11 @@ export default function BettingBriefsContent() {
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button
-          onClick={handleRefresh}
-          variant="outline"
-          size="sm"
-          disabled={isGenerating || isLoading}
-          className="gap-2 bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+        onClick={handleRefresh}
+        variant="outline"
+        size="sm"
+        disabled={isGenerating || isLoading}
+        className="gap-2 bg-slate-800 text-white border-slate-600 hover:bg-slate-700"
         >
           <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
           {isGenerating ? 'Generating...' : 'Refresh'}
@@ -76,43 +76,43 @@ export default function BettingBriefsContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Card className="border-2 border-purple-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b-2 border-purple-200">
+          <Card className="border-2 border-purple-500/30 bg-slate-800/50 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-purple-900/50 to-slate-800 border-b border-slate-700">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-purple-600" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Sparkles className="w-6 h-6 text-purple-400" />
                   {brief.title}
                 </CardTitle>
-                <Badge variant="secondary" className="flex items-center gap-1">
+                <Badge variant="secondary" className="flex items-center gap-1 bg-slate-700 text-slate-300">
                   <Calendar className="w-3 h-3" />
                   {new Date(brief.brief_date).toLocaleDateString()}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <p className="text-gray-700 mb-6">{brief.summary}</p>
+              <p className="text-slate-300 mb-6">{brief.summary}</p>
 
               {/* Top Picks */}
               {brief.top_picks && brief.top_picks.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  <h4 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
                     Top Picks
                   </h4>
                   <div className="space-y-3">
                     {brief.top_picks.map((pick, idx) => (
-                      <div key={idx} className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                      <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <Badge variant="secondary" className="text-xs mb-2">{pick.sport}</Badge>
-                            <h5 className="font-bold text-gray-900">{pick.match}</h5>
+                            <Badge variant="secondary" className="text-xs mb-2 bg-slate-700 text-slate-300">{pick.sport}</Badge>
+                            <h5 className="font-bold text-white">{pick.match}</h5>
                           </div>
-                          <Badge className="bg-green-100 text-green-800">{pick.confidence}</Badge>
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{pick.confidence}</Badge>
                         </div>
-                        <p className="text-sm text-gray-700 mb-2">
-                          <strong>Pick:</strong> {pick.pick} ({pick.odds})
+                        <p className="text-sm text-slate-300 mb-2">
+                          <strong className="text-white">Pick:</strong> {pick.pick} ({pick.odds})
                         </p>
-                        <p className="text-sm text-gray-600">{pick.reasoning}</p>
+                        <p className="text-sm text-slate-400">{pick.reasoning}</p>
                       </div>
                     ))}
                   </div>
@@ -122,17 +122,17 @@ export default function BettingBriefsContent() {
               {/* Injury Updates */}
               {brief.injury_updates && brief.injury_updates.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <h4 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-400" />
                     Injury Updates
                   </h4>
                   <div className="grid md:grid-cols-2 gap-3">
                     {brief.injury_updates.map((injury, idx) => (
-                      <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <div className="font-semibold text-gray-900">{injury.player}</div>
-                        <div className="text-sm text-gray-600">{injury.team}</div>
-                        <div className="text-sm text-red-700 mt-1">{injury.injury}</div>
-                        <div className="text-xs text-gray-500 mt-1">Impact: {injury.impact}</div>
+                      <div key={idx} className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                        <div className="font-semibold text-white">{injury.player}</div>
+                        <div className="text-sm text-slate-400">{injury.team}</div>
+                        <div className="text-sm text-red-400 mt-1">{injury.injury}</div>
+                        <div className="text-xs text-slate-500 mt-1">Impact: {injury.impact}</div>
                       </div>
                     ))}
                   </div>
@@ -142,16 +142,16 @@ export default function BettingBriefsContent() {
               {/* Weather Alerts */}
               {brief.weather_alerts && brief.weather_alerts.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Cloud className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-blue-400" />
                     Weather Alerts
                   </h4>
                   <div className="space-y-2">
                     {brief.weather_alerts.map((weather, idx) => (
-                      <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div className="font-semibold text-gray-900">{weather.match}</div>
-                        <div className="text-sm text-gray-600">{weather.conditions}</div>
-                        <div className="text-sm text-blue-700">{weather.impact}</div>
+                      <div key={idx} className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                        <div className="font-semibold text-white">{weather.match}</div>
+                        <div className="text-sm text-slate-400">{weather.conditions}</div>
+                        <div className="text-sm text-blue-400">{weather.impact}</div>
                       </div>
                     ))}
                   </div>

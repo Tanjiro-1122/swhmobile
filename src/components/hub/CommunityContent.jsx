@@ -55,20 +55,20 @@ export default function CommunityContent() {
     <div className="space-y-6">
       {/* Community Links */}
       <div className="grid md:grid-cols-2 gap-4">
-        <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-red-50">
+        <Card className="border-2 border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="text-3xl">🔥</div>
               <div>
-                <h3 className="font-bold text-gray-900">Reddit Community</h3>
-                <p className="text-sm text-gray-600">Join discussions on r/sportswagerhelper</p>
+                <h3 className="font-bold text-white">Reddit Community</h3>
+                <p className="text-sm text-slate-400">Join discussions on r/sportswagerhelper</p>
               </div>
             </div>
             <a 
               href="https://www.reddit.com/r/sportswagerhelper/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold"
+              className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 font-semibold"
             >
               Visit Reddit <ExternalLink className="w-4 h-4" />
             </a>
@@ -76,20 +76,20 @@ export default function CommunityContent() {
         </Card>
 
         {isVIPorLegacy && (
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <Card className="border-2 border-purple-500/30 bg-gradient-to-br from-purple-900/20 to-pink-900/20">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <Crown className="w-8 h-8 text-purple-600" />
+                <Crown className="w-8 h-8 text-purple-400" />
                 <div>
-                  <h3 className="font-bold text-gray-900">VIP Discord</h3>
-                  <p className="text-sm text-gray-600">Exclusive channel for VIP members</p>
+                  <h3 className="font-bold text-white">VIP Discord</h3>
+                  <p className="text-sm text-slate-400">Exclusive channel for VIP members</p>
                 </div>
               </div>
               <a 
-                href="https://discord.gg/v6ZVC8MR" 
+                href="https://discord.gg/sxUunEGgTY" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold"
+                className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-semibold"
               >
                 Join Discord <ExternalLink className="w-4 h-4" />
               </a>
@@ -100,7 +100,7 @@ export default function CommunityContent() {
 
       {/* Create Post */}
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-gray-900">Community Picks & Discussion</h3>
+        <h3 className="text-xl font-bold text-white">Community Picks & Discussion</h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-blue-600 hover:bg-blue-700">
@@ -214,11 +214,11 @@ export default function CommunityContent() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
         </div>
       ) : posts.length === 0 ? (
-        <Card className="border-2 border-dashed border-gray-300">
+        <Card className="border-2 border-dashed border-slate-600 bg-slate-800/50">
           <CardContent className="p-12 text-center">
-            <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Posts Yet</h3>
-            <p className="text-gray-600">Be the first to share a pick!</p>
+            <MessageSquare className="w-16 h-16 mx-auto mb-4 text-slate-500" />
+            <h3 className="text-xl font-bold text-white mb-2">No Posts Yet</h3>
+            <p className="text-slate-400">Be the first to share a pick!</p>
           </CardContent>
         </Card>
       ) : (
@@ -230,24 +230,24 @@ export default function CommunityContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="border-2 border-gray-200 hover:border-gray-300 transition-all">
+              <Card className="border-2 border-slate-700 hover:border-slate-600 transition-all bg-slate-800/50">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        {post.sport && <Badge variant="secondary">{post.sport}</Badge>}
-                        <Badge className="bg-blue-100 text-blue-800">{post.post_type}</Badge>
+                        {post.sport && <Badge variant="secondary" className="bg-slate-700 text-slate-300">{post.sport}</Badge>}
+                        <Badge className="bg-blue-500/20 text-blue-400">{post.post_type}</Badge>
                       </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
-                      {post.created_by && <p className="text-xs text-gray-500 mb-2">Posted by: {post.created_by.split('@')[0]}</p>}
+                      <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
+                      {post.created_by && <p className="text-xs text-slate-500 mb-2">Posted by: {post.created_by.split('@')[0]}</p>}
 
                       {post.pick && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                          <span className="font-bold text-green-800">Pick: {post.pick}</span>
-                          {post.odds && <span className="ml-2 text-green-700">({post.odds})</span>}
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-3">
+                          <span className="font-bold text-green-400">Pick: {post.pick}</span>
+                          {post.odds && <span className="ml-2 text-green-300">({post.odds})</span>}
                         </div>
                       )}
-                      <p className="text-gray-700">{post.content}</p>
+                      <p className="text-slate-300">{post.content}</p>
                     </div>
                     <Button 
                       variant="ghost" 

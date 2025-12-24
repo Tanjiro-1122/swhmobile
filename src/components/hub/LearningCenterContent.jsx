@@ -277,7 +277,7 @@ export default function LearningCenterContent() {
       return updated;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     }
   });
 
