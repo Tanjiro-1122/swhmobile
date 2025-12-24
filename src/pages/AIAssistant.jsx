@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Send, Loader2, Sparkles, Brain, Zap, Trophy, TrendingUp, Users, Lightbulb, MessageCircle, BookOpen, Newspaper, RefreshCw, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import MessageBubble from '@/components/assistant/MessageBubble';
 import AnimatedSAL3D from '@/components/assistant/AnimatedSAL3D';
 import { motion, AnimatePresence } from 'framer-motion';
