@@ -1,4 +1,3 @@
-import AIAssistant from './pages/AIAssistant';
 import AIParlayBuilder from './pages/AIParlayBuilder';
 import AIPerformance from './pages/AIPerformance';
 import AdminErrorLogs from './pages/AdminErrorLogs';
@@ -38,11 +37,11 @@ import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
+import AIAssistant from './pages/AIAssistant';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AIAssistant": AIAssistant,
     "AIParlayBuilder": AIParlayBuilder,
     "AIPerformance": AIPerformance,
     "AdminErrorLogs": AdminErrorLogs,
@@ -82,6 +81,7 @@ export const PAGES = {
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
+    "AIAssistant": AIAssistant,
 }
 
 export const pagesConfig = {
