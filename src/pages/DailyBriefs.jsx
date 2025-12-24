@@ -3,7 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertTriangle, Newspaper, Star, TrendingUp, Cloudy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, AlertTriangle, Newspaper, Star, TrendingUp, Cloudy, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { detectPlatform } from '@/components/utils/platform';
 
 
@@ -68,6 +71,12 @@ export default function DailyBriefsPage() {
   return (
     <div className="bg-slate-50 min-h-screen">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <Link to={createPageUrl('Dashboard')}>
+          <Button variant="ghost" className="mb-4 text-slate-600 hover:text-slate-900 hover:bg-slate-200 -ml-2">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </Link>
         <header className="mb-8">
           <h1 className="text-4xl font-black text-slate-900">Daily Betting Briefs</h1>
           <p className="text-lg text-slate-600">Your AI-powered morning digest of the betting landscape.</p>
