@@ -84,15 +84,23 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                         {/* Gradient border glow */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-sm opacity-75" />
                         
-                        {/* The animated owl video */}
-                        <video 
-                            src={ANIMATED_OWL_VIDEO}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
-                        />
+                        {/* The animated owl - video or image */}
+                        {isVideo ? (
+                            <video 
+                                src={mascotUrl}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
+                            />
+                        ) : (
+                            <img 
+                                src={mascotUrl}
+                                alt="S.A.L. the Owl"
+                                className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
+                            />
+                        )}
                     </motion.div>
                 </div>
             </motion.div>
