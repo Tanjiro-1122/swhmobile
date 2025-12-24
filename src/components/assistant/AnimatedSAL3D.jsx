@@ -18,17 +18,12 @@ export default function AnimatedSAL3D({ onPromptClick }) {
 
     return (
         <div className="flex flex-col items-center justify-center py-6">
-            {/* 3D Scene Container */}
+            {/* Animated Owl Video Container */}
             <motion.div
-                className="relative w-64 h-64 perspective-1000"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                animate={{
-                    rotateY: isHovered ? 5 : 0,
-                    rotateX: isHovered ? -5 : 0,
-                }}
-                transition={{ type: "spring", stiffness: 100 }}
-                style={{ transformStyle: 'preserve-3d' }}
+                className="relative w-64 h-64"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
             >
                 {/* Ambient glow layers */}
                 <motion.div 
@@ -44,19 +39,18 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                 />
 
                 {/* Floating particles */}
-                {[...Array(8)].map((_, i) => (
+                {[...Array(6)].map((_, i) => (
                     <motion.div
                         key={i}
                         className="absolute w-2 h-2 rounded-full"
                         style={{
                             background: i % 2 === 0 ? 'rgba(168, 85, 247, 0.6)' : 'rgba(6, 182, 212, 0.6)',
-                            left: `${20 + Math.random() * 60}%`,
-                            top: `${20 + Math.random() * 60}%`,
+                            left: `${15 + Math.random() * 70}%`,
+                            top: `${15 + Math.random() * 70}%`,
                         }}
                         animate={{
-                            y: [0, -20, 0],
-                            x: [0, (i % 2 === 0 ? 10 : -10), 0],
-                            opacity: [0.3, 0.8, 0.3],
+                            y: [0, -15, 0],
+                            opacity: [0.3, 0.7, 0.3],
                             scale: [0.5, 1, 0.5],
                         }}
                         transition={{
@@ -67,105 +61,27 @@ export default function AnimatedSAL3D({ onPromptClick }) {
                     />
                 ))}
 
-                {/* Main S.A.L. Container - Idle animations */}
-                <motion.div
-                    className="relative w-full h-full flex items-center justify-center"
-                    animate={getOwlAnimation()}
-                    transition={{ 
-                        duration: 0.6,
-                        ease: "easeInOut"
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
-                >
-                    {/* Back shadow layer */}
-                    <div 
-                        className="absolute w-40 h-40 rounded-3xl bg-black/30 blur-xl"
-                        style={{ transform: 'translateZ(-30px) translateY(20px)' }}
-                    />
-
-                    {/* Middle glow layer */}
-                    <motion.div 
-                        className="absolute w-36 h-36 rounded-3xl"
-                        style={{ 
-                            transform: 'translateZ(-15px)',
-                            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.5), rgba(6, 182, 212, 0.5))',
-                            filter: 'blur(15px)',
-                        }}
-                        animate={{
-                            scale: [1, 1.1, 1],
-                            opacity: [0.5, 0.8, 0.5],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                    />
-
-                    {/* Main owl image */}
+                {/* Video container with glow border */}
+                <div className="relative w-full h-full flex items-center justify-center">
                     <motion.div
                         className="relative"
-                        style={{ transform: 'translateZ(20px)' }}
                         whileHover={{ scale: 1.05 }}
+                        transition={{ type: "spring", stiffness: 300 }}
                     >
-                        {/* Glasses glint effect */}
-                        <motion.div
-                            className="absolute top-8 left-8 w-6 h-2 bg-white/60 rounded-full blur-sm z-20"
-                            animate={{
-                                opacity: [0, 0.8, 0],
-                                x: [0, 20, 40],
-                            }}
-                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                        {/* Gradient border glow */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-cyan-500 to-lime-500 rounded-3xl blur-sm opacity-75" />
+                        
+                        {/* The animated owl video */}
+                        <video 
+                            src={ANIMATED_OWL_VIDEO}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="relative w-40 h-40 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
                         />
-
-                        {/* The owl image with 3D border */}
-                        <div className="relative">
-                            <div 
-                                className="absolute inset-0 rounded-3xl"
-                                style={{
-                                    background: 'linear-gradient(135deg, #a855f7, #06b6d4, #84cc16)',
-                                    transform: 'translateZ(-5px)',
-                                    padding: '3px',
-                                }}
-                            />
-                            <img 
-                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                                alt="S.A.L. the Owl"
-                                className="relative w-32 h-32 rounded-3xl object-cover shadow-2xl border-2 border-purple-400/50"
-                                style={{ transform: 'translateZ(5px)' }}
-                            />
-
-                            {/* Eye blink overlay */}
-                            {eyeBlink && (
-                                <div className="absolute top-6 left-6 right-6 h-4 bg-slate-800/80 rounded-full" 
-                                    style={{ transform: 'translateZ(10px)' }} 
-                                />
-                            )}
-                        </div>
-
-                        {/* Glowing book effect */}
-                        <motion.div
-                            className="absolute -bottom-2 -right-2 w-10 h-10 rounded-lg"
-                            style={{ transform: 'translateZ(30px)' }}
-                            animate={{
-                                boxShadow: bookGlow === 0 
-                                    ? '0 0 20px 5px rgba(132, 204, 22, 0.6)' 
-                                    : bookGlow === 1 
-                                    ? '0 0 30px 10px rgba(132, 204, 22, 0.8)' 
-                                    : '0 0 20px 5px rgba(168, 85, 247, 0.6)',
-                            }}
-                        />
-
-                        {/* Floating lightbulb - brighter on hoot */}
-                        <motion.div
-                            className="absolute -top-4 -right-2 text-2xl"
-                            style={{ transform: 'translateZ(40px)' }}
-                            animate={{
-                                scale: currentAction === 'hoot' ? [1, 1.3, 1] : 1,
-                                filter: currentAction === 'hoot' ? 'brightness(1.5)' : 'brightness(1)',
-                            }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            💡
-                        </motion.div>
                     </motion.div>
-                </motion.div>
+                </div>
             </motion.div>
 
             {/* Speech bubble */}
