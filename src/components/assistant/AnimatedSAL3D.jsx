@@ -27,9 +27,10 @@ export default function AnimatedSAL3D({ onPromptClick }) {
     }, []);
 
     const quickActions = [
-        { text: "What should I learn first?", icon: "📚" },
-        { text: "Search my files for insights", icon: "🔍" },
-        { text: "Today's betting tips", icon: "💡" },
+        { text: "What should I learn first?", icon: GraduationCap, color: "from-purple-500 to-indigo-500", link: null, tab: "learn" },
+        { text: "Read today's daily brief", icon: Newspaper, color: "from-amber-500 to-orange-500", link: null, tab: "briefs" },
+        { text: "Discuss it amongst your peers", icon: Users, color: "from-green-500 to-emerald-500", link: null, tab: "community" },
+        { text: "Today's betting tips", icon: Zap, color: "from-cyan-500 to-blue-500", link: null, tab: null },
     ];
 
     return (
