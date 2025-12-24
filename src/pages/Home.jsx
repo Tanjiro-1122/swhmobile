@@ -270,10 +270,10 @@ export default function Home() {
                 <section id="free-search" className="mb-16">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4">
-                           Try Five Free Searches On Us
+                           Try Our Free Version
                         </h2>
                         <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                            Get a glimpse of our powerful AI by searching for your favorite players and teams. After 5 lookups, you'll need to subscribe to continue.
+                            Get a glimpse of our powerful AI by searching for your favorite players and teams. Create a free account for 5 monthly searches, or upgrade for unlimited access.
                         </p>
                     </div>
                     <div className="max-w-3xl mx-auto">
