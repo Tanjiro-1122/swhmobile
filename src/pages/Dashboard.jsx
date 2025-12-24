@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2 } from "lucide-react";
+import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -14,9 +14,13 @@ import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
 import NeonCard from "@/components/dashboard/NeonCard";
 import CircuitBackground from "@/components/dashboard/CircuitBackground";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import QuickStatsBar from "@/components/dashboard/QuickStatsBar";
+import AIAccuracyWidget from "@/components/dashboard/AIAccuracyWidget";
+import SportsNewsWidget from "@/components/dashboard/SportsNewsWidget";
 
 
 const allMenuItems = [
+    { id: "assistant", title: "AI ASSISTANT", subtitle: "Chat with S.A.L.", description: "Ask about predictions, stats & strategies", Icon: Bot, page: "AIAssistant", tag: "NEW", tagColor: "bg-purple-500 text-white" },
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
     { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds comparison", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
     { id: "community", title: "COMMUNITY", subtitle: "Learn & Connect", description: "Daily briefs, learning center, discussions", Icon: Users, page: "CommunityHub", tag: null },
@@ -31,6 +35,7 @@ const allMenuItems = [
 // Assign glow colors based on card type
 const getGlowColor = (id) => {
     const colorMap = {
+        assistant: "purple",
         analysis: "purple",
         tracking: "cyan",
         community: "lime",
@@ -83,9 +88,25 @@ const WebDashboardContent = ({ menuItems, isAdmin, userName }) => {
     return (
         <div className="w-full relative z-10">
             <DashboardHeader userName={userName} />
+            
+            {/* Quick Stats Bar */}
+            <QuickStatsBar />
 
-            <TodaysPredictions />
-            <div className="mt-10">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                {/* Today's Predictions - takes 2 columns */}
+                <div className="lg:col-span-2">
+                    <TodaysPredictions />
+                </div>
+                
+                {/* Right sidebar with AI Accuracy */}
+                <div className="space-y-6">
+                    <AIAccuracyWidget />
+                    <SportsNewsWidget />
+                </div>
+            </div>
+            
+            <div className="mt-6">
               <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
             </div>
         </div>
