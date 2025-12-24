@@ -180,11 +180,11 @@ export default function AnimatedSAL3D({ onPromptClick, isExiting = false }) {
                 </div>
             </motion.div>
 
-            {/* Speech bubble */}
+            {/* Speech bubble - only show after entry animation */}
             <motion.div
                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.3 }}
+                animate={hasEntered && !isExiting ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.9 }}
+                transition={{ delay: hasEntered ? 0 : 0.3, duration: 0.3 }}
                 className="relative mt-4 max-w-sm"
             >
                 {/* Bubble pointer */}
