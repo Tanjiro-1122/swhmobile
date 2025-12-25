@@ -69,7 +69,8 @@
     "zod": "^3.24.2",
     "@sentry/react": "^7.100.0",
     "@sentry/deno": "^7.100.0",
-    "lru-cache": "^10.0.0"
+    "lru-cache": "^10.0.0",
+    "react-fast-marquee": "^1.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

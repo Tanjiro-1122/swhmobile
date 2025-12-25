@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Loader2, WifiOff, Clock, Gauge } from 'lucide-react';
+import Marquee from 'react-fast-marquee';
 
 const ScoreItem = ({ game }) => (
-    <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-lg border border-white/10 flex-shrink-0">
+    <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-lg border border-white/10 flex-shrink-0 mx-3">
         <span className="font-semibold text-sm text-white whitespace-nowrap">
             {game.home_team} vs {game.away_team}
         </span>
@@ -19,16 +20,17 @@ const ScoreItem = ({ game }) => (
 );
 
 const LiveBadge = () => (
-    <div className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 rounded-full px-3 py-1 flex-shrink-0">
+    <div className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 rounded-full px-3 py-1 flex-shrink-0 mx-3">
         <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
         <span className="text-xs font-bold text-red-400 tracking-wide">LIVE</span>
     </div>
 );
 
+// Speed in pixels per second - lower = slower
 const SPEED_OPTIONS = [
-    { label: 'Slow', duration: 270 },
-    { label: 'Medium', duration: 180 },
-    { label: 'Fast', duration: 90 },
+    { label: 'Slow', speed: 15 },
+    { label: 'Medium', speed: 30 },
+    { label: 'Fast', speed: 50 },
 ];
 
 export const LiveMarketTicker = () => {
@@ -82,22 +84,7 @@ export const LiveMarketTicker = () => {
     }
 
     return (
-        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
-            <style>{`
-                @keyframes ticker-scroll {
-                    from { transform: translateX(0); }
-                    to { transform: translateX(-100%); }
-                }
-                .ticker-content {
-                    display: inline-block;
-                    padding-left: 100%;
-                    animation: ticker-scroll ${currentSpeed.duration}s linear infinite;
-                }
-                .ticker-content:hover {
-                    animation-play-state: paused;
-                }
-            `}</style>
-            
+        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 relative">
             {/* Speed Control Button */}
             <button
                 onClick={cycleSpeed}
@@ -108,18 +95,18 @@ export const LiveMarketTicker = () => {
                 <span>{currentSpeed.label}</span>
             </button>
             
-            <div className="ticker-content pr-24">
-                <div className="inline-flex items-center gap-6">
-                    <LiveBadge />
-                    {scores.map((game, index) => (
-                        <ScoreItem key={`a-${game.id}-${index}`} game={game} />
-                    ))}
-                    <LiveBadge />
-                    {scores.map((game, index) => (
-                        <ScoreItem key={`b-${game.id}-${index}`} game={game} />
-                    ))}
-                </div>
-            </div>
+            <Marquee
+                speed={currentSpeed.speed}
+                pauseOnHover={true}
+                pauseOnClick={false}
+                gradient={false}
+                className="pr-16"
+            >
+                <LiveBadge />
+                {scores.map((game, index) => (
+                    <ScoreItem key={`${game.id}-${index}`} game={game} />
+                ))}
+            </Marquee>
         </div>
     );
 };
