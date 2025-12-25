@@ -2,7 +2,6 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
 import { Loader2, WifiOff, Clock } from 'lucide-react';
 
 const TickerContent = ({ scores, isLoading, isError, showBadge = true }) => {
