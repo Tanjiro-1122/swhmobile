@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Loader2, WifiOff, Clock } from 'lucide-react';
+import { Loader2, WifiOff, Clock, Gauge } from 'lucide-react';
 
 const ScoreItem = ({ game }) => (
     <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 rounded-lg border border-white/10 flex-shrink-0">
@@ -25,7 +25,20 @@ const LiveBadge = () => (
     </div>
 );
 
+const SPEED_OPTIONS = [
+    { label: 'Slow', duration: 90 },
+    { label: 'Medium', duration: 45 },
+    { label: 'Fast', duration: 20 },
+];
+
 export const LiveMarketTicker = () => {
+    const [speedIndex, setSpeedIndex] = useState(0); // Start with Slow
+    const currentSpeed = SPEED_OPTIONS[speedIndex];
+
+    const cycleSpeed = () => {
+        setSpeedIndex((prev) => (prev + 1) % SPEED_OPTIONS.length);
+    };
+
     const { data: scores, isLoading, isError } = useQuery({
         queryKey: ['liveScores'],
         queryFn: () => base44.functions.invoke('getLiveScores').then(res => res.data),
@@ -69,7 +82,7 @@ export const LiveMarketTicker = () => {
     }
 
     return (
-        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap">
+        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
             <style>{`
                 @keyframes ticker-scroll {
                     from { transform: translateX(0); }
@@ -78,13 +91,24 @@ export const LiveMarketTicker = () => {
                 .ticker-content {
                     display: inline-block;
                     padding-left: 100%;
-                    animation: ticker-scroll 45s linear infinite;
+                    animation: ticker-scroll ${currentSpeed.duration}s linear infinite;
                 }
                 .ticker-content:hover {
                     animation-play-state: paused;
                 }
             `}</style>
-            <div className="ticker-content">
+            
+            {/* Speed Control Button */}
+            <button
+                onClick={cycleSpeed}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700 border border-white/20 rounded-full px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                title="Change ticker speed"
+            >
+                <Gauge className="w-3.5 h-3.5" />
+                <span>{currentSpeed.label}</span>
+            </button>
+            
+            <div className="ticker-content pr-24">
                 <div className="inline-flex items-center gap-6">
                     <LiveBadge />
                     {scores.map((game, index) => (
