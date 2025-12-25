@@ -246,7 +246,7 @@ function AskSALPage() {
                                 </div>
                             )}
 
-                            {messages.length > 0 && (
+                            {messages.length > 0 ? (
                                 <div className="space-y-4">
                                     <AnimatePresence>
                                         {messages.map((msg, index) => (
@@ -265,7 +265,14 @@ function AskSALPage() {
                                     
                                     <div ref={messagesEndRef} />
                                 </div>
-                            )}
+                            ) : isSending && processingStep ? (
+                                <div className="space-y-4">
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                        <ProcessingSteps currentStep={processingStep} />
+                                    </motion.div>
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            ) : null}
                         </div>
 
                         {/* Input Area */}
