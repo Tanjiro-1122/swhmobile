@@ -92,7 +92,7 @@ function AskSALPage() {
             setMessages([{ role: 'user', content: initialMessage }]);
             setIsLoading(false);
             setIsSending(true);
-            setProcessingStep('gathering');
+            setProcessingStep('searching');
             
             await base44.agents.addMessage(newConversation, {
                 role: 'user',
