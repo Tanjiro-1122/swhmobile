@@ -27,7 +27,7 @@ const featuredItems = [
     { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
 ];
 
-// Secondary menu items - reduced to most essential (6 max for cleaner layout)
+// Secondary menu items - reduced to most essential (no duplicates of featured items)
 const secondaryMenuItems = [
     { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
     { id: "community", title: "COMMUNITY", subtitle: "Connect & Share", description: "Join discussions, share picks", Icon: Users, page: "CommunityHub", tag: "SOCIAL", tagColor: "bg-purple-500 text-white" },
