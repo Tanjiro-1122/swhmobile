@@ -79,8 +79,24 @@ function SALHubPage() {
         return () => clearTimeout(timeout);
     }, [isSending]);
 
+    // Helper to get formatted date context using user's local time
+    const getDateContext = () => {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+        const today = now.toLocaleDateString('en-US', dateOptions);
+        const currentTime = now.toLocaleTimeString('en-US', timeOptions);
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toLocaleDateString('en-US', dateOptions);
+        return `[CURRENT DATE & TIME: Today is ${today}, ${currentTime}. Tomorrow is ${tomorrowStr}. Use these exact dates when searching.]`;
+    };
+
     const startNewChat = async (initialMessage = null) => {
         setIsLoading(true);
+        setIsSending(true);
+        setProcessingStep('searching');
+        
         try {
             const newConversation = await base44.agents.createConversation({
                 agent_name: AGENT_NAME,
@@ -92,16 +108,24 @@ function SALHubPage() {
             
             if (initialMessage) {
                 setMessages([{ role: 'user', content: initialMessage }]);
-                setIsSending(true);
-                setProcessingStep('gathering');
+                
+                // Small delay to ensure subscription is established
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Prepend date context to help AI know current date
+                const messageWithContext = `${getDateContext()}\n\nUser question: ${initialMessage}`;
                 await base44.agents.addMessage(newConversation, {
                     role: 'user',
-                    content: initialMessage,
+                    content: messageWithContext,
                 });
+            } else {
+                setIsSending(false);
+                setProcessingStep(null);
             }
         } catch (error) {
             console.error("Failed to create conversation:", error);
             setIsLoading(false);
+            setIsSending(false);
             setProcessingStep(null);
         }
     };
