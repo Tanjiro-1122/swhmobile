@@ -40,7 +40,7 @@ const secondaryMenuItems = [
 // S.A.L. owl logo for AI Assistant
 const SAL_OWL_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
 
-// Combined for mobile view
+// Combined for mobile view - only use featured items (no duplicates from secondary)
 const allMenuItems = [...featuredItems, ...secondaryMenuItems].map(item => 
     item.id === 'assistant' ? { ...item, customIcon: SAL_OWL_LOGO } : item
 );
