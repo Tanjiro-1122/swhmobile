@@ -58,29 +58,29 @@ export const LiveMarketTicker = () => {
     const { data: scores, isLoading, isError } = useQuery({
         queryKey: ['liveScores'],
         queryFn: () => base44.functions.invoke('getLiveScores').then(res => res.data),
-        refetchInterval: 60000, // Refetch every 60 seconds
-        staleTime: 30000, // Consider data fresh for 30 seconds
+        refetchInterval: 60000,
+        staleTime: 30000,
     });
 
-    // Determine if we should render the marquee or a static message
     const showMarquee = !isLoading && !isError && scores && scores.length > 0;
-    // Key to reset animation when content changes
-    const contentKey = showMarquee ? scores.map(s => s.id + s.score).join(',') : 'static';
-
-    // Calculate duration based on number of items for consistent reading speed
-    // Approximately 3 seconds per game item for comfortable reading
+    // ~4 seconds per game for comfortable reading
     const scrollDuration = scores?.length ? Math.max(scores.length * 4, 20) : 20;
 
     return (
         <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
+            <style>
+                {`
+                    @keyframes ticker-scroll {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
+                    }
+                    .ticker-animate {
+                        animation: ticker-scroll ${scrollDuration}s linear infinite;
+                    }
+                `}
+            </style>
             {showMarquee ? (
-                <div 
-                    className="flex animate-marquee-smooth"
-                    style={{
-                        '--scroll-duration': `${scrollDuration}s`
-                    }}
-                >
-                    {/* Two copies for seamless loop */}
+                <div className="flex ticker-animate">
                     <div className="flex shrink-0">
                         <TickerContent scores={scores} isLoading={false} isError={false} showBadge={true} />
                     </div>
