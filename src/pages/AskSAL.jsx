@@ -96,16 +96,22 @@ function AskSALPage() {
     const startNewChat = async (initialMessage) => {
         setIsLoading(true);
         setShowIntro(false);
+        setIsSending(true);
+        setProcessingStep('searching');
+        
         try {
             const newConversation = await base44.agents.createConversation({
                 agent_name: AGENT_NAME,
                 metadata: { name: 'Ask SAL Chat' }
             });
+            
+            // Set conversation first so subscription can be established
             setConversation(newConversation);
             setMessages([{ role: 'user', content: initialMessage }]);
             setIsLoading(false);
-            setIsSending(true);
-            setProcessingStep('searching');
+            
+            // Small delay to ensure subscription is established before sending message
+            await new Promise(resolve => setTimeout(resolve, 100));
             
             // Prepend date context to help AI know current date
             const messageWithContext = `${getDateContext()}\n\nUser question: ${initialMessage}`;
@@ -116,6 +122,7 @@ function AskSALPage() {
         } catch (error) {
             console.error("Failed to create conversation:", error);
             setIsLoading(false);
+            setIsSending(false);
             setProcessingStep(null);
         }
     };
