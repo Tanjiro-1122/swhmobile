@@ -24,7 +24,7 @@ function SALHubPage() {
     const [conversation, setConversation] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
-    const [processingStep, setProcessingStep] = useState(null); // 'gathering' | 'analyzing' | 'complete'
+    const [processingStep, setProcessingStep] = useState(null); // 'searching' | 'examining' | 'deducing' | 'complete'
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
