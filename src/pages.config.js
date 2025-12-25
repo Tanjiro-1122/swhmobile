@@ -1,3 +1,4 @@
+import AIAssistant from './pages/AIAssistant';
 import AIParlayBuilder from './pages/AIParlayBuilder';
 import AIPerformance from './pages/AIPerformance';
 import AdminErrorLogs from './pages/AdminErrorLogs';
@@ -6,6 +7,7 @@ import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import Alerts from './pages/Alerts';
 import AnalysisHub from './pages/AnalysisHub';
 import appleauthcallbackTsx from './pages/AppleAuthCallback.tsx';
+import AskSAL from './pages/AskSAL';
 import BankrollManager from './pages/BankrollManager';
 import BettingBriefs from './pages/BettingBriefs';
 import BettingCalculator from './pages/BettingCalculator';
@@ -37,12 +39,11 @@ import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
-import AIAssistant from './pages/AIAssistant';
-import AskSAL from './pages/AskSAL';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIAssistant": AIAssistant,
     "AIParlayBuilder": AIParlayBuilder,
     "AIPerformance": AIPerformance,
     "AdminErrorLogs": AdminErrorLogs,
@@ -51,6 +52,7 @@ export const PAGES = {
     "Alerts": Alerts,
     "AnalysisHub": AnalysisHub,
     "AppleAuthCallback.tsx": appleauthcallbackTsx,
+    "AskSAL": AskSAL,
     "BankrollManager": BankrollManager,
     "BettingBriefs": BettingBriefs,
     "BettingCalculator": BettingCalculator,
@@ -82,8 +84,6 @@ export const PAGES = {
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
-    "AIAssistant": AIAssistant,
-    "AskSAL": AskSAL,
 }
 
 export const pagesConfig = {

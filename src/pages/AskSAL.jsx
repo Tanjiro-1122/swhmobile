@@ -59,12 +59,19 @@ function AskSALPage() {
             if (isSending) {
                 setIsSending(false);
                 setProcessingStep(null);
-                setMessages(prev => [...prev, {
-                    role: 'assistant',
-                    content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Shall we attempt another investigation?"
-                }]);
+                // Only show timeout message if the last message is from user (no response received)
+                setMessages(prev => {
+                    const lastMsg = prev[prev.length - 1];
+                    if (lastMsg?.role === 'user') {
+                        return [...prev, {
+                            role: 'assistant',
+                            content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Shall we attempt another investigation?"
+                        }];
+                    }
+                    return prev;
+                });
             }
-        }, 90000);
+        }, 45000); // Reduced to 45 seconds for faster feedback
         return () => clearTimeout(timeout);
     }, [isSending]);
 
