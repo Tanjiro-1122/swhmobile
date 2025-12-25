@@ -80,15 +80,17 @@ function AskSALPage() {
         return () => clearTimeout(timeout);
     }, [isSending]);
 
-    // Helper to get formatted date context
+    // Helper to get formatted date context using user's local time
     const getDateContext = () => {
         const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const today = now.toLocaleDateString('en-US', options);
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+        const today = now.toLocaleDateString('en-US', dateOptions);
+        const currentTime = now.toLocaleTimeString('en-US', timeOptions);
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toLocaleDateString('en-US', options);
-        return `[CURRENT DATE CONTEXT: Today is ${today}. Tomorrow is ${tomorrowStr}.]`;
+        const tomorrowStr = tomorrow.toLocaleDateString('en-US', dateOptions);
+        return `[CURRENT DATE & TIME: Today is ${today}, ${currentTime}. Tomorrow is ${tomorrowStr}. Use these exact dates when searching.]`;
     };
 
     const startNewChat = async (initialMessage) => {
