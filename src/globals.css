@@ -380,6 +380,19 @@
             animation-play-state: paused;
           }
 
+          /* Smooth sports ticker marquee */
+          @keyframes marquee-smooth {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+          }
+
+          .animate-marquee-smooth {
+            animation: marquee-smooth var(--scroll-duration, 30s) linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+          }
+
           /* Border Beam Animation for Premium CTAs */
           @keyframes border-beam {
             0% { background-position: 0% 50%; }
