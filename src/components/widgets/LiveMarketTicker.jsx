@@ -69,30 +69,27 @@ export const LiveMarketTicker = () => {
     }
 
     return (
-        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden">
+        <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap">
             <style>{`
-                @keyframes scroll {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(calc(-50% - 1rem)); }
+                @keyframes ticker-scroll {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-100%); }
                 }
-                .ticker-track {
-                    display: flex;
-                    gap: 2rem;
-                    animation: scroll 120s linear infinite;
-                    width: max-content;
+                .ticker-content {
+                    display: inline-block;
+                    padding-left: 100%;
+                    animation: ticker-scroll 45s linear infinite;
                 }
-                .ticker-track:hover {
+                .ticker-content:hover {
                     animation-play-state: paused;
                 }
             `}</style>
-            <div className="ticker-track">
-                <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="ticker-content">
+                <div className="inline-flex items-center gap-6">
                     <LiveBadge />
                     {scores.map((game, index) => (
                         <ScoreItem key={`a-${game.id}-${index}`} game={game} />
                     ))}
-                </div>
-                <div className="flex items-center gap-4 flex-shrink-0" aria-hidden="true">
                     <LiveBadge />
                     {scores.map((game, index) => (
                         <ScoreItem key={`b-${game.id}-${index}`} game={game} />
