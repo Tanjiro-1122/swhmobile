@@ -29,8 +29,8 @@ const LiveBadge = () => (
 // Speed in pixels per second - lower = slower
 const SPEED_OPTIONS = [
     { label: 'Slow', speed: 15 },
-    { label: 'Medium', speed: 30 },
-    { label: 'Fast', speed: 50 },
+    { label: 'Medium', speed: 50 },
+    { label: 'Fast', speed: 100 },
 ];
 
 export const LiveMarketTicker = () => {
@@ -85,15 +85,21 @@ export const LiveMarketTicker = () => {
 
     return (
         <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 relative">
-            {/* Speed Control Button */}
-            <button
-                onClick={cycleSpeed}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700 border border-white/20 rounded-full px-3 py-1.5 text-xs font-medium text-white transition-colors"
-                title="Change ticker speed"
-            >
-                <Gauge className="w-3.5 h-3.5" />
-                <span>{currentSpeed.label}</span>
-            </button>
+            {/* Top bar with LIVE badge and Speed Control */}
+            <div className="flex items-center justify-between px-3 mb-2">
+                <div className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 rounded-full px-3 py-1">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-bold text-red-400 tracking-wide">LIVE SCORES</span>
+                </div>
+                <button
+                    onClick={cycleSpeed}
+                    className="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700 border border-white/20 rounded-full px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                    title="Change ticker speed"
+                >
+                    <Gauge className="w-3.5 h-3.5" />
+                    <span>{currentSpeed.label}</span>
+                </button>
+            </div>
             
             <Marquee
                 speed={currentSpeed.speed}
