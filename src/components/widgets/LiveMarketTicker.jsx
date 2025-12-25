@@ -78,7 +78,7 @@ export const LiveMarketTicker = () => {
                 .ticker-track {
                     display: flex;
                     gap: 2rem;
-                    animation: scroll 60s linear infinite;
+                    animation: scroll 90s linear infinite;
                     width: max-content;
                 }
                 .ticker-track:hover {
