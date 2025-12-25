@@ -1,36 +1,39 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, Brain, CheckCircle, Loader2 } from 'lucide-react';
+import { Search, FileSearch, Lightbulb, CheckCircle, Loader2 } from 'lucide-react';
 
 const ANIMATED_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
 
 const steps = [
-  { id: 'gathering', label: 'Gathering clues...', icon: Search, doneLabel: 'Clues gathered!' },
-  { id: 'analyzing', label: 'Analyzing evidence...', icon: Brain, doneLabel: 'Analysis complete!' },
+  { id: 'searching', label: 'Searching the archives...', icon: Search, doneLabel: 'Data retrieved!', phrase: '🔍 The game is afoot!' },
+  { id: 'examining', label: 'Examining the clues...', icon: FileSearch, doneLabel: 'Clue found!', phrase: '🧐 Aha! A clue emerges...' },
+  { id: 'deducing', label: 'Forming deduction...', icon: Lightbulb, doneLabel: 'Eureka!', phrase: '💡 Elementary, my dear!' },
 ];
 
 export default function ProcessingSteps({ currentStep }) {
-  // currentStep: 'gathering' | 'analyzing' | 'complete'
+  // currentStep: 'searching' | 'examining' | 'deducing' | 'complete'
   
   const getStepStatus = (stepId) => {
     if (currentStep === 'complete') return 'done';
-    if (stepId === 'gathering') {
-      if (currentStep === 'gathering') return 'active';
-      return 'done';
-    }
-    if (stepId === 'analyzing') {
-      if (currentStep === 'analyzing') return 'active';
-      if (currentStep === 'gathering') return 'pending';
-      return 'done';
-    }
+    const stepIndex = steps.findIndex(s => s.id === stepId);
+    const currentIndex = steps.findIndex(s => s.id === currentStep);
+    
+    if (stepIndex < currentIndex) return 'done';
+    if (stepIndex === currentIndex) return 'active';
     return 'pending';
   };
 
   const getProgress = () => {
-    if (currentStep === 'gathering') return 25;
-    if (currentStep === 'analyzing') return 65;
+    if (currentStep === 'searching') return 20;
+    if (currentStep === 'examining') return 55;
+    if (currentStep === 'deducing') return 85;
     if (currentStep === 'complete') return 100;
     return 0;
+  };
+  
+  const getCurrentPhrase = () => {
+    const step = steps.find(s => s.id === currentStep);
+    return step?.phrase || '✅ Case closed!';
   };
 
   return (
