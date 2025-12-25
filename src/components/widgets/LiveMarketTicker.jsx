@@ -73,12 +73,12 @@ export const LiveMarketTicker = () => {
             {showMarquee ? (
                 <motion.div 
                     className="flex"
-                    animate={{ x: [0, '-50%'] }}
+                    animate={{ x: ['0%', '-50%'] }}
                     transition={{
                         x: {
                             repeat: Infinity,
                             repeatType: 'loop',
-                            duration: 25,
+                            duration: 40,
                             ease: 'linear',
                         },
                     }}
