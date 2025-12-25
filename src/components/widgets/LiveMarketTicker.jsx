@@ -67,29 +67,27 @@ export const LiveMarketTicker = () => {
     // Key to reset animation when content changes
     const contentKey = showMarquee ? scores.map(s => s.id + s.score).join(',') : 'static';
 
+    // Calculate duration based on number of items for consistent reading speed
+    // Approximately 3 seconds per game item for comfortable reading
+    const scrollDuration = scores?.length ? Math.max(scores.length * 4, 20) : 20;
+
     return (
         <div className="bg-black/20 backdrop-blur-sm border-y border-white/10 py-3 overflow-hidden whitespace-nowrap relative">
             {showMarquee ? (
-                <motion.div 
-                    className="flex"
-                    animate={{ x: ['0%', '-50%'] }}
-                    transition={{
-                        x: {
-                            repeat: Infinity,
-                            repeatType: 'loop',
-                            duration: 40,
-                            ease: 'linear',
-                        },
+                <div 
+                    className="flex animate-marquee-smooth"
+                    style={{
+                        '--scroll-duration': `${scrollDuration}s`
                     }}
                 >
-                    {/* Two copies for seamless loop - second copy has no LIVE badge */}
+                    {/* Two copies for seamless loop */}
                     <div className="flex shrink-0">
                         <TickerContent scores={scores} isLoading={false} isError={false} showBadge={true} />
                     </div>
                     <div className="flex shrink-0">
                         <TickerContent scores={scores} isLoading={false} isError={false} showBadge={false} />
                     </div>
-                </motion.div>
+                </div>
             ) : (
                 <div className="w-full flex justify-center">
                   <TickerContent scores={scores} isLoading={isLoading} isError={isError} />
