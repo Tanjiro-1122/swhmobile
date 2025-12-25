@@ -34,19 +34,20 @@ const TickerContent = ({ scores, isLoading, isError, showBadge = true }) => {
     }
 
     return (
-        <div className="flex items-center shrink-0">
-            {showBadge && <Badge variant="destructive" className="text-sm font-bold flex-shrink-0 animate-pulse ml-6">LIVE</Badge>}
+        <div className="flex items-center shrink-0 gap-1">
+            {showBadge && (
+                <div className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/50 rounded-full px-3 py-1 ml-4 mr-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-bold text-red-400 tracking-wide">LIVE</span>
+                </div>
+            )}
             {scores.map((game, index) => (
-                <div key={`${game.id}-${index}`} className="flex items-center gap-4 px-6 border-l border-white/10 shrink-0">
-                    <span className="font-bold text-sm tracking-tight text-slate-100">{game.home_team} vs {game.away_team}</span>
+                <div key={`${game.id}-${index}`} className="flex items-center gap-3 px-4 mx-2 py-1.5 bg-white/5 rounded-lg border border-white/10 shrink-0">
+                    <span className="font-semibold text-sm text-white">{game.home_team} vs {game.away_team}</span>
                     {game.status === 'Live' ? (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-bold text-green-400 animate-pulse">{game.score}</span>
-                        </div>
+                        <span className="text-sm font-bold text-lime-400 bg-lime-500/20 px-2 py-0.5 rounded">{game.score}</span>
                     ) : (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-slate-400">{game.score}</span>
-                        </div>
+                        <span className="text-sm font-medium text-cyan-400">{game.score}</span>
                     )}
                 </div>
             ))}
