@@ -36,9 +36,14 @@ function AskSALPage() {
             
             if (lastMessage?.role === 'assistant') {
                 if (lastMessage.tool_calls?.length > 0) {
+                    const hasRunningTools = lastMessage.tool_calls.some(tc => tc.status === 'running' || tc.status === 'in_progress');
                     const hasCompletedTools = lastMessage.tool_calls.some(tc => tc.status === 'completed' || tc.status === 'success');
-                    if (hasCompletedTools && processingStep === 'gathering') {
-                        setProcessingStep('analyzing');
+                    
+                    // Progress through steps based on tool status
+                    if (hasRunningTools && processingStep === 'searching') {
+                        setProcessingStep('examining');
+                    } else if (hasCompletedTools && processingStep === 'examining') {
+                        setProcessingStep('deducing');
                     }
                 }
                 if (lastMessage.content) {
@@ -46,7 +51,7 @@ function AskSALPage() {
                     setTimeout(() => {
                         setProcessingStep(null);
                         setIsSending(false);
-                    }, 500);
+                    }, 800);
                 }
             }
         });
