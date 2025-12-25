@@ -256,8 +256,8 @@ function AskSALPage() {
                                         ))}
                                     </AnimatePresence>
                                     
-                                    {/* Processing Steps UI */}
-                                    {isSending && processingStep && messages[messages.length - 1]?.role === 'user' && (
+                                    {/* Processing Steps UI - Always show when sending */}
+                                    {isSending && processingStep && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                             <ProcessingSteps currentStep={processingStep} />
                                         </motion.div>
