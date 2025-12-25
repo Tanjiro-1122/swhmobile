@@ -73,12 +73,12 @@ export const LiveMarketTicker = () => {
             <style>{`
                 @keyframes scroll {
                     0% { transform: translateX(0); }
-                    100% { transform: translateX(calc(-50% - 0.5rem)); }
+                    100% { transform: translateX(calc(-50% - 1rem)); }
                 }
                 .ticker-track {
                     display: flex;
-                    gap: 1rem;
-                    animation: scroll 30s linear infinite;
+                    gap: 2rem;
+                    animation: scroll 60s linear infinite;
                     width: max-content;
                 }
                 .ticker-track:hover {
