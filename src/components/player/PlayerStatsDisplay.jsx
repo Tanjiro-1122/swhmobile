@@ -768,12 +768,6 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                     </div>
                   )}
                   
-                  {player.next_game.predicted_performance && (
-                    <div className="text-base font-bold text-orange-700 mb-2">
-                      📊 Summary: {player.next_game.predicted_performance}
-                    </div>
-                  )}
-                  
                   {player.next_game.reasoning && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div className="text-xs font-bold text-gray-500 mb-1">AI ANALYSIS:</div>
