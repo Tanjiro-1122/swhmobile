@@ -70,13 +70,13 @@ function AskSALPage() {
                     if (lastMsg?.role === 'user') {
                         return [...prev, {
                             role: 'assistant',
-                            content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Shall we attempt another investigation?"
+                            content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Please try again - tap the send button to re-submit your question."
                         }];
                     }
                     return prev;
                 });
             }
-        }, 45000); // Reduced to 45 seconds for faster feedback
+        }, 30000); // 30 seconds timeout for faster feedback
         return () => clearTimeout(timeout);
     }, [isSending]);
 
