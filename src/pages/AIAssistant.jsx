@@ -63,12 +63,19 @@ function SALHubPage() {
             if (isSending) {
                 setIsSending(false);
                 setProcessingStep(null);
-                setMessages(prev => [...prev, {
-                    role: 'assistant',
-                    content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Shall we attempt another investigation?"
-                }]);
+                // Only show timeout message if last message is from user (no response received)
+                setMessages(prev => {
+                    const lastMsg = prev[prev.length - 1];
+                    if (lastMsg?.role === 'user') {
+                        return [...prev, {
+                            role: 'assistant',
+                            content: "Blast! The trail has gone cold, my friend. The archives seem unresponsive at the moment. Please try again - tap the send button to re-submit your question."
+                        }];
+                    }
+                    return prev;
+                });
             }
-        }, 90000);
+        }, 30000); // 30 seconds timeout for faster feedback
         return () => clearTimeout(timeout);
     }, [isSending]);
 
