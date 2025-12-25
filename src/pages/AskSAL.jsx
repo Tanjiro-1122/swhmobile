@@ -270,33 +270,24 @@ function AskSALPage() {
                                 </div>
                             )}
 
-                            {messages.length > 0 ? (
-                                <div className="space-y-4">
-                                    <AnimatePresence>
-                                        {messages.map((msg, index) => (
-                                            <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                                <MessageBubble message={msg} />
-                                            </motion.div>
-                                        ))}
-                                    </AnimatePresence>
-                                    
-                                    {/* Processing Steps UI - Always show when sending */}
-                                    {isSending && processingStep && (
-                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                            <ProcessingSteps currentStep={processingStep} />
+                            <div className="space-y-4">
+                                <AnimatePresence>
+                                    {messages.map((msg, index) => (
+                                        <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <MessageBubble message={msg} />
                                         </motion.div>
-                                    )}
-                                    
-                                    <div ref={messagesEndRef} />
-                                </div>
-                            ) : isSending && processingStep ? (
-                                <div className="space-y-4">
+                                    ))}
+                                </AnimatePresence>
+                                
+                                {/* Processing Steps UI - Always show when sending */}
+                                {isSending && processingStep && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                         <ProcessingSteps currentStep={processingStep} />
                                     </motion.div>
-                                    <div ref={messagesEndRef} />
-                                </div>
-                            ) : null}
+                                )}
+                                
+                                <div ref={messagesEndRef} />
+                            </div>
                         </div>
 
                         {/* Input Area */}
