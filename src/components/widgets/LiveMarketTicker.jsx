@@ -78,7 +78,7 @@ export const LiveMarketTicker = () => {
                         x: {
                             repeat: Infinity,
                             repeatType: 'loop',
-                            duration: 15,
+                            duration: 25,
                             ease: 'linear',
                         },
                     }}
