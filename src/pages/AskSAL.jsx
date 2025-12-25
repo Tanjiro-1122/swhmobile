@@ -80,6 +80,17 @@ function AskSALPage() {
         return () => clearTimeout(timeout);
     }, [isSending]);
 
+    // Helper to get formatted date context
+    const getDateContext = () => {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = now.toLocaleDateString('en-US', options);
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toLocaleDateString('en-US', options);
+        return `[CURRENT DATE CONTEXT: Today is ${today}. Tomorrow is ${tomorrowStr}.]`;
+    };
+
     const startNewChat = async (initialMessage) => {
         setIsLoading(true);
         setShowIntro(false);
@@ -94,9 +105,11 @@ function AskSALPage() {
             setIsSending(true);
             setProcessingStep('searching');
             
+            // Prepend date context to help AI know current date
+            const messageWithContext = `${getDateContext()}\n\nUser question: ${initialMessage}`;
             await base44.agents.addMessage(newConversation, {
                 role: 'user',
-                content: initialMessage,
+                content: messageWithContext,
             });
         } catch (error) {
             console.error("Failed to create conversation:", error);
