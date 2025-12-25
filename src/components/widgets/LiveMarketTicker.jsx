@@ -26,9 +26,9 @@ const LiveBadge = () => (
 );
 
 const SPEED_OPTIONS = [
-    { label: 'Slow', duration: 90 },
-    { label: 'Medium', duration: 45 },
-    { label: 'Fast', duration: 20 },
+    { label: 'Slow', duration: 270 },
+    { label: 'Medium', duration: 180 },
+    { label: 'Fast', duration: 90 },
 ];
 
 export const LiveMarketTicker = () => {
