@@ -101,10 +101,8 @@ export default function ProcessingSteps({ currentStep }) {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           />
         </div>
-        <p className="text-center text-xs text-slate-400 mt-2">
-          {currentStep === 'gathering' && "🔍 The game is afoot! Searching the archives..."}
-          {currentStep === 'analyzing' && "🧠 Elementary! Deducing the evidence..."}
-          {currentStep === 'complete' && "✅ Case closed!"}
+        <p className="text-center text-sm text-slate-300 mt-2 font-medium">
+          {getCurrentPhrase()}
         </p>
       </div>
     </div>
