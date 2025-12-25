@@ -135,9 +135,11 @@ function AskSALPage() {
         setProcessingStep('searching');
 
         try {
+            // Prepend date context to help AI know current date
+            const messageWithContext = `${getDateContext()}\n\nUser question: ${content}`;
             await base44.agents.addMessage(conversation, {
                 role: 'user',
-                content: content,
+                content: messageWithContext,
             });
         } catch (error) {
             console.error("Failed to send message:", error);
