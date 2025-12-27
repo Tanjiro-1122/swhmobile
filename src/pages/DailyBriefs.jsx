@@ -20,29 +20,39 @@ const BriefSection = ({ title, icon, children }) => (
   </div>
 );
 
-const PickCard = ({ pick }) => (
-  <Card className="bg-white">
-    <CardContent className="p-4">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="font-bold text-slate-900">{pick.pick}</p>
-          <p className="text-sm text-slate-600">{pick.match} ({pick.sport})</p>
+const PickCard = ({ pick }) => {
+  // Map confidence to risk (inverse relationship)
+  const getRiskFromConfidence = (confidence) => {
+    if (confidence === 'High') return 'Low';
+    if (confidence === 'Low') return 'High';
+    return 'Medium';
+  };
+  const riskLevel = getRiskFromConfidence(pick.confidence);
+  
+  return (
+    <Card className="bg-white">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-bold text-slate-900">{pick.pick}</p>
+            <p className="text-sm text-slate-600">{pick.match} ({pick.sport})</p>
+          </div>
+          <Badge variant="outline">{pick.odds}</Badge>
         </div>
-        <Badge variant="outline">{pick.odds}</Badge>
-      </div>
-      <div className="flex items-center gap-2 mt-2">
-         <Badge className={
-            pick.confidence === 'High' ? 'bg-green-100 text-green-800' :
-            pick.confidence === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-            'bg-red-100 text-red-800'
-         }>
-            {pick.confidence} Confidence
-         </Badge>
-      </div>
-      <p className="text-sm text-slate-500 mt-3">{pick.reasoning}</p>
-    </CardContent>
-  </Card>
-);
+        <div className="flex items-center gap-2 mt-2">
+           <Badge className={
+              riskLevel === 'Low' ? 'bg-green-100 text-green-800' :
+              riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+              'bg-red-100 text-red-800'
+           }>
+              {riskLevel} Risk
+           </Badge>
+        </div>
+        <p className="text-sm text-slate-500 mt-3">{pick.reasoning}</p>
+      </CardContent>
+    </Card>
+  );
+};
 
 
 export default function DailyBriefsPage() {

@@ -7,10 +7,18 @@ import { Zap, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const PickCard = ({ pick, index }) => {
-  const confidenceColors = {
-    High: "bg-green-500/20 text-green-400 border-green-500/30",
+  // Map confidence to risk (inverse relationship)
+  const getRiskFromConfidence = (confidence) => {
+    if (confidence === 'High') return 'Low';
+    if (confidence === 'Low') return 'High';
+    return 'Medium';
+  };
+  const riskLevel = getRiskFromConfidence(pick.confidence);
+  
+  const riskColors = {
+    Low: "bg-green-500/20 text-green-400 border-green-500/30",
     Medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    Low: "bg-red-500/20 text-red-400 border-red-500/30"
+    High: "bg-red-500/20 text-red-400 border-red-500/30"
   };
 
   return (
@@ -36,8 +44,8 @@ const PickCard = ({ pick, index }) => {
           
           <p className="text-sm text-slate-300 mb-4 leading-relaxed">{pick.reasoning}</p>
           
-          <Badge className={`${confidenceColors[pick.confidence] || confidenceColors.Medium} border text-xs font-semibold`}>
-            {pick.confidence} Confidence
+          <Badge className={`${riskColors[riskLevel] || riskColors.Medium} border text-xs font-semibold`}>
+            {riskLevel} Risk
           </Badge>
         </CardContent>
       </Card>
