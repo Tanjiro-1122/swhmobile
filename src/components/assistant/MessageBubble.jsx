@@ -32,7 +32,15 @@ export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
     const isAssistant = message.role === 'assistant';
 
-    const renderableContent = message.content && typeof message.content === 'string' && message.content.trim() !== '';
+    // Strip out the system date context from user messages for display
+    let displayContent = message.content;
+    if (isUser && displayContent) {
+        // Remove the system date context that's prepended for the AI
+        displayContent = displayContent.replace(/\[SYSTEM DATE CONTEXT.*?\]\n\n/s, '');
+        displayContent = displayContent.replace(/\[CURRENT DATE & TIME:.*?\]\n\nUser question: /s, '');
+    }
+
+    const renderableContent = displayContent && typeof displayContent === 'string' && displayContent.trim() !== '';
 
     return (
         <div className={cn("flex gap-4", isUser ? "justify-end" : "justify-start")}>
@@ -57,7 +65,7 @@ export default function MessageBubble({ message }) {
                                 a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300" />,
                             }}
                         >
-                            {message.content}
+                            {displayContent}
                         </ReactMarkdown>
                     </div>
                 )}
