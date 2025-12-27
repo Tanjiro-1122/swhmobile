@@ -2,13 +2,16 @@ import React from "react";
 import { motion } from "framer-motion";
 
 export default function ConfidenceMeter({ value, size = "md", showLabel = true }) {
-  const getColor = (val) => {
-    if (val >= 80) return { bg: "from-emerald-500 to-green-400", text: "text-emerald-600", label: "Very High" };
-    if (val >= 65) return { bg: "from-green-500 to-lime-400", text: "text-green-600", label: "High" };
-    if (val >= 50) return { bg: "from-yellow-500 to-amber-400", text: "text-yellow-600", label: "Moderate" };
-    if (val >= 35) return { bg: "from-orange-500 to-amber-500", text: "text-orange-600", label: "Low" };
-    return { bg: "from-red-500 to-orange-500", text: "text-red-600", label: "Very Low" };
+  // Risk is inverse of confidence - high confidence = low risk
+  const getRiskLevel = (val) => {
+    if (val >= 80) return { bg: "from-emerald-500 to-green-400", text: "text-emerald-600", label: "Low Risk" };
+    if (val >= 65) return { bg: "from-green-500 to-lime-400", text: "text-green-600", label: "Low Risk" };
+    if (val >= 50) return { bg: "from-yellow-500 to-amber-400", text: "text-yellow-600", label: "Medium Risk" };
+    if (val >= 35) return { bg: "from-orange-500 to-amber-500", text: "text-orange-600", label: "High Risk" };
+    return { bg: "from-red-500 to-orange-500", text: "text-red-600", label: "High Risk" };
   };
+
+  const getColor = getRiskLevel;
 
   const colors = getColor(value);
   const sizeClasses = {

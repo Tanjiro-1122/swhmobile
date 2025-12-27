@@ -137,11 +137,11 @@ export default function AIAccuracyWidget() {
                         </div>
                     </div>
 
-                    {/* High Confidence - Compact */}
+                    {/* Low Risk - Compact */}
                     <div className="flex items-center justify-between p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg mb-2">
                         <div className="flex items-center gap-1">
                             <Award className="w-3 h-3 text-yellow-400" />
-                            <span className="text-xs text-slate-300">High Confidence</span>
+                            <span className="text-xs text-slate-300">Low Risk Picks</span>
                         </div>
                         <span className="text-sm font-bold text-yellow-400">{highConfidenceAccuracy}%</span>
                     </div>
