@@ -11,11 +11,20 @@ import { Link } from 'react-router-dom';
 import { usePlatform } from '@/components/hooks/usePlatform';
 
 const PickCard = ({ pick, index }) => {
-    const confidenceStyles = {
-        High: 'bg-green-500/10 text-green-400 border-green-500/30',
-        Medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-        Low: 'bg-red-500/10 text-red-400 border-red-500/30',
+    // Map confidence to risk (inverse relationship)
+    const getRiskFromConfidence = (confidence) => {
+        if (confidence === 'High') return 'Low';
+        if (confidence === 'Low') return 'High';
+        return 'Medium';
     };
+    
+    const riskStyles = {
+        Low: 'bg-green-500/10 text-green-400 border-green-500/30',
+        Medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+        High: 'bg-red-500/10 text-red-400 border-red-500/30',
+    };
+    
+    const riskLevel = getRiskFromConfidence(pick.confidence);
 
     return (
         <motion.div
@@ -36,8 +45,8 @@ const PickCard = ({ pick, index }) => {
                 <p className="text-sm text-slate-400 mb-4">{pick.match}</p>
                 <p className="text-sm text-slate-300 leading-relaxed">{pick.reasoning}</p>
             </div>
-            <Badge className={`mt-4 self-start border ${confidenceStyles[pick.confidence] || 'bg-slate-700 text-slate-200'}`}>
-                {pick.confidence} Confidence
+            <Badge className={`mt-4 self-start border ${riskStyles[riskLevel] || 'bg-slate-700 text-slate-200'}`}>
+                {riskLevel} Risk
             </Badge>
         </motion.div>
     );
