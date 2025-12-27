@@ -107,14 +107,15 @@ function AskSALPage() {
             
             // Set conversation first so subscription can be established
             setConversation(newConversation);
+            // Only show the user's actual message (not the date context)
             setMessages([{ role: 'user', content: initialMessage }]);
             setIsLoading(false);
             
             // Small delay to ensure subscription is established before sending message
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Prepend date context to help AI know current date
-            const messageWithContext = `${getDateContext()}\n\nUser question: ${initialMessage}`;
+            // Prepend date context to help AI know current date (hidden from user display)
+            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]\n\n${initialMessage}`;
             await base44.agents.addMessage(newConversation, {
                 role: 'user',
                 content: messageWithContext,
@@ -139,13 +140,14 @@ function AskSALPage() {
         }
 
         setNewMessage('');
+        // Only show the user's actual message in the UI
         setMessages(prev => [...prev, { role: 'user', content }]);
         setIsSending(true);
         setProcessingStep('searching');
 
         try {
-            // Prepend date context to help AI know current date
-            const messageWithContext = `${getDateContext()}\n\nUser question: ${content}`;
+            // Prepend date context to help AI know current date (hidden from user display)
+            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]\n\n${content}`;
             await base44.agents.addMessage(conversation, {
                 role: 'user',
                 content: messageWithContext,
