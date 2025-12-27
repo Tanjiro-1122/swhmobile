@@ -55,7 +55,23 @@ export default function AIPredictionCard({ prediction, type = "game" }) {
             <div className="bg-gradient-to-br from-purple-50 via-indigo-50 to-purple-50 rounded-2xl p-5 border border-purple-200 shadow-inner">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">Predicted Winner</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-purple-600 uppercase tracking-wider">Predicted Winner</span>
+                    {/* Favored/Underdog Badge */}
+                    {prediction.home_win_prob && prediction.away_win_prob && (
+                      <Badge className={`${
+                        (prediction.predicted_winner === prediction.home_team && prediction.home_win_prob > prediction.away_win_prob) ||
+                        (prediction.predicted_winner === prediction.away_team && prediction.away_win_prob > prediction.home_win_prob)
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-purple-600 text-white'
+                      } text-xs px-2 py-0.5`}>
+                        {(prediction.predicted_winner === prediction.home_team && prediction.home_win_prob > prediction.away_win_prob) ||
+                         (prediction.predicted_winner === prediction.away_team && prediction.away_win_prob > prediction.home_win_prob)
+                          ? '⭐ Favored' 
+                          : '🐕 Underdog'}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-2xl font-black bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
                     {prediction.predicted_winner}
                   </div>
