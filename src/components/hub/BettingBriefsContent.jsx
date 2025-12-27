@@ -100,21 +100,36 @@ export default function BettingBriefsContent() {
                     Top Picks
                   </h4>
                   <div className="space-y-3">
-                    {brief.top_picks.map((pick, idx) => (
-                      <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <Badge variant="secondary" className="text-xs mb-2 bg-slate-700 text-slate-300">{pick.sport}</Badge>
-                            <h5 className="font-bold text-white">{pick.match}</h5>
+                    {brief.top_picks.map((pick, idx) => {
+                      // Map confidence to risk (inverse relationship)
+                      const getRiskFromConfidence = (confidence) => {
+                        if (confidence === 'High') return 'Low';
+                        if (confidence === 'Low') return 'High';
+                        return 'Medium';
+                      };
+                      const riskLevel = getRiskFromConfidence(pick.confidence);
+                      const riskColor = riskLevel === 'Low' 
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                        : riskLevel === 'Medium'
+                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-red-500/20 text-red-400 border-red-500/30';
+                      
+                      return (
+                        <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <Badge variant="secondary" className="text-xs mb-2 bg-slate-700 text-slate-300">{pick.sport}</Badge>
+                              <h5 className="font-bold text-white">{pick.match}</h5>
+                            </div>
+                            <Badge className={riskColor}>{riskLevel} Risk</Badge>
                           </div>
-                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{pick.confidence}</Badge>
+                          <p className="text-sm text-slate-300 mb-2">
+                            <strong className="text-white">Pick:</strong> {pick.pick} ({pick.odds})
+                          </p>
+                          <p className="text-sm text-slate-400">{pick.reasoning}</p>
                         </div>
-                        <p className="text-sm text-slate-300 mb-2">
-                          <strong className="text-white">Pick:</strong> {pick.pick} ({pick.odds})
-                        </p>
-                        <p className="text-sm text-slate-400">{pick.reasoning}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
