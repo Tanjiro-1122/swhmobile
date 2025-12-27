@@ -623,17 +623,21 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                 <div className="bg-white p-4 rounded-lg border-2 border-orange-300 shadow-md">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-lg font-black text-orange-600">🤖 AI Stat Projections</span>
-                    {player.next_game.confidence && (
-                      <Badge className={`${
-                        player.next_game.confidence?.toLowerCase().includes('high')
-                          ? 'bg-green-100 text-green-800 border-green-300'
-                          : player.next_game.confidence?.toLowerCase().includes('medium')
-                          ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                          : 'bg-gray-100 text-gray-800 border-gray-300'
-                      } border`}>
-                        {player.next_game.confidence} Confidence
-                      </Badge>
-                    )}
+                    {player.next_game.confidence && (() => {
+                      // Map confidence to risk (inverse relationship)
+                      const conf = player.next_game.confidence?.toLowerCase() || '';
+                      const riskLevel = conf.includes('high') ? 'Low' : conf.includes('low') ? 'High' : 'Medium';
+                      const riskColor = riskLevel === 'Low' 
+                        ? 'bg-green-100 text-green-800 border-green-300'
+                        : riskLevel === 'Medium'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                        : 'bg-red-100 text-red-800 border-red-300';
+                      return (
+                        <Badge className={`${riskColor} border`}>
+                          {riskLevel} Risk
+                        </Badge>
+                      );
+                    })()}
                   </div>
                   
                   {/* Basketball Projected Stats */}
