@@ -27,8 +27,8 @@ export default function SearchBar({ onSearch, isSearching }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="relative">
           <Input
             type="text"
             value={query}
@@ -51,7 +51,7 @@ export default function SearchBar({ onSearch, isSearching }) {
         <Button
           type="submit"
           disabled={!query.trim() || isSearching}
-          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 min-h-[56px] text-base disabled:opacity-50 flex items-center justify-center whitespace-nowrap rounded-[16px]"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold min-h-[48px] text-base disabled:opacity-50 rounded-[16px]"
         >
           {isSearching ? (
             <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export default function SearchBar({ onSearch, isSearching }) {
           ) : (
             <>
               <Search className="w-4 h-4 mr-2" />
-              Analyze
+              Search
             </>
           )}
         </Button>

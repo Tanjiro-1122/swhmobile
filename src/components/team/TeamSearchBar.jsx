@@ -27,8 +27,8 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <div className="relative flex-1">
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="relative">
           <Input
             type="text"
             value={query}
@@ -51,16 +51,17 @@ export default function TeamSearchBar({ onSearch, isSearching }) {
         <Button
           type="submit"
           disabled={!query.trim() || isSearching}
-          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-6 h-14 disabled:opacity-50 rounded-xl flex-shrink-0"
+          className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold h-12 rounded-xl disabled:opacity-50"
         >
           {isSearching ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+              Analyzing...
             </div>
           ) : (
             <>
               <Search className="w-4 h-4 mr-2" />
-              Analyze
+              Search
             </>
           )}
         </Button>

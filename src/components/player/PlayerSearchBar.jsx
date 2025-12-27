@@ -27,7 +27,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <Input
             type="text"
@@ -35,14 +35,14 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for any player..."
             disabled={isSearching}
-            className="w-full h-14 pl-12 pr-32 text-base border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
+            className="w-full h-14 pl-12 pr-10 text-base border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl shadow-sm bg-white text-gray-900 placeholder:text-gray-500"
           />
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           {query && !isSearching && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-20 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
@@ -51,7 +51,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
         <Button
           type="submit"
           disabled={!query.trim() || isSearching}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-6 h-10 disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold h-12 rounded-xl disabled:opacity-50"
         >
           {isSearching ? (
             <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export default function PlayerSearchBar({ onSearch, isSearching }) {
           ) : (
             <>
               <Search className="w-4 h-4 mr-2" />
-              Analyze
+              Search
             </>
           )}
         </Button>
