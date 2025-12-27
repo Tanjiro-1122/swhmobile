@@ -25,12 +25,22 @@ export default function TeamStatsDisplay({ team, onDelete }) {
     return 'secondary';
   };
 
-  const getConfidenceColor = (confidence) => {
+  const getRiskColor = (confidence) => {
     const lowerConfidence = confidence?.toLowerCase() || '';
+    // High confidence = Low Risk, Low confidence = High Risk
     if (lowerConfidence.includes('high')) return 'text-green-600 bg-green-50 border-green-200';
     if (lowerConfidence.includes('medium')) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-orange-600 bg-orange-50 border-orange-200';
+    return 'text-red-600 bg-red-50 border-red-200';
   };
+
+  const getRiskLabel = (confidence) => {
+    const lowerConfidence = confidence?.toLowerCase() || '';
+    if (lowerConfidence.includes('high')) return 'Low Risk';
+    if (lowerConfidence.includes('medium')) return 'Medium Risk';
+    return 'High Risk';
+  };
+
+  const getConfidenceColor = getRiskColor;
 
   const getOutcomeIcon = (outcome) => {
     const lowerOutcome = outcome?.toLowerCase() || '';
@@ -232,11 +242,17 @@ export default function TeamStatsDisplay({ team, onDelete }) {
 
                   {/* AI Projected Team Stats */}
                   <div className="mb-4">
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
                       <span className="text-base font-black text-orange-600">🤖 AI Team Stat Projections</span>
                       {team.next_game.confidence && (
-                        <Badge className={`${getConfidenceColor(team.next_game.confidence)} border-2 px-3 py-1`}>
-                          {team.next_game.confidence} Confidence
+                        <Badge className={`${getRiskColor(team.next_game.confidence)} border-2 px-3 py-1`}>
+                          {getRiskLabel(team.next_game.confidence)}
+                        </Badge>
+                      )}
+                      {/* Favorite/Underdog Badge */}
+                      {team.next_game.predicted_outcome && (
+                        <Badge className={`${team.next_game.predicted_outcome.toLowerCase().includes('win') ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'} px-3 py-1`}>
+                          {team.next_game.predicted_outcome.toLowerCase().includes('win') ? '⭐ Favored' : '🐕 Underdog'}
                         </Badge>
                       )}
                     </div>
