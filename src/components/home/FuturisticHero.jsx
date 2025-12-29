@@ -457,31 +457,6 @@ const SALConstruction = () => {
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             />
           </motion.div>
-
-            {/* Orbiting particles */}
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 2 === 0 ? '#a3e635' : '#a855f7',
-                  boxShadow: `0 0 10px ${i % 2 === 0 ? '#a3e635' : '#a855f7'}`,
-                }}
-                animate={{
-                  rotate: 360,
-                }}
-                transition={{
-                  duration: 4 + i,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-                initial={{
-                  x: Math.cos((i * Math.PI * 2) / 6) * 80,
-                  y: Math.sin((i * Math.PI * 2) / 6) * 80,
-                }}
-              />
-            ))}
-          </motion.div>
         </div>
 
         {/* Status text */}
