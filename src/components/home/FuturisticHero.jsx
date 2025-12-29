@@ -318,37 +318,36 @@ const SALConstruction = () => {
   );
 };
 
-// Floating Holographic Stats
-const HolographicStats = () => {
-  const stats = [
-    { label: 'AI Accuracy', value: '94.2%', color: 'lime' },
-    { label: 'Predictions', value: '15K+', color: 'purple' },
-    { label: 'Live Data', value: 'SYNC', color: 'cyan' },
-  ];
-
+// Holographic Call-to-Action Banner
+const HolographicCTA = () => {
   return (
-    <div className="flex flex-wrap justify-center gap-4 mt-8">
-      {stats.map((stat, i) => (
-        <motion.div
-          key={i}
-          className="relative px-6 py-3 rounded-lg"
-          style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%)',
-            border: `1px solid ${stat.color === 'lime' ? 'rgba(163, 230, 53, 0.4)' : stat.color === 'purple' ? 'rgba(168, 85, 247, 0.4)' : 'rgba(34, 211, 238, 0.4)'}`,
-            boxShadow: `0 0 20px ${stat.color === 'lime' ? 'rgba(163, 230, 53, 0.2)' : stat.color === 'purple' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(34, 211, 238, 0.2)'}`,
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 + i * 0.2 }}
-          whileHover={{ scale: 1.05, y: -5 }}
-        >
-          <div className={`text-2xl font-black ${stat.color === 'lime' ? 'text-lime-400' : stat.color === 'purple' ? 'text-purple-400' : 'text-cyan-400'}`}>
-            {stat.value}
-          </div>
-          <div className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</div>
-        </motion.div>
-      ))}
-    </div>
+    <motion.div 
+      className="mt-8 text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1.2 }}
+    >
+      <motion.div
+        className="inline-block px-8 py-4 rounded-xl"
+        style={{
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%)',
+          border: '1px solid rgba(163, 230, 53, 0.4)',
+          boxShadow: '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
+        }}
+        animate={{
+          boxShadow: [
+            '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
+            '0 0 50px rgba(163, 230, 53, 0.4), 0 0 80px rgba(168, 85, 247, 0.2)',
+            '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity }}
+      >
+        <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400">
+          Come test it out and watch the power of AI work for you
+        </p>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -442,26 +441,6 @@ export default function FuturisticHero() {
               </Button>
             </div>
 
-            {/* Social proof */}
-            <div className="flex items-center justify-center lg:justify-start gap-3 mt-8">
-              <div className="flex -space-x-2">
-                {[
-                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face',
-                  'https://images.unsplash.com/photo-1531746020798-1b1580858f91?w=64&h=64&fit=crop&crop=face',
-                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=64&h=64&fit=crop&crop=face',
-                ].map((src, i) => (
-                  <img
-                    key={i}
-                    className="w-8 h-8 rounded-full ring-2 ring-slate-900"
-                    src={src}
-                    alt=""
-                  />
-                ))}
-              </div>
-              <p className="text-sm text-slate-400">
-                <span className="font-bold text-white">15,000+</span> Smart Money Bettors
-              </p>
-            </div>
           </motion.div>
 
           {/* Right side - S.A.L. Construction */}
@@ -471,7 +450,7 @@ export default function FuturisticHero() {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <SALConstruction />
-            <HolographicStats />
+            <HolographicCTA />
           </motion.div>
         </div>
       </div>
