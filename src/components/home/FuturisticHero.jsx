@@ -86,34 +86,40 @@ const HolographicGrid = () => {
   );
 };
 
-// S.A.L. Being Built Animation
+// S.A.L. Mechanical Assembly Animation
 const SALConstruction = () => {
   const [buildPhase, setBuildPhase] = useState(0);
   const [glitchText, setGlitchText] = useState('');
   const buildTexts = [
     'INITIALIZING NEURAL CORE...',
-    'LOADING SPORTS ALGORITHMS...',
+    'ASSEMBLING OPTICAL SYSTEMS...',
     'CALIBRATING PREDICTION ENGINE...',
-    'ACTIVATING S.A.L. PROTOCOL...',
-    'SYSTEM ONLINE'
+    'INSTALLING WISDOM PROTOCOLS...',
+    'S.A.L. ONLINE'
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setBuildPhase(prev => (prev + 1) % 5);
-    }, 2500);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    let i = 0;
+    let charIdx = 0;
     const text = buildTexts[buildPhase];
-    const typeInterval = setInterval(() => {
-      setGlitchText(text.slice(0, i) + (i < text.length ? '█' : ''));
-      i++;
-      if (i > text.length) clearInterval(typeInterval);
-    }, 50);
-    return () => clearInterval(typeInterval);
+    let timer;
+    
+    const typeChar = () => {
+      if (charIdx <= text.length) {
+        setGlitchText(text.substring(0, charIdx) + (charIdx < text.length ? '█' : ''));
+        charIdx++;
+        timer = setTimeout(typeChar, 50);
+      }
+    };
+    
+    typeChar();
+    return () => clearTimeout(timer);
   }, [buildPhase]);
 
   return (
@@ -177,286 +183,280 @@ const SALConstruction = () => {
           />
         ))}
 
-        {/* S.A.L. Wireframe Hologram */}
+        {/* S.A.L. Mechanical Robot Arm Assembly */}
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.div
-            className="relative"
-            animate={{
-              y: [0, -8, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
+            className="relative w-40 h-40 sm:w-48 sm:h-48"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
             {/* Glowing backdrop */}
             <motion.div
-              className="absolute inset-0 rounded-3xl blur-2xl"
+              className="absolute inset-0 rounded-full blur-3xl"
               style={{
-                background: 'radial-gradient(circle, rgba(163, 230, 53, 0.4) 0%, rgba(168, 85, 247, 0.2) 50%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(163, 230, 53, 0.5) 0%, rgba(168, 85, 247, 0.3) 40%, transparent 70%)',
               }}
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.5, 0.8, 0.5],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.9, 0.6] }}
+              transition={{ duration: 3, repeat: Infinity }}
             />
 
-            {/* Wireframe Owl Container */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={buildPhase}
-                className="relative w-32 h-32 sm:w-40 sm:h-40"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                transition={{ duration: 0.5 }}
+            {/* SVG Robot Arm Assembly */}
+            <svg viewBox="0 0 120 120" className="w-full h-full relative z-10">
+              {/* Base platform */}
+              <motion.rect
+                x="35"
+                y="100"
+                width="50"
+                height="8"
+                rx="2"
+                fill="rgba(30, 41, 59, 0.9)"
+                stroke="rgba(163, 230, 53, 0.8)"
+                strokeWidth="1"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                style={{ transformOrigin: '60px 104px' }}
+              />
+              
+              {/* Robot arm base joint */}
+              <motion.circle
+                cx="60"
+                cy="95"
+                r="8"
+                fill="rgba(15, 23, 42, 0.9)"
+                stroke="rgba(168, 85, 247, 0.9)"
+                strokeWidth="1.5"
+                initial={{ scale: 0 }}
+                animate={{ scale: buildPhase >= 0 ? 1 : 0 }}
+                transition={{ duration: 0.4, type: 'spring' }}
+              />
+              
+              {/* Lower arm segment */}
+              <motion.g
+                initial={{ rotate: -30, opacity: 0 }}
+                animate={{ 
+                  rotate: buildPhase >= 1 ? 0 : -30,
+                  opacity: buildPhase >= 1 ? 1 : 0
+                }}
+                transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
+                style={{ transformOrigin: '60px 95px' }}
               >
-                {/* SVG Wireframe Owl */}
-                <svg
-                  viewBox="0 0 100 100"
-                  className="w-full h-full"
-                  style={{
-                    filter: 'drop-shadow(0 0 10px rgba(163, 230, 53, 0.8)) drop-shadow(0 0 20px rgba(168, 85, 247, 0.5))',
+                <rect
+                  x="56"
+                  y="55"
+                  width="8"
+                  height="40"
+                  rx="3"
+                  fill="rgba(30, 41, 59, 0.9)"
+                  stroke="rgba(163, 230, 53, 0.8)"
+                  strokeWidth="1"
+                />
+                {/* Hydraulic details */}
+                <line x1="58" y1="60" x2="58" y2="90" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1" />
+                <line x1="62" y1="60" x2="62" y2="90" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1" />
+              </motion.g>
+              
+              {/* Middle joint */}
+              <motion.circle
+                cx="60"
+                cy="55"
+                r="6"
+                fill="rgba(15, 23, 42, 0.9)"
+                stroke="rgba(168, 85, 247, 0.9)"
+                strokeWidth="1.5"
+                initial={{ scale: 0 }}
+                animate={{ scale: buildPhase >= 1 ? 1 : 0 }}
+                transition={{ duration: 0.4, delay: 0.3, type: 'spring' }}
+              />
+              
+              {/* Upper arm segment with rotation */}
+              <motion.g
+                initial={{ rotate: 45, opacity: 0 }}
+                animate={{ 
+                  rotate: buildPhase >= 2 ? -15 : 45,
+                  opacity: buildPhase >= 2 ? 1 : 0
+                }}
+                transition={{ duration: 0.8, type: 'spring', stiffness: 80 }}
+                style={{ transformOrigin: '60px 55px' }}
+              >
+                <rect
+                  x="57"
+                  y="25"
+                  width="6"
+                  height="30"
+                  rx="2"
+                  fill="rgba(30, 41, 59, 0.9)"
+                  stroke="rgba(163, 230, 53, 0.8)"
+                  strokeWidth="1"
+                />
+                {/* Wiring detail */}
+                <motion.path
+                  d="M 58 30 Q 55 40 58 50"
+                  fill="none"
+                  stroke="rgba(251, 191, 36, 0.6)"
+                  strokeWidth="0.8"
+                  strokeDasharray="2 2"
+                  animate={{ strokeDashoffset: [0, -10] }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                />
+              </motion.g>
+              
+              {/* Wrist joint */}
+              <motion.circle
+                cx="55"
+                cy="22"
+                r="5"
+                fill="rgba(15, 23, 42, 0.9)"
+                stroke="rgba(34, 211, 238, 0.9)"
+                strokeWidth="1.5"
+                initial={{ scale: 0 }}
+                animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
+                transition={{ duration: 0.4, delay: 0.5, type: 'spring' }}
+              />
+              
+              {/* Gripper / Claw holding S.A.L. */}
+              <motion.g
+                initial={{ scale: 0, rotate: 20 }}
+                animate={{ 
+                  scale: buildPhase >= 3 ? 1 : 0,
+                  rotate: buildPhase >= 3 ? 0 : 20
+                }}
+                transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
+                style={{ transformOrigin: '55px 22px' }}
+              >
+                {/* Left gripper finger */}
+                <motion.path
+                  d="M 48 18 L 42 8 L 45 6"
+                  fill="none"
+                  stroke="rgba(163, 230, 53, 0.9)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  animate={{ 
+                    d: buildPhase >= 4 
+                      ? "M 48 18 L 48 10 L 52 8" 
+                      : "M 48 18 L 42 8 L 45 6"
                   }}
-                >
-                  {/* Outer head circle */}
-                  <motion.circle
-                    cx="50"
-                    cy="45"
-                    r="35"
-                    fill="none"
-                    stroke="rgba(163, 230, 53, 0.8)"
-                    strokeWidth="0.5"
-                    strokeDasharray="4 2"
-                    animate={{ strokeDashoffset: [0, -20] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                  />
-                  
-                  {/* Ear tufts left */}
-                  <motion.path
-                    d="M 20 25 L 28 40 L 15 35 Z"
-                    fill="none"
-                    stroke="rgba(163, 230, 53, 0.9)"
-                    strokeWidth="0.8"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: buildPhase >= 1 ? 1 : 0 }}
-                    transition={{ duration: 0.5 }}
-                  />
-                  
-                  {/* Ear tufts right */}
-                  <motion.path
-                    d="M 80 25 L 72 40 L 85 35 Z"
-                    fill="none"
-                    stroke="rgba(163, 230, 53, 0.9)"
-                    strokeWidth="0.8"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: buildPhase >= 1 ? 1 : 0 }}
-                    transition={{ duration: 0.5 }}
-                  />
-                  
-                  {/* Left eye circle */}
-                  <motion.circle
-                    cx="35"
-                    cy="42"
-                    r="12"
-                    fill="none"
-                    stroke="rgba(168, 85, 247, 0.9)"
-                    strokeWidth="1"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Left eye inner (glasses) */}
-                  <motion.circle
-                    cx="35"
-                    cy="42"
-                    r="8"
-                    fill="rgba(34, 211, 238, 0.2)"
-                    stroke="rgba(34, 211, 238, 0.8)"
-                    strokeWidth="0.5"
-                    animate={{ 
-                      fill: ['rgba(34, 211, 238, 0.1)', 'rgba(34, 211, 238, 0.3)', 'rgba(34, 211, 238, 0.1)']
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  
-                  {/* Right eye circle */}
-                  <motion.circle
-                    cx="65"
-                    cy="42"
-                    r="12"
-                    fill="none"
-                    stroke="rgba(168, 85, 247, 0.9)"
-                    strokeWidth="1"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Right eye inner (glasses) */}
-                  <motion.circle
-                    cx="65"
-                    cy="42"
-                    r="8"
-                    fill="rgba(34, 211, 238, 0.2)"
-                    stroke="rgba(34, 211, 238, 0.8)"
-                    strokeWidth="0.5"
-                    animate={{ 
-                      fill: ['rgba(34, 211, 238, 0.1)', 'rgba(34, 211, 238, 0.3)', 'rgba(34, 211, 238, 0.1)']
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  />
-                  
-                  {/* Glasses bridge */}
-                  <motion.line
-                    x1="47"
-                    y1="42"
-                    x2="53"
-                    y2="42"
-                    stroke="rgba(168, 85, 247, 0.9)"
-                    strokeWidth="1"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: buildPhase >= 2 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Beak */}
-                  <motion.path
-                    d="M 45 55 L 50 65 L 55 55 Z"
-                    fill="rgba(251, 191, 36, 0.3)"
-                    stroke="rgba(251, 191, 36, 0.9)"
-                    strokeWidth="0.8"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: buildPhase >= 3 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Body outline */}
-                  <motion.ellipse
-                    cx="50"
-                    cy="82"
-                    rx="20"
-                    ry="15"
-                    fill="none"
-                    stroke="rgba(163, 230, 53, 0.6)"
-                    strokeWidth="0.5"
-                    strokeDasharray="3 2"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: buildPhase >= 3 ? 1 : 0 }}
-                    transition={{ duration: 0.5 }}
-                  />
-                  
-                  {/* Whistle */}
-                  <motion.circle
-                    cx="50"
-                    cy="75"
-                    r="4"
-                    fill="rgba(251, 191, 36, 0.4)"
-                    stroke="rgba(251, 191, 36, 0.9)"
-                    strokeWidth="0.5"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: buildPhase >= 4 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Whistle string */}
-                  <motion.path
-                    d="M 46 75 Q 40 70 35 72 Q 30 74 32 78"
-                    fill="none"
-                    stroke="rgba(251, 191, 36, 0.7)"
-                    strokeWidth="0.5"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: buildPhase >= 4 ? 1 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  {/* Lightbulb above head */}
-                  <motion.g
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: buildPhase >= 4 ? 1 : 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <motion.path
-                      d="M 50 5 L 50 12"
-                      stroke="rgba(251, 191, 36, 0.9)"
-                      strokeWidth="1"
-                    />
-                    <motion.circle
-                      cx="50"
-                      cy="3"
-                      r="5"
-                      fill="none"
-                      stroke="rgba(251, 191, 36, 0.9)"
-                      strokeWidth="0.8"
-                    />
-                    <motion.circle
-                      cx="50"
-                      cy="3"
-                      r="2"
-                      fill="rgba(251, 191, 36, 0.8)"
-                      animate={{
-                        fill: ['rgba(251, 191, 36, 0.4)', 'rgba(251, 191, 36, 1)', 'rgba(251, 191, 36, 0.4)'],
-                        r: [2, 3, 2],
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    />
-                  </motion.g>
-                  
-                  {/* Data points floating around */}
-                  {buildPhase >= 4 && [...Array(6)].map((_, i) => (
-                    <motion.circle
-                      key={i}
-                      r="1"
-                      fill={i % 2 === 0 ? 'rgba(163, 230, 53, 0.8)' : 'rgba(168, 85, 247, 0.8)'}
-                      initial={{
-                        cx: 50 + Math.cos((i * Math.PI * 2) / 6) * 45,
-                        cy: 50 + Math.sin((i * Math.PI * 2) / 6) * 45,
-                      }}
-                      animate={{
-                        cx: [
-                          50 + Math.cos((i * Math.PI * 2) / 6) * 45,
-                          50 + Math.cos((i * Math.PI * 2) / 6 + Math.PI) * 45,
-                          50 + Math.cos((i * Math.PI * 2) / 6) * 45,
-                        ],
-                        cy: [
-                          50 + Math.sin((i * Math.PI * 2) / 6) * 45,
-                          50 + Math.sin((i * Math.PI * 2) / 6 + Math.PI) * 45,
-                          50 + Math.sin((i * Math.PI * 2) / 6) * 45,
-                        ],
-                        opacity: [0.4, 1, 0.4],
-                      }}
-                      transition={{
-                        duration: 8,
-                        delay: i * 0.5,
-                        repeat: Infinity,
-                        ease: 'linear',
-                      }}
-                    />
-                  ))}
-                </svg>
-                
-                {/* Holographic scan lines overlay */}
-                <div 
-                  className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden"
-                  style={{
-                    background: `repeating-linear-gradient(
-                      0deg,
-                      transparent,
-                      transparent 2px,
-                      rgba(163, 230, 53, 0.03) 2px,
-                      rgba(163, 230, 53, 0.03) 4px
-                    )`,
+                  transition={{ duration: 0.5 }}
+                />
+                {/* Right gripper finger */}
+                <motion.path
+                  d="M 62 18 L 68 8 L 65 6"
+                  fill="none"
+                  stroke="rgba(163, 230, 53, 0.9)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  animate={{ 
+                    d: buildPhase >= 4 
+                      ? "M 62 18 L 62 10 L 58 8" 
+                      : "M 62 18 L 68 8 L 65 6"
+                  }}
+                  transition={{ duration: 0.5 }}
+                />
+              </motion.g>
+              
+              {/* S.A.L. Owl being assembled/held */}
+              <motion.g
+                initial={{ y: -30, opacity: 0 }}
+                animate={{ 
+                  y: buildPhase >= 4 ? 0 : -30,
+                  opacity: buildPhase >= 4 ? 1 : 0
+                }}
+                transition={{ duration: 0.8, type: 'spring', stiffness: 60 }}
+              >
+                {/* Owl head outline */}
+                <motion.circle
+                  cx="55"
+                  cy="-5"
+                  r="12"
+                  fill="rgba(15, 23, 42, 0.8)"
+                  stroke="rgba(168, 85, 247, 0.9)"
+                  strokeWidth="1"
+                />
+                {/* Left eye */}
+                <circle cx="50" cy="-6" r="4" fill="none" stroke="rgba(34, 211, 238, 0.9)" strokeWidth="1" />
+                <motion.circle 
+                  cx="50" 
+                  cy="-6" 
+                  r="2" 
+                  fill="rgba(34, 211, 238, 0.8)"
+                  animate={{ fill: ['rgba(34, 211, 238, 0.5)', 'rgba(34, 211, 238, 1)', 'rgba(34, 211, 238, 0.5)'] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                {/* Right eye */}
+                <circle cx="60" cy="-6" r="4" fill="none" stroke="rgba(34, 211, 238, 0.9)" strokeWidth="1" />
+                <motion.circle 
+                  cx="60" 
+                  cy="-6" 
+                  r="2" 
+                  fill="rgba(34, 211, 238, 0.8)"
+                  animate={{ fill: ['rgba(34, 211, 238, 0.5)', 'rgba(34, 211, 238, 1)', 'rgba(34, 211, 238, 0.5)'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                />
+                {/* Beak */}
+                <path d="M 53 -2 L 55 3 L 57 -2 Z" fill="rgba(251, 191, 36, 0.8)" stroke="rgba(251, 191, 36, 1)" strokeWidth="0.5" />
+                {/* Ear tufts */}
+                <path d="M 44 -12 L 47 -5 L 42 -8 Z" fill="none" stroke="rgba(163, 230, 53, 0.8)" strokeWidth="1" />
+                <path d="M 66 -12 L 63 -5 L 68 -8 Z" fill="none" stroke="rgba(163, 230, 53, 0.8)" strokeWidth="1" />
+              </motion.g>
+              
+              {/* Sparks and energy effects */}
+              {buildPhase >= 3 && [...Array(4)].map((_, i) => (
+                <motion.circle
+                  key={i}
+                  r="1.5"
+                  fill={i % 2 === 0 ? 'rgba(163, 230, 53, 0.9)' : 'rgba(34, 211, 238, 0.9)'}
+                  initial={{ cx: 55, cy: 22, opacity: 0 }}
+                  animate={{
+                    cx: [55, 55 + (Math.random() - 0.5) * 40],
+                    cy: [22, 22 + (Math.random() - 0.5) * 40],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1, 0],
+                  }}
+                  transition={{
+                    duration: 1,
+                    delay: i * 0.2,
+                    repeat: Infinity,
+                    repeatDelay: 1,
                   }}
                 />
-              </motion.div>
-            </AnimatePresence>
+              ))}
+              
+              {/* Energy beam connecting arm to S.A.L. */}
+              {buildPhase >= 4 && (
+                <motion.line
+                  x1="55"
+                  y1="17"
+                  x2="55"
+                  y2="7"
+                  stroke="url(#energyBeam)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                />
+              )}
+              
+              {/* Gradient definitions */}
+              <defs>
+                <linearGradient id="energyBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(163, 230, 53, 1)" />
+                  <stop offset="50%" stopColor="rgba(168, 85, 247, 1)" />
+                  <stop offset="100%" stopColor="rgba(34, 211, 238, 1)" />
+                </linearGradient>
+              </defs>
+            </svg>
+            
+            {/* Holographic scan overlay */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, transparent 0%, rgba(163, 230, 53, 0.1) 50%, transparent 100%)',
+                backgroundSize: '100% 30px',
+              }}
+              animate={{ backgroundPosition: ['0% 0%', '0% 100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            />
+          </motion.div>
 
             {/* Orbiting particles */}
             {[...Array(6)].map((_, i) => (
@@ -527,33 +527,41 @@ const SALConstruction = () => {
 const IncomingSignal = () => {
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [isTyping, setIsTyping] = useState(true);
   const fullText = 'COME TEST IT OUT AND WATCH THE POWER OF AI WORK FOR YOU';
 
   useEffect(() => {
-    let i = 0;
-    const typeInterval = setInterval(() => {
-      if (i <= fullText.length) {
-        setDisplayText(fullText.slice(0, i));
-        i++;
+    let charIndex = 0;
+    let typeTimer;
+    
+    const typeNextChar = () => {
+      if (charIndex <= fullText.length) {
+        setDisplayText(fullText.substring(0, charIndex));
+        charIndex++;
+        typeTimer = setTimeout(typeNextChar, 60);
       } else {
-        clearInterval(typeInterval);
-        // Reset and loop after a pause
+        setIsTyping(false);
+        // Reset after pause
         setTimeout(() => {
+          charIndex = 0;
           setDisplayText('');
-          i = 0;
-        }, 3000);
+          setIsTyping(true);
+          typeNextChar();
+        }, 4000);
       }
-    }, 60);
+    };
+    
+    typeNextChar();
 
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
     }, 500);
 
     return () => {
-      clearInterval(typeInterval);
+      clearTimeout(typeTimer);
       clearInterval(cursorInterval);
     };
-  }, [displayText === '']);
+  }, []);
 
   return (
     <motion.div 
