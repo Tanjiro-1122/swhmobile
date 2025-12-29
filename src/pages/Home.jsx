@@ -13,6 +13,8 @@ import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
 import DailyFreePicks from '@/components/home/DailyFreePicks';
 import WalkingRobot from '@/components/home/WalkingRobot';
 import PlatformBenefits from '@/components/home/PlatformBenefits';
+import FuturisticHero from '@/components/home/FuturisticHero';
+import { usePlatform } from '@/components/hooks/usePlatform';
 
 // --- Free Search Logic (resets monthly) ---
 const useFreeLookups = () => {
@@ -175,8 +177,8 @@ const FreeSearchView = () => {
     );
 };
 
-// --- New Hero Section Components ---
-const HeroSection = () => (
+// --- Original Hero Section (kept for mobile/revert) ---
+const OriginalHeroSection = () => (
     <div className="grid lg:grid-cols-2 gap-12 items-center">
         <motion.div 
             className="text-center lg:text-left"
@@ -228,6 +230,7 @@ const HeroSection = () => (
 // --- Main Home Page ---
 export default function Home() {
     const navigate = useNavigate();
+    const { isWeb } = usePlatform();
     
     const { data: user, isLoading: isAuthLoading } = useQuery({
         queryKey: ['currentUser'],
@@ -252,14 +255,15 @@ export default function Home() {
     
     // User is not authenticated, show the free search home page.
     // Note: TopBar is rendered by WebLayout, so we don't need a header here
+    // Use futuristic hero for web only, original for mobile
     return (
                   <div className="min-h-screen text-white overflow-x-hidden">
                       <div className="absolute inset-0 bg-grid-dark -z-10"></div>
-                      <WalkingRobot />
+                      {!isWeb && <WalkingRobot />}
             
-            <main className="max-w-7xl mx-auto px-6 pt-8 lg:pt-16 pb-16">
-                <section className="mb-20 lg:mb-28">
-                    <HeroSection />
+            <main className={`max-w-7xl mx-auto ${isWeb ? 'px-0' : 'px-6'} pt-8 lg:pt-0 pb-16`}>
+                <section className={isWeb ? 'mb-16' : 'mb-20 lg:mb-28'}>
+                    {isWeb ? <FuturisticHero /> : <OriginalHeroSection />}
                 </section>
                 
                 {/* Daily Free AI Picks - Always visible */}
