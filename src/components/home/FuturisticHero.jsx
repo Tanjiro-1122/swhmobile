@@ -177,7 +177,7 @@ const SALConstruction = () => {
           />
         ))}
 
-        {/* S.A.L. Image with construction effect */}
+        {/* S.A.L. Wireframe Hologram */}
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.div
             className="relative"
@@ -207,47 +207,252 @@ const SALConstruction = () => {
               }}
             />
 
-            {/* Construction wireframe effect */}
+            {/* Wireframe Owl Container */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={buildPhase}
-                className="relative"
+                className="relative w-32 h-32 sm:w-40 sm:h-40"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.1 }}
                 transition={{ duration: 0.5 }}
               >
-                {/* Wireframe overlay during construction */}
-                {buildPhase < 4 && (
-                  <motion.div
-                    className="absolute inset-0 z-20 rounded-2xl overflow-hidden"
-                    style={{
-                      background: `repeating-linear-gradient(
-                        0deg,
-                        transparent,
-                        transparent 8px,
-                        rgba(163, 230, 53, 0.1) 8px,
-                        rgba(163, 230, 53, 0.1) 9px
-                      )`,
-                    }}
-                    animate={{
-                      opacity: [0.8, 0.4, 0.8],
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      repeat: Infinity,
-                    }}
-                  />
-                )}
-
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-                  alt="S.A.L. - Sports AI Librarian"
-                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl relative z-10 object-cover"
+                {/* SVG Wireframe Owl */}
+                <svg
+                  viewBox="0 0 100 100"
+                  className="w-full h-full"
                   style={{
-                    filter: buildPhase < 4 ? `saturate(${0.3 + buildPhase * 0.2}) brightness(${0.7 + buildPhase * 0.1})` : 'none',
-                    border: '2px solid rgba(163, 230, 53, 0.6)',
-                    boxShadow: '0 0 40px rgba(163, 230, 53, 0.5), 0 0 80px rgba(168, 85, 247, 0.3)',
+                    filter: 'drop-shadow(0 0 10px rgba(163, 230, 53, 0.8)) drop-shadow(0 0 20px rgba(168, 85, 247, 0.5))',
+                  }}
+                >
+                  {/* Outer head circle */}
+                  <motion.circle
+                    cx="50"
+                    cy="45"
+                    r="35"
+                    fill="none"
+                    stroke="rgba(163, 230, 53, 0.8)"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 2"
+                    animate={{ strokeDashoffset: [0, -20] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  />
+                  
+                  {/* Ear tufts left */}
+                  <motion.path
+                    d="M 20 25 L 28 40 L 15 35 Z"
+                    fill="none"
+                    stroke="rgba(163, 230, 53, 0.9)"
+                    strokeWidth="0.8"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: buildPhase >= 1 ? 1 : 0 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  
+                  {/* Ear tufts right */}
+                  <motion.path
+                    d="M 80 25 L 72 40 L 85 35 Z"
+                    fill="none"
+                    stroke="rgba(163, 230, 53, 0.9)"
+                    strokeWidth="0.8"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: buildPhase >= 1 ? 1 : 0 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  
+                  {/* Left eye circle */}
+                  <motion.circle
+                    cx="35"
+                    cy="42"
+                    r="12"
+                    fill="none"
+                    stroke="rgba(168, 85, 247, 0.9)"
+                    strokeWidth="1"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Left eye inner (glasses) */}
+                  <motion.circle
+                    cx="35"
+                    cy="42"
+                    r="8"
+                    fill="rgba(34, 211, 238, 0.2)"
+                    stroke="rgba(34, 211, 238, 0.8)"
+                    strokeWidth="0.5"
+                    animate={{ 
+                      fill: ['rgba(34, 211, 238, 0.1)', 'rgba(34, 211, 238, 0.3)', 'rgba(34, 211, 238, 0.1)']
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  
+                  {/* Right eye circle */}
+                  <motion.circle
+                    cx="65"
+                    cy="42"
+                    r="12"
+                    fill="none"
+                    stroke="rgba(168, 85, 247, 0.9)"
+                    strokeWidth="1"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Right eye inner (glasses) */}
+                  <motion.circle
+                    cx="65"
+                    cy="42"
+                    r="8"
+                    fill="rgba(34, 211, 238, 0.2)"
+                    stroke="rgba(34, 211, 238, 0.8)"
+                    strokeWidth="0.5"
+                    animate={{ 
+                      fill: ['rgba(34, 211, 238, 0.1)', 'rgba(34, 211, 238, 0.3)', 'rgba(34, 211, 238, 0.1)']
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                  />
+                  
+                  {/* Glasses bridge */}
+                  <motion.line
+                    x1="47"
+                    y1="42"
+                    x2="53"
+                    y2="42"
+                    stroke="rgba(168, 85, 247, 0.9)"
+                    strokeWidth="1"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: buildPhase >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Beak */}
+                  <motion.path
+                    d="M 45 55 L 50 65 L 55 55 Z"
+                    fill="rgba(251, 191, 36, 0.3)"
+                    stroke="rgba(251, 191, 36, 0.9)"
+                    strokeWidth="0.8"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: buildPhase >= 3 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Body outline */}
+                  <motion.ellipse
+                    cx="50"
+                    cy="82"
+                    rx="20"
+                    ry="15"
+                    fill="none"
+                    stroke="rgba(163, 230, 53, 0.6)"
+                    strokeWidth="0.5"
+                    strokeDasharray="3 2"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: buildPhase >= 3 ? 1 : 0 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  
+                  {/* Whistle */}
+                  <motion.circle
+                    cx="50"
+                    cy="75"
+                    r="4"
+                    fill="rgba(251, 191, 36, 0.4)"
+                    stroke="rgba(251, 191, 36, 0.9)"
+                    strokeWidth="0.5"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: buildPhase >= 4 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Whistle string */}
+                  <motion.path
+                    d="M 46 75 Q 40 70 35 72 Q 30 74 32 78"
+                    fill="none"
+                    stroke="rgba(251, 191, 36, 0.7)"
+                    strokeWidth="0.5"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: buildPhase >= 4 ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Lightbulb above head */}
+                  <motion.g
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: buildPhase >= 4 ? 1 : 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <motion.path
+                      d="M 50 5 L 50 12"
+                      stroke="rgba(251, 191, 36, 0.9)"
+                      strokeWidth="1"
+                    />
+                    <motion.circle
+                      cx="50"
+                      cy="3"
+                      r="5"
+                      fill="none"
+                      stroke="rgba(251, 191, 36, 0.9)"
+                      strokeWidth="0.8"
+                    />
+                    <motion.circle
+                      cx="50"
+                      cy="3"
+                      r="2"
+                      fill="rgba(251, 191, 36, 0.8)"
+                      animate={{
+                        fill: ['rgba(251, 191, 36, 0.4)', 'rgba(251, 191, 36, 1)', 'rgba(251, 191, 36, 0.4)'],
+                        r: [2, 3, 2],
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                  </motion.g>
+                  
+                  {/* Data points floating around */}
+                  {buildPhase >= 4 && [...Array(6)].map((_, i) => (
+                    <motion.circle
+                      key={i}
+                      r="1"
+                      fill={i % 2 === 0 ? 'rgba(163, 230, 53, 0.8)' : 'rgba(168, 85, 247, 0.8)'}
+                      initial={{
+                        cx: 50 + Math.cos((i * Math.PI * 2) / 6) * 45,
+                        cy: 50 + Math.sin((i * Math.PI * 2) / 6) * 45,
+                      }}
+                      animate={{
+                        cx: [
+                          50 + Math.cos((i * Math.PI * 2) / 6) * 45,
+                          50 + Math.cos((i * Math.PI * 2) / 6 + Math.PI) * 45,
+                          50 + Math.cos((i * Math.PI * 2) / 6) * 45,
+                        ],
+                        cy: [
+                          50 + Math.sin((i * Math.PI * 2) / 6) * 45,
+                          50 + Math.sin((i * Math.PI * 2) / 6 + Math.PI) * 45,
+                          50 + Math.sin((i * Math.PI * 2) / 6) * 45,
+                        ],
+                        opacity: [0.4, 1, 0.4],
+                      }}
+                      transition={{
+                        duration: 8,
+                        delay: i * 0.5,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    />
+                  ))}
+                </svg>
+                
+                {/* Holographic scan lines overlay */}
+                <div 
+                  className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden"
+                  style={{
+                    background: `repeating-linear-gradient(
+                      0deg,
+                      transparent,
+                      transparent 2px,
+                      rgba(163, 230, 53, 0.03) 2px,
+                      rgba(163, 230, 53, 0.03) 4px
+                    )`,
                   }}
                 />
               </motion.div>
@@ -318,35 +523,153 @@ const SALConstruction = () => {
   );
 };
 
-// Holographic Call-to-Action Banner
-const HolographicCTA = () => {
+// Incoming Signal Transmission CTA
+const IncomingSignal = () => {
+  const [displayText, setDisplayText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+  const fullText = 'COME TEST IT OUT AND WATCH THE POWER OF AI WORK FOR YOU';
+
+  useEffect(() => {
+    let i = 0;
+    const typeInterval = setInterval(() => {
+      if (i <= fullText.length) {
+        setDisplayText(fullText.slice(0, i));
+        i++;
+      } else {
+        clearInterval(typeInterval);
+        // Reset and loop after a pause
+        setTimeout(() => {
+          setDisplayText('');
+          i = 0;
+        }, 3000);
+      }
+    }, 60);
+
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+
+    return () => {
+      clearInterval(typeInterval);
+      clearInterval(cursorInterval);
+    };
+  }, [displayText === '']);
+
   return (
     <motion.div 
-      className="mt-8 text-center"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="mt-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ delay: 1.2 }}
     >
-      <motion.div
-        className="inline-block px-8 py-4 rounded-xl"
-        style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%)',
-          border: '1px solid rgba(163, 230, 53, 0.4)',
-          boxShadow: '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
-        }}
-        animate={{
-          boxShadow: [
-            '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
-            '0 0 50px rgba(163, 230, 53, 0.4), 0 0 80px rgba(168, 85, 247, 0.2)',
-            '0 0 30px rgba(163, 230, 53, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
-          ],
-        }}
-        transition={{ duration: 3, repeat: Infinity }}
-      >
-        <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400">
-          Come test it out and watch the power of AI work for you
-        </p>
-      </motion.div>
+      {/* Signal container */}
+      <div className="relative">
+        {/* Incoming signal waves */}
+        <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-1 bg-gradient-to-t from-lime-400 to-cyan-400 rounded-full"
+              animate={{
+                height: ['8px', '20px', '8px'],
+                opacity: [0.4, 1, 0.4],
+              }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.15,
+                repeat: Infinity,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Main transmission box */}
+        <motion.div
+          className="relative px-6 py-4 rounded-lg overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.8) 100%)',
+            border: '1px solid rgba(163, 230, 53, 0.5)',
+          }}
+        >
+          {/* Scan line effect */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, transparent 0%, rgba(163, 230, 53, 0.1) 50%, transparent 100%)',
+              backgroundSize: '100% 20px',
+            }}
+            animate={{
+              backgroundPosition: ['0% 0%', '0% 100%'],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-lime-400"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <span className="text-xs font-mono text-lime-400/70 uppercase tracking-widest">
+              Incoming Transmission
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-r from-lime-400/50 to-transparent" />
+          </div>
+
+          {/* Message */}
+          <div className="font-mono text-sm sm:text-base text-center">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-emerald-300 to-cyan-300">
+              {displayText}
+            </span>
+            <span className={`text-lime-400 ${showCursor ? 'opacity-100' : 'opacity-0'}`}>█</span>
+          </div>
+
+          {/* Signal strength indicator */}
+          <div className="flex items-center justify-center gap-1 mt-3">
+            <span className="text-xs font-mono text-slate-500">SIGNAL</span>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <motion.div
+                key={i}
+                className="w-1 rounded-sm bg-lime-400"
+                style={{ height: `${6 + i * 3}px` }}
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                }}
+                transition={{
+                  duration: 1.5,
+                  delay: i * 0.1,
+                  repeat: Infinity,
+                }}
+              />
+            ))}
+            <span className="text-xs font-mono text-lime-400 ml-1">STRONG</span>
+          </div>
+        </motion.div>
+
+        {/* Outgoing signal waves */}
+        <div className="absolute -right-8 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-1 bg-gradient-to-t from-cyan-400 to-purple-400 rounded-full"
+              animate={{
+                height: ['8px', '20px', '8px'],
+                opacity: [0.4, 1, 0.4],
+              }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.15 + 0.3,
+                repeat: Infinity,
+              }}
+            />
+          ))}
+        </div>
+      </div>
     </motion.div>
   );
 };
@@ -450,7 +773,7 @@ export default function FuturisticHero() {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <SALConstruction />
-            <HolographicCTA />
+            <IncomingSignal />
           </motion.div>
         </div>
       </div>
