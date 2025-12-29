@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
 import { ArrowRight, Zap } from 'lucide-react';
+import FuturisticButton from '@/components/ui/FuturisticButton';
 
 // Holographic Grid Background
 const HolographicGrid = () => {
@@ -747,29 +747,22 @@ export default function FuturisticHero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button
-                asChild
+              <FuturisticButton
+                to={createPageUrl('Pricing')}
                 size="lg"
-                className="group relative overflow-hidden bg-gradient-to-r from-lime-500 to-emerald-500 hover:from-lime-400 hover:to-emerald-400 text-slate-900 font-bold rounded-full px-8"
+                variant="primary"
+                icon={<ArrowRight className="w-5 h-5" />}
               >
-                <Link to={createPageUrl('Pricing')}>
-                  <span className="relative z-10 flex items-center gap-2">
-                    Get Started
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Link>
-              </Button>
+                Get Started
+              </FuturisticButton>
               
-              <Button
-                asChild
-                variant="outline"
+              <FuturisticButton
+                href="#free-search"
                 size="lg"
-                className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 rounded-full px-8"
+                variant="cyber"
               >
-                <a href="#free-search">
-                  Try Free Search
-                </a>
-              </Button>
+                Try Free Search
+              </FuturisticButton>
             </div>
 
           </motion.div>
