@@ -73,28 +73,35 @@ Search: "[player name] stats ${new Date().getFullYear()}" on FBref.com or WhoSco
 - Key passes per game
 
 FOR AMERICAN FOOTBALL (NFL):
+⚠️ CRITICAL: All NFL stats MUST be PER GAME AVERAGES, not season totals!
+Calculate: Total Season Stats ÷ Games Played = Per Game Average
+
 FOR QUARTERBACKS:
 Search: "[player name] QB stats ${new Date().getFullYear()}" on Pro-Football-Reference
-- Passing yards per game
-- Touchdowns (TDs)
-- Interceptions (INTs)
+- passing_yards_per_game: (Total Passing Yards ÷ Games Played) - typically 200-350 range
+- Touchdowns per game
+- Interceptions per game
 - Completion percentage
 - QB rating
-- Rushing yards per game
+- rushing_yards_per_game: (Total Rushing Yards ÷ Games Played) - typically 5-40 range for QBs
 
 FOR RUNNING BACKS:
-- Rushing yards per game
+- rushing_yards_per_game: (Total Rushing Yards ÷ Games Played) - typically 40-120 range
 - Yards per carry (YPC)
-- Rushing touchdowns
-- Receptions per game
-- Receiving yards
+- Rushing touchdowns per game
+- receptions_per_game: (Total Receptions ÷ Games Played) - typically 2-6 range
+- Receiving yards per game
 
 FOR WIDE RECEIVERS/TIGHT ENDS:
-- Receptions per game
-- Receiving yards per game
-- Receiving touchdowns
-- Yards after catch
+- receptions_per_game: (Total Receptions ÷ Games Played) - typically 4-8 range
+- Receiving yards per game - typically 50-100 range
+- Receiving touchdowns per game
+- Yards after catch per game
 - Catch percentage
+
+⚠️ VALIDATION: If passing_yards_per_game > 500, it's a season total - divide by games played!
+⚠️ VALIDATION: If rushing_yards_per_game > 200, it's a season total - divide by games played!
+⚠️ VALIDATION: If receptions_per_game > 20, it's a season total - divide by games played!
 
 STEP 3: RECENT FORM - DETAILED LAST 5 GAMES (⚠️ ABSOLUTELY CRITICAL!)
 
