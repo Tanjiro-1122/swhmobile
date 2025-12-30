@@ -86,21 +86,32 @@ const HolographicGrid = () => {
   );
 };
 
-// S.A.L. Mechanical Assembly Animation
+// S.A.L. Computer Boot Sequence Animation
 const SALConstruction = () => {
   const [buildPhase, setBuildPhase] = useState(0);
   const [glitchText, setGlitchText] = useState('');
+  const [eyesAwake, setEyesAwake] = useState(false);
   const buildTexts = [
     'INITIALIZING NEURAL CORE...',
-    'ASSEMBLING OPTICAL SYSTEMS...',
+    'LOADING SPORTS DATABASE...',
     'CALIBRATING PREDICTION ENGINE...',
-    'INSTALLING WISDOM PROTOCOLS...',
+    'CONNECTING TO S.A.L....',
     'S.A.L. ONLINE'
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setBuildPhase(prev => (prev + 1) % 5);
+      setBuildPhase(prev => {
+        const next = (prev + 1) % 5;
+        if (next === 4) {
+          // When reaching "S.A.L. ONLINE", trigger eye awakening after text finishes
+          setTimeout(() => setEyesAwake(true), 1500);
+        }
+        if (next === 0) {
+          setEyesAwake(false); // Reset for next cycle
+        }
+        return next;
+      });
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -121,6 +132,8 @@ const SALConstruction = () => {
     typeChar();
     return () => clearTimeout(timer);
   }, [buildPhase]);
+
+  const isOnline = buildPhase === 4;
 
   return (
     <div className="relative w-full max-w-md mx-auto aspect-square">
@@ -183,267 +196,274 @@ const SALConstruction = () => {
           />
         ))}
 
-        {/* S.A.L. Mechanical Robot Arm Assembly */}
+        {/* Main Display Area */}
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.div
-            className="relative w-40 h-40 sm:w-48 sm:h-48"
-            animate={{ y: [0, -5, 0] }}
+            className="relative w-44 h-44 sm:w-52 sm:h-52"
+            animate={{ y: [0, -3, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            {/* Glowing backdrop */}
-            <motion.div
-              className="absolute inset-0 rounded-full blur-3xl"
-              style={{
-                background: 'radial-gradient(circle, rgba(163, 230, 53, 0.5) 0%, rgba(168, 85, 247, 0.3) 40%, transparent 70%)',
-              }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.6, 0.9, 0.6] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-
-            {/* SVG Robot Arm Assembly */}
             <svg viewBox="0 0 120 120" className="w-full h-full relative z-10">
-              {/* Base platform */}
+              {/* Computer Monitor Frame */}
               <motion.rect
-                x="35"
-                y="100"
-                width="50"
-                height="8"
+                x="15"
+                y="10"
+                width="90"
+                height="70"
+                rx="4"
+                fill="rgba(15, 23, 42, 0.95)"
+                stroke="rgba(163, 230, 53, 0.8)"
+                strokeWidth="2"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+              
+              {/* Monitor inner screen */}
+              <motion.rect
+                x="20"
+                y="15"
+                width="80"
+                height="60"
                 rx="2"
                 fill="rgba(30, 41, 59, 0.9)"
-                stroke="rgba(163, 230, 53, 0.8)"
+                stroke="rgba(168, 85, 247, 0.5)"
                 strokeWidth="1"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                style={{ transformOrigin: '60px 104px' }}
               />
               
-              {/* Robot arm base joint */}
+              {/* Monitor stand */}
+              <motion.rect
+                x="50"
+                y="80"
+                width="20"
+                height="12"
+                fill="rgba(30, 41, 59, 0.9)"
+                stroke="rgba(163, 230, 53, 0.6)"
+                strokeWidth="1"
+              />
+              <motion.rect
+                x="40"
+                y="92"
+                width="40"
+                height="6"
+                rx="2"
+                fill="rgba(30, 41, 59, 0.9)"
+                stroke="rgba(163, 230, 53, 0.6)"
+                strokeWidth="1"
+              />
+              
+              {/* Cable connecting to S.A.L. */}
+              <motion.path
+                d="M 105 45 Q 115 45 115 55 Q 115 65 105 70"
+                fill="none"
+                stroke="rgba(168, 85, 247, 0.8)"
+                strokeWidth="2"
+                strokeDasharray="4 2"
+                animate={{ strokeDashoffset: [0, -12] }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              />
+              
+              {/* Data pulse through cable */}
               <motion.circle
-                cx="60"
-                cy="95"
-                r="8"
-                fill="rgba(15, 23, 42, 0.9)"
-                stroke="rgba(168, 85, 247, 0.9)"
-                strokeWidth="1.5"
-                initial={{ scale: 0 }}
-                animate={{ scale: buildPhase >= 0 ? 1 : 0 }}
-                transition={{ duration: 0.4, type: 'spring' }}
+                r="3"
+                fill="rgba(34, 211, 238, 0.9)"
+                animate={{
+                  offsetDistance: ['0%', '100%'],
+                  opacity: [0, 1, 1, 0],
+                }}
+                style={{
+                  offsetPath: 'path("M 105 45 Q 115 45 115 55 Q 115 65 105 70")',
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
               />
-              
-              {/* Lower arm segment */}
+
+              {/* S.A.L. Owl - Initially dim, wakes up when online */}
               <motion.g
-                initial={{ rotate: -30, opacity: 0 }}
-                animate={{ 
-                  rotate: buildPhase >= 1 ? 0 : -30,
-                  opacity: buildPhase >= 1 ? 1 : 0
-                }}
-                transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
-                style={{ transformOrigin: '60px 95px' }}
+                initial={{ opacity: 0.3 }}
+                animate={{ opacity: eyesAwake ? 1 : 0.4 }}
+                transition={{ duration: 0.5 }}
               >
-                <rect
-                  x="56"
-                  y="55"
-                  width="8"
-                  height="40"
-                  rx="3"
-                  fill="rgba(30, 41, 59, 0.9)"
-                  stroke="rgba(163, 230, 53, 0.8)"
-                  strokeWidth="1"
-                />
-                {/* Hydraulic details */}
-                <line x1="58" y1="60" x2="58" y2="90" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1" />
-                <line x1="62" y1="60" x2="62" y2="90" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1" />
-              </motion.g>
-              
-              {/* Middle joint */}
-              <motion.circle
-                cx="60"
-                cy="55"
-                r="6"
-                fill="rgba(15, 23, 42, 0.9)"
-                stroke="rgba(168, 85, 247, 0.9)"
-                strokeWidth="1.5"
-                initial={{ scale: 0 }}
-                animate={{ scale: buildPhase >= 1 ? 1 : 0 }}
-                transition={{ duration: 0.4, delay: 0.3, type: 'spring' }}
-              />
-              
-              {/* Upper arm segment with rotation */}
-              <motion.g
-                initial={{ rotate: 45, opacity: 0 }}
-                animate={{ 
-                  rotate: buildPhase >= 2 ? -15 : 45,
-                  opacity: buildPhase >= 2 ? 1 : 0
-                }}
-                transition={{ duration: 0.8, type: 'spring', stiffness: 80 }}
-                style={{ transformOrigin: '60px 55px' }}
-              >
-                <rect
-                  x="57"
-                  y="25"
-                  width="6"
-                  height="30"
-                  rx="2"
-                  fill="rgba(30, 41, 59, 0.9)"
-                  stroke="rgba(163, 230, 53, 0.8)"
-                  strokeWidth="1"
-                />
-                {/* Wiring detail */}
-                <motion.path
-                  d="M 58 30 Q 55 40 58 50"
-                  fill="none"
-                  stroke="rgba(251, 191, 36, 0.6)"
-                  strokeWidth="0.8"
-                  strokeDasharray="2 2"
-                  animate={{ strokeDashoffset: [0, -10] }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                />
-              </motion.g>
-              
-              {/* Wrist joint */}
-              <motion.circle
-                cx="55"
-                cy="22"
-                r="5"
-                fill="rgba(15, 23, 42, 0.9)"
-                stroke="rgba(34, 211, 238, 0.9)"
-                strokeWidth="1.5"
-                initial={{ scale: 0 }}
-                animate={{ scale: buildPhase >= 2 ? 1 : 0 }}
-                transition={{ duration: 0.4, delay: 0.5, type: 'spring' }}
-              />
-              
-              {/* Gripper / Claw holding S.A.L. */}
-              <motion.g
-                initial={{ scale: 0, rotate: 20 }}
-                animate={{ 
-                  scale: buildPhase >= 3 ? 1 : 0,
-                  rotate: buildPhase >= 3 ? 0 : 20
-                }}
-                transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
-                style={{ transformOrigin: '55px 22px' }}
-              >
-                {/* Left gripper finger */}
-                <motion.path
-                  d="M 48 18 L 42 8 L 45 6"
-                  fill="none"
-                  stroke="rgba(163, 230, 53, 0.9)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  animate={{ 
-                    d: buildPhase >= 4 
-                      ? "M 48 18 L 48 10 L 52 8" 
-                      : "M 48 18 L 42 8 L 45 6"
-                  }}
-                  transition={{ duration: 0.5 }}
-                />
-                {/* Right gripper finger */}
-                <motion.path
-                  d="M 62 18 L 68 8 L 65 6"
-                  fill="none"
-                  stroke="rgba(163, 230, 53, 0.9)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  animate={{ 
-                    d: buildPhase >= 4 
-                      ? "M 62 18 L 62 10 L 58 8" 
-                      : "M 62 18 L 68 8 L 65 6"
-                  }}
-                  transition={{ duration: 0.5 }}
-                />
-              </motion.g>
-              
-              {/* S.A.L. Owl being assembled/held */}
-              <motion.g
-                initial={{ y: -30, opacity: 0 }}
-                animate={{ 
-                  y: buildPhase >= 4 ? 0 : -30,
-                  opacity: buildPhase >= 4 ? 1 : 0
-                }}
-                transition={{ duration: 0.8, type: 'spring', stiffness: 60 }}
-              >
-                {/* Owl head outline */}
-                <motion.circle
-                  cx="55"
-                  cy="-5"
-                  r="12"
+                {/* Owl body silhouette in screen */}
+                <motion.ellipse
+                  cx="60"
+                  cy="52"
+                  rx="22"
+                  ry="20"
                   fill="rgba(15, 23, 42, 0.8)"
-                  stroke="rgba(168, 85, 247, 0.9)"
-                  strokeWidth="1"
+                  stroke={eyesAwake ? "rgba(163, 230, 53, 0.9)" : "rgba(100, 100, 100, 0.5)"}
+                  strokeWidth="1.5"
+                  animate={{
+                    stroke: eyesAwake 
+                      ? ["rgba(163, 230, 53, 0.9)", "rgba(168, 85, 247, 0.9)", "rgba(163, 230, 53, 0.9)"]
+                      : "rgba(100, 100, 100, 0.5)"
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 />
-                {/* Left eye */}
-                <circle cx="50" cy="-6" r="4" fill="none" stroke="rgba(34, 211, 238, 0.9)" strokeWidth="1" />
+                
+                {/* Ear tufts */}
+                <path 
+                  d="M 42 38 L 46 48 L 38 44 Z" 
+                  fill="none" 
+                  stroke={eyesAwake ? "rgba(163, 230, 53, 0.8)" : "rgba(100, 100, 100, 0.4)"} 
+                  strokeWidth="1.5" 
+                />
+                <path 
+                  d="M 78 38 L 74 48 L 82 44 Z" 
+                  fill="none" 
+                  stroke={eyesAwake ? "rgba(163, 230, 53, 0.8)" : "rgba(100, 100, 100, 0.4)"} 
+                  strokeWidth="1.5" 
+                />
+                
+                {/* Left eye socket */}
+                <circle 
+                  cx="50" 
+                  cy="48" 
+                  r="8" 
+                  fill="none" 
+                  stroke={eyesAwake ? "rgba(34, 211, 238, 0.9)" : "rgba(60, 60, 60, 0.5)"} 
+                  strokeWidth="1.5" 
+                />
+                {/* Left eye - awakens */}
                 <motion.circle 
                   cx="50" 
-                  cy="-6" 
-                  r="2" 
-                  fill="rgba(34, 211, 238, 0.8)"
-                  animate={{ fill: ['rgba(34, 211, 238, 0.5)', 'rgba(34, 211, 238, 1)', 'rgba(34, 211, 238, 0.5)'] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  cy="48" 
+                  r="4"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ 
+                    scale: eyesAwake ? 1 : 0,
+                    opacity: eyesAwake ? 1 : 0,
+                    fill: eyesAwake 
+                      ? ["rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 1)", "rgba(34, 211, 238, 0.6)"]
+                      : "rgba(34, 211, 238, 0)"
+                  }}
+                  transition={{ 
+                    scale: { duration: 0.3, type: 'spring' },
+                    fill: { duration: 1.5, repeat: Infinity, delay: 0.3 }
+                  }}
                 />
-                {/* Right eye */}
-                <circle cx="60" cy="-6" r="4" fill="none" stroke="rgba(34, 211, 238, 0.9)" strokeWidth="1" />
+                {/* Left eye glow */}
+                {eyesAwake && (
+                  <motion.circle 
+                    cx="50" 
+                    cy="48" 
+                    r="6"
+                    fill="none"
+                    stroke="rgba(34, 211, 238, 0.5)"
+                    strokeWidth="2"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                )}
+                
+                {/* Right eye socket */}
+                <circle 
+                  cx="70" 
+                  cy="48" 
+                  r="8" 
+                  fill="none" 
+                  stroke={eyesAwake ? "rgba(34, 211, 238, 0.9)" : "rgba(60, 60, 60, 0.5)"} 
+                  strokeWidth="1.5" 
+                />
+                {/* Right eye - awakens */}
                 <motion.circle 
-                  cx="60" 
-                  cy="-6" 
-                  r="2" 
-                  fill="rgba(34, 211, 238, 0.8)"
-                  animate={{ fill: ['rgba(34, 211, 238, 0.5)', 'rgba(34, 211, 238, 1)', 'rgba(34, 211, 238, 0.5)'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                  cx="70" 
+                  cy="48" 
+                  r="4"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ 
+                    scale: eyesAwake ? 1 : 0,
+                    opacity: eyesAwake ? 1 : 0,
+                    fill: eyesAwake 
+                      ? ["rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 1)", "rgba(34, 211, 238, 0.6)"]
+                      : "rgba(34, 211, 238, 0)"
+                  }}
+                  transition={{ 
+                    scale: { duration: 0.3, type: 'spring', delay: 0.1 },
+                    fill: { duration: 1.5, repeat: Infinity, delay: 0.5 }
+                  }}
                 />
+                {/* Right eye glow */}
+                {eyesAwake && (
+                  <motion.circle 
+                    cx="70" 
+                    cy="48" 
+                    r="6"
+                    fill="none"
+                    stroke="rgba(34, 211, 238, 0.5)"
+                    strokeWidth="2"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+                  />
+                )}
+                
                 {/* Beak */}
-                <path d="M 53 -2 L 55 3 L 57 -2 Z" fill="rgba(251, 191, 36, 0.8)" stroke="rgba(251, 191, 36, 1)" strokeWidth="0.5" />
-                {/* Ear tufts */}
-                <path d="M 44 -12 L 47 -5 L 42 -8 Z" fill="none" stroke="rgba(163, 230, 53, 0.8)" strokeWidth="1" />
-                <path d="M 66 -12 L 63 -5 L 68 -8 Z" fill="none" stroke="rgba(163, 230, 53, 0.8)" strokeWidth="1" />
+                <path 
+                  d="M 57 56 L 60 63 L 63 56 Z" 
+                  fill={eyesAwake ? "rgba(251, 191, 36, 0.8)" : "rgba(100, 100, 100, 0.4)"}
+                  stroke={eyesAwake ? "rgba(251, 191, 36, 1)" : "rgba(100, 100, 100, 0.5)"} 
+                  strokeWidth="0.5" 
+                />
+                
+                {/* Glasses bridge */}
+                <line 
+                  x1="58" 
+                  y1="48" 
+                  x2="62" 
+                  y2="48" 
+                  stroke={eyesAwake ? "rgba(168, 85, 247, 0.9)" : "rgba(80, 80, 80, 0.4)"} 
+                  strokeWidth="1.5" 
+                />
               </motion.g>
               
-              {/* Sparks and energy effects */}
-              {buildPhase >= 3 && [...Array(4)].map((_, i) => (
-                <motion.circle
-                  key={i}
-                  r="1.5"
-                  fill={i % 2 === 0 ? 'rgba(163, 230, 53, 0.9)' : 'rgba(34, 211, 238, 0.9)'}
-                  initial={{ cx: 55, cy: 22, opacity: 0 }}
-                  animate={{
-                    cx: [55, 55 + (Math.random() - 0.5) * 40],
-                    cy: [22, 22 + (Math.random() - 0.5) * 40],
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1, 0],
-                  }}
-                  transition={{
-                    duration: 1,
-                    delay: i * 0.2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                />
-              ))}
+              {/* Power indicator LED on monitor */}
+              <motion.circle
+                cx="100"
+                cy="75"
+                r="2"
+                fill={isOnline ? "rgba(163, 230, 53, 1)" : "rgba(251, 191, 36, 0.8)"}
+                animate={{
+                  opacity: isOnline ? 1 : [0.5, 1, 0.5],
+                  boxShadow: isOnline 
+                    ? "0 0 10px rgba(163, 230, 53, 0.8)" 
+                    : "0 0 5px rgba(251, 191, 36, 0.5)"
+                }}
+                transition={{ duration: 1, repeat: isOnline ? 0 : Infinity }}
+              />
               
-              {/* Energy beam connecting arm to S.A.L. */}
-              {buildPhase >= 4 && (
-                <motion.line
-                  x1="55"
-                  y1="17"
-                  x2="55"
-                  y2="7"
-                  stroke="url(#energyBeam)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
+              {/* "S.A.L." label when online */}
+              {eyesAwake && (
+                <motion.text
+                  x="60"
+                  y="18"
+                  textAnchor="middle"
+                  fill="rgba(163, 230, 53, 0.9)"
+                  fontSize="6"
+                  fontFamily="monospace"
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 0.8, repeat: Infinity }}
-                />
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  S.A.L. ACTIVE
+                </motion.text>
               )}
               
-              {/* Gradient definitions */}
-              <defs>
-                <linearGradient id="energyBeam" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(163, 230, 53, 1)" />
-                  <stop offset="50%" stopColor="rgba(168, 85, 247, 1)" />
-                  <stop offset="100%" stopColor="rgba(34, 211, 238, 1)" />
-                </linearGradient>
-              </defs>
+              {/* Energy burst when coming online */}
+              {eyesAwake && [...Array(8)].map((_, i) => (
+                <motion.line
+                  key={i}
+                  x1="60"
+                  y1="50"
+                  x2={60 + Math.cos((i * Math.PI * 2) / 8) * 35}
+                  y2={50 + Math.sin((i * Math.PI * 2) / 8) * 35}
+                  stroke="rgba(163, 230, 53, 0.6)"
+                  strokeWidth="1"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: [0, 1, 0], opacity: [0, 0.8, 0] }}
+                  transition={{ duration: 1, delay: i * 0.05 }}
+                />
+              ))}
             </svg>
             
             {/* Holographic scan overlay */}
@@ -459,11 +479,14 @@ const SALConstruction = () => {
           </motion.div>
         </div>
 
-        {/* Status text */}
+        {/* Status text at bottom */}
         <div className="absolute bottom-4 left-4 right-4">
           <motion.div
-            className="font-mono text-xs sm:text-sm text-lime-400 text-center"
-            style={{ textShadow: '0 0 10px rgba(163, 230, 53, 0.8)' }}
+            className="font-mono text-xs sm:text-sm text-center"
+            style={{ 
+              color: isOnline && eyesAwake ? '#a3e635' : '#94a3b8',
+              textShadow: isOnline && eyesAwake ? '0 0 15px rgba(163, 230, 53, 1)' : '0 0 5px rgba(163, 230, 53, 0.5)'
+            }}
           >
             {glitchText}
           </motion.div>
@@ -471,7 +494,12 @@ const SALConstruction = () => {
           {/* Progress bar */}
           <div className="mt-2 h-1 bg-slate-800 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-lime-400 via-purple-500 to-cyan-400"
+              className="h-full"
+              style={{
+                background: isOnline 
+                  ? 'linear-gradient(90deg, #a3e635, #22d3ee, #a855f7)' 
+                  : 'linear-gradient(90deg, #475569, #64748b)'
+              }}
               animate={{
                 width: `${(buildPhase + 1) * 20}%`,
               }}
