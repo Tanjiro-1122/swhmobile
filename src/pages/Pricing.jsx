@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Crown, Sparkles, Check, Star, Loader2, ExternalLink, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import FuturisticButton from "@/components/ui/FuturisticButton";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
@@ -678,25 +679,27 @@ export default function Pricing() {
                     ))}
                   </ul>
                   {currentPlan === 'premium_monthly' ? (
-                    <Button disabled className="w-full bg-gray-200 text-gray-600 cursor-not-allowed py-6 text-base">
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button 
-                                                onClick={() => handleSubscribe('premium')}
-                                                disabled={processingItem !== null}
-                                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                                              >
-                                                {processingItem === 'premium' ? (
-                                                  <div className="flex items-center gap-2">
-                                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                                    Processing...
-                                                  </div>
-                                                ) : (
-                                                  'Get Premium'
-                                                )}
-                                              </Button>
-                  )}
+                      <Button disabled className="w-full bg-gray-200 text-gray-600 cursor-not-allowed py-6 text-base">
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <FuturisticButton 
+                        onClick={() => handleSubscribe('premium')}
+                        disabled={processingItem !== null}
+                        variant="secondary"
+                        size="lg"
+                        className="w-full"
+                      >
+                        {processingItem === 'premium' ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Processing...
+                          </div>
+                        ) : (
+                          'Get Premium'
+                        )}
+                      </FuturisticButton>
+                    )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -737,25 +740,28 @@ export default function Pricing() {
                     ))}
                   </ul>
                   {currentPlan === 'vip_annual' ? (
-                    <Button disabled className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-6 cursor-not-allowed opacity-75 text-base">
-                      ⭐ You're a VIP Member!
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => handleSubscribe('vip')}
-                      disabled={processingItem !== null}
-                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-6 text-base lg:text-lg shadow-lg disabled:opacity-70"
-                    >
-                      {processingItem === 'vip' ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Processing...
-                        </div>
-                      ) : (
-                        'Upgrade to VIP'
-                      )}
-                    </Button>
-                  )}
+                      <Button disabled className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-6 cursor-not-allowed opacity-75 text-base">
+                        ⭐ You're a VIP Member!
+                      </Button>
+                    ) : (
+                      <FuturisticButton 
+                        onClick={() => handleSubscribe('vip')}
+                        disabled={processingItem !== null}
+                        variant="primary"
+                        size="lg"
+                        className="w-full"
+                        icon={<Crown className="w-5 h-5" />}
+                      >
+                        {processingItem === 'vip' ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Processing...
+                          </div>
+                        ) : (
+                          'Upgrade to VIP'
+                        )}
+                      </FuturisticButton>
+                    )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -844,17 +850,18 @@ export default function Pricing() {
                       <div className="text-xs text-gray-600 dark:text-gray-400 mb-4">
                         ${(pack.price / pack.credits).toFixed(2)} per search
                       </div>
-                      <Button
-                        onClick={() => handleBuyCredits(pack)}
-                        disabled={processingItem !== null}
-                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
-                      >
-                        {processingItem === pack.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          `Buy ${pack.credits} Credits`
-                        )}
-                      </Button>
+                      <FuturisticButton
+                            onClick={() => handleBuyCredits(pack)}
+                            disabled={processingItem !== null}
+                            variant="cyber"
+                            className="w-full"
+                          >
+                            {processingItem === pack.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              `Buy ${pack.credits} Credits`
+                            )}
+                          </FuturisticButton>
                     </CardContent>
                   </Card>
                 ))}
