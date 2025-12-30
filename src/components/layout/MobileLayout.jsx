@@ -8,10 +8,12 @@ import {
   Crown,
   LayoutGrid,
   LogIn,
-  UserPlus
+  Zap
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import FuturisticButton from "@/components/ui/FuturisticButton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DomainChangeBanner from "../DomainChangeBanner";
 import AgeGate from "../auth/AgeGate";
@@ -99,64 +101,87 @@ export default function MobileLayout({ children, currentPageName }) {
                   <div className="w-9 h-9 rounded-full bg-slate-700 animate-pulse" />
                 ) : isAuthenticated ? (
                   <>
-                    {/* Subscription badges - hidden on very small screens */}
+                    {/* Subscription badges with futuristic glow */}
                     {isLegacy && (
-                      <div className="hidden xs:flex items-center gap-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-2 py-1 rounded-full">
-                        <Crown className="w-3 h-3 text-white" />
-                        <span className="text-xs font-bold text-white">LEGACY</span>
-                      </div>
+                      <motion.div 
+                        className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-full border border-yellow-500/50"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%)',
+                          boxShadow: '0 0 15px rgba(234, 179, 8, 0.3)'
+                        }}
+                        animate={{ boxShadow: ['0 0 10px rgba(234, 179, 8, 0.3)', '0 0 20px rgba(234, 179, 8, 0.5)', '0 0 10px rgba(234, 179, 8, 0.3)'] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Crown className="w-3 h-3 text-yellow-400" />
+                        <span className="text-xs font-bold text-yellow-400">LEGACY</span>
+                      </motion.div>
                     )}
                     {isVIP && (
-                      <div className="hidden xs:flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-full">
-                        <Crown className="w-3 h-3 text-white" />
-                        <span className="text-xs font-bold text-white">VIP</span>
-                      </div>
+                      <motion.div 
+                        className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-full border border-purple-500/50"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)',
+                          boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
+                        }}
+                        animate={{ boxShadow: ['0 0 10px rgba(168, 85, 247, 0.3)', '0 0 20px rgba(168, 85, 247, 0.5)', '0 0 10px rgba(168, 85, 247, 0.3)'] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Crown className="w-3 h-3 text-purple-400" />
+                        <span className="text-xs font-bold text-purple-400">VIP</span>
+                      </motion.div>
                     )}
                     {isPremium && (
-                      <div className="hidden xs:flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 rounded-full">
-                        <Crown className="w-3 h-3 text-white" />
-                        <span className="text-xs font-bold text-white">PRO</span>
-                      </div>
+                      <motion.div 
+                        className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-full border border-cyan-500/50"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)',
+                          boxShadow: '0 0 15px rgba(34, 211, 238, 0.3)'
+                        }}
+                      >
+                        <Crown className="w-3 h-3 text-cyan-400" />
+                        <span className="text-xs font-bold text-cyan-400">PRO</span>
+                      </motion.div>
                     )}
                     
-                    {/* User Avatar */}
-                    <Avatar className="w-9 h-9">
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                        {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    {/* User Avatar with glow */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-md" />
+                      <Avatar className="relative w-9 h-9 border border-purple-500/50">
+                        <AvatarFallback className="bg-gradient-to-br from-purple-600 to-cyan-600 text-white font-bold text-sm">
+                          {currentUser?.full_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
                     
-                    {/* Logout Button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                    {/* Logout Button - Futuristic style */}
+                    <motion.button
                       onClick={handleLogout}
-                      className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 min-w-[44px] min-h-[44px]"
+                      className="p-2 text-slate-400 hover:text-red-400 rounded-lg border border-slate-700 hover:border-red-500/50 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      whileTap={{ scale: 0.95 }}
                       title="Log out"
                     >
                       <LogOut className="w-5 h-5" />
-                    </Button>
+                    </motion.button>
                   </>
                 ) : (
-                  /* Not Authenticated - Show Login and Signup buttons */
+                  /* Not Authenticated - Futuristic buttons */
                   <div className="flex items-center gap-2">
-                    <Button
+                    <FuturisticButton
                       onClick={handleLogin}
                       variant="ghost"
-                      className="text-slate-200 hover:text-white hover:bg-white/10 rounded-md text-sm px-3 h-10 flex items-center gap-1"
+                      size="sm"
+                      icon={<LogIn className="w-4 h-4" />}
                     >
-                      <LogIn className="w-4 h-4" />
                       <span className="hidden xs:inline">Log In</span>
-                    </Button>
-                    <Button 
-                      asChild 
-                      className="bg-purple-600 text-white font-bold hover:bg-purple-700 rounded-md text-sm px-3 h-10 flex items-center gap-1"
+                    </FuturisticButton>
+                    <FuturisticButton 
+                      to={createPageUrl('Pricing')}
+                      variant="primary"
+                      size="sm"
+                      icon={<Zap className="w-4 h-4" />}
                     >
-                      <Link to={createPageUrl('Pricing')}>
-                        <UserPlus className="w-4 h-4" />
-                        <span className="hidden xs:inline">Sign Up</span>
-                      </Link>
-                    </Button>
+                      <span className="hidden xs:inline">Sign Up</span>
+                    </FuturisticButton>
                   </div>
                 )}
               </div>
@@ -171,16 +196,41 @@ export default function MobileLayout({ children, currentPageName }) {
           </div>
         </main>
 
-        {/* Floating Dashboard Button - only show when not on Dashboard */}
+        {/* Floating Dashboard Button - Futuristic style */}
         {currentPageName !== 'Dashboard' && (
-          <Link
-            to={createPageUrl("Dashboard")}
-            className="fixed right-4 z-[100] w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 animate-fade-in"
-            aria-label="Go to Dashboard"
+          <motion.div
+            className="fixed right-4 z-[100]"
             style={{ bottom: `calc(1rem + env(safe-area-inset-bottom))` }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
           >
-            <LayoutGrid className="w-7 h-7 text-cyan-300" />
-          </Link>
+            <Link
+              to={createPageUrl("Dashboard")}
+              className="relative block w-14 h-14"
+              aria-label="Go to Dashboard"
+            >
+              {/* Glow effect */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-br from-lime-500 to-cyan-500 rounded-full blur-md"
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              {/* Button */}
+              <motion.div 
+                className="relative w-full h-full bg-slate-900 rounded-full flex items-center justify-center border border-lime-500/50"
+                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <LayoutGrid className="w-6 h-6 text-lime-400" />
+              </motion.div>
+              {/* Corner accents */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-lime-400 rounded-tl-full" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-lime-400 rounded-tr-full" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-lime-400 rounded-bl-full" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-lime-400 rounded-br-full" />
+            </Link>
+          </motion.div>
         )}
       </div>
     </div>

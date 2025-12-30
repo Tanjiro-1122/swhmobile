@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
+import FuturisticButton from '@/components/ui/FuturisticButton';
 import { usePlatform } from '@/components/hooks/usePlatform';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const TopBar = () => {
     const { isNativeApp } = usePlatform();
@@ -40,115 +42,143 @@ const TopBar = () => {
     const handleLogout = () => base44.auth.logout('/');
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/5">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
-                    <Link to={createPageUrl(user ? 'Dashboard' : 'Home')} className="flex items-center gap-3">
-                        <img
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                            alt="Sports Wager Helper"
-                            className="w-9 h-9 rounded-lg"
-                        />
-                        <span className="text-xl font-bold text-white hidden sm:inline">Sports Wager Helper</span>
-                    </Link>
+        <header className="fixed top-0 left-0 right-0 z-50">
+            {/* Futuristic gradient border */}
+            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-lime-500/50 to-transparent" />
+            
+            <div className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        {/* Logo with glow effect */}
+                        <Link to={createPageUrl(user ? 'Dashboard' : 'Home')} className="flex items-center gap-3 group">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-lime-500/30 rounded-lg blur-md group-hover:bg-lime-500/50 transition-all" />
+                                <img
+                                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
+                                    alt="Sports Wager Helper"
+                                    className="relative w-9 h-9 rounded-lg border border-lime-500/30"
+                                />
+                            </div>
+                            <span className="text-xl font-bold text-white hidden sm:inline">
+                                Sports Wager Helper
+                            </span>
+                        </Link>
 
-                    {/* Navigation Links - Center (Desktop) */}
-                    <nav className="hidden md:flex items-center gap-8">
-                        {navLinks.map(link => (
-                            <Link
-                                key={link.name}
-                                to={createPageUrl(link.page)}
-                                className="text-sm font-medium text-white/70 hover:text-white transition-colors relative group"
-                            >
-                                {link.name}
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-lime-400 group-hover:w-full transition-all duration-300" />
-                            </Link>
-                        ))}
-                    </nav>
+                        {/* Navigation Links - Center (Desktop) */}
+                        <nav className="hidden md:flex items-center gap-1">
+                            {navLinks.map(link => (
+                                <Link
+                                    key={link.name}
+                                    to={createPageUrl(link.page)}
+                                    className="relative px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors group"
+                                >
+                                    <span className="relative z-10">{link.name}</span>
+                                    {/* Hover background */}
+                                    <span className="absolute inset-0 bg-slate-800/0 group-hover:bg-slate-800/80 rounded-lg transition-all" />
+                                    {/* Bottom accent line */}
+                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-lime-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
+                                </Link>
+                            ))}
+                        </nav>
 
-                    {/* Auth Buttons - Right (Desktop) */}
-                    <div className="hidden md:flex items-center gap-3">
-                        {user ? (
-                            <Button 
-                                onClick={handleLogout} 
-                                variant="ghost" 
-                                className="text-white/80 hover:text-white hover:bg-white/10"
-                            >
-                                Log Out
-                            </Button>
-                        ) : (
-                            <>
-                                <Button 
-                                    onClick={handleLogin} 
-                                    variant="ghost" 
-                                    className="text-white/80 hover:text-white hover:bg-white/10"
+                        {/* Auth Buttons - Right (Desktop) */}
+                        <div className="hidden md:flex items-center gap-3">
+                            {user ? (
+                                <FuturisticButton 
+                                    onClick={handleLogout} 
+                                    variant="ghost"
+                                    size="sm"
                                 >
-                                    Log In
-                                </Button>
-                                <Button 
-                                    asChild 
-                                    className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-5"
-                                >
-                                    <Link to={createPageUrl('Pricing')}>Get Started</Link>
-                                </Button>
-                            </>
-                        )}
+                                    Log Out
+                                </FuturisticButton>
+                            ) : (
+                                <>
+                                    <FuturisticButton 
+                                        onClick={handleLogin} 
+                                        variant="ghost"
+                                        size="sm"
+                                    >
+                                        Log In
+                                    </FuturisticButton>
+                                    <FuturisticButton 
+                                        to={createPageUrl('Pricing')}
+                                        variant="primary"
+                                        size="sm"
+                                        icon={<Zap className="w-4 h-4" />}
+                                    >
+                                        Get Started
+                                    </FuturisticButton>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Mobile Menu Button */}
+                        <motion.button 
+                            className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg border border-slate-700 hover:border-lime-500/50 transition-colors"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </motion.button>
                     </div>
-
-                    {/* Mobile Menu Button */}
-                    <button 
-                        className="md:hidden p-2 text-white/80 hover:text-white"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
                 </div>
             </div>
 
             {/* Mobile Menu */}
             {mobileMenuOpen && (
-                <div className="md:hidden bg-slate-900/95 backdrop-blur-xl border-t border-white/5">
-                    <div className="container mx-auto px-4 py-4 space-y-3">
-                        {navLinks.map(link => (
-                            <Link
+                <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="md:hidden bg-slate-900/98 backdrop-blur-xl border-b border-slate-800"
+                >
+                    <div className="container mx-auto px-4 py-4 space-y-2">
+                        {navLinks.map((link, i) => (
+                            <motion.div
                                 key={link.name}
-                                to={createPageUrl(link.page)}
-                                className="block py-2 text-white/80 hover:text-white font-medium"
-                                onClick={() => setMobileMenuOpen(false)}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.05 }}
                             >
-                                {link.name}
-                            </Link>
+                                <Link
+                                    to={createPageUrl(link.page)}
+                                    className="block py-3 px-4 text-slate-300 hover:text-white font-medium rounded-lg hover:bg-slate-800/50 border border-transparent hover:border-slate-700 transition-all"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    {link.name}
+                                </Link>
+                            </motion.div>
                         ))}
-                        <div className="pt-3 border-t border-white/10 space-y-2">
+                        <div className="pt-4 border-t border-slate-800 space-y-3">
                             {user ? (
-                                <Button 
+                                <FuturisticButton 
                                     onClick={handleLogout} 
-                                    variant="ghost" 
-                                    className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                                    variant="ghost"
+                                    className="w-full"
                                 >
                                     Log Out
-                                </Button>
+                                </FuturisticButton>
                             ) : (
                                 <>
-                                    <Button 
+                                    <FuturisticButton 
                                         onClick={handleLogin} 
-                                        variant="ghost" 
-                                        className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                                        variant="outline"
+                                        className="w-full"
                                     >
                                         Log In
-                                    </Button>
-                                    <Button 
-                                        asChild 
-                                        className="w-full bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full"
+                                    </FuturisticButton>
+                                    <FuturisticButton 
+                                        to={createPageUrl('Pricing')}
+                                        variant="primary"
+                                        className="w-full"
+                                        icon={<Zap className="w-4 h-4" />}
                                     >
-                                        <Link to={createPageUrl('Pricing')}>Get Started</Link>
-                                    </Button>
+                                        Get Started
+                                    </FuturisticButton>
                                 </>
                             )}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
         </header>
     );
