@@ -505,22 +505,37 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                   </div>
                 )}
                 
-                {/* Football Stats */}
+                {/* Football Stats - Calculate per game if totals were returned */}
                 {player.season_averages.passing_yards_per_game !== undefined && (
                   <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
-                    <div className="text-2xl font-black text-blue-600">{player.season_averages.passing_yards_per_game}</div>
+                    <div className="text-2xl font-black text-blue-600">
+                      {/* If value > 400, it's likely a season total - divide by games played (approx 16) */}
+                      {player.season_averages.passing_yards_per_game > 400 
+                        ? Math.round(player.season_averages.passing_yards_per_game / (player.recent_form?.length || 5) * 5 / 16 * 16).toFixed(1)
+                        : player.season_averages.passing_yards_per_game.toFixed(1)}
+                    </div>
                     <div className="text-xs text-gray-600 font-semibold">Pass YPG</div>
                   </div>
                 )}
                 {player.season_averages.rushing_yards_per_game !== undefined && (
                   <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
-                    <div className="text-2xl font-black text-orange-600">{player.season_averages.rushing_yards_per_game}</div>
+                    <div className="text-2xl font-black text-orange-600">
+                      {/* If value > 150, it's likely a season total */}
+                      {player.season_averages.rushing_yards_per_game > 150 
+                        ? Math.round(player.season_averages.rushing_yards_per_game / 16).toFixed(1)
+                        : player.season_averages.rushing_yards_per_game.toFixed(1)}
+                    </div>
                     <div className="text-xs text-gray-600 font-semibold">Rush YPG</div>
                   </div>
                 )}
                 {player.season_averages.receptions_per_game !== undefined && (
                   <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
-                    <div className="text-2xl font-black text-purple-600">{player.season_averages.receptions_per_game}</div>
+                    <div className="text-2xl font-black text-purple-600">
+                      {/* If value > 20, it's likely a season total */}
+                      {player.season_averages.receptions_per_game > 20 
+                        ? (player.season_averages.receptions_per_game / 16).toFixed(1)
+                        : player.season_averages.receptions_per_game.toFixed(1)}
+                    </div>
                     <div className="text-xs text-gray-600 font-semibold">REC/G</div>
                   </div>
                 )}
