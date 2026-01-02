@@ -238,6 +238,63 @@ function AdminPanelContent() {
           </motion.div>
         </div>
 
+        {/* Influencer Countdown Card */}
+        {influencerAccounts.length > 0 && (
+          <Card className="border-2 border-pink-300 bg-gradient-to-r from-pink-50 to-rose-50 shadow-md mb-8">
+            <CardHeader className="bg-gradient-to-r from-pink-100 to-rose-100 border-b-2 border-pink-200">
+              <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <Clock className="w-6 h-6 text-pink-600" />
+                🌟 Influencer Account Countdowns ({influencerAccounts.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {influencerAccounts.map(user => (
+                  <div 
+                    key={user.id} 
+                    className={`p-4 rounded-lg border-2 ${user.isExpired ? 'bg-red-50 border-red-300' : 'bg-white border-pink-200'}`}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div>
+                        <div className="font-bold text-gray-900">{user.full_name || 'No name'}</div>
+                        <div className="text-sm text-gray-600">{user.email}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Expires: {user.expiryDate.toLocaleDateString()} at {user.expiryDate.toLocaleTimeString()}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {user.isExpired ? (
+                          <div className="flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg font-bold">
+                            <AlertTriangle className="w-5 h-5" />
+                            EXPIRED - Switch to Free
+                          </div>
+                        ) : (
+                          <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-lg font-bold text-center min-w-[180px]">
+                            <div className="text-lg">
+                              {user.timeRemaining.days}d {user.timeRemaining.hours}h {user.timeRemaining.minutes}m
+                            </div>
+                            <div className="text-xs opacity-90">remaining</div>
+                          </div>
+                        )}
+                        {user.isExpired && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleSubscriptionChange(user.id, 'free')}
+                            className="font-bold"
+                          >
+                            Set to Free
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Revenue Card */}
         <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
           <CardContent className="p-8">
