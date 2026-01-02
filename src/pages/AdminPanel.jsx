@@ -100,7 +100,34 @@ function AdminPanelContent() {
     premium_monthly: allUsers.filter(u => u.subscription_type === 'premium_monthly').length,
     vip_annual: allUsers.filter(u => u.subscription_type === 'vip_annual').length,
     legacy: allUsers.filter(u => u.subscription_type === 'legacy').length,
+    influencer: allUsers.filter(u => u.subscription_type === 'influencer').length,
   };
+
+  // Get influencer accounts with countdown info
+  const influencerAccounts = allUsers.filter(u => u.subscription_type === 'influencer').map(user => {
+    const now = new Date();
+    let expiryDate;
+    
+    if (user.subscription_expiry_date) {
+      expiryDate = new Date(user.subscription_expiry_date);
+    } else {
+      // Fallback: 7 days from created_date
+      expiryDate = new Date(user.created_date);
+      expiryDate.setDate(expiryDate.getDate() + 7);
+    }
+    
+    const diffMs = expiryDate - now;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return {
+      ...user,
+      expiryDate,
+      isExpired: diffMs <= 0,
+      timeRemaining: diffMs > 0 ? { days: diffDays, hours: diffHours, minutes: diffMinutes } : null
+    };
+  });
 
   const totalRevenue = (tierCounts.premium_monthly * 19.99) + (tierCounts.vip_annual * 149.99);
 
