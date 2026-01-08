@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle, Video, Play, RefreshCw, Loader2, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,12 @@ import RequireAuth from "../components/auth/RequireAuth";
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState("all");
+  
+  // Video Generator State
+  const [videoTaskId, setVideoTaskId] = useState(null);
+  const [videoStatus, setVideoStatus] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -69,6 +75,50 @@ function AdminPanelContent() {
       userId,
       updates
     });
+  };
+
+  // Video Generator Functions
+  const handleGenerateVideo = async () => {
+    setIsGenerating(true);
+    setVideoStatus(null);
+    try {
+      const response = await base44.functions.invoke('generateLogoVideo', { action: 'generate' });
+      if (response.data?.task_id) {
+        setVideoTaskId(response.data.task_id);
+        setVideoStatus({ status: 'started', message: 'Video generation started!' });
+      } else {
+        setVideoStatus({ status: 'error', message: response.data?.error || 'Failed to start generation' });
+      }
+    } catch (error) {
+      setVideoStatus({ status: 'error', message: error.message });
+    }
+    setIsGenerating(false);
+  };
+
+  const handleCheckStatus = async () => {
+    if (!videoTaskId) return;
+    setIsCheckingStatus(true);
+    try {
+      const response = await base44.functions.invoke('generateLogoVideo', { action: 'status', taskId: videoTaskId });
+      const data = response.data;
+      if (data?.Resp) {
+        const resp = data.Resp;
+        if (resp.status === 1) {
+          setVideoStatus({ status: 'processing', message: 'Video is still processing...', progress: resp.progress });
+        } else if (resp.status === 2) {
+          setVideoStatus({ status: 'complete', message: 'Video ready!', url: resp.url });
+        } else if (resp.status === 3) {
+          setVideoStatus({ status: 'error', message: resp.err_msg || 'Generation failed' });
+        } else {
+          setVideoStatus({ status: 'pending', message: 'Waiting in queue...' });
+        }
+      } else {
+        setVideoStatus({ status: 'info', message: JSON.stringify(data) });
+      }
+    } catch (error) {
+      setVideoStatus({ status: 'error', message: error.message });
+    }
+    setIsCheckingStatus(false);
   };
 
   if (!currentUser || currentUser.role !== 'admin') {
@@ -294,6 +344,119 @@ function AdminPanelContent() {
             </CardContent>
           </Card>
         )}
+
+        {/* Video Generator Card */}
+        <Card className="border-2 border-cyan-300 bg-gradient-to-r from-cyan-50 to-blue-50 shadow-md mb-8">
+          <CardHeader className="bg-gradient-to-r from-cyan-100 to-blue-100 border-b-2 border-cyan-200">
+            <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
+              <Video className="w-6 h-6 text-cyan-600" />
+              🎬 Logo Video Generator (PixVerse AI)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {/* Preview of what will be generated */}
+            <div className="mb-6 p-4 bg-white rounded-lg border-2 border-cyan-200">
+              <h4 className="font-bold text-gray-900 mb-2">📋 Video Concept Preview:</h4>
+              <div className="text-sm text-gray-700 space-y-2">
+                <p>• <strong>Scene:</strong> Packed stadium with bright green grass, roaring crowd, flashing lights</p>
+                <p>• <strong>Action:</strong> Soccer player kicks ball left→right, QB throws football right→left</p>
+                <p>• <strong>Stats:</strong> Numbers appear floating above each player briefly</p>
+                <p>• <strong>Climax:</strong> Balls collide center screen → dramatic explosion with sparks</p>
+                <p>• <strong>Reveal:</strong> "SWH" letters emerge boldly from the explosion</p>
+                <p className="text-xs text-gray-500 mt-2 italic">Note: Marquee text overlay would be added in post-production</p>
+              </div>
+              <div className="mt-4 flex items-center gap-4">
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e31dbf618_logo2.png"
+                  alt="Logo to animate"
+                  className="w-24 h-24 object-contain border-2 border-gray-300 rounded-lg bg-white"
+                />
+                <div className="text-sm text-gray-600">
+                  <p className="font-semibold">Source Image</p>
+                  <p>This logo will be used as the base</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-wrap gap-4 mb-4">
+              <Button
+                onClick={handleGenerateVideo}
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold"
+              >
+                {isGenerating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                ) : (
+                  <><Play className="w-4 h-4 mr-2" /> Generate Video</>
+                )}
+              </Button>
+              
+              {videoTaskId && (
+                <Button
+                  onClick={handleCheckStatus}
+                  disabled={isCheckingStatus}
+                  variant="outline"
+                  className="border-2 border-cyan-400 text-cyan-700 font-bold"
+                >
+                  {isCheckingStatus ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking...</>
+                  ) : (
+                    <><RefreshCw className="w-4 h-4 mr-2" /> Check Status</>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Task ID Display */}
+            {videoTaskId && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                <span className="font-semibold text-gray-700">Task ID: </span>
+                <code className="text-cyan-700 font-mono text-sm">{videoTaskId}</code>
+              </div>
+            )}
+
+            {/* Status Display */}
+            {videoStatus && (
+              <div className={`p-4 rounded-lg border-2 ${
+                videoStatus.status === 'complete' ? 'bg-green-50 border-green-300' :
+                videoStatus.status === 'error' ? 'bg-red-50 border-red-300' :
+                videoStatus.status === 'processing' ? 'bg-yellow-50 border-yellow-300' :
+                'bg-blue-50 border-blue-300'
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {videoStatus.status === 'complete' && <CheckCircle className="w-5 h-5 text-green-600" />}
+                  {videoStatus.status === 'error' && <AlertTriangle className="w-5 h-5 text-red-600" />}
+                  {videoStatus.status === 'processing' && <Loader2 className="w-5 h-5 text-yellow-600 animate-spin" />}
+                  <span className="font-bold">{videoStatus.message}</span>
+                </div>
+                
+                {videoStatus.progress && (
+                  <div className="text-sm text-gray-600">Progress: {videoStatus.progress}%</div>
+                )}
+                
+                {videoStatus.url && (
+                  <div className="mt-4">
+                    <p className="font-semibold mb-2">Generated Video:</p>
+                    <video 
+                      src={videoStatus.url} 
+                      controls 
+                      className="w-full max-w-lg rounded-lg border-2 border-green-400"
+                    />
+                    <a 
+                      href={videoStatus.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-block mt-2 text-cyan-600 hover:text-cyan-800 underline font-semibold"
+                    >
+                      Open in new tab / Download
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Revenue Card */}
         <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
