@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle, Video, Play, Loader2, CheckCircle, Copy } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +22,6 @@ import RequireAuth from "../components/auth/RequireAuth";
 function AdminPanelContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState("all");
-  const [videoTaskId, setVideoTaskId] = useState("");
-  const [videoStatus, setVideoStatus] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -60,49 +56,20 @@ function AdminPanelContent() {
   });
 
   const handleSubscriptionChange = async (userId, newTier) => {
-        const updates = { subscription_type: newTier };
-
-        // If setting to influencer, automatically set expiry to 7 days from now
-        if (newTier === 'influencer') {
-          const expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + 7);
-          updates.subscription_expiry_date = expiryDate.toISOString().split('T')[0];
-        }
-
-        await updateUserMutation.mutateAsync({
-          userId,
-          updates
-        });
-      };
-
-      const handleGenerateVideo = async () => {
-        setIsGenerating(true);
-        setVideoStatus(null);
-        try {
-          const response = await base44.functions.invoke('generateLogoVideo', { action: 'generate' });
-          if (response.data?.task_id) {
-            setVideoTaskId(response.data.task_id);
-            setVideoStatus({ status: 'started', message: 'Video generation started! Check status in 2-3 minutes.' });
-          } else {
-            setVideoStatus({ status: 'error', message: response.data?.error || 'Failed to start generation' });
-          }
-        } catch (error) {
-          setVideoStatus({ status: 'error', message: error.message });
-        }
-        setIsGenerating(false);
-      };
-
-      const handleCheckStatus = async () => {
-        if (!videoTaskId) return;
-        setIsCheckingStatus(true);
-        try {
-          const response = await base44.functions.invoke('generateLogoVideo', { action: 'status', taskId: videoTaskId });
-          setVideoStatus(response.data);
-        } catch (error) {
-          setVideoStatus({ status: 'error', message: error.message });
-        }
-        setIsCheckingStatus(false);
-      };
+    const updates = { subscription_type: newTier };
+    
+    // If setting to influencer, automatically set expiry to 7 days from now
+    if (newTier === 'influencer') {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 7);
+      updates.subscription_expiry_date = expiryDate.toISOString().split('T')[0];
+    }
+    
+    await updateUserMutation.mutateAsync({
+      userId,
+      updates
+    });
+  };
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (
@@ -328,128 +295,8 @@ function AdminPanelContent() {
           </Card>
         )}
 
-        {/* Logo Video Generator Card */}
-                    <Card className="border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-indigo-50 shadow-md mb-8">
-                      <CardHeader className="bg-gradient-to-r from-purple-100 to-indigo-100 border-b-2 border-purple-200">
-                        <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
-                          <Video className="w-6 h-6 text-purple-600" />
-                          🎬 Animated Logo Video Generator (PixVerse AI)
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-6">
-                        {/* Preview Section */}
-                        <div className="mb-6 p-4 bg-white rounded-lg border-2 border-purple-200">
-                          <h3 className="font-bold text-gray-900 mb-3">📋 Video Concept Preview:</h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-gray-700 mb-2"><strong>Starting Image:</strong></p>
-                              <img 
-                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e31dbf618_logo2.png" 
-                                alt="Logo Preview" 
-                                className="w-48 h-auto rounded-lg border shadow-sm"
-                              />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-700 mb-2"><strong>Animation Sequence:</strong></p>
-                              <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                                <li>Scene opens with packed stadium, green grass, roaring crowd</li>
-                                <li>Soccer player appears on left, kicks ball to the right</li>
-                                <li>Quarterback appears on right, throws football to the left</li>
-                                <li>Stats/numbers float briefly above each player</li>
-                                <li>⚡ Balls collide in center - dramatic explosion!</li>
-                                <li>Letters "SWH" emerge boldly from the explosion</li>
-                              </ol>
-                              <p className="text-xs text-purple-600 mt-3 italic">
-                                Note: The marquee text "Sports Wager Helper...The Evolution of betting is Here!" 
-                                will need to be added as overlay after generation.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Generate Button */}
-                        <div className="flex flex-wrap gap-4 items-center mb-4">
-                          <Button 
-                            onClick={handleGenerateVideo}
-                            disabled={isGenerating}
-                            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold"
-                          >
-                            {isGenerating ? (
-                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
-                            ) : (
-                              <><Play className="w-4 h-4 mr-2" /> Generate Video</>
-                            )}
-                          </Button>
-
-                          <div className="flex items-center gap-2">
-                            <Input 
-                              placeholder="Task ID" 
-                              value={videoTaskId}
-                              onChange={(e) => setVideoTaskId(e.target.value)}
-                              className="w-64 border-2 border-gray-300"
-                            />
-                            <Button 
-                              onClick={handleCheckStatus}
-                              disabled={isCheckingStatus || !videoTaskId}
-                              variant="outline"
-                              className="border-2 border-purple-300"
-                            >
-                              {isCheckingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Check Status'}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Status Display */}
-                        {videoStatus && (
-                          <div className={`p-4 rounded-lg border-2 ${
-                            videoStatus.Resp?.status === 'successful' || videoStatus.status === 'started' 
-                              ? 'bg-green-50 border-green-300' 
-                              : videoStatus.status === 'error' 
-                              ? 'bg-red-50 border-red-300'
-                              : 'bg-yellow-50 border-yellow-300'
-                          }`}>
-                            {videoStatus.Resp?.status === 'successful' && videoStatus.Resp?.url ? (
-                              <div>
-                                <div className="flex items-center gap-2 text-green-700 font-bold mb-3">
-                                  <CheckCircle className="w-5 h-5" /> Video Ready!
-                                </div>
-                                <video 
-                                  src={videoStatus.Resp.url} 
-                                  controls 
-                                  className="w-full max-w-lg rounded-lg shadow-lg mb-3"
-                                />
-                                <div className="flex items-center gap-2">
-                                  <Input value={videoStatus.Resp.url} readOnly className="flex-1 text-xs" />
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(videoStatus.Resp.url);
-                                      alert('URL copied!');
-                                    }}
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : videoStatus.Resp?.status === 'processing' ? (
-                              <div className="flex items-center gap-2 text-yellow-700">
-                                <Loader2 className="w-5 h-5 animate-spin" /> Still processing... check again in a minute.
-                              </div>
-                            ) : videoStatus.status === 'started' ? (
-                              <div className="text-green-700">{videoStatus.message}</div>
-                            ) : (
-                              <div className="text-sm">
-                                <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(videoStatus, null, 2)}</pre>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {/* Revenue Card */}
-                    <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
+        {/* Revenue Card */}
+        <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
           <CardContent className="p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
