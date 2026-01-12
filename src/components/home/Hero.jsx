@@ -23,7 +23,7 @@ const Hero = () => {
                             transition={{ delay: 0.2, duration: 0.5 }}
                             className="inline-block bg-slate-800/80 border border-slate-700 rounded-full px-4 py-1.5 text-sm text-lime-300 font-medium mb-4"
                         >
-                            ⚡️ Revolutionizing Sports Betting Analysis
+                            ⚡️ The Evolution in Sports Betting Analysis
                         </motion.div>
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-white">
                             The Future
