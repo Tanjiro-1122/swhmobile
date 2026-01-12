@@ -108,15 +108,13 @@ export function useFreeLookupTracker() {
             setLookupsRemaining(Math.max(0, 5 - used));
           }
         } else {
-          // Not authenticated - use localStorage (non-renewable for guests)
-          const used = parseInt(localStorage.getItem('freeLookups') || '0');
-          setLookupsRemaining(Math.max(0, 5 - used));
+          // Not authenticated - no free lookups allowed, must sign in
+          setLookupsRemaining(0);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        // Fallback to localStorage
-        const used = parseInt(localStorage.getItem('freeLookups') || '0');
-        setLookupsRemaining(Math.max(0, 5 - used));
+        // Not authenticated - no free lookups allowed
+        setLookupsRemaining(0);
       } finally {
         setIsLoading(false);
       }
@@ -152,13 +150,8 @@ export function useFreeLookupTracker() {
       }
     }
     
-    // For non-authenticated users - use localStorage (one-time, non-renewable)
-    const used = parseInt(localStorage.getItem('freeLookups') || '0');
-    if (used >= 5) return false;
-    
-    localStorage.setItem('freeLookups', (used + 1).toString());
-    setLookupsRemaining(Math.max(0, 5 - (used + 1)));
-    return true;
+    // For non-authenticated users - must sign in first
+    return false;
   };
 
   const canLookup = () => {
@@ -173,9 +166,8 @@ export function useFreeLookupTracker() {
       return currentUsed < 5;
     }
     
-    // For non-authenticated users - check localStorage
-    const used = parseInt(localStorage.getItem('freeLookups') || '0');
-    return used < 5;
+    // For non-authenticated users - must sign in first
+    return false;
   };
 
   return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
@@ -310,7 +302,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticat
                 <p className="text-sm sm:text-base text-gray-600">
                   {isAuthenticated 
                     ? "Your 5 free searches reset next month! Subscribe for unlimited." 
-                    : "Create a free account to get 5 renewable searches/month, or subscribe for unlimited."}
+                    : "Sign in to get 5 free searches/month, or subscribe for unlimited."}
                 </p>
               </div>
 
@@ -381,18 +373,17 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticat
                 </div>
               </div>
 
-              {/* Sign up option for unauthenticated users */}
+              {/* Sign in option for unauthenticated users */}
               {!isAuthenticated && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-center text-sm text-gray-700 mb-3">
-                    <strong>Or create a free account</strong> to get 5 renewable searches every month!
+                    <strong>Sign in required</strong> to use free searches (5/month)
                   </p>
                   <Button
                     onClick={() => base44.auth.redirectToLogin()}
-                    variant="outline"
-                    className="w-full border-2 border-green-500 text-green-700 hover:bg-green-50"
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
                   >
-                    Create Free Account (5 searches/month)
+                    Sign In to Get 5 Free Searches
                   </Button>
                 </div>
               )}
