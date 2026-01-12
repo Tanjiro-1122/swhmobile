@@ -18,7 +18,7 @@ const Footer = () => {
                             <span className="text-xl font-bold text-white">Sports Wager Helper</span>
                         </Link>
                         <p className="text-slate-400 max-w-sm">
-                            Revolutionizing sports betting with machine learning and real-time data analysis. Join the smart money revolution.
+                            The evolution in sports betting with machine learning and real-time data analysis. Join the smart money movement.
                         </p>
                     </div>
                     <div>

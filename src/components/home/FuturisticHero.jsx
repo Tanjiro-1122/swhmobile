@@ -720,7 +720,7 @@ export default function FuturisticHero() {
               transition={{ duration: 2, repeat: Infinity }}
             >
               <Zap className="w-4 h-4 text-lime-400" />
-              <span className="text-sm font-medium text-lime-300">NEXT-GEN AI SPORTS ANALYTICS</span>
+              <span className="text-sm font-medium text-lime-300">THE EVOLUTION IN SPORTS BETTING</span>
             </motion.div>
 
             {/* Main headline with glow */}
