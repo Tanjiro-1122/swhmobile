@@ -187,7 +187,7 @@ const OriginalHeroSection = () => (
             transition={{ duration: 0.7, ease: "easeOut" }}
         >
             <span className="inline-block bg-lime-400/10 text-lime-300 text-sm font-medium px-4 py-1.5 rounded-full mb-4 border border-lime-400/20">
-                Revolutionizing Sports Betting Analysis
+                The Evolution in Sports Betting Analysis
             </span>
             <h1 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tighter mb-6">
                 The Future
