@@ -385,6 +385,9 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticat
                   >
                     Sign In to Get 5 Free Searches
                   </Button>
+                  <p className="text-center text-xs text-gray-500 mt-3">
+                    🔒 No purchase required. Sign-in is only used to track your free search count — we don't track what you search for.
+                  </p>
                 </div>
               )}
 
