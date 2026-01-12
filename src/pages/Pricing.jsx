@@ -873,6 +873,83 @@ export default function Pricing() {
           </Card>
         )}
 
+        {/* Cost Per Search Comparison */}
+        <Card className="border-2 border-green-200 mb-12 lg:mb-16 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardTitle className="text-xl lg:text-2xl font-bold text-center">
+              💰 Cost Per Search: How We Compare
+            </CardTitle>
+            <p className="text-center text-white/90 text-sm mt-2">
+              See the real value of Sports Wager Helper vs. competitors
+            </p>
+          </CardHeader>
+          <CardContent className="p-6 lg:p-8">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left py-4 px-4 font-bold text-gray-900">Service</th>
+                    <th className="text-center py-4 px-4 font-bold text-gray-900">Price</th>
+                    <th className="text-center py-4 px-4 font-bold text-gray-900">Searches/Month</th>
+                    <th className="text-center py-4 px-4 font-bold text-gray-900">Cost Per Search</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm lg:text-base">
+                  <tr className="border-b border-gray-100 bg-green-50">
+                    <td className="py-4 px-4 font-bold text-green-700">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-green-600" />
+                        Sports Wager Helper (100 Credits)
+                      </div>
+                    </td>
+                    <td className="text-center py-4 px-4 font-bold text-green-700">$14.99</td>
+                    <td className="text-center py-4 px-4 font-bold text-green-700">100</td>
+                    <td className="text-center py-4 px-4 font-black text-green-700 text-lg">$0.15</td>
+                  </tr>
+                  <tr className="border-b border-gray-100 bg-green-50/50">
+                    <td className="py-4 px-4 font-bold text-green-600">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-yellow-500" />
+                        Sports Wager Helper (VIP Annual)
+                      </div>
+                    </td>
+                    <td className="text-center py-4 px-4 font-bold text-green-600">$149.99/yr</td>
+                    <td className="text-center py-4 px-4 font-bold text-green-600">Unlimited</td>
+                    <td className="text-center py-4 px-4 font-black text-green-600 text-lg">$0.00*</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4 text-gray-700">Competitor A (Basic Plan)</td>
+                    <td className="text-center py-4 px-4 text-gray-600">$4.99/mo</td>
+                    <td className="text-center py-4 px-4 text-gray-600">~20</td>
+                    <td className="text-center py-4 px-4 font-bold text-red-600">$0.25</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4 text-gray-700">Competitor B (Per Prediction)</td>
+                    <td className="text-center py-4 px-4 text-gray-600">Pay-per-use</td>
+                    <td className="text-center py-4 px-4 text-gray-600">Varies</td>
+                    <td className="text-center py-4 px-4 font-bold text-red-600">$0.50-$2.00</td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-4 text-gray-700">Competitor C (Premium)</td>
+                    <td className="text-center py-4 px-4 text-gray-600">$29.99/mo</td>
+                    <td className="text-center py-4 px-4 text-gray-600">~50</td>
+                    <td className="text-center py-4 px-4 font-bold text-red-600">$0.60</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 p-4 bg-green-100 rounded-lg border border-green-300">
+              <p className="text-center text-green-800 font-semibold text-sm lg:text-base">
+                ✅ With our 100-credit pack at just <span className="font-black">$14.99</span>, you get AI-powered predictions for only <span className="font-black">15¢ per search</span> — 
+                up to <span className="font-black">10x cheaper</span> than competitors!
+              </p>
+              <p className="text-center text-green-700 text-xs mt-2">
+                *VIP Annual: Unlimited searches = essentially $0 per search after ~1,000 uses
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* FAQs - Improved readability */}
         <Card className="border-2 border-gray-200 mb-8">
           <CardHeader className="bg-gray-50">

@@ -2,6 +2,7 @@ import AIAssistant from './pages/AIAssistant';
 import AIParlayBuilder from './pages/AIParlayBuilder';
 import AIPerformance from './pages/AIPerformance';
 import AdminErrorLogs from './pages/AdminErrorLogs';
+import AdminPanel from './pages/AdminPanel';
 import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import Alerts from './pages/Alerts';
 import AnalysisHub from './pages/AnalysisHub';
@@ -38,7 +39,6 @@ import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
-import AdminPanel from './pages/AdminPanel';
 import __Layout from './Layout.jsx';
 
 
@@ -47,6 +47,7 @@ export const PAGES = {
     "AIParlayBuilder": AIParlayBuilder,
     "AIPerformance": AIPerformance,
     "AdminErrorLogs": AdminErrorLogs,
+    "AdminPanel": AdminPanel,
     "AdminPurchaseAudit": AdminPurchaseAudit,
     "Alerts": Alerts,
     "AnalysisHub": AnalysisHub,
@@ -83,7 +84,6 @@ export const PAGES = {
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
-    "AdminPanel": AdminPanel,
 }
 
 export const pagesConfig = {
