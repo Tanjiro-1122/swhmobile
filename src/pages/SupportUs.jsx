@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Coffee, Star, Rocket, ExternalLink, Loader2, Info, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Heart, Coffee, Star, Rocket, ExternalLink, Loader2, Info, AlertTriangle, ArrowLeft, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -51,7 +51,19 @@ const donationTiers = [
 
 export default function SupportUs() {
   const [processingTier, setProcessingTier] = useState(null);
+  const [donationSuccess, setDonationSuccess] = useState(false);
+  const [donationAmount, setDonationAmount] = useState(null);
   const { isNativeApp, isIOSNative, isAndroidNative, isWeb } = usePlatform();
+
+  // Check for success/cancel URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('donation_success') === 'true') {
+      setDonationSuccess(true);
+      setDonationAmount(urlParams.get('amount'));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
@@ -124,6 +136,31 @@ export default function SupportUs() {
             </Button>
           </Link>
         </div>
+
+        {/* Success Message */}
+        {donationSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <Card className="border-2 border-green-400 bg-green-50 dark:bg-green-900/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+                  <div>
+                    <h3 className="font-bold text-green-900 dark:text-green-200 text-xl">
+                      Thank You for Your Donation! 🎉
+                    </h3>
+                    <p className="text-green-800 dark:text-green-300">
+                      {donationAmount ? `Your $${donationAmount} donation has been received.` : 'Your donation has been received.'} You're helping keep Sports Wager Helper running!
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Header */}
         <motion.div
