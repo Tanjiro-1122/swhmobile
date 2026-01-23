@@ -12,7 +12,7 @@ import { usePlatform } from "@/components/hooks/usePlatform";
 
 // For native apps, we'll use Stripe Payment Links (create these in Stripe Dashboard)
 // Go to: Stripe Dashboard > Payment Links > Create
-const DONATION_URL = "https://buy.stripe.com/https://donate.stripe.com/eVq3cxeAl4HS1VI09w8N209"; // TODO: Replace with your actual Stripe Payment Link
+const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w8N209"; // TODO: Replace with your actual Stripe Payment Link
 
 const donationTiers = [
   {
