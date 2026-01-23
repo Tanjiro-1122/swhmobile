@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 import Footer from "@/components/layout/Footer";
 
-import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
+import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot, Heart } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -35,6 +35,7 @@ const secondaryMenuItems = [
     { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
     { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, subscription", Icon: User, page: "MyAccount", tag: null },
     { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
+    { id: "support", title: "SUPPORT US", subtitle: "Help Keep Us Running", description: "Donate to support development", Icon: Heart, page: "SupportUs", tag: "DONATE", tagColor: "bg-pink-500 text-white" },
 ];
 
 // S.A.L. owl logo for AI Assistant
@@ -58,6 +59,7 @@ const getGlowColor = (id) => {
         thenews: "lime",
         topten: "cyan",
         pricing: "gold",
+        support: "pink",
     };
     return colorMap[id] || "purple";
 };
