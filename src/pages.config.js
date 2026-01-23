@@ -39,6 +39,7 @@ import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
+import SupportUs from './pages/SupportUs';
 import __Layout from './Layout.jsx';
 
 
@@ -84,6 +85,7 @@ export const PAGES = {
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
+    "SupportUs": SupportUs,
 }
 
 export const pagesConfig = {
