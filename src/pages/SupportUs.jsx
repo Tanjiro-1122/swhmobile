@@ -10,7 +10,9 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-const DONATION_URL = "https://donate.stripe.com/test_placeholder"; // Replace with actual Stripe donation link
+// For native apps, we'll use Stripe Payment Links (create these in Stripe Dashboard)
+// Go to: Stripe Dashboard > Payment Links > Create
+const DONATION_URL = "https://buy.stripe.com/your_payment_link_here"; // TODO: Replace with your actual Stripe Payment Link
 
 const donationTiers = [
   {
