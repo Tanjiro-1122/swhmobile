@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Coffee, Star, Rocket, ExternalLink, Loader2, Info, AlertTriangle, ArrowLeft, CheckCircle } from "lucide-react";
+import { Heart, ExternalLink, Loader2, Info, AlertTriangle, ArrowLeft, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
