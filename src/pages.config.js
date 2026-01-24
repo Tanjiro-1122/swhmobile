@@ -34,12 +34,12 @@ import ROITracker from './pages/ROITracker';
 import SavedResults from './pages/SavedResults';
 import SportDetail from './pages/SportDetail';
 import SportsNewsTicker from './pages/SportsNewsTicker';
+import SupportUs from './pages/SupportUs';
 import TeamStats from './pages/TeamStats';
 import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
-import SupportUs from './pages/SupportUs';
 import __Layout from './Layout.jsx';
 
 
@@ -80,12 +80,12 @@ export const PAGES = {
     "SavedResults": SavedResults,
     "SportDetail": SportDetail,
     "SportsNewsTicker": SportsNewsTicker,
+    "SupportUs": SupportUs,
     "TeamStats": TeamStats,
     "TermsOfService": TermsOfService,
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
-    "SupportUs": SupportUs,
 }
 
 export const pagesConfig = {
