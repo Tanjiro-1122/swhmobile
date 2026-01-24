@@ -10,9 +10,9 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-// For native apps, we'll use Stripe Payment Links (create these in Stripe Dashboard)
-// Go to: Stripe Dashboard > Payment Links > Create
-const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w8N209";
+// Stripe Donation Page URL - This should be your Stripe Payment Link
+// The format should be: https://donate.stripe.com/XXXXX or https://buy.stripe.com/XXXXX
+const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w";
 
 const donationTiers = [
   {
@@ -78,18 +78,29 @@ export default function SupportUs() {
     },
   });
 
-  // For native apps, open external browser with donation link
+  // For native apps and all platforms, open external browser with donation link
   const handleNativeDonate = (tier) => {
-    const donationUrlWithAmount = `${DONATION_URL}?amount=${tier.amount}`;
+    // Open the donation URL in external browser
+    // Note: Stripe Payment Links don't support custom amounts via query params
+    // The amount is pre-set in Stripe Dashboard when you create the Payment Link
+    const url = DONATION_URL;
     
-    // Use native bridge if available, otherwise window.open
+    // Force open in external browser / new tab
     if (typeof window !== "undefined") {
+      // Try native bridge methods first
       if (window.WTN?.openExternalBrowser) {
-        window.WTN.openExternalBrowser(donationUrlWithAmount);
+        window.WTN.openExternalBrowser(url);
       } else if (window.WTN?.openURL) {
-        window.WTN.openURL(donationUrlWithAmount);
+        window.WTN.openURL(url);
+      } else if (window.WTN?.openExternalUrl) {
+        window.WTN.openExternalUrl(url);
       } else {
-        window.open(donationUrlWithAmount, "_blank", "noopener,noreferrer");
+        // Fallback: Use window.open with proper target
+        const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+        // If popup blocked, try location change
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          window.location.href = url;
+        }
       }
     }
   };
@@ -117,6 +128,8 @@ export default function SupportUs() {
   };
 
   const handleDonate = (tier) => {
+    // Use native donate (external browser) for native apps
+    // For web, use the Stripe checkout session which allows custom amounts
     if (isNativeApp) {
       handleNativeDonate(tier);
     } else {
