@@ -10,44 +10,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { usePlatform } from "@/components/hooks/usePlatform";
 
-// Stripe Donation Page URL - This should be your Stripe Payment Link
-// The format should be: https://donate.stripe.com/XXXXX or https://buy.stripe.com/XXXXX
-const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w";
-
-const donationTiers = [
-  {
-    id: "coffee",
-    name: "Buy a Coffee",
-    amount: 5,
-    icon: Coffee,
-    description: "Help keep the servers running",
-    color: "from-amber-500 to-orange-500",
-  },
-  {
-    id: "supporter",
-    name: "Supporter",
-    amount: 15,
-    icon: Heart,
-    description: "Show your appreciation",
-    color: "from-pink-500 to-rose-500",
-  },
-  {
-    id: "champion",
-    name: "Champion",
-    amount: 50,
-    icon: Star,
-    description: "Make a real difference",
-    color: "from-purple-500 to-indigo-500",
-  },
-  {
-    id: "hero",
-    name: "Hero",
-    amount: 100,
-    icon: Rocket,
-    description: "Incredible support",
-    color: "from-cyan-500 to-blue-500",
-  },
-];
+// Stripe Donation Page URL
+const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w8N209";
 
 export default function SupportUs() {
   const [processingTier, setProcessingTier] = useState(null);
