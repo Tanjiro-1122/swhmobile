@@ -128,88 +128,59 @@ export default function SupportUs() {
           </Card>
         </motion.div>
 
-        {/* Native App External Link Disclosure */}
+        {/* Single Donate Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-10"
+        >
+          <Card className="border-2 border-purple-300 dark:border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
+            <CardContent className="p-8 text-center">
+              <Heart className="w-16 h-16 text-pink-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Please Help Us Keep Going! 🙏
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto">
+                Your donation helps cover server costs, AI improvements, and keeps this project alive. 
+                Any amount helps - even a few dollars makes a difference!
+              </p>
+              <Button
+                onClick={handleDonate}
+                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-6 px-10 text-lg hover:opacity-90 transition-opacity"
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Donate Now
+              </Button>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                {isNativeApp ? "Opens in your browser • " : ""}Secure payment via Stripe
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* External Website Notice for Native Apps */}
         {isNativeApp && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.2 }}
           >
             <Card className="border-2 border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500/50 mb-8">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <ExternalLink className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-bold text-blue-900 dark:text-blue-200 mb-2">
-                      External Website Notice
-                    </h3>
-                    <p className="text-blue-800 dark:text-blue-300 text-sm">
-                      {isIOSNative ? (
-                        <>
-                          Tapping a donation button will open an external website in your browser. 
-                          This transaction will be processed by Stripe, not Apple. Apple is not responsible for the privacy or security of transactions on external websites.
-                        </>
-                      ) : (
-                        <>
-                          Tapping a donation button will open an external website in your browser. 
-                          This transaction will be processed by Stripe, not Google Play. Google Play's refund policies do not apply to purchases made on external websites.
-                        </>
-                      )}
-                    </p>
-                  </div>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <ExternalLink className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-blue-800 dark:text-blue-300 text-sm">
+                    {isIOSNative 
+                      ? "This will open Stripe in your browser. Apple is not responsible for external transactions."
+                      : "This will open Stripe in your browser. Google Play policies do not apply to external purchases."
+                    }
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         )}
-
-        {/* Donation Tiers */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-          {donationTiers.map((tier, index) => {
-            const Icon = tier.icon;
-            return (
-              <motion.div
-                key={tier.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-              >
-                <Card className="h-full border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-500 transition-all hover:shadow-lg">
-                  <CardHeader className="text-center pb-2">
-                    <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4`}>
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                    <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                      {tier.name}
-                    </CardTitle>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      {tier.description}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="text-center pt-0">
-                    <div className="text-4xl font-black text-gray-900 dark:text-white mb-4">
-                      ${tier.amount}
-                    </div>
-                    <Button
-                      onClick={() => handleDonate(tier)}
-                      disabled={processingTier !== null}
-                      className={`w-full bg-gradient-to-r ${tier.color} text-white font-bold py-6 text-lg hover:opacity-90 transition-opacity`}
-                    >
-                      {processingTier === tier.id ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          {isNativeApp && <ExternalLink className="w-4 h-4 mr-2" />}
-                          Donate ${tier.amount}
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
 
         {/* What Your Donation Supports */}
         <motion.div
