@@ -14,10 +14,9 @@ import { usePlatform } from "@/components/hooks/usePlatform";
 const DONATION_URL = "https://donate.stripe.com/eVq3cxeAl4HS1VI09w8N209";
 
 export default function SupportUs() {
-  const [processingTier, setProcessingTier] = useState(null);
   const [donationSuccess, setDonationSuccess] = useState(false);
   const [donationAmount, setDonationAmount] = useState(null);
-  const { isNativeApp, isIOSNative, isAndroidNative, isWeb } = usePlatform();
+  const { isNativeApp, isIOSNative } = usePlatform();
 
   // Check for success/cancel URL params
   useEffect(() => {
@@ -29,29 +28,12 @@ export default function SupportUs() {
     }
   }, []);
 
-  const { data: currentUser } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: async () => {
-      try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) return null;
-        return await base44.auth.me();
-      } catch {
-        return null;
-      }
-    },
-  });
-
-  // For native apps and all platforms, open external browser with donation link
-  const handleNativeDonate = (tier) => {
-    // Open the donation URL in external browser
-    // Note: Stripe Payment Links don't support custom amounts via query params
-    // The amount is pre-set in Stripe Dashboard when you create the Payment Link
+  // Open donation link - works for both web and native
+  const handleDonate = () => {
     const url = DONATION_URL;
     
-    // Force open in external browser / new tab
     if (typeof window !== "undefined") {
-      // Try native bridge methods first
+      // Try native bridge methods first for native apps
       if (window.WTN?.openExternalBrowser) {
         window.WTN.openExternalBrowser(url);
       } else if (window.WTN?.openURL) {
@@ -59,45 +41,9 @@ export default function SupportUs() {
       } else if (window.WTN?.openExternalUrl) {
         window.WTN.openExternalUrl(url);
       } else {
-        // Fallback: Use window.open with proper target
-        const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-        // If popup blocked, try location change
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          window.location.href = url;
-        }
+        // Web fallback: open in new tab
+        window.open(url, "_blank", "noopener,noreferrer");
       }
-    }
-  };
-
-  // For web, use Stripe checkout
-  const handleWebDonate = async (tier) => {
-    setProcessingTier(tier.id);
-    try {
-      const response = await base44.functions.invoke("createDonationSession", {
-        amount: tier.amount,
-        tierName: tier.name,
-      });
-
-      if (response.data?.url) {
-        window.location.href = response.data.url;
-      } else {
-        alert("Failed to create donation session. Please try again.");
-      }
-    } catch (error) {
-      console.error("Donation error:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setProcessingTier(null);
-    }
-  };
-
-  const handleDonate = (tier) => {
-    // Use native donate (external browser) for native apps
-    // For web, use the Stripe checkout session which allows custom amounts
-    if (isNativeApp) {
-      handleNativeDonate(tier);
-    } else {
-      handleWebDonate(tier);
     }
   };
 
