@@ -155,18 +155,32 @@ export function useFreeLookupTracker() {
   };
 
   const canLookup = () => {
+    // Debug logging to help diagnose issues
+    console.log('[FreeLookupTracker] canLookup check:', { 
+      userTier, 
+      isAuthenticated, 
+      isLoading,
+      currentUser: currentUser ? { 
+        subscription_type: currentUser.subscription_type,
+        monthly_free_lookups_used: currentUser.monthly_free_lookups_used 
+      } : null 
+    });
+    
     // ALWAYS allow paid tiers
     if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer') {
+      console.log('[FreeLookupTracker] Paid tier detected, allowing lookup');
       return true;
     }
     
     // For authenticated free users - check server-side counter
     if (isAuthenticated && currentUser) {
       const currentUsed = currentUser.monthly_free_lookups_used || 0;
+      console.log('[FreeLookupTracker] Free user, used:', currentUsed);
       return currentUsed < 5;
     }
     
     // For non-authenticated users - must sign in first
+    console.log('[FreeLookupTracker] Not authenticated or no currentUser');
     return false;
   };
 
