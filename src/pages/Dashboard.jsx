@@ -57,8 +57,7 @@ const getGlowColor = (id) => {
         sportsnews: "orange",
         thenews: "lime",
         topten: "cyan",
-        pricing: "gold",
-
+        pricing: "gold"
     };
     return colorMap[id] || "purple";
 };
