@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Facebook, Instagram } from 'lucide-react';
+import { Facebook, Instagram, ShoppingBag } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -60,6 +60,15 @@ const Footer = () => {
                             className="text-slate-400 hover:text-pink-500 transition-colors"
                         >
                             <Instagram className="w-5 h-5" />
+                        </a>
+                        <a 
+                            href="https://amzn.to/4awgbi3" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-orange-500 transition-colors"
+                            title="Shop on Amazon"
+                        >
+                            <ShoppingBag className="w-5 h-5" />
                         </a>
                     </div>
                 </div>
