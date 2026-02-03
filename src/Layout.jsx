@@ -1,170 +1,152 @@
-import React, { Suspense, useEffect } from 'react';
-import { usePlatform } from '@/components/hooks/usePlatform';
-import { base44 } from '@/api/base44Client';
-import { Loader2 } from 'lucide-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Trophy, User, Shield, Bookmark } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import MobileBottomTabs from "@/components/navigation/MobileBottomTabs";
+import MobileNavHeader from "@/components/navigation/MobileNavHeader";
 
-const WebLayout = React.lazy(() => import('./components/layout/WebLayout'));
-const MobileLayout = React.lazy(() => import('./components/layout/MobileLayout'));
+const navigationItems = [
+  {
+    title: "Match Analysis",
+    url: createPageUrl("Dashboard"),
+    icon: Trophy,
+    description: "Analyze upcoming matches"
+  },
+  {
+    title: "Player Stats",
+    url: createPageUrl("PlayerStats"),
+    icon: User,
+    description: "Individual player statistics"
+  },
+  {
+    title: "Team Stats",
+    url: createPageUrl("TeamStats"),
+    icon: Shield,
+    description: "Team performance & analysis"
+  },
+  {
+    title: "Saved Results",
+    url: createPageUrl("SavedResults"),
+    icon: Bookmark,
+    description: "Your saved analyses"
+  },
+];
 
-const queryClient = new QueryClient();
+export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const [isMobile, setIsMobile] = React.useState(false);
 
-const FullScreenLoader = () => (
-  <div className="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center gap-4">
-    <img 
-      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg"
-      alt="S.A.L. the Owl - Loading"
-      className="w-20 h-20 rounded-2xl object-cover animate-pulse border-2 border-purple-500/50"
-    />
-    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-    <p className="text-slate-400 text-sm">S.A.L. is getting things ready...</p>
-  </div>
-);
-
-export default function Layout(props) {
-  const { isNativeApp, isMobileScreen, isWeb } = usePlatform();
-  const renderMobileLayout = isNativeApp || (isWeb && isMobileScreen);
-
-  useEffect(() => {
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    const requiredContent = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-
-    if (viewportMeta) {
-      if (viewportMeta.getAttribute('content') !== requiredContent) {
-        viewportMeta.setAttribute('content', requiredContent);
-      }
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'viewport';
-      meta.content = requiredContent;
-      document.head.appendChild(meta);
-    }
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  useEffect(() => {
-    // --- Start of one-time setup ---
-    const setupOnce = () => {
-      // Preconnect to critical domains
-      const preconnectDomains = [
-        'https://qtrypzzcjebvfcihiynt.supabase.co',
-        'https://ajax.googleapis.com',
-        'https://www.gstatic.com',
-        'https://web2application.com',
-        'https://unpkg.com'
-      ];
-      preconnectDomains.forEach(domain => {
-        const link = document.createElement('link');
-        link.rel = 'preconnect';
-        link.href = domain;
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-      });
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col">
+        <MobileNavHeader currentPageName={currentPageName} />
+        <main 
+          className="flex-1 overflow-auto"
+          style={{ 
+            paddingTop: "calc(env(safe-area-inset-top) + 56px)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 64px)"
+          }}
+        >
+          {children}
+        </main>
+        <MobileBottomTabs />
+      </div>
+    );
+  }
 
-      // Apple-specific meta tags for native feel
-      const appleMeta = {
-        'apple-mobile-web-app-capable': 'yes',
-        'apple-mobile-web-app-status-bar-style': 'black-translucent'
-      };
-      Object.entries(appleMeta).forEach(([name, content]) => {
-        const meta = document.createElement('meta');
-        meta.name = name;
-        meta.content = content;
-        document.head.appendChild(meta);
-      });
-      
-      // Theme color based on system preference
-      const updateThemeColor = () => {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        let themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (!themeColorMeta) {
-          themeColorMeta = document.createElement('meta');
-          themeColorMeta.name = 'theme-color';
-          document.head.appendChild(themeColorMeta);
-        }
-        themeColorMeta.content = isDark ? '#0f172a' : '#ffffff';
-        document.documentElement.classList.toggle('dark', isDark);
-      };
-      updateThemeColor();
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
-
-      // Load essential third-party scripts
-      const scripts = [
-        "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js",
-        "https://www.gstatic.com/firebasejs/7.11.0/firebase.js",
-        "https://web2application.com/w2a/webapps/36296/web2app1.js",
-        "https://unpkg.com/webtonative@1.0.81/webtonative.min.js"
-      ];
-      scripts.forEach(src => {
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = true;
-        document.head.appendChild(script);
-      });
-
-      // Add manifest link for PWA
-      const manifestLink = document.createElement('link');
-      manifestLink.rel = "manifest";
-      manifestLink.href = "/manifest.json";
-      document.head.appendChild(manifestLink);
-    };
-
-    // Run setup only once
-    if (!window.appInitialized) {
-      setupOnce();
-      window.appInitialized = true;
-    }
-    // --- End of one-time setup ---
-
-    const logFrontendError = async (error, contextInfo) => {
-      try {
-        // Ensure we have a valid error object
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const errorStack = error instanceof Error ? error.stack : (new Error(errorMessage)).stack;
-
-        await base44.functions.invoke('logError', {
-          error_type: 'frontend',
-          severity: 'error',
-          function_name: contextInfo.source || 'GlobalErrorHandler',
-          error_message: errorMessage,
-          error_stack: errorStack,
-          context: {
-             ...contextInfo,
-             url: window.location.href,
-             userAgent: navigator.userAgent,
-          }
-        });
-      } catch (loggingError) {
-        console.error("Failed to log error to backend:", loggingError);
-      }
-    };
-    
-    const errorHandler = (event) => {
-      // Don't log generic "Script error." messages
-      if (event.message.includes('Script error')) {
-        return;
-      }
-      logFrontendError(event.error || new Error(event.message), { source: 'window.onerror' });
-    };
-
-    const promiseRejectionHandler = (event) => {
-      logFrontendError(event.reason, { source: 'unhandledrejection' });
-    };
-
-    window.addEventListener('error', errorHandler);
-    window.addEventListener('unhandledrejection', promiseRejectionHandler);
-
-    // Cleanup listeners on component unmount
-    return () => {
-      window.removeEventListener('error', errorHandler);
-      window.removeEventListener('unhandledrejection', promiseRejectionHandler);
-    };
-  }, []); // Empty dependency array ensures this runs only once per app load.
-
+  // Desktop layout
   return (
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<FullScreenLoader />}>
-        {renderMobileLayout ? <MobileLayout {...props} /> : <WebLayout {...props} />}
-      </Suspense>
-    </QueryClientProvider>
-  );
-}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-50">
+        <Sidebar className="border-r border-gray-200">
+          <SidebarHeader className="border-b border-gray-200 p-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">Sports Wager Helper</h2>
+                <p className="text-xs text-gray-500">AI-Powered Analysis</p>
+              </div>
+            </div>
+          </SidebarHeader>
+          
+          <SidebarContent className="p-2">
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2 py-2">
+                Navigation
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navigationItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild 
+                        className={`hover:bg-purple-50 hover:text-purple-700 transition-colors duration-200 rounded-lg mb-1 ${
+                          location.pathname === item.url ? 'bg-purple-50 text-purple-700' : ''
+                        }`}
+                      >
+                        <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
+                          <item.icon className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">{item.title}</div>
+                            <div className="text-xs text-gray-500">{item.description}</div>
+                          </div>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-gray-200 p-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800">
+                <strong>Disclaimer:</strong> For informational purposes only. Gamble responsibly.
+              </p>
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+
+        <main className="flex-1 flex flex-col">
+          {/* Header with mobile trigger */}
+          <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200" />
+              <h1 className="text-xl font-semibold">Sports Wager Helper</h1>
+            </div>
+          </header>
+
+          {/* Main content area */}
+          <div className="flex-1 overflow-auto">
+            {children}
+          </div>
+          </main>
+          </div>
+          </SidebarProvider>
+          );
+          }
