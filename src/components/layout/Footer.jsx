@@ -61,15 +61,6 @@ const Footer = () => {
                         >
                             <Instagram className="w-5 h-5" />
                         </a>
-                        <a 
-                            href="https://amzn.to/4awgbi3" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-orange-500 transition-colors"
-                            title="Shop on Amazon"
-                        >
-                            <ShoppingBag className="w-5 h-5" />
-                        </a>
                     </div>
                 </div>
             </div>
