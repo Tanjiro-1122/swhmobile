@@ -80,50 +80,17 @@ export default function SavedResultsContent() {
 
   const deleteMatchMutation = useMutation({
     mutationFn: (id) => base44.entities.Match.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['savedMatches', currentUser?.email] });
-      const previousMatches = queryClient.getQueryData(['savedMatches', currentUser?.email]);
-      queryClient.setQueryData(['savedMatches', currentUser?.email], (old = []) =>
-        old.filter((match) => match.id !== id)
-      );
-      return { previousMatches };
-    },
-    onError: (err, id, context) => {
-      queryClient.setQueryData(['savedMatches', currentUser?.email], context?.previousMatches);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['savedMatches'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedMatches'] }),
   });
 
   const deletePlayerMutation = useMutation({
     mutationFn: (id) => base44.entities.PlayerStats.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['savedPlayerStats', currentUser?.email] });
-      const previousPlayers = queryClient.getQueryData(['savedPlayerStats', currentUser?.email]);
-      queryClient.setQueryData(['savedPlayerStats', currentUser?.email], (old = []) =>
-        old.filter((player) => player.id !== id)
-      );
-      return { previousPlayers };
-    },
-    onError: (err, id, context) => {
-      queryClient.setQueryData(['savedPlayerStats', currentUser?.email], context?.previousPlayers);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['savedPlayerStats'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedPlayerStats'] }),
   });
 
   const deleteTeamMutation = useMutation({
     mutationFn: (id) => base44.entities.TeamStats.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['savedTeamStats', currentUser?.email] });
-      const previousTeams = queryClient.getQueryData(['savedTeamStats', currentUser?.email]);
-      queryClient.setQueryData(['savedTeamStats', currentUser?.email], (old = []) =>
-        old.filter((team) => team.id !== id)
-      );
-      return { previousTeams };
-    },
-    onError: (err, id, context) => {
-      queryClient.setQueryData(['savedTeamStats', currentUser?.email], context?.previousTeams);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['savedTeamStats'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedTeamStats'] }),
   });
 
   return (

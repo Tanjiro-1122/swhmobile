@@ -1,13 +1,10 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import RequireAuth from "@/components/auth/RequireAuth";
-import { useQueryClient } from "@tanstack/react-query";
-import { usePlatform } from "@/components/hooks/usePlatform";
-import PullToRefresh from "@/components/utils/PullToRefresh";
 
 
 // Lazy load heavy content components
@@ -26,16 +23,6 @@ const LoadingSpinner = () => (
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
-  const queryClient = useQueryClient();
-  const { isMobileScreen, isNativeApp } = usePlatform();
-  const isMobile = isMobileScreen || isNativeApp;
-
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['bettingBriefs'] });
-    await queryClient.invalidateQueries({ queryKey: ['savedPlayerStats'] });
-    await queryClient.invalidateQueries({ queryKey: ['savedTeamStats'] });
-    await queryClient.invalidateQueries({ queryKey: ['aiAccuracy'] });
-  }, [queryClient]);
   
   // Handle tab parameter from URL
   useEffect(() => {
@@ -46,7 +33,7 @@ function AnalysisHubContent() {
     }
   }, []);
 
-  const content = (
+  return (
     <div className="overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full">
         <div className="w-full flex justify-start mb-2">
@@ -141,16 +128,6 @@ function AnalysisHubContent() {
       
     </div>
   );
-
-  if (isMobile) {
-    return (
-      <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
-        {content}
-      </PullToRefresh>
-    );
-  }
-
-  return content;
 }
 
 export default function AnalysisHub() {

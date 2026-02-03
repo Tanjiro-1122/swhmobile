@@ -73,17 +73,7 @@ export default function BetTrackerContent() {
 
   const createBetMutation = useMutation({
     mutationFn: (betData) => base44.entities.TrackedBet.create(betData),
-    onMutate: async (newBetData) => {
-      await queryClient.cancelQueries({ queryKey: ['trackedBets', currentUser?.email] });
-      const previousBets = queryClient.getQueryData(['trackedBets', currentUser?.email]);
-      const optimisticBet = { ...newBetData, id: `temp-${Date.now()}`, created_by: currentUser?.email };
-      queryClient.setQueryData(['trackedBets', currentUser?.email], (old = []) => [optimisticBet, ...old]);
-      return { previousBets };
-    },
-    onError: (err, newBet, context) => {
-      queryClient.setQueryData(['trackedBets', currentUser?.email], context?.previousBets);
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trackedBets'] });
       setShowAddDialog(false);
       resetForm();
@@ -92,18 +82,7 @@ export default function BetTrackerContent() {
 
   const updateBetMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TrackedBet.update(id, data),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ['trackedBets', currentUser?.email] });
-      const previousBets = queryClient.getQueryData(['trackedBets', currentUser?.email]);
-      queryClient.setQueryData(['trackedBets', currentUser?.email], (old = []) =>
-        old.map((bet) => (bet.id === id ? { ...bet, ...data } : bet))
-      );
-      return { previousBets };
-    },
-    onError: (err, variables, context) => {
-      queryClient.setQueryData(['trackedBets', currentUser?.email], context?.previousBets);
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trackedBets'] });
       setEditingBet(null);
     },
@@ -111,18 +90,7 @@ export default function BetTrackerContent() {
 
   const deleteBetMutation = useMutation({
     mutationFn: (id) => base44.entities.TrackedBet.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['trackedBets', currentUser?.email] });
-      const previousBets = queryClient.getQueryData(['trackedBets', currentUser?.email]);
-      queryClient.setQueryData(['trackedBets', currentUser?.email], (old = []) =>
-        old.filter((bet) => bet.id !== id)
-      );
-      return { previousBets };
-    },
-    onError: (err, id, context) => {
-      queryClient.setQueryData(['trackedBets', currentUser?.email], context?.previousBets);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trackedBets'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['trackedBets'] }),
   });
 
   const resetForm = () => {

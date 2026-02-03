@@ -67,7 +67,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-    overscroll-behavior: none;
   }
   
   h1, h2, h3, h4, h5, h6, .font-display {
