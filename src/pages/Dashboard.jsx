@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 import Footer from "@/components/layout/Footer";
+import PullToRefresh from "@/components/utils/PullToRefresh";
 
 import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
 
@@ -175,6 +176,13 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
 export default function Dashboard() {
     const { isNativeApp, isMobileScreen } = usePlatform();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const queryClient = useQueryClient();
+
+    const handleRefresh = useCallback(async () => {
+        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        await queryClient.invalidateQueries({ queryKey: ['bettingBriefs'] });
+        await queryClient.invalidateQueries({ queryKey: ['aiAccuracy'] });
+    }, [queryClient]);
 
     React.useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -234,7 +242,7 @@ export default function Dashboard() {
     
     if (isMobile) {
         return (
-            <>
+            <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
                 {showSuccessMessage && (
                     <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
                         <Check className="w-5 h-5" />
@@ -243,7 +251,7 @@ export default function Dashboard() {
                 )}
                 <MobileDashboardContent menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} />
                 <Footer />
-            </>
+            </PullToRefresh>
         );
     }
 
