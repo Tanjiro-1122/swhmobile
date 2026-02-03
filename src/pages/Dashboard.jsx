@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
+import Footer from "@/components/layout/Footer";
 
 import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
 
@@ -265,6 +266,8 @@ export default function Dashboard() {
                     isPaidUser={isPaidUser}
                 />
             </div>
+
+            <Footer />
         </div>
     );
     }

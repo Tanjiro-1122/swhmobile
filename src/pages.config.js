@@ -54,6 +54,7 @@ import AdminErrorLogs from './pages/AdminErrorLogs';
 import AdminPanel from './pages/AdminPanel';
 import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import Alerts from './pages/Alerts';
+import AnalysisHub from './pages/AnalysisHub';
 import appleauthcallbackTsx from './pages/AppleAuthCallback.tsx';
 import AskSAL from './pages/AskSAL';
 import BankrollManager from './pages/BankrollManager';
@@ -64,6 +65,7 @@ import Community from './pages/Community';
 import CommunityHub from './pages/CommunityHub';
 import ContactUs from './pages/ContactUs';
 import DailyBriefs from './pages/DailyBriefs';
+import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Index from './pages/Index';
 import LearningCenter from './pages/LearningCenter';
@@ -86,8 +88,6 @@ import TermsOfService from './pages/TermsOfService';
 import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
-import AnalysisHub from './pages/AnalysisHub';
-import Dashboard from './pages/Dashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +99,7 @@ export const PAGES = {
     "AdminPanel": AdminPanel,
     "AdminPurchaseAudit": AdminPurchaseAudit,
     "Alerts": Alerts,
+    "AnalysisHub": AnalysisHub,
     "AppleAuthCallback.tsx": appleauthcallbackTsx,
     "AskSAL": AskSAL,
     "BankrollManager": BankrollManager,
@@ -109,6 +110,7 @@ export const PAGES = {
     "CommunityHub": CommunityHub,
     "ContactUs": ContactUs,
     "DailyBriefs": DailyBriefs,
+    "Dashboard": Dashboard,
     "Home": Home,
     "Index": Index,
     "LearningCenter": LearningCenter,
@@ -131,8 +133,6 @@ export const PAGES = {
     "TopStats": TopStats,
     "TopTen": TopTen,
     "UserPreferences": UserPreferences,
-    "AnalysisHub": AnalysisHub,
-    "Dashboard": Dashboard,
 }
 
 export const pagesConfig = {
