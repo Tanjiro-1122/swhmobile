@@ -11,8 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, Plus, ThumbsUp, Crown, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Cache bust v2
-
 export default function CommunityContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newPost, setNewPost] = useState({
