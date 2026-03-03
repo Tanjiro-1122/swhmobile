@@ -5,8 +5,8 @@ import { AlertTriangle, Shield, CheckCircle, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AgeGate() {
-  const [isVerified, setIsVerified] = useState(false);
-  const [showGate, setShowGate] = useState(true);
+  const [isVerified, setIsVerified] = useState(true);
+  const [showGate, setShowGate] = useState(false);
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [verificationError, setVerificationError] = useState("");
