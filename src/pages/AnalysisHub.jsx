@@ -98,6 +98,31 @@ function AnalysisHubContent() {
                 <Target className="w-4 h-4 flex-shrink-0" />
                 <span>Stats</span>
               </TabsTrigger>
+              {isWeb && (
+                <>
+                  <TabsTrigger 
+                    value="matchpreview" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                  >
+                    <Swords className="w-4 h-4 flex-shrink-0" />
+                    <span>Match Preview</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="historical" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                  >
+                    <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                    <span>Historical</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="strategy" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                  >
+                    <Settings2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Strategy Tools</span>
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
           </div>
 
