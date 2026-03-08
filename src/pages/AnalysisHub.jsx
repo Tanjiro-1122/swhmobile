@@ -27,12 +27,15 @@ const LoadingSpinner = () => (
 
 function AnalysisHubContent() {
   const [activeTab, setActiveTab] = useState("predictions");
+  const { isNativeApp, isMobileScreen } = usePlatform();
+  const isWeb = !isNativeApp && !isMobileScreen;
   
   // Handle tab parameter from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['predictions', 'insights', 'players', 'teams', 'performance'].includes(tabParam)) {
+    const validTabs = ['predictions', 'insights', 'players', 'teams', 'performance', 'matchpreview', 'historical', 'strategy'];
+    if (tabParam && validTabs.includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, []);
