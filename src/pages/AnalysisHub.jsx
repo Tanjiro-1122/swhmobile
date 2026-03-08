@@ -1,10 +1,11 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft } from "lucide-react";
+import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft, Swords, BarChart3, Settings2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import RequireAuth from "@/components/auth/RequireAuth";
+import { usePlatform } from "@/components/hooks/usePlatform";
 
 
 // Lazy load heavy content components
@@ -13,6 +14,9 @@ const PlayerStatsContent = lazy(() => import("@/components/hub/PlayerStatsConten
 const TeamStatsContent = lazy(() => import("@/components/hub/TeamStatsContent"));
 const AIPerformanceContent = lazy(() => import("@/components/hub/AIPerformanceContent"));
 const TodaysPredictions = lazy(() => import("@/components/predictions/TodaysPredictions"));
+const MatchPreviewsContent = lazy(() => import("@/components/analysis/MatchPreviewsContent"));
+const HistoricalDataContent = lazy(() => import("@/components/analysis/HistoricalDataContent"));
+const StrategyToolsContent = lazy(() => import("@/components/analysis/StrategyToolsContent"));
 
 // Loading fallback
 const LoadingSpinner = () => (
