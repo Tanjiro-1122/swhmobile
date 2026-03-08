@@ -155,6 +155,28 @@ function AnalysisHubContent() {
               <AIPerformanceContent />
             </Suspense>
           </TabsContent>
+
+          {isWeb && (
+            <>
+              <TabsContent value="matchpreview">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <MatchPreviewsContent />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="historical">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <HistoricalDataContent />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="strategy">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <StrategyToolsContent />
+                </Suspense>
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
       
