@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft, Swords, BarChart3, Settings2 } from "lucide-react";
+import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft, Swords, BarChart3, Settings2, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const TodaysPredictions = lazy(() => import("@/components/predictions/TodaysPred
 const MatchPreviewsContent = lazy(() => import("@/components/analysis/MatchPreviewsContent"));
 const HistoricalDataContent = lazy(() => import("@/components/analysis/HistoricalDataContent"));
 const StrategyToolsContent = lazy(() => import("@/components/analysis/StrategyToolsContent"));
+const DataExportContent = lazy(() => import("@/components/analysis/DataExportContent"));
 
 // Loading fallback
 const LoadingSpinner = () => (
@@ -34,7 +35,7 @@ function AnalysisHubContent() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    const validTabs = ['predictions', 'insights', 'players', 'teams', 'performance', 'matchpreview', 'historical', 'strategy'];
+    const validTabs = ['predictions', 'insights', 'players', 'teams', 'performance', 'matchpreview', 'historical', 'strategy', 'export'];
     if (tabParam && validTabs.includes(tabParam)) {
       setActiveTab(tabParam);
     }
@@ -121,6 +122,13 @@ function AnalysisHubContent() {
                     <Settings2 className="w-4 h-4 flex-shrink-0" />
                     <span>Strategy Tools</span>
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="export" 
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                  >
+                    <Download className="w-4 h-4 flex-shrink-0" />
+                    <span>Data Export</span>
+                  </TabsTrigger>
                 </>
               )}
             </TabsList>
@@ -173,6 +181,12 @@ function AnalysisHubContent() {
               <TabsContent value="strategy">
                 <Suspense fallback={<LoadingSpinner />}>
                   <StrategyToolsContent />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="export">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <DataExportContent />
                 </Suspense>
               </TabsContent>
             </>
