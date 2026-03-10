@@ -70,7 +70,8 @@
     "@sentry/react": "^7.100.0",
     "@sentry/deno": "^7.100.0",
     "lru-cache": "^10.0.0",
-    "react-fast-marquee": "^1.6.5"
+    "react-fast-marquee": "^1.6.5",
+    "@base44/vite-plugin": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
