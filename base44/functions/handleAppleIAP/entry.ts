@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Apple Receipt Verification URLs
 const PRODUCTION_URL = 'https://buy.itunes.apple.com/verifyReceipt';
@@ -93,11 +93,8 @@ Deno.serve(async (req) => {
       const currentCredits = user.search_credits || 0;
       const newCredits = currentCredits + creditsToAdd;
       
-      await base44.asServiceRole.entities.User.update(user.id, {
-        search_credits: newCredits
-      });
-
-      // Create successful audit record
+      // Write audit FIRST — if crash happens after this but before granting,
+      // the audit record exists so idempotency check prevents double-grants on retry
       await base44.asServiceRole.entities.PurchaseAudit.create({
         user_email: user.email,
         platform: 'apple',
@@ -105,6 +102,11 @@ Deno.serve(async (req) => {
         transaction_id: validationResult.transactionId,
         status: 'verified',
         granted_credits: creditsToAdd
+      });
+
+      // Grant credits AFTER audit is recorded
+      await base44.asServiceRole.entities.User.update(user.id, {
+        search_credits: newCredits
       });
 
       return Response.json({
@@ -126,6 +128,17 @@ Deno.serve(async (req) => {
     const currentExpiry = user.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
     const newExpiry = validationResult.expiresDate ? new Date(validationResult.expiresDate) : null;
     
+    // Write audit FIRST for same crash-safety reason as credits
+    await base44.asServiceRole.entities.PurchaseAudit.create({
+      user_email: user.email,
+      platform: 'apple',
+      product_id: validationResult.productId,
+      transaction_id: validationResult.transactionId,
+      status: 'verified',
+      granted_subscription: subscriptionType,
+      verification_result: validationResult.raw
+    });
+
     // Only update if new subscription or if new expiry is later
     if (!currentExpiry || !newExpiry || newExpiry > currentExpiry) {
       await base44.asServiceRole.entities.User.update(user.id, {
@@ -136,17 +149,6 @@ Deno.serve(async (req) => {
         subscription_source: 'apple'
       });
     }
-
-    // Create successful audit record
-    await base44.asServiceRole.entities.PurchaseAudit.create({
-      user_email: user.email,
-      platform: 'apple',
-      product_id: validationResult.productId,
-      transaction_id: validationResult.transactionId,
-      status: 'verified',
-      granted_subscription: subscriptionType,
-      verification_result: validationResult.raw
-    });
 
     return Response.json({
       success: true,
