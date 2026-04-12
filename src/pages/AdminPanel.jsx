@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle } from "lucide-react";
+import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle, Receipt, CheckCircle, XCircle, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +40,14 @@ function AdminPanelContent() {
     queryKey: ['allUsers'],
     queryFn: async () => {
       return await base44.entities.User.list('-created_date', 1000);
+    },
+    initialData: [],
+  });
+
+  const { data: recentPurchases } = useQuery({
+    queryKey: ['recentPurchases'],
+    queryFn: async () => {
+      return await base44.entities.PurchaseAudit.list('-created_date', 5);
     },
     initialData: [],
   });
@@ -162,14 +172,23 @@ function AdminPanelContent() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Shield className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
+                <p className="text-xl text-gray-700 font-medium">Manage users and subscriptions</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
-              <p className="text-xl text-gray-700 font-medium">Manage users and subscriptions</p>
-            </div>
+            <Link to={createPageUrl('AdminPurchaseAudit')}>
+              <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-base px-6 py-3 h-auto shadow-md">
+                <Receipt className="w-5 h-5 mr-2" />
+                Purchase Audit Trail
+                <ExternalLink className="w-4 h-4 ml-2 opacity-75" />
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -311,6 +330,62 @@ function AdminPanelContent() {
                 <div>VIP: <span className="text-indigo-700">${(tierCounts.vip_annual * 149.99 / 12).toFixed(2)}/mo</span></div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Purchases Card */}
+        <Card className="border-2 border-green-300 bg-white shadow-md mb-8">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <Receipt className="w-6 h-6 text-green-600" />
+                Recent Purchase Activity
+              </CardTitle>
+              <Link to={createPageUrl('AdminPurchaseAudit')}>
+                <Button variant="outline" size="sm" className="border-green-400 text-green-700 hover:bg-green-50 font-semibold">
+                  View All
+                  <ExternalLink className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {recentPurchases.length === 0 ? (
+              <div className="text-center py-4 text-gray-500 font-semibold">No purchase records found</div>
+            ) : (
+              <div className="space-y-3">
+                {recentPurchases.map((purchase) => {
+                  const statusConfig = {
+                    verified: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50 border-green-200', badgeCls: 'bg-green-100 text-green-600' },
+                    pending: { icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200', badgeCls: 'bg-yellow-100 text-yellow-600' },
+                    failed: { icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 border-red-200', badgeCls: 'bg-red-100 text-red-600' },
+                    manually_activated: { icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200', badgeCls: 'bg-blue-100 text-blue-600' },
+                    refunded: { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200', badgeCls: 'bg-orange-100 text-orange-600' },
+                  };
+                  const { icon: StatusIcon, color, bg, badgeCls } = statusConfig[purchase.status] || statusConfig.pending;
+                  return (
+                    <div key={purchase.id} className={`flex items-center justify-between p-3 rounded-lg border ${bg}`}>
+                      <div className="flex items-center gap-3">
+                        <StatusIcon className={`w-5 h-5 ${color}`} />
+                        <div>
+                          <div className="font-bold text-gray-900 text-sm">{purchase.user_email || 'Unknown'}</div>
+                          <div className="text-xs text-gray-600">{purchase.product_id} · {purchase.platform}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {purchase.amount && (
+                          <div className="font-bold text-gray-900 text-sm">${purchase.amount.toFixed(2)}</div>
+                        )}
+                        <div className="text-xs text-gray-500">{new Date(purchase.created_date).toLocaleDateString()}</div>
+                        <Badge className={`text-xs mt-1 ${badgeCls} border-0`}>
+                          {purchase.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
