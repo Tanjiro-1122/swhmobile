@@ -199,12 +199,30 @@ export default function SubscriptionContent() {
             <div>
               <p className="text-sm text-white/60">Lookups</p>
               <p className="font-bold text-white">
-                {hasPaidPlan ? "Unlimited" : `${5 - (currentUser?.lookups_used || 0)} remaining`}
+                {hasPaidPlan ? "Unlimited" : `${5 - (currentUser?.monthly_free_lookups_used || 0)} remaining`}
               </p>
             </div>
           </div>
         </Card>
       </div>
+
+      {/* Search Credits Balance - only show for free users who have purchased credits */}
+      {!hasPaidPlan && (currentUser?.search_credits || 0) > 0 && (
+        <Card className="border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-sm text-white/60">Purchased Search Credits</p>
+                <p className="font-bold text-white text-lg">{currentUser.search_credits} credits</p>
+                <p className="text-xs text-white/50">Used automatically when free lookups run out</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
