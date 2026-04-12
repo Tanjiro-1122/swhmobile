@@ -43,6 +43,7 @@ const isCreditPackProduct = (productId) => productId && productId in CREDIT_PACK
 
 export default function AdminPurchaseAudit() {
   const [searchEmail, setSearchEmail] = useState("");
+  const [searchTransactionId, setSearchTransactionId] = useState("");
   const [selectedAudit, setSelectedAudit] = useState(null);
   const [manualActivationReason, setManualActivationReason] = useState("");
   const [selectedSubscriptionType, setSelectedSubscriptionType] = useState("premium_monthly");
@@ -129,6 +130,15 @@ export default function AdminPurchaseAudit() {
     );
   };
 
+  const trimmedTxSearch = searchTransactionId.trim().toLowerCase();
+  const displayedAudits = trimmedTxSearch
+    ? audits?.filter((a) => {
+        const txId = (a.transaction_id || "").toLowerCase();
+        const token = (a.purchase_token || "").toLowerCase();
+        return txId.includes(trimmedTxSearch) || token.includes(trimmedTxSearch);
+      })
+    : audits;
+
   const isAdmin = currentUser?.role === 'admin';
 
   if (!isAdmin) {
@@ -156,8 +166,8 @@ export default function AdminPurchaseAudit() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1 relative">
+            <div className="flex gap-4 mb-6 flex-wrap">
+              <div className="flex-1 relative min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="Search by user email..."
@@ -166,18 +176,27 @@ export default function AdminPurchaseAudit() {
                   className="pl-10"
                 />
               </div>
-              <Button onClick={() => setSearchEmail("")} variant="outline">
+              <div className="flex-1 relative min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search by transaction / order ID..."
+                  value={searchTransactionId}
+                  onChange={(e) => setSearchTransactionId(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button onClick={() => { setSearchEmail(""); setSearchTransactionId(""); }} variant="outline">
                 Clear
               </Button>
             </div>
 
             {isLoading ? (
               <div className="text-center py-8 text-gray-500">Loading...</div>
-            ) : !audits || audits.length === 0 ? (
+            ) : !displayedAudits || displayedAudits.length === 0 ? (
               <div className="text-center py-8 text-gray-500">No purchase records found</div>
             ) : (
               <div className="space-y-4">
-                {audits.map((audit) => (
+                {displayedAudits.map((audit) => (
                   <Card key={audit.id} className="border-2">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
