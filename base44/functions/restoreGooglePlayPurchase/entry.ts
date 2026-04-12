@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     const { access_token } = await tokenResponse.json();
 
     // Determine package name and verify purchase
-    const packageName = 'com.sportswagerhelper.app'; // Your Android package name
+    const packageName = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME') || 'com.wnapp.id1761803023263';
 
     // Check if it's a subscription
     let verifyUrl, purchaseData;

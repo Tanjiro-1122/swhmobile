@@ -54,9 +54,12 @@ export function useFreeLookupTracker() {
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
             
-            // Check if VIP annual has expired
-            if (tier === 'vip_annual' && user.subscription_expiry_date) {
-              const expiryDate = new Date(user.subscription_expiry_date);
+            // Check if VIP annual has expired.
+            // Backend functions write the expiry to either subscription_expiry_date (Stripe)
+            // or subscription_expires_at (Apple / Google Play / manual activation); check both.
+            const vipExpiry = user.subscription_expiry_date || user.subscription_expires_at;
+            if (tier === 'vip_annual' && vipExpiry) {
+              const expiryDate = new Date(vipExpiry);
               if (new Date() > expiryDate) {
                 // VIP expired, treat as free user
                 setUserTier('free');
@@ -66,15 +69,23 @@ export function useFreeLookupTracker() {
                 setIsLoading(false);
                 return;
               }
-            } else if (tier === 'influencer' && user.subscription_expiry_date) {
-              // Check if influencer access has expired (7 days)
-              const expiryDate = new Date(user.subscription_expiry_date);
-              if (new Date() > expiryDate) {
-                // Influencer expired, treat as free user
-                setUserTier('free');
-                // Continue to free user logic below
+            } else if (tier === 'influencer') {
+              // Check if influencer access has expired (7 days).
+              // Expiry stored in subscription_expiry_date by the admin panel / expiry function.
+              const influencerExpiry = user.subscription_expiry_date || user.subscription_expires_at;
+              if (influencerExpiry) {
+                const expiryDate = new Date(influencerExpiry);
+                if (new Date() > expiryDate) {
+                  // Influencer expired, treat as free user
+                  setUserTier('free');
+                  // Continue to free user logic below
+                } else {
+                  setLookupsRemaining(999); // Unlimited - still valid
+                  setIsLoading(false);
+                  return;
+                }
               } else {
-                setLookupsRemaining(999); // Unlimited - still valid
+                setLookupsRemaining(999); // No expiry set — still active
                 setIsLoading(false);
                 return;
               }

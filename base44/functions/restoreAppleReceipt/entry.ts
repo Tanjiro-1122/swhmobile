@@ -9,7 +9,11 @@ const APP_CORS_ORIGIN = Deno.env.get('APP_CORS_ORIGIN') || 'https://sportswagerh
 const PRODUCT_MAPPING = {
   'com.sportswagerhelper.premium.monthly': 'premium_monthly',
   'com.sportswagerhelper.vip.annual': 'vip_annual',
-  'com.sportswagerhelper.legacy': 'legacy'
+  'com.sportswagerhelper.legacy': 'legacy',
+  // v3 product IDs introduced in a later app version
+  'com.sportswagerhelper.premium.monthly.v3': 'premium_monthly',
+  'com.sportswagerhelper.premium.annual.v3': 'vip_annual',
+  'com.sportswagerhelper.vip.annual.v3': 'vip_annual'
 };
 
 function corsHeaders() {
