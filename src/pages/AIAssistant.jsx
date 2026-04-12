@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Send, Loader2, Brain, Users, BookOpen, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,7 @@ function SALHubPage() {
             }
         });
         return () => unsubscribe();
-    }, [conversation?.id, processingStep]);
+    }, [conversation, processingStep]);
 
     useEffect(() => {
         if (!isSending) return;

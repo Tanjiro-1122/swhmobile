@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function OptimizedImage({ 
@@ -50,13 +50,6 @@ export default function OptimizedImage({
           <FallbackIcon className="w-1/2 h-1/2 text-white/70" />
         </div>
       )}
-      
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </div>
   );
 }

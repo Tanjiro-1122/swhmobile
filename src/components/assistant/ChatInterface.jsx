@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Send, Loader2, Sparkles, MessageCircle, Lightbulb, TrendingUp, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ const quickPrompts = [
   { icon: MessageCircle, text: "Analyze tonight's NBA games", color: "from-orange-500 to-red-600" },
 ];
 
-export default function ChatInterface({ conversationId, agentName }) {
+export default function ChatInterface({ conversationId, _agentName }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [conversation, setConversation] = useState(null);

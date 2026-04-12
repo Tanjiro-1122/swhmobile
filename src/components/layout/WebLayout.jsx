@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import AgeGate from '../auth/AgeGate';
 import DomainChangeBanner from '../DomainChangeBanner';
 import TopBar from '../navigation/TopBar';

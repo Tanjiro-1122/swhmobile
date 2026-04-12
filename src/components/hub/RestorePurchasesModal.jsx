@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -65,7 +65,7 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
                       message: response.data?.error || 'Failed to restore purchases'
                     });
                   }
-                } catch (error) {
+                } catch (_error) {
                   setResult({
                     type: 'error',
                     message: 'Server error during restore. Please try again.'
@@ -128,7 +128,7 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
                       message: response.data?.error || 'Failed to restore purchases'
                     });
                   }
-                } catch (error) {
+                } catch (_error) {
                   setResult({
                     type: 'error',
                     message: 'Server error during restore. Please try again.'
@@ -159,7 +159,7 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
         });
         setRestoring(false);
       }
-    } catch (error) {
+    } catch (_error) {
       setResult({
         type: 'error',
         message: 'An error occurred. Please try again or contact support.'

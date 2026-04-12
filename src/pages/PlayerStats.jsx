@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -18,7 +18,7 @@ export default function PlayerStats() {
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
 
-  const { data: currentUser } = useQuery({
+  useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       try {

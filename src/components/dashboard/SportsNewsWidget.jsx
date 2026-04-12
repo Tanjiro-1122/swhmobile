@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExternalLink, Newspaper, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';

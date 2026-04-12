@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Newspaper, ExternalLink, TrendingUp, Clock, ChevronRight } from "lucide-react";
+import { ArrowLeft, Newspaper, ExternalLink, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

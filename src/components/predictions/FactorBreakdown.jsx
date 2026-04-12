@@ -1,7 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Users, Activity, CloudRain, Calendar, Shield, Zap } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
 const factorIcons = {
   "form": TrendingUp,
@@ -21,7 +19,7 @@ const factorColors = {
 
 export default function FactorBreakdown({ factors = [] }) {
   // Parse factors into structured data if they're strings
-  const parsedFactors = factors.map((factor, index) => {
+  const parsedFactors = factors.map((factor) => {
     if (typeof factor === "string") {
       // Try to determine impact from keywords
       const lowImpact = /injury|absent|missing|poor|weak/i.test(factor);

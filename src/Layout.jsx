@@ -2,12 +2,9 @@ import React, { Suspense, useEffect } from 'react';
 import { usePlatform } from '@/components/hooks/usePlatform';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const WebLayout = React.lazy(() => import('./components/layout/WebLayout'));
 const MobileLayout = React.lazy(() => import('./components/layout/MobileLayout'));
-
-const queryClient = new QueryClient();
 
 const FullScreenLoader = () => (
   <div className="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center gap-4">
@@ -161,10 +158,8 @@ export default function Layout(props) {
   }, []); // Empty dependency array ensures this runs only once per app load.
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<FullScreenLoader />}>
-        {renderMobileLayout ? <MobileLayout {...props} /> : <WebLayout {...props} />}
-      </Suspense>
-    </QueryClientProvider>
+    <Suspense fallback={<FullScreenLoader />}>
+      {renderMobileLayout ? <MobileLayout {...props} /> : <WebLayout {...props} />}
+    </Suspense>
   );
 }

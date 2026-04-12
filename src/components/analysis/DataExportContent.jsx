@@ -1,16 +1,14 @@
-import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Shield, Lock, Download, FileText, FileSpreadsheet, 
-  CheckCircle, AlertTriangle, Loader2, Eye, EyeOff,
-  Database, Trash2
+  Shield, Lock,
+  Loader2,
+  Trash2
 } from "lucide-react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import DataExportConsentGate from "./DataExportConsentGate";
 import DataExportOptions from "./DataExportOptions";
 

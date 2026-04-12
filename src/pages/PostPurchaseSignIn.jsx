@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Mail, Loader2 } from "lucide-react";
+import { CheckCircle, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 

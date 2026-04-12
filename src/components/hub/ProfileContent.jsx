@@ -1,10 +1,9 @@
-import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Crown, Calendar, Sparkles, Settings, Link2, CheckCircle2 } from "lucide-react";
+import { User, Mail, Crown, Calendar, Sparkles, Settings } from "lucide-react";
 
 export default function ProfileContent() {
   const { data: currentUser, isLoading } = useQuery({

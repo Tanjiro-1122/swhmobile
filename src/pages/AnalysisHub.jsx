@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Users, Sparkles, Target, Brain, Loader2, ArrowLeft, Swords, BarChart3, Settings2, Download } from "lucide-react";
 import { Link } from "react-router-dom";

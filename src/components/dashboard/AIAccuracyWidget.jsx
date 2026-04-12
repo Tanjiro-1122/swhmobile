@@ -1,8 +1,7 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Target, TrendingUp, Flame, Award, ChevronRight } from 'lucide-react';
+import { Target, Flame, Award, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -82,7 +81,7 @@ export default function AIAccuracyWidget() {
         );
     }
 
-    const { accuracy = 0, total = 0, wins = 0, streak = 0, highConfidenceAccuracy = 0, recentResults = [] } = stats || {};
+    const { accuracy = 0, total = 0, wins = 0, streak = 0, highConfidenceAccuracy = 0 } = stats || {};
 
     return (
         <motion.div

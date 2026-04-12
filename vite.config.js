@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import { visualEditPlugin } from './vite-plugins/visual-edit-plugin.js'
 import { errorOverlayPlugin } from './vite-plugins/error-overlay-plugin.js'
 

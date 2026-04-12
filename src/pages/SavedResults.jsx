@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, User, Users, Trash2, Calendar, Crown, Lock, Sparkles, Filter, X, SortAsc, SortDesc, Search } from "lucide-react";
+import { Trophy, User, Users, Crown, Lock, Sparkles, Filter, X, SortAsc, SortDesc, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MatchCard from "../components/sports/MatchCard";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
@@ -46,8 +46,11 @@ function SavedResultsContent() {
   });
 
   const hasUnlimitedRetention = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d;
+  }, []);
 
   // Fetch matches
   const { data: allMatches, isLoading: matchesLoading } = useQuery({
@@ -97,7 +100,7 @@ function SavedResultsContent() {
   });
 
   // Helper function to get date range filter
-  const getDateRangeFilter = (createdDate) => {
+  const getDateRangeFilter = useCallback((createdDate) => {
     const date = new Date(createdDate);
     const now = new Date();
     const diffDays = (now - date) / (1000 * 60 * 60 * 24);
@@ -113,7 +116,7 @@ function SavedResultsContent() {
       default:
         return true;
     }
-  };
+  }, [dateRange]);
 
   // Extract unique sports and leagues
   const uniqueSports = useMemo(() => {
@@ -180,7 +183,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allMatches, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allMatches, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Filter and sort player stats
   const filteredPlayerStats = useMemo(() => {
@@ -227,7 +230,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allPlayerStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allPlayerStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Filter and sort team stats
   const filteredTeamStats = useMemo(() => {
@@ -273,7 +276,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allTeamStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allTeamStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Delete mutations
   const deleteMatchMutation = useMutation({

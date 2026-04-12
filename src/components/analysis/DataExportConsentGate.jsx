@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Shield, Lock, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2, Database
+  Shield, Lock, CheckCircle, AlertTriangle, Loader2, Database, EyeOff
 } from "lucide-react";
 import { motion } from "framer-motion";
 

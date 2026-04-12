@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Calendar, AlertCircle } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,13 +54,6 @@ function BankrollManagerContent() {
         description: "",
         date: new Date().toISOString().split('T')[0]
       });
-    },
-  });
-
-  const deleteEntryMutation = useMutation({
-    mutationFn: (id) => base44.entities.BankrollEntry.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bankrollEntries'] });
     },
   });
 

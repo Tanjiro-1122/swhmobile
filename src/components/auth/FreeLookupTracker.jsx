@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -187,9 +187,8 @@ export function useFreeLookupTracker() {
   return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
 }
 
-export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticated: isAuthProp }) {
+export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isMobileApp, setIsMobileApp] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(isAuthProp ?? false);
   
   useEffect(() => {
@@ -200,18 +199,6 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticat
       setIsAuthenticated(isAuthProp);
     }
   }, [isAuthProp]);
-
-  useEffect(() => {
-    const checkMobileApp = () => {
-      const hasWTN = typeof window.WTN !== 'undefined';
-      const ua = navigator.userAgent || '';
-      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
-      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
-      const isStandalone = window.navigator.standalone === true;
-      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
-    };
-    setIsMobileApp(checkMobileApp());
-  }, []);
 
   if (!show) return null;
 
@@ -416,20 +403,7 @@ export function FreeLookupModal({ show, onClose, lookupsRemaining, isAuthenticat
   );
 }
 
-export function FreeLookupBanner({ lookupsRemaining, isAuthenticated, userTier }) {
-  const [isMobileApp, setIsMobileApp] = useState(false);
-
-  useEffect(() => {
-    const checkMobileApp = () => {
-      const hasWTN = typeof window.WTN !== 'undefined';
-      const ua = navigator.userAgent || '';
-      const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua);
-      const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
-      const isStandalone = window.navigator.standalone === true;
-      return hasWTN || isIOSWebView || isAndroidWebView || isStandalone;
-    };
-    setIsMobileApp(checkMobileApp());
-  }, []);
+export function FreeLookupBanner({ lookupsRemaining, userTier }) {
 
   // Legacy members - original lifetime VIP
   if (userTier === 'legacy') {

@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { Zap, Calculator, TrendingUp, DollarSign, Wallet } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Zap, Calculator, TrendingUp, Wallet } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import RequireAuth from "../components/auth/RequireAuth";

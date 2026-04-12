@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,22 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Plus, TrendingUp, TrendingDown, DollarSign, Target, 
-  Calendar, Trash2, Edit, CheckCircle, XCircle, Clock,
+  Plus, TrendingUp, Target, 
+  Calendar, Trash2, CheckCircle, XCircle, Clock,
   BarChart3, PieChart, Filter, Search, Download, FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function BetTrackerContent() {
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingBet, setEditingBet] = useState(null);
+  const [_editingBet, setEditingBet] = useState(null);
   const [filterSport, setFilterSport] = useState("all");
   const [filterResult, setFilterResult] = useState("all");
   const [filterBetType, setFilterBetType] = useState("all");

@@ -32,7 +32,7 @@ const MatchCard = React.memo(function MatchCard({ match, onDelete, index }) {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return null;
       return format(date, "MMM d, yyyy 'at' HH:mm");
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }, []);

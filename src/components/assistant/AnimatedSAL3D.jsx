@@ -1,8 +1,7 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { GraduationCap, Newspaper, Users, Zap } from 'lucide-react';
+import { GraduationCap, Newspaper, Users } from 'lucide-react';
 
 // Animated owl video URL
 const ANIMATED_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';

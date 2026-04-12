@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Trophy, RotateCcw, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function QuizComponent({ quiz, lessonTitle, onComplete, onRetry }) {
+export default function QuizComponent({ quiz, _lessonTitle, onComplete, onRetry }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -36,7 +36,6 @@ export default function QuizComponent({ quiz, lessonTitle, onComplete, onRetry }
     }
   };
 
-  const correctCount = answers.filter(a => a.selected === a.correct).length + (showResult && isCorrect ? 1 : 0);
   const totalQuestions = quiz.length;
   const passThreshold = Math.ceil(totalQuestions * 0.7);
 
