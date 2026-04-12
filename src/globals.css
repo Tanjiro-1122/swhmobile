@@ -60,6 +60,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #0f172a; /* Prevent white flash before JS loads; app is dark-themed */
     font-family: 'DM Sans', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-synthesis: none;

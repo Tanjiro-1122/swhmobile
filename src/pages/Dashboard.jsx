@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPageUrl } from "@/utils";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
@@ -172,6 +173,7 @@ const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
 
 export default function Dashboard() {
     const { isNativeApp, isMobileScreen } = usePlatform();
+    const navigate = useNavigate();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     React.useEffect(() => {
@@ -196,9 +198,9 @@ export default function Dashboard() {
     // Redirect unauthenticated users to Home
     React.useEffect(() => {
         if (!isLoading && !currentUser) {
-            window.location.href = createPageUrl('Home');
+            navigate(createPageUrl('Home'), { replace: true });
         }
-    }, [isLoading, currentUser]);
+    }, [isLoading, currentUser, navigate]);
 
     if (isLoading || !currentUser) {
         return (
