@@ -216,7 +216,7 @@ export default function SubscriptionContent() {
               </div>
               <div>
                 <p className="text-sm text-white/60">Purchased Search Credits</p>
-                <p className="font-bold text-white text-lg">{currentUser.search_credits} credits remaining</p>
+                <p className="font-bold text-white text-lg">{currentUser.search_credits} credits</p>
                 <p className="text-xs text-white/50">Used automatically when free lookups run out</p>
               </div>
             </div>

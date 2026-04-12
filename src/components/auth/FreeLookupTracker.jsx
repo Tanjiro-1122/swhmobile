@@ -176,6 +176,7 @@ export function useFreeLookupTracker() {
             search_credits: newCredits
           });
           setSearchCredits(newCredits);
+          // Free monthly slots are exhausted at this point, so remaining = credits only
           setLookupsRemaining(newCredits);
           setCurrentUser(prev => ({
             ...prev,
