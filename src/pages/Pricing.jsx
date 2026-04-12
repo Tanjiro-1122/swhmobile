@@ -119,7 +119,6 @@ export default function Pricing() {
       // Force Stripe for web browsers
       
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNativeApp, isWeb]);
   
   // Focus/visibility guard to clear stale processing state

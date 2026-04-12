@@ -12,6 +12,7 @@ export default function OddsWidget({ sport, gameId }) {
     // Refresh every 2 minutes
     const interval = setInterval(fetchOdds, 120000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sport, gameId]);
 
   const fetchOdds = async () => {

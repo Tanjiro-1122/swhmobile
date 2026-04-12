@@ -46,8 +46,11 @@ function SavedResultsContent() {
   });
 
   const hasUnlimitedRetention = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d;
+  }, []);
 
   // Fetch matches
   const { data: allMatches, isLoading: matchesLoading } = useQuery({
@@ -180,7 +183,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allMatches, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allMatches, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Filter and sort player stats
   const filteredPlayerStats = useMemo(() => {
@@ -227,7 +230,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allPlayerStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allPlayerStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Filter and sort team stats
   const filteredTeamStats = useMemo(() => {
@@ -273,7 +276,7 @@ function SavedResultsContent() {
     });
 
     return filtered;
-  }, [allTeamStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, dateRange, sortBy, hasUnlimitedRetention, thirtyDaysAgo]);
+  }, [allTeamStats, sportFilter, leagueFilter, searchQuery, confidenceFilter, sortBy, hasUnlimitedRetention, thirtyDaysAgo, getDateRangeFilter]);
 
   // Delete mutations
   const deleteMatchMutation = useMutation({

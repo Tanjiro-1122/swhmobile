@@ -54,6 +54,7 @@ export default function PreferencesContent() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success("Preferences saved successfully!");
     } catch (_error) {
+      // Preferences save failed silently
     }
     setIsSaving(false);
   };
