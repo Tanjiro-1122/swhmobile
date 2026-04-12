@@ -111,7 +111,7 @@ export const submitReceiptToServer = async (receiptData) => {
       });
     } else if (receiptData.platform === 'android') {
       response = await base44.functions.invoke('handleGooglePlayIAP', {
-        token: receiptData.purchaseToken,
+        purchaseToken: receiptData.purchaseToken,
         productId: receiptData.productId,
       });
     } else {
