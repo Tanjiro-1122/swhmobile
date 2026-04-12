@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { usePlatform } from "@/components/hooks/usePlatform";
 import Footer from "@/components/layout/Footer";
 
-import { ChevronRight, Settings, Check, PieChart, Activity, Users, FileText, User, Newspaper, BarChart2, Gem, Loader2, Bot } from "lucide-react";
+import { Settings, Check, PieChart, Activity, Users, User, BarChart2, Gem, Loader2 } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import TodaysPredictions from "@/components/predictions/TodaysPredictions";
 import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";

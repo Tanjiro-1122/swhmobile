@@ -1,4 +1,3 @@
-import React from "react";
 import { Shield, Search } from "lucide-react";
 import { motion } from "framer-motion";
 

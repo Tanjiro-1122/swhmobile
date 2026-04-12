@@ -1,8 +1,7 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Target, Flame, Trophy, TrendingUp, Calendar, Zap } from 'lucide-react';
+import { Target, Flame, TrendingUp, Calendar, Zap } from 'lucide-react';
 
 export default function QuickStatsBar() {
     const { data: stats, isLoading, isError } = useQuery({

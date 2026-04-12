@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 
 const CircuitLine = ({ path, delay = 0, duration = 3 }) => (

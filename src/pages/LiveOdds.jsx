@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, RefreshCw, DollarSign, Home, Plane, AlertCircle, BarChart3, Bookmark, BookmarkCheck, Sparkles, LineChart, Target, TrendingDown, Eye } from "lucide-react";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from "framer-motion";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 
@@ -19,7 +19,7 @@ function LiveOddsContent() {
   const [oddsData, setOddsData] = useState([]);
   const [error, setError] = useState(null);
   const [analyzingGame, setAnalyzingGame] = useState(null);
-  const [expandedGame, setExpandedGame] = useState(null);
+  const [_expandedGame, setExpandedGame] = useState(null);
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier } = useFreeLookupTracker();
@@ -262,6 +262,7 @@ function LiveOddsContent() {
 
   useEffect(() => {
     fetchLiveOdds(selectedSport);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSport]);
 
   const formatOdds = (odds) => {
@@ -299,7 +300,6 @@ function LiveOddsContent() {
 
   const renderMarketAnalysis = (game, betType, marketDesc, currentOdds, openingOdds) => {
     const marketKey = `${game.game_id}-${betType}`;
-    const isExpanded = expandedGame === marketKey;
     const analysis = game.ai_analysis?.[betType];
     const history = game.odds_history?.[betType];
     const isAnalyzing = analyzingGame === marketKey;

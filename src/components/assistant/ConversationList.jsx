@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MessageSquarePlus, BotMessageSquare, Loader2, ServerCrash } from 'lucide-react';

@@ -1,8 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, TrendingUp, TrendingDown, AlertTriangle, Zap, Target, Info, ChevronDown, ChevronUp } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Brain, TrendingUp, TrendingDown, AlertTriangle, Zap, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfidenceMeter from "./ConfidenceMeter";
 import FactorBreakdown from "./FactorBreakdown";
@@ -10,12 +9,6 @@ import FactorBreakdown from "./FactorBreakdown";
 export default function AIPredictionCard({ prediction, type = "game" }) {
   const [expanded, setExpanded] = React.useState(false);
   
-  const getConfidenceColor = (confidence) => {
-    if (confidence >= 75) return "text-emerald-500";
-    if (confidence >= 50) return "text-amber-500";
-    return "text-red-500";
-  };
-
   if (type === "game") {
     return (
       <motion.div

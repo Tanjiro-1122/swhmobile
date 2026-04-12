@@ -1,7 +1,6 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity, TrendingUp, TrendingDown } from "lucide-react";
+import { Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 
@@ -12,7 +11,7 @@ export default function PlayerRecentGames({ recentForm }) {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return null;
       return format(date, "MMM d, yyyy");
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   };

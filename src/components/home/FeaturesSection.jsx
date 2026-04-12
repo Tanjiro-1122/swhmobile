@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, BarChart, LineChart, Users, Zap } from 'lucide-react';
+import { Bot, BarChart, LineChart, Users } from 'lucide-react';
 
 const features = [
   {

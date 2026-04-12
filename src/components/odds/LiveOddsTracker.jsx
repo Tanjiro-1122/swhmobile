@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,9 @@ export default function LiveOddsTracker({ gameId, homeTeam, awayTeam }) {
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchOdds, 30000);
     return () => clearInterval(interval);
-  }, [gameId]);
+  }, [gameId, fetchOdds]);
 
-  const fetchOdds = async () => {
+  const fetchOdds = useCallback(async () => {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Fetch CURRENT LIVE odds for: ${homeTeam} vs ${awayTeam}
@@ -88,9 +88,9 @@ Return exact current odds as they appear RIGHT NOW on these sites.`,
     } catch (error) {
       console.error("Error fetching live odds:", error);
     }
-  };
+  }, [homeTeam, awayTeam, previousOdds, odds]);
 
-  const detectMovements = (oldOdds, newOdds) => {
+  const detectMovements = (_oldOdds, _newOdds) => {
     const moves = [];
     // Compare spreads, moneylines, totals
     // Add to movements array

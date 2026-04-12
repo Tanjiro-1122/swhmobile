@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Search, Loader2, Info, ArrowRight } from 'lucide-react';
+import { Users, Shield, Search, Loader2, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AnimatedAIGraphic from '@/components/home/AnimatedAIGraphic';
 import DailyFreePicks from '@/components/home/DailyFreePicks';
@@ -81,7 +81,7 @@ const FreeSearchView = () => {
     const [query, setQuery] = useState('');
     const { remainingLookups, isBlocked, incrementLookups } = useFreeLookups();
     
-    const { data, isLoading, isFetching, refetch, isError } = useQuery({
+    const { data, isFetching, refetch } = useQuery({
         queryKey: ['freeSearch', activeTab, query],
         queryFn: async () => {
             if (!query) return null;

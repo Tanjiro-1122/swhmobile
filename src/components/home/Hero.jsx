@@ -1,9 +1,8 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { PlayCircle, Star } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 import AnimatedBotCard from './AnimatedBotCard';
 
 const Hero = () => {

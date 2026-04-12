@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { createPageUrl } from '@/utils';
 import { ArrowRight, Zap } from 'lucide-react';
 import FuturisticButton from '@/components/ui/FuturisticButton';
@@ -30,7 +29,6 @@ const HolographicGrid = () => {
       ctx.clearRect(0, 0, w, h);
 
       // Perspective grid
-      const gridSize = 40;
       const horizon = h * 0.4;
       const vanishX = w / 2;
 
@@ -87,17 +85,18 @@ const HolographicGrid = () => {
 };
 
 // S.A.L. Computer Boot Sequence Animation
+const BUILD_TEXTS = [
+  'INITIALIZING NEURAL CORE...',
+  'LOADING SPORTS DATABASE...',
+  'CALIBRATING PREDICTION ENGINE...',
+  'CONNECTING TO S.A.L....',
+  'S.A.L. ONLINE'
+];
+
 const SALConstruction = () => {
   const [buildPhase, setBuildPhase] = useState(0);
   const [glitchText, setGlitchText] = useState('');
   const [eyesAwake, setEyesAwake] = useState(false);
-  const buildTexts = [
-    'INITIALIZING NEURAL CORE...',
-    'LOADING SPORTS DATABASE...',
-    'CALIBRATING PREDICTION ENGINE...',
-    'CONNECTING TO S.A.L....',
-    'S.A.L. ONLINE'
-  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -118,7 +117,7 @@ const SALConstruction = () => {
 
   useEffect(() => {
     let charIdx = 0;
-    const text = buildTexts[buildPhase];
+    const text = BUILD_TEXTS[buildPhase];
     let timer;
     
     const typeChar = () => {
@@ -530,7 +529,7 @@ const SALConstruction = () => {
 const IncomingSignal = () => {
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
-  const [isTyping, setIsTyping] = useState(true);
+  const [_isTyping, setIsTyping] = useState(true);
   const fullText = 'COME TEST IT OUT AND WATCH THE POWER OF AI WORK FOR YOU';
 
   useEffect(() => {

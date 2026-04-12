@@ -1,10 +1,9 @@
-import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, BarChart3, Trophy, AlertCircle, CheckCircle2, Activity } from "lucide-react";
+import { BarChart3, Trophy, AlertCircle, Activity } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AIPerformanceContent() {

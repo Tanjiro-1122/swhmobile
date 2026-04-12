@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Trophy, User, Shield, Bookmark } from "lucide-react";
@@ -44,7 +43,7 @@ const navigationItems = [
   },
 ];
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ children, _currentPageName }) {
   const location = useLocation();
 
   return (

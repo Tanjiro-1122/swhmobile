@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
 import FuturisticButton from '@/components/ui/FuturisticButton';
 import { usePlatform } from '@/components/hooks/usePlatform';
 import { base44 } from '@/api/base44Client';
@@ -13,7 +12,7 @@ const TopBar = () => {
     const { isNativeApp } = usePlatform();
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
     
-    const { data: user, isLoading } = useQuery({
+    const { data: user } = useQuery({
         queryKey: ['currentUser'],
         queryFn: async () => {
             const isAuth = await base44.auth.isAuthenticated();

@@ -55,7 +55,7 @@ import AdminPanel from './pages/AdminPanel';
 import AdminPurchaseAudit from './pages/AdminPurchaseAudit';
 import Alerts from './pages/Alerts';
 import AnalysisHub from './pages/AnalysisHub';
-import appleauthcallbackTsx from './pages/AppleAuthCallback.tsx';
+import AppleAuthCallback from './pages/AppleAuthCallback';
 import AskSAL from './pages/AskSAL';
 import BankrollManager from './pages/BankrollManager';
 import BettingBriefs from './pages/BettingBriefs';
@@ -100,7 +100,7 @@ export const PAGES = {
     "AdminPurchaseAudit": AdminPurchaseAudit,
     "Alerts": Alerts,
     "AnalysisHub": AnalysisHub,
-    "AppleAuthCallback.tsx": appleauthcallbackTsx,
+    "AppleAuthCallback": AppleAuthCallback,
     "AskSAL": AskSAL,
     "BankrollManager": BankrollManager,
     "BettingBriefs": BettingBriefs,

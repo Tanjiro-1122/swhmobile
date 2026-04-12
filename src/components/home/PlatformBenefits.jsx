@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Smartphone, Monitor, Zap, BarChart3, Clock, Calculator } from "lucide-react";
 import { motion } from "framer-motion";

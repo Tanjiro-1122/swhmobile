@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, Trophy } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import PlayerSearchBar from "../player/PlayerSearchBar";
 import PlayerStatsDisplay from "../player/PlayerStatsDisplay";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../auth/FreeLookupTracker";

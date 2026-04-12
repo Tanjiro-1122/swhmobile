@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   BookOpen, Clock, ArrowLeft, GraduationCap, TrendingUp, Brain, 
-  CheckCircle2, Lock, Play, Trophy, Star, ChevronRight 
+  CheckCircle2, Play, Trophy, ChevronRight 
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { motion, AnimatePresence } from "framer-motion";
-import { lessons, getLessonById, getAllLessons } from "@/components/learning/LessonContent";
+import { motion } from "framer-motion";
+import { lessons, getAllLessons } from "@/components/learning/LessonContent";
 import QuizComponent from "@/components/learning/QuizComponent";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,8 +36,7 @@ const levelConfig = {
   }
 };
 
-const LessonCard = ({ lesson, level, isCompleted, onSelect }) => {
-  const config = levelConfig[level];
+const LessonCard = ({ lesson, _level, isCompleted, onSelect }) => {
   
   return (
     <motion.div
@@ -92,7 +91,7 @@ const LessonCard = ({ lesson, level, isCompleted, onSelect }) => {
 
 const LessonViewer = ({ lesson, onBack, onComplete, isCompleted }) => {
   const [showQuiz, setShowQuiz] = useState(false);
-  const [hasReadLesson, setHasReadLesson] = useState(false);
+  const [_hasReadLesson, setHasReadLesson] = useState(false);
 
   useEffect(() => {
     // Mark lesson as read after 10 seconds of viewing

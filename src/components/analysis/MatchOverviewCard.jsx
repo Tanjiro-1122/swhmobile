@@ -1,7 +1,6 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, MapPin, Calendar, TrendingUp, TrendingDown, Shield, Swords, AlertTriangle } from "lucide-react";
+import { Trophy, MapPin, Calendar, Shield, Swords, AlertTriangle } from "lucide-react";
 
 const StatRow = ({ label, home, away }) => (
   <div className="grid grid-cols-3 gap-2 items-center py-2 border-b border-slate-700/50 last:border-0">
@@ -11,7 +10,7 @@ const StatRow = ({ label, home, away }) => (
   </div>
 );
 
-const InjuryList = ({ injuries, teamName }) => {
+const InjuryList = ({ injuries, _teamName }) => {
   if (!injuries?.length) return <p className="text-xs text-slate-500">No injuries reported</p>;
   return (
     <div className="space-y-1">

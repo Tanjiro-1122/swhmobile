@@ -550,6 +550,7 @@ export default function VisualEditAgent() {
 				}
 			});
 		};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// Keep the refs in sync with state changes

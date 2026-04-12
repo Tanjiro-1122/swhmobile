@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +15,6 @@ import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
 import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
 
 export default function Pricing() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [processingItem, setProcessingItem] = useState(null);
   
   
@@ -66,7 +65,6 @@ export default function Pricing() {
 
     const checkAuth = async () => {
       const authenticated = await base44.auth.isAuthenticated();
-      setIsAuthenticated(authenticated);
       
       // Check if user just logged in and has a pending Stripe plan (web only)
       if (authenticated && isWeb) {
@@ -121,7 +119,8 @@ export default function Pricing() {
       // Force Stripe for web browsers
       
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNativeApp, isWeb]);
   
   // Focus/visibility guard to clear stale processing state
   useEffect(() => {
@@ -160,11 +159,6 @@ export default function Pricing() {
       }
     },
   });
-
-  const handleLogin = () => {
-    // Use current full URL for redirect after login
-    base44.auth.redirectToLogin(window.location.href);
-  };
 
   // Helper function to start Stripe checkout (used after login redirect)
   const startStripeCheckout = async (plan, trial = false) => {
@@ -237,33 +231,6 @@ export default function Pricing() {
       alert('Failed to start checkout. Please try again or contact support if the issue persists.');
       setProcessingItem(null);
     }
-  };
-
-  // Cancel purchase and clear state
-  const cancelPurchase = () => {
-    // Try native cancel methods if the bridge exposes one
-    try {
-      if (typeof window !== 'undefined' && window.WTN) {
-        if (typeof window.WTN.cancelPurchase === 'function') {
-          window.WTN.cancelPurchase();
-        } else if (typeof window.WTN.dismissIAP === 'function') {
-          window.WTN.dismissIAP();
-        } else if (typeof window.WTN.closePurchase === 'function') {
-          window.WTN.closePurchase();
-        }
-      }
-    } catch (err) {
-      console.warn('Native cancel call failed or not available', err);
-    }
-
-    // Clear safety timeout
-    if (iapTimeoutRef.current) {
-      clearTimeout(iapTimeoutRef.current);
-      iapTimeoutRef.current = null;
-    }
-
-    // Clear the UI processing flags
-    setProcessingItem(null);
   };
 
   // IAP for native app users only - ANDROID ONLY (iOS subscriptions removed)
@@ -572,7 +539,7 @@ export default function Pricing() {
           <p className="text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Get unlimited AI-powered sports analytics and smart tools for better insights
           </p>
-          <link rel="preload" as="image" href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" fetchpriority="high" />
+          <link rel="preload" as="image" href="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png" fetchPriority="high" />
         {paymentCancelled && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}

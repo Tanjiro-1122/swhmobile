@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, ThumbsUp, MessageCircle, Plus, TrendingUp, Trophy, Filter, MessageSquare, Award, Crown, Sparkles } from "lucide-react";
+import { Users, ThumbsUp, MessageCircle, Plus, Filter, MessageSquare, Crown, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 // Removed: import VIPDiscordCard from "../components/community/VIPDiscordCard";
@@ -44,7 +43,7 @@ function CommunityContent() {
     queryFn: async () => {
       try {
         return await base44.auth.me();
-      } catch (error) {
+      } catch (_error) {
         // Return null if user is not authenticated or an error occurs
         // The RequireAuth component handles actual redirection, but this prevents
         // currentUser from being undefined if an error happens when logged out.

@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2, Newspaper, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";

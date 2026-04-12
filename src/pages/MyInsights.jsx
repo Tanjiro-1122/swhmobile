@@ -1,23 +1,22 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Sparkles, TrendingUp, User, Trophy, Target, Lightbulb, 
-  RefreshCw, Calendar, Users, Heart, AlertCircle, Crown,
+  Sparkles, User, Trophy, Target, Lightbulb, 
+  RefreshCw, Calendar, Users, Heart, AlertCircle,
   CheckCircle, ArrowRight, BarChart3
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import RequireAuth from "../components/auth/RequireAuth";
 
 function MyInsightsContent() {
   const [insights, setInsights] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
-  const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],

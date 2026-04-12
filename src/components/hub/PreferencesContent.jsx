@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Check, X, Save, Sparkles } from "lucide-react";
+import { Heart, Check, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 const SPORTS = ["NBA", "NFL", "MLB", "NHL", "Soccer", "NCAAF", "NCAAB", "UFC/MMA", "Tennis", "Golf"];
@@ -53,8 +53,7 @@ export default function PreferencesContent() {
       });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success("Preferences saved successfully!");
-    } catch (error) {
-      toast.error("Failed to save preferences");
+    } catch (_error) {
     }
     setIsSaving(false);
   };

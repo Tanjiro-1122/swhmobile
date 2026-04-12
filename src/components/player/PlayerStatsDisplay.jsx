@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,14 +27,6 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
     }
     // If value is >= 1, assume it's already a percentage (45)
     return value.toFixed(1);
-  };
-
-  const getPerformanceColor = (rating) => {
-    const lowerRating = rating?.toLowerCase() || '';
-    if (lowerRating.includes('excellent')) return 'text-green-600 bg-green-50';
-    if (lowerRating.includes('good')) return 'text-blue-600 bg-blue-50';
-    if (lowerRating.includes('poor')) return 'text-red-600 bg-red-50';
-    return 'text-gray-600 bg-gray-50';
   };
 
   const isBasketball = player.sport?.toLowerCase().includes('basketball') || player.sport?.toLowerCase().includes('nba');

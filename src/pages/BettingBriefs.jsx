@@ -1,4 +1,3 @@
-import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles, TrendingUp, AlertTriangle, CloudRain, Activity, Target, RefreshCw } from "lucide-react";
@@ -23,7 +22,7 @@ function FeedsContent() {
     },
   });
 
-  const { data: brief, isLoading, error } = useQuery({
+  const { data: brief, isLoading } = useQuery({
     queryKey: ['dailyBrief', today],
     queryFn: async () => {
       const briefs = await base44.entities.BettingBrief.filter(

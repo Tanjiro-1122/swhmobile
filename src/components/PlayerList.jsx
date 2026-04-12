@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Award } from 'lucide-react';
 
@@ -73,7 +72,7 @@ const getStatColumns = (sport) => {
   return columns[sport] || columns.NBA;
 };
 
-export default function PlayerList({ players, isLoading, accentColor, sport = 'NBA' }) {
+export default function PlayerList({ players, isLoading, _accentColor, sport = 'NBA' }) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">

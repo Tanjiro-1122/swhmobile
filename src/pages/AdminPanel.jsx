@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Crown, Sparkles, Star, Users, DollarSign, Search, Clock, AlertTriangle } from "lucide-react";
@@ -14,8 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "../utils";
 import RequireAuth from "../components/auth/RequireAuth";
 
 
@@ -30,7 +28,7 @@ function AdminPanelContent() {
     queryFn: async () => {
       try {
         return await base44.auth.me();
-      } catch (error) {
+      } catch (_error) {
         return null;
       }
     },

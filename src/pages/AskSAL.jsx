@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Send, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,7 +56,7 @@ function AskSALPage() {
             }
         });
         return () => unsubscribe();
-    }, [conversation?.id, processingStep]);
+    }, [conversation, processingStep]);
 
     useEffect(() => {
         if (!isSending) return;
@@ -79,19 +79,6 @@ function AskSALPage() {
         }, 30000); // 30 seconds timeout for faster feedback
         return () => clearTimeout(timeout);
     }, [isSending]);
-
-    // Helper to get formatted date context using user's local time
-    const getDateContext = () => {
-        const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-        const today = now.toLocaleDateString('en-US', dateOptions);
-        const currentTime = now.toLocaleTimeString('en-US', timeOptions);
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toLocaleDateString('en-US', dateOptions);
-        return `[CURRENT DATE & TIME: Today is ${today}, ${currentTime}. Tomorrow is ${tomorrowStr}. Use these exact dates when searching.]`;
-    };
 
     const startNewChat = async (initialMessage) => {
         setIsLoading(true);

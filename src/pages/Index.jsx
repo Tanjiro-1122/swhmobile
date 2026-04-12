@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 
 export default function Index() {
-  const [checking, setChecking] = useState(true);
+  const [_checking, setChecking] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function Index() {
         } else {
           navigate(createPageUrl('Home'), { replace: true });
         }
-      } catch (error) {
+      } catch (_error) {
         // Any error (including 401 Unauthorized) means not authenticated
         navigate(createPageUrl('Home'), { replace: true });
       } finally {

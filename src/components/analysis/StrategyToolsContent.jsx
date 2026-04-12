@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Brain, DollarSign, Target, Shield, Zap, TrendingUp, AlertTriangle, Calculator } from "lucide-react";
+import { Loader2, Brain, DollarSign, Target, Shield, Zap, AlertTriangle, Calculator } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function StrategyToolsContent() {

@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { User, CheckCircle2, AlertCircle, Loader2, Zap } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -62,7 +61,7 @@ export default function MessageBubble({ message }) {
                         <ReactMarkdown
                             className="prose prose-sm prose-invert max-w-none prose-p:my-0"
                             components={{
-                                a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300" />,
+                                a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300" />,
                             }}
                         >
                             {displayContent}

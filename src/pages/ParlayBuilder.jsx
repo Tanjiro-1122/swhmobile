@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Zap, Plus, Trash2, DollarSign, TrendingUp, Trophy, AlertCircle } from "lucide-react";
+import { Zap, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,13 +54,6 @@ function ParlayBuilderContent() {
 
   const updateParlayMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Parlay.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['parlays'] });
-    },
-  });
-
-  const deleteParlayMutation = useMutation({
-    mutationFn: (id) => base44.entities.Parlay.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parlays'] });
     },
