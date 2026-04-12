@@ -24,6 +24,7 @@ const shouldResetMonthlyLookups = (resetDateStr) => {
 
 export function useFreeLookupTracker() {
   const [lookupsRemaining, setLookupsRemaining] = useState(5);
+  const [searchCredits, setSearchCredits] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userTier, setUserTier] = useState('free');
   const [isLoading, setIsLoading] = useState(true);
@@ -110,8 +111,13 @@ export function useFreeLookupTracker() {
                 free_lookups_reset_date: newResetDate
               });
             }
+
+            // Load purchased search credits
+            const credits = user.search_credits || 0;
+            setSearchCredits(credits);
             
-            setLookupsRemaining(Math.max(0, 5 - monthlyUsed));
+            // Total remaining = monthly free slots + purchased credits
+            setLookupsRemaining(Math.max(0, 5 - monthlyUsed) + credits);
           } catch (error) {
             console.error('Error fetching user:', error);
             // If error fetching user, treat as free with localStorage fallback
@@ -143,22 +149,46 @@ export function useFreeLookupTracker() {
     // For authenticated free users - update server-side counter
     if (isAuthenticated && currentUser) {
       const currentUsed = currentUser.monthly_free_lookups_used || 0;
-      if (currentUsed >= 5) return false;
-      
-      try {
-        await base44.auth.updateMe({
-          monthly_free_lookups_used: currentUsed + 1
-        });
-        setLookupsRemaining(Math.max(0, 5 - (currentUsed + 1)));
-        setCurrentUser(prev => ({
-          ...prev,
-          monthly_free_lookups_used: currentUsed + 1
-        }));
-        return true;
-      } catch (error) {
-        console.error('Error updating lookup count:', error);
-        return false;
+      const currentCredits = currentUser.search_credits || 0;
+
+      // Use a free monthly lookup first; fall back to purchased credits
+      if (currentUsed < 5) {
+        try {
+          await base44.auth.updateMe({
+            monthly_free_lookups_used: currentUsed + 1
+          });
+          const newUsed = currentUsed + 1;
+          setLookupsRemaining(Math.max(0, 5 - newUsed) + currentCredits);
+          setCurrentUser(prev => ({
+            ...prev,
+            monthly_free_lookups_used: newUsed
+          }));
+          return true;
+        } catch (error) {
+          console.error('Error updating lookup count:', error);
+          return false;
+        }
+      } else if (currentCredits > 0) {
+        // Monthly free lookups exhausted — consume a purchased credit
+        const newCredits = currentCredits - 1;
+        try {
+          await base44.auth.updateMe({
+            search_credits: newCredits
+          });
+          setSearchCredits(newCredits);
+          setLookupsRemaining(newCredits);
+          setCurrentUser(prev => ({
+            ...prev,
+            search_credits: newCredits
+          }));
+          return true;
+        } catch (error) {
+          console.error('Error consuming search credit:', error);
+          return false;
+        }
       }
+
+      return false;
     }
     
     // For non-authenticated users - must sign in first
@@ -173,7 +203,8 @@ export function useFreeLookupTracker() {
       isLoading,
       currentUser: currentUser ? { 
         subscription_type: currentUser.subscription_type,
-        monthly_free_lookups_used: currentUser.monthly_free_lookups_used 
+        monthly_free_lookups_used: currentUser.monthly_free_lookups_used,
+        search_credits: currentUser.search_credits
       } : null 
     });
     
@@ -183,11 +214,12 @@ export function useFreeLookupTracker() {
       return true;
     }
     
-    // For authenticated free users - check server-side counter
+    // For authenticated free users - check monthly counter and purchased credits
     if (isAuthenticated && currentUser) {
       const currentUsed = currentUser.monthly_free_lookups_used || 0;
-      console.log('[FreeLookupTracker] Free user, used:', currentUsed);
-      return currentUsed < 5;
+      const currentCredits = currentUser.search_credits || 0;
+      console.log('[FreeLookupTracker] Free user, used:', currentUsed, 'credits:', currentCredits);
+      return currentUsed < 5 || currentCredits > 0;
     }
     
     // For non-authenticated users - must sign in first
@@ -195,7 +227,7 @@ export function useFreeLookupTracker() {
     return false;
   };
 
-  return { lookupsRemaining, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
+  return { lookupsRemaining, searchCredits, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
 }
 
 export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) {
@@ -489,6 +521,9 @@ export function FreeLookupBanner({ lookupsRemaining, userTier }) {
 
   // Don't show banner if user has all lookups remaining (hasn't used any yet)
   if (lookupsRemaining === 5 && userTier === 'free') return null;
+  // Don't show banner if user has extra credits beyond the free monthly allowance
+  // (they've purchased credits and don't need an upgrade prompt)
+  if (lookupsRemaining > 5 && userTier === 'free') return null;
 
   const handleUpgrade = () => {
     window.location.href = '/Pricing';

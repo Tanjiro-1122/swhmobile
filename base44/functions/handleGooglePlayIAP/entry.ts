@@ -129,14 +129,8 @@ Deno.serve(async (req) => {
       const currentCredits = user.search_credits || 0;
       const newCredits = currentCredits + creditsToAdd;
 
-      await base44.asServiceRole.entities.User.update(user.id, {
-        search_credits: newCredits
-      });
-
-      // Acknowledge the purchase (consume it) so it can be purchased again
-      await acknowledgePurchase(productId, purchaseToken);
-
-      // Create successful audit record
+      // Write audit FIRST — if a crash happens after this but before granting,
+      // the audit record exists so admins can see it and manually grant credits.
       await base44.asServiceRole.entities.PurchaseAudit.create({
         user_email: user.email,
         platform: 'android',
@@ -146,6 +140,14 @@ Deno.serve(async (req) => {
         status: 'verified',
         granted_credits: creditsToAdd
       });
+
+      // Grant credits AFTER audit is recorded
+      await base44.asServiceRole.entities.User.update(user.id, {
+        search_credits: newCredits
+      });
+
+      // Acknowledge the purchase (consume it) so it can be purchased again
+      await acknowledgePurchase(productId, purchaseToken);
 
       console.log('Google Play credits purchase successful:', { 
         userId: user.id, 

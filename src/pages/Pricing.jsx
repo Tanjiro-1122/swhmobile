@@ -319,9 +319,16 @@ export default function Pricing() {
             });
           }
 
-          // Store minimal markers only
+          // Store product/platform markers and the raw receipt/token so the
+          // post-login retry in MyAccount can re-submit the purchase if the
+          // first server call failed (e.g. user wasn't authenticated yet).
           localStorage.setItem('pending_iap_product', data.productId || productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
+          if (data.purchaseToken) {
+            localStorage.setItem('pending_iap_receipt', data.purchaseToken);
+          } else if (data.receiptData) {
+            localStorage.setItem('pending_iap_receipt', data.receiptData);
+          }
           window.location.href = '/PostPurchaseSignIn';
           return;
         }
@@ -441,10 +448,17 @@ export default function Pricing() {
             });
           }
           
-          // Keep small marker only (avoid large base64 in localStorage)
+          // Store product/platform markers and the raw receipt/token so the
+          // post-login retry in MyAccount can re-submit the purchase if the
+          // first server call failed (e.g. user wasn't authenticated yet).
           localStorage.setItem('pending_iap_product', data.productId || pack.productId);
           localStorage.setItem('pending_iap_platform', data.platform || (isAndroidDevice ? 'android' : 'ios'));
           localStorage.setItem('pending_iap_credits', pack.credits.toString());
+          if (data.purchaseToken) {
+            localStorage.setItem('pending_iap_receipt', data.purchaseToken);
+          } else if (data.receiptData) {
+            localStorage.setItem('pending_iap_receipt', data.receiptData);
+          }
           window.location.href = '/PostPurchaseSignIn';
         } else {
           // Handle cancellation
