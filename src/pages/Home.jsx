@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -15,8 +15,13 @@ import WalkingRobot from '@/components/home/WalkingRobot';
 import PlatformBenefits from '@/components/home/PlatformBenefits';
 import FuturisticHero from '@/components/home/FuturisticHero';
 import { usePlatform } from '@/components/hooks/usePlatform';
+import { FreeLookupModal } from '@/components/auth/FreeLookupTracker';
 
-// --- Free Search Logic (resets monthly) ---
+// --- Free Search Logic (resets monthly, for unauthenticated users on the landing page) ---
+// Authenticated users are redirected to Dashboard, so this component is only ever shown
+// to unauthenticated visitors. The counter lives in localStorage because there is no
+// server session to write to. The same 5-lookup limit is enforced server-side for every
+// page that requires authentication (TeamStats, PlayerStats, AIParlayBuilder, etc.).
 const useFreeLookups = () => {
     const MAX_FREE_LOOKUPS = 5;
     const LOOKUP_KEY = 'freeLookupsCount';
@@ -38,7 +43,7 @@ const useFreeLookups = () => {
         }
     }, []);
 
-    const incrementLookups = useCallback(() => {
+    const incrementLookups = () => {
         const currentCount = parseInt(localStorage.getItem(LOOKUP_KEY) || '0', 10);
         if (currentCount < MAX_FREE_LOOKUPS) {
             const newCount = currentCount + 1;
@@ -48,7 +53,7 @@ const useFreeLookups = () => {
         }
         setLookups(MAX_FREE_LOOKUPS);
         return false;
-    }, []);
+    };
 
     const remainingLookups = Math.max(0, MAX_FREE_LOOKUPS - lookups);
     const isBlocked = remainingLookups <= 0;
@@ -79,6 +84,8 @@ const FreeSearchView = () => {
     const [activeTab, setActiveTab] = useState('players');
     const [searchTerm, setSearchTerm] = useState('');
     const [query, setQuery] = useState('');
+    const [showLimitModal, setShowLimitModal] = useState(false);
+    const navigate = useNavigate();
     const { remainingLookups, isBlocked, incrementLookups } = useFreeLookups();
     
     const { data, isFetching, refetch } = useQuery({
@@ -109,27 +116,37 @@ const FreeSearchView = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        if (searchTerm.trim() && !isBlocked) {
+        if (searchTerm.trim()) {
+            if (isBlocked) {
+                setShowLimitModal(true);
+                return;
+            }
             setQuery(searchTerm);
             setTimeout(() => refetch(), 0);
         }
     };
 
+    // Show the shared limit modal when the counter is exhausted.
+    // Closing it sends the user to Pricing, since there is nothing left to do on this page.
     if (isBlocked || data?.blocked) {
         return (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center bg-slate-800/50 border border-purple-500/30 p-8 rounded-xl">
-                <h3 className="text-2xl font-bold text-white mb-2">Aww, you're all done now!</h3>
-                <p className="text-slate-300 mb-6">Click "Get Started" to unlock unlimited searches and a world of AI difference.</p>
-                <Button asChild size="lg" className="bg-lime-400 text-slate-900 font-bold hover:bg-lime-300 rounded-full px-8">
-                    <Link to={createPageUrl('Pricing')}>
-                        Get Started
-                    </Link>
-                </Button>
-            </motion.div>
+            <>
+                <FreeLookupModal
+                    show={true}
+                    onClose={() => navigate(createPageUrl('Pricing'))}
+                    isAuthenticated={false}
+                />
+            </>
         );
     }
 
     return (
+        <>
+        <FreeLookupModal
+            show={showLimitModal}
+            onClose={() => setShowLimitModal(false)}
+            isAuthenticated={false}
+        />
         <Card className="bg-slate-900/70 border-slate-700/50 backdrop-blur-sm">
             <CardHeader>
                 <div className="flex justify-between items-center">
@@ -174,6 +191,7 @@ const FreeSearchView = () => {
                 </Tabs>
             </CardContent>
         </Card>
+        </>
     );
 };
 

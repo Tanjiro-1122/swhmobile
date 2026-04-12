@@ -32,6 +32,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Credit pack product IDs and the credits they represent
+const CREDIT_PACK_MAPPING = {
+  'com.sportswagerhelper.credits.25': 25,
+  'com.sportswagerhelper.credits.60': 60,
+  'com.sportswagerhelper.credits.100': 100
+};
+
+const isCreditPackProduct = (productId) => productId && productId in CREDIT_PACK_MAPPING;
+
 export default function AdminPurchaseAudit() {
   const [searchEmail, setSearchEmail] = useState("");
   const [selectedAudit, setSelectedAudit] = useState(null);
@@ -58,13 +67,18 @@ export default function AdminPurchaseAudit() {
   });
 
   const manualActivateMutation = useMutation({
-    mutationFn: async ({ userId, subscriptionType, reason, auditId }) => {
-      return await base44.functions.invoke('manuallyActivateSubscription', {
+    mutationFn: async ({ userId, subscriptionType, reason, auditId, productId }) => {
+      const payload = {
         user_id: userId,
-        subscription_type: subscriptionType,
         reason,
-        purchase_audit_id: auditId
-      });
+        purchase_audit_id: auditId,
+        product_id: productId,
+      };
+      // Only include subscription_type when this isn't a credit pack purchase
+      if (!isCreditPackProduct(productId)) {
+        payload.subscription_type = subscriptionType;
+      }
+      return await base44.functions.invoke('manuallyActivateSubscription', payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-audits'] });
@@ -76,6 +90,12 @@ export default function AdminPurchaseAudit() {
 
   const handleManualActivate = () => {
     if (!selectedAudit || !manualActivationReason) return;
+
+    // For subscription-type activations, a subscription tier must be selected
+    if (!isCreditPackProduct(selectedAudit.product_id) && !selectedSubscriptionType) {
+      alert('Please select a subscription type');
+      return;
+    }
     
     const user = users?.find(u => u.email === selectedAudit.user_email);
     if (!user) {
@@ -87,7 +107,8 @@ export default function AdminPurchaseAudit() {
       userId: user.id,
       subscriptionType: selectedSubscriptionType,
       reason: manualActivationReason,
-      auditId: selectedAudit.id
+      auditId: selectedAudit.id,
+      productId: selectedAudit.product_id,
     });
   };
 
@@ -218,7 +239,11 @@ export default function AdminPurchaseAudit() {
         <Dialog open={!!selectedAudit} onOpenChange={() => setSelectedAudit(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Manually Activate Subscription</DialogTitle>
+              <DialogTitle>
+                {isCreditPackProduct(selectedAudit?.product_id)
+                  ? 'Manually Grant Credits'
+                  : 'Manually Activate Subscription'}
+              </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -228,23 +253,31 @@ export default function AdminPurchaseAudit() {
               <div>
                 <strong>Product:</strong> {selectedAudit?.product_id}
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Subscription Type</label>
-                <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="premium_monthly">Premium Monthly</SelectItem>
-                    <SelectItem value="vip_annual">VIP Annual</SelectItem>
-                    <SelectItem value="legacy">Legacy (Lifetime)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
+              {isCreditPackProduct(selectedAudit?.product_id) ? (
+                <div className="bg-cyan-50 border border-cyan-200 rounded p-3 text-sm text-cyan-800">
+                  <strong>Credits to grant:</strong> {CREDIT_PACK_MAPPING[selectedAudit?.product_id]} search credits
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Subscription Type</label>
+                  <Select value={selectedSubscriptionType} onValueChange={setSelectedSubscriptionType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="premium_monthly">Premium Monthly</SelectItem>
+                      <SelectItem value="vip_annual">VIP Annual</SelectItem>
+                      <SelectItem value="legacy">Legacy (Lifetime)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
-                <label className="block text-sm font-medium mb-2">Reason for Manual Activation</label>
+                <label className="block text-sm font-medium mb-2">
+                  Reason for Manual {isCreditPackProduct(selectedAudit?.product_id) ? 'Credit Grant' : 'Activation'}
+                </label>
                 <Textarea
                   value={manualActivationReason}
                   onChange={(e) => setManualActivationReason(e.target.value)}
@@ -262,7 +295,11 @@ export default function AdminPurchaseAudit() {
                 onClick={handleManualActivate}
                 disabled={!manualActivationReason || manualActivateMutation.isPending}
               >
-                {manualActivateMutation.isPending ? 'Activating...' : 'Activate Subscription'}
+                {manualActivateMutation.isPending
+                  ? 'Processing...'
+                  : isCreditPackProduct(selectedAudit?.product_id)
+                    ? `Grant ${CREDIT_PACK_MAPPING[selectedAudit?.product_id]} Credits`
+                    : 'Activate Subscription'}
               </Button>
             </DialogFooter>
           </DialogContent>

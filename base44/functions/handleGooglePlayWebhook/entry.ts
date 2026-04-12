@@ -7,6 +7,13 @@ const PRODUCT_MAPPING = {
   'com.sportswagerhelper.vip.annual': 'vip_annual'
 };
 
+// Map consumable credit-pack product IDs to credit amounts
+const CREDIT_PACK_MAPPING = {
+  'com.sportswagerhelper.credits.25': 25,
+  'com.sportswagerhelper.credits.60': 60,
+  'com.sportswagerhelper.credits.100': 100
+};
+
 // Get service account credentials from environment
 const getServiceAccountCredentials = () => {
   const keyJson = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY');
@@ -166,14 +173,30 @@ async function handleOneTimeProductNotification(base44, notification) {
 
       if (users.length > 0) {
         const user = users[0];
-        const subscriptionType = PRODUCT_MAPPING[sku];
 
+        // Check if this is a credit-pack purchase first
+        const creditsToAdd = CREDIT_PACK_MAPPING[sku];
+        if (creditsToAdd) {
+          const currentCredits = user.search_credits || 0;
+          await base44.asServiceRole.entities.User.update(user.id, {
+            search_credits: currentCredits + creditsToAdd,
+            google_play_purchase_token: purchaseToken,
+            google_play_order_id: purchaseData.orderId
+          });
+          console.log(`Granted ${creditsToAdd} credits to user ${user.id} (total: ${currentCredits + creditsToAdd})`);
+          return;
+        }
+
+        // Otherwise treat as a subscription product
+        const subscriptionType = PRODUCT_MAPPING[sku];
         if (subscriptionType) {
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_type: subscriptionType,
             google_play_purchase_token: purchaseToken,
             google_play_order_id: purchaseData.orderId
           });
+        } else {
+          console.error('Unknown one-time product SKU:', sku);
         }
       }
     }
