@@ -24,7 +24,7 @@ export default function AppleAuthCallback() {
           await base44.auth.setToken(token);
           setStatus('success');
           setTimeout(() => {
-            window.location.href = '/';
+            navigate('/');
           }, 500);
           return;
         }
@@ -42,7 +42,7 @@ export default function AppleAuthCallback() {
             setStatus('signing-in');
             await base44.auth.setToken(resp.data.sessionToken);
             setStatus('success');
-            window.location.href = '/';
+            navigate('/');
             return;
           }
 
@@ -111,7 +111,7 @@ export default function AppleAuthCallback() {
             <h2 className="text-xl font-bold text-white mb-2">Authentication Failed</h2>
             <p className="text-slate-400 mb-4">{error}</p>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate('/')}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
             >
               Return to Home
