@@ -98,17 +98,27 @@ export const callNativeIAPWithCallback = async (iapConfig, callback) => {
 /**
  * Persists receipt data to localStorage so it can be resubmitted after login.
  * Uses the same keys that MyAccount.jsx reads when ?activate_iap=true is present.
+ * Throws if the required fields are missing so callers can surface the error
+ * instead of silently storing an incomplete/unusable receipt.
  * @param {object} receiptData
  */
 const savePendingReceipt = (receiptData) => {
+  if (!receiptData.productId) {
+    throw new Error('savePendingReceipt: productId is required');
+  }
+
   // For Android the purchaseToken is stored under the same key as the iOS receipt
   // so that MyAccount.activatePendingIAP can use a single code path for both.
   const receiptValue = receiptData.platform === 'android'
     ? receiptData.purchaseToken
     : receiptData.receipt;
 
-  localStorage.setItem('pending_iap_receipt', receiptValue || '');
-  localStorage.setItem('pending_iap_product', receiptData.productId || '');
+  if (!receiptValue) {
+    throw new Error('savePendingReceipt: receipt or purchaseToken is required');
+  }
+
+  localStorage.setItem('pending_iap_receipt', receiptValue);
+  localStorage.setItem('pending_iap_product', receiptData.productId);
   localStorage.setItem('pending_iap_platform', receiptData.platform || 'ios');
 };
 
