@@ -24,7 +24,9 @@ export default function AppleAuthCallback() {
           await base44.auth.setToken(token);
           setStatus('success');
           setTimeout(() => {
-            window.location.href = '/';
+            // If a purchase receipt is waiting, activate it before going to the dashboard.
+            const hasPendingIAP = !!localStorage.getItem('pending_iap_product');
+            window.location.href = hasPendingIAP ? '/MyAccount?activate_iap=true' : '/';
           }, 500);
           return;
         }
@@ -42,7 +44,9 @@ export default function AppleAuthCallback() {
             setStatus('signing-in');
             await base44.auth.setToken(resp.data.sessionToken);
             setStatus('success');
-            window.location.href = '/';
+            // If a purchase receipt is waiting, activate it before going to the dashboard.
+            const hasPendingIAP = !!localStorage.getItem('pending_iap_product');
+            window.location.href = hasPendingIAP ? '/MyAccount?activate_iap=true' : '/';
             return;
           }
 

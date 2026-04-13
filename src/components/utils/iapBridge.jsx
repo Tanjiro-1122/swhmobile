@@ -96,12 +96,44 @@ export const callNativeIAPWithCallback = async (iapConfig, callback) => {
 };
 
 /**
+ * Persists receipt data to localStorage so it can be resubmitted after login.
+ * Uses the same keys that MyAccount.jsx reads when ?activate_iap=true is present.
+ * @param {object} receiptData
+ */
+const savePendingReceipt = (receiptData) => {
+  // For Android the purchaseToken is stored under the same key as the iOS receipt
+  // so that MyAccount.activatePendingIAP can use a single code path for both.
+  const receiptValue = receiptData.platform === 'android'
+    ? receiptData.purchaseToken
+    : receiptData.receipt;
+
+  localStorage.setItem('pending_iap_receipt', receiptValue || '');
+  localStorage.setItem('pending_iap_product', receiptData.productId || '');
+  localStorage.setItem('pending_iap_platform', receiptData.platform || 'ios');
+};
+
+/**
  * Submits a purchase receipt to the backend for validation.
+ * If the user is not authenticated the receipt is saved to localStorage and
+ * the user is redirected to the login page.  MyAccount?activate_iap=true
+ * will resubmit the receipt automatically after a successful sign-in.
  * @param {object} receiptData - The receipt data from the IAP flow.
  * @returns {Promise<void>}
  */
 export const submitReceiptToServer = async (receiptData) => {
   console.log('Submitting receipt to server:', receiptData);
+
+  // Guard: ensure the user session is still valid before hitting the backend.
+  // Sessions can expire while the native IAP sheet is open.
+  const isAuthenticated = await base44.auth.isAuthenticated();
+  if (!isAuthenticated) {
+    console.warn('submitReceiptToServer: user not authenticated — saving receipt and redirecting to login');
+    savePendingReceipt(receiptData);
+    // MyAccount will pick up the pending receipt via ?activate_iap=true after login.
+    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+    return;
+  }
+
   try {
     let response;
     if (receiptData.platform === 'ios') {
@@ -129,7 +161,17 @@ export const submitReceiptToServer = async (receiptData) => {
 
   } catch (error) {
     console.error('Failed to submit receipt to server:', error);
-    // Optionally, log this error to a backend service
+
+    // If the request was rejected due to an expired session, save the receipt
+    // and redirect to login so the user doesn't lose their purchase.
+    const status = error?.status ?? error?.response?.status;
+    if (status === 401) {
+      console.warn('submitReceiptToServer: 401 response — saving receipt and redirecting to login');
+      savePendingReceipt(receiptData);
+      base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+      return;
+    }
+
     base44.functions.invoke('logError', {
         error_type: 'iap',
         function_name: 'submitReceiptToServer',
