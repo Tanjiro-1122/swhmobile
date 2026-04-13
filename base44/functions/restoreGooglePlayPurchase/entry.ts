@@ -1,26 +1,43 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { GoogleAuth } from 'npm:google-auth-library@9.4.1';
+
+const PRODUCT_MAPPING: Record<string, string> = {
+  'com.sportswagerhelper.premium.monthly': 'premium_monthly',
+  'com.sportswagerhelper.vip.annual': 'vip_annual',
+};
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+const PACKAGE_NAME = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME') || 'com.wnapp.id1761803023263';
+
+async function getAuthenticatedClient() {
+  const keyJson = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY');
+  if (!keyJson) throw new Error('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY not configured');
+  const credentials = JSON.parse(keyJson);
+  const auth = new GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+  });
+  return auth.getClient();
+}
 
 Deno.serve(async (req) => {
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Verify user is authenticated
+
     const user = await base44.auth.me();
     if (!user) {
       return Response.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401, headers: corsHeaders }
+        { status: 401, headers: CORS_HEADERS }
       );
     }
 
@@ -29,135 +46,97 @@ Deno.serve(async (req) => {
     if (!purchaseToken || !productId) {
       return Response.json(
         { success: false, error: 'Missing purchaseToken or productId' },
-        { status: 400, headers: corsHeaders }
+        { status: 400, headers: CORS_HEADERS }
       );
     }
 
     console.log('[RestoreGooglePlay] Restoring purchase:', { productId, userEmail: user.email });
 
-    // Get Google Play service account key
-    const serviceAccountKey = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_KEY');
-    if (!serviceAccountKey) {
-      throw new Error('Google Play service account key not configured');
-    }
+    const client = await getAuthenticatedClient();
 
-    // Parse service account credentials
-    const credentials = JSON.parse(serviceAccountKey);
+    // Try subscription endpoint first
+    let purchaseData: Record<string, unknown> | null = null;
+    let isSubscription = false;
 
-    // Create JWT for Google OAuth
-    const now = Math.floor(Date.now() / 1000);
-    const header = { alg: 'RS256', typ: 'JWT' };
-    const payload = {
-      iss: credentials.client_email,
-      scope: 'https://www.googleapis.com/auth/androidpublisher',
-      aud: 'https://oauth2.googleapis.com/token',
-      exp: now + 3600,
-      iat: now,
-    };
-
-    // Encode JWT
-    const encoder = new TextEncoder();
-    const headerB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(header))))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const payloadB64 = btoa(String.fromCharCode(...encoder.encode(JSON.stringify(payload))))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    
-    const signatureInput = `${headerB64}.${payloadB64}`;
-    
-    // Import private key
-    const privateKey = await crypto.subtle.importKey(
-      'pkcs8',
-      Uint8Array.from(atob(credentials.private_key.replace(/-----[^-]+-----/g, '').replace(/\s/g, '')), c => c.charCodeAt(0)),
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-
-    // Sign JWT
-    const signature = await crypto.subtle.sign(
-      'RSASSA-PKCS1-v1_5',
-      privateKey,
-      encoder.encode(signatureInput)
-    );
-    
-    const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    
-    const jwt = `${signatureInput}.${signatureB64}`;
-
-    // Exchange JWT for access token
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
-    });
-
-    if (!tokenResponse.ok) {
-      throw new Error('Failed to get access token');
-    }
-
-    const { access_token } = await tokenResponse.json();
-
-    // Determine package name and verify purchase
-    const packageName = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME') || 'com.wnapp.id1761803023263';
-
-    // Check if it's a subscription
-    let verifyUrl, purchaseData;
-    
-    // Try subscription first
     try {
-      verifyUrl = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
-      const verifyResponse = await fetch(verifyUrl, {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
-
-      if (verifyResponse.ok) {
-        purchaseData = await verifyResponse.json();
+      const subUrl = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
+      const subResp = await client.request<Record<string, unknown>>({ url: subUrl });
+      if (subResp.data) {
+        purchaseData = subResp.data;
+        isSubscription = true;
         console.log('[RestoreGooglePlay] Found subscription:', purchaseData);
       }
-    } catch (err) {
-      console.log('[RestoreGooglePlay] Not a subscription, trying as product');
+    } catch {
+      console.log('[RestoreGooglePlay] Not a subscription, trying as one-time product');
     }
 
-    // If not subscription, try as product (one-time purchase)
+    // Fall back to one-time product endpoint
     if (!purchaseData) {
-      verifyUrl = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
-      const verifyResponse = await fetch(verifyUrl, {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
-
-      if (!verifyResponse.ok) {
+      try {
+        const prodUrl = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PACKAGE_NAME}/purchases/products/${productId}/tokens/${purchaseToken}`;
+        const prodResp = await client.request<Record<string, unknown>>({ url: prodUrl });
+        if (prodResp.data) {
+          purchaseData = prodResp.data;
+          isSubscription = false;
+          console.log('[RestoreGooglePlay] Found product purchase:', purchaseData);
+        }
+      } catch (err) {
         throw new Error('Purchase not found or invalid');
       }
-
-      purchaseData = await verifyResponse.json();
-      console.log('[RestoreGooglePlay] Found product purchase:', purchaseData);
     }
 
-    // Verify purchase is valid
-    if (purchaseData.purchaseState !== 0) {
-      return Response.json(
-        { success: false, error: 'Purchase is not in valid state' },
-        { status: 400, headers: corsHeaders }
-      );
+    if (!purchaseData) {
+      throw new Error('Purchase not found');
+    }
+
+    // Validate purchase state depending on type
+    if (isSubscription) {
+      // For subscriptions: paymentState 1 = received, 2 = free trial
+      const paymentState = purchaseData.paymentState as number | undefined;
+      const expiryMs = parseInt((purchaseData.expiryTimeMillis as string) || '0', 10);
+      const isActive =
+        (paymentState === 1 || paymentState === 2) &&
+        (!expiryMs || expiryMs > Date.now());
+      if (!isActive) {
+        return Response.json(
+          { success: false, error: 'Subscription is not active or has expired' },
+          { status: 400, headers: CORS_HEADERS }
+        );
+      }
+    } else {
+      // For one-time products: purchaseState 0 = purchased
+      if ((purchaseData.purchaseState as number) !== 0) {
+        return Response.json(
+          { success: false, error: 'Purchase is not in valid state' },
+          { status: 400, headers: CORS_HEADERS }
+        );
+      }
     }
 
     // Map product ID to subscription type
-    let subscriptionType;
-    if (productId.includes('annual') || productId.includes('vip')) {
-      subscriptionType = 'vip_annual';
-    } else if (productId.includes('monthly') || productId.includes('premium')) {
-      subscriptionType = 'premium_monthly';
-    } else {
-      subscriptionType = 'premium_monthly'; // Default
+    let subscriptionType = PRODUCT_MAPPING[productId];
+    if (!subscriptionType) {
+      // Fallback heuristic for unknown product IDs
+      if (productId.includes('annual') || productId.includes('vip')) {
+        subscriptionType = 'vip_annual';
+      } else {
+        subscriptionType = 'premium_monthly';
+      }
     }
 
     // Update user subscription
-    await base44.asServiceRole.entities.User.update(user.id, {
+    const updateData: Record<string, unknown> = {
       subscription_type: subscriptionType,
       google_play_purchase_token: purchaseToken,
       google_play_product_id: productId,
-    });
+    };
+    if (isSubscription && purchaseData.expiryTimeMillis) {
+      updateData.subscription_expires_at = new Date(
+        parseInt(purchaseData.expiryTimeMillis as string, 10)
+      ).toISOString();
+    }
+
+    await base44.asServiceRole.entities.User.update(user.id, updateData);
 
     // Create audit record
     await base44.asServiceRole.entities.PurchaseAudit.create({
@@ -174,14 +153,13 @@ Deno.serve(async (req) => {
 
     return Response.json(
       { success: true, subscriptionType },
-      { headers: corsHeaders }
+      { headers: CORS_HEADERS }
     );
-
   } catch (error) {
     console.error('[RestoreGooglePlay] Error:', error);
     return Response.json(
-      { success: false, error: error.message },
-      { status: 500, headers: corsHeaders }
+      { success: false, error: (error as Error).message },
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 });

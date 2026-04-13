@@ -66,6 +66,18 @@ Deno.serve(async (req) => {
 
     console.log('Processing Google Play IAP:', { productId, userEmail: user.email });
 
+    // Save the purchase token to the user record immediately so the Google Play
+    // Real-Time Developer Notifications webhook can look up this user even if
+    // it fires before verification completes (race condition).
+    try {
+      await base44.asServiceRole.entities.User.update(user.id, {
+        google_play_purchase_token: purchaseToken,
+        google_play_product_id: productId,
+      });
+    } catch (tokenSaveErr) {
+      console.warn('Failed to save purchase token early:', tokenSaveErr);
+    }
+
     // Determine purchase type
     const isSubscription = productId.includes('monthly') || productId.includes('annual');
     const isCredits = productId.includes('credits');
