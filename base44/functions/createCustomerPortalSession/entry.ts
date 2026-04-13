@@ -38,9 +38,10 @@ Deno.serve(async (req) => {
     }
 
     // Create portal session
+    const appHostUrl = Deno.env.get('APP_HOST_URL') || 'https://sportswagerhelper.com';
     const session = await stripe.billingPortal.sessions.create({
       customer: customer.id,
-      return_url: `https://sportswagerhelper.com/MyAccount`,
+      return_url: `${appHostUrl}/MyAccount`,
     });
 
     return Response.json({ 

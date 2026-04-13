@@ -105,7 +105,24 @@ async function handleSubscriptionNotification(base44, notification) {
   }
 
   if (!user) {
-    console.error('User not found for purchase token:', purchaseToken);
+    // User not found — this can happen when the webhook fires before
+    // handleGooglePlayIAP runs (race condition on first purchase).
+    // Create a pending audit record so an admin can manually activate if needed.
+    console.error('User not found for purchase token:', purchaseToken, '— creating pending audit record');
+    try {
+      const subscriptionType = PRODUCT_MAPPING[subscriptionId];
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        platform: 'android',
+        product_id: subscriptionId,
+        purchase_token: purchaseToken,
+        transaction_id: subscriptionData.orderId,
+        status: 'failed',
+        error_message: `Webhook received but no user found for purchaseToken. notificationType=${notificationType}`,
+        granted_subscription: subscriptionType || null,
+      });
+    } catch (auditErr) {
+      console.error('Failed to create audit record for missing user:', auditErr);
+    }
     return;
   }
 
