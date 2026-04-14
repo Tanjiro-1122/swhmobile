@@ -34,7 +34,9 @@
   "submit": {
     "production": {
       "ios": {
-        "language": "en-US"
+        "appleId": "huertasfam1@icloud.com",
+        "ascAppId": "6755343785",
+        "appleTeamId": "6YCRK652JB"
       },
       "android": {
         "track": "internal"
