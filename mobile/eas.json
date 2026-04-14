@@ -25,9 +25,8 @@
         "autoIncrement": true
       },
       "android": {
-        "buildType": "aab",
+        "buildType": "app-bundle",
         "distribution": "store",
-        "track": "internal",
         "autoIncrement": true
       }
     }
@@ -35,12 +34,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "language": "en-US"
       },
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
         "track": "internal"
       }
     }
