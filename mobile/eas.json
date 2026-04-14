@@ -24,7 +24,7 @@
       "ios": {
         "distribution": "store",
         "autoIncrement": true,
-        "image": "latest"
+        "image": "macos-sequoia-15.2-xcode-16.2"
       },
       "android": {
         "buildType": "app-bundle",
