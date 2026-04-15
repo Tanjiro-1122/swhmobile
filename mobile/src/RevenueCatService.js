@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 
-const REVENUECAT_API_KEY_IOS = 'appl_gCTrteiTHnaclzveBxPzKFKEbrC';
-const REVENUECAT_API_KEY_ANDROID = 'goog_FZSBeUnrDQyPWQloQGdlxAOLRYE';
+const REVENUECAT_API_KEY_IOS = process.env.REVENUECAT_API_KEY_IOS || '';
+const REVENUECAT_API_KEY_ANDROID = process.env.REVENUECAT_API_KEY_ANDROID || '';
 
 export const ENTITLEMENT_ID = 'entl5ad30a0ac8';
 
@@ -21,7 +21,10 @@ export const initializePurchases = async () => {
     const apiKey =
       Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
 
-    Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+    if (!apiKey) {
+      console.warn('[RevenueCat] API key is not set. Check REVENUECAT_API_KEY_IOS / REVENUECAT_API_KEY_ANDROID environment variables.');
+    }
+
     await Purchases.configure({ apiKey });
     console.log('[RevenueCat] Initialized successfully');
   } catch (error) {
