@@ -87,6 +87,7 @@ export default function WebViewScreen() {
               return byte.toString(16).padStart(2, '0');
             }).join('');
           } else {
+            // Fallback for older WebViews where crypto may be unavailable.
             randomPart = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
           }
           deviceId = 'swh-' + metadata.platform + '-' + randomPart;
@@ -143,6 +144,8 @@ export default function WebViewScreen() {
     if (!webViewRef.current) return;
     const js = `
       (function() {
+        // Compatibility bus used by web-side iapBridge.postNativeMessage.
+        // Expected shape: window.__nativeBus(payloadObject) => void
         if (typeof window.__nativeBus === 'function') {
           try {
             window.__nativeBus(${JSON.stringify(payload)});
