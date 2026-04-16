@@ -249,6 +249,14 @@ const OriginalHeroSection = () => (
 export default function Home() {
     const navigate = useNavigate();
     const { isWeb } = usePlatform();
+
+    useEffect(() => {
+        const isNative = window.__SWH_NATIVE__ === true;
+        const isVercel = window.location.hostname.includes('vercel.app');
+        if (isNative || isVercel) {
+            navigate(createPageUrl('Dashboard'), { replace: true });
+        }
+    }, [navigate]);
     
     const { data: user, isLoading: isAuthLoading } = useQuery({
         queryKey: ['currentUser'],
