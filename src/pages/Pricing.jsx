@@ -246,10 +246,10 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_platform', 'ios');
           window.location.href = '/PostPurchaseSignIn';
         } else if (result.error !== 'user_cancelled') {
-          alert(`Purchase failed: ${result.error || 'Unknown error'}. Please try again.`);
+          alert(`Purchase failed: ${result.error}`);
         }
       } catch (err) {
-        console.error('[Pricing] iOS RevenueCat purchase error:', err);
+        console.error('RevenueCat purchase error:', err);
         alert('Purchase failed. Please try again.');
       } finally {
         setProcessingItem(null);
@@ -527,6 +527,19 @@ export default function Pricing() {
       }
       console.error('Credit purchase error:', error);
       setProcessingItem(null);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    try {
+      const result = await triggerRestorePurchases();
+      if (result.success) {
+        alert('Purchases restored! If your subscription is not showing, please sign in again.');
+      } else {
+        alert('No purchases to restore.');
+      }
+    } catch (_err) {
+      alert('Could not restore purchases. Please try again.');
     }
   };
 
@@ -1071,19 +1084,7 @@ export default function Pricing() {
           <div className="text-center mb-8">
             <Button
               variant="link"
-              onClick={isIOSNative ? async () => {
-                try {
-                  const result = await triggerRestorePurchases();
-                  if (result.success) {
-                    alert('Purchases restored! Please sign in to activate.');
-                    window.location.href = '/PostPurchaseSignIn';
-                  } else {
-                    alert(result.error || 'No purchases found to restore.');
-                  }
-                } catch {
-                  alert('Restore failed. Please try again.');
-                }
-              } : () => setShowRestoreModal(true)}
+              onClick={isIOSNative ? handleRestorePurchases : () => setShowRestoreModal(true)}
               className="text-blue-600 hover:text-blue-700 underline text-sm lg:text-base"
             >
               Legacy subscriber? Restore purchases
