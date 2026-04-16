@@ -246,7 +246,7 @@ export default function Pricing() {
           localStorage.setItem('pending_iap_platform', 'ios');
           window.location.href = '/PostPurchaseSignIn';
         } else if (result.error !== 'user_cancelled') {
-          alert(`Purchase failed: ${result.error}`);
+          alert(`Purchase failed: ${result.error || 'Unknown error'}`);
         }
       } catch (err) {
         console.error('RevenueCat purchase error:', err);
