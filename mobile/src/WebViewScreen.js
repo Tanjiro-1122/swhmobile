@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 
 import PurchaseModal from './PurchaseModal';
 import { restorePurchases, checkEntitlement } from './RevenueCatService';
@@ -28,33 +29,6 @@ const APP_URL = 'https://sportswagerhelper.base44.app';
  *
  * The native layer sends results back via window.onNativePurchaseResult(payload).
  */
-const INJECTED_JS = `
-(function() {
-  if (window.__rnBridgeInjected) return;
-  window.__rnBridgeInjected = true;
-
-  // Expose a helper so the website can easily trigger purchases
-  window.NativePurchase = {
-    buyCredits: function(productId) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({
-        type: 'PURCHASE',
-        productId: productId
-      }));
-    },
-    restore: function() {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'RESTORE' }));
-    },
-    checkEntitlement: function() {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CHECK_ENTITLEMENT' }));
-    }
-  };
-
-  // Notify the web app that the native bridge is ready
-  document.dispatchEvent(new CustomEvent('NativeBridgeReady', { detail: { platform: '${Platform.OS}' } }));
-  true;
-})();
-`;
-
 export default function WebViewScreen() {
   const webViewRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -66,6 +40,78 @@ export default function WebViewScreen() {
 
   const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
+
+  const bridgeMetadata = useMemo(() => {
+    const config = Constants.expoConfig ?? {};
+    const version = config.version ?? Constants.nativeAppVersion ?? null;
+    const iosBuildNumber = config.ios?.buildNumber ?? null;
+    const androidVersionCode = config.android?.versionCode?.toString?.() ?? null;
+    const buildNumber = Platform.OS === 'ios'
+      ? (iosBuildNumber ?? Constants.nativeBuildVersion ?? null)
+      : (androidVersionCode ?? Constants.nativeBuildVersion ?? null);
+
+    return {
+      platform: Platform.OS,
+      appVersion: version,
+      buildNumber,
+    };
+  }, []);
+
+  const injectedJs = useMemo(() => {
+    const metadataJson = JSON.stringify(bridgeMetadata);
+
+    return `
+      (function() {
+        if (window.__rnBridgeInjected) return true;
+        window.__rnBridgeInjected = true;
+
+        var metadata = ${metadataJson};
+        window.__SWH_NATIVE__ = true;
+        window.__SWH_NATIVE_META__ = metadata;
+
+        var storageKey = '__swh_device_id';
+        var deviceId = null;
+
+        try {
+          if (window.localStorage) {
+            deviceId = window.localStorage.getItem(storageKey);
+          }
+        } catch (_error) {}
+
+        if (!deviceId) {
+          deviceId = 'swh-' + metadata.platform + '-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+          try {
+            if (window.localStorage) {
+              window.localStorage.setItem(storageKey, deviceId);
+            }
+          } catch (_error) {}
+        }
+
+        window.__SWH_DEVICE_ID__ = deviceId;
+        window.__SWH_NATIVE_META__.deviceId = deviceId;
+
+        // Expose a helper so the website can easily trigger purchases
+        window.NativePurchase = {
+          buyCredits: function(productId) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'PURCHASE',
+              productId: productId
+            }));
+          },
+          restore: function() {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'RESTORE' }));
+          },
+          checkEntitlement: function() {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CHECK_ENTITLEMENT' }));
+          }
+        };
+
+        // Notify the web app that the native bridge is ready
+        document.dispatchEvent(new CustomEvent('NativeBridgeReady', { detail: window.__SWH_NATIVE_META__ }));
+        return true;
+      })();
+    `;
+  }, [bridgeMetadata]);
 
   // Handle Android hardware back button
   useEffect(() => {
@@ -87,6 +133,11 @@ export default function WebViewScreen() {
     if (!webViewRef.current) return;
     const js = `
       (function() {
+        if (typeof window.__nativeBus === 'function') {
+          try {
+            window.__nativeBus(${JSON.stringify(payload)});
+          } catch (_error) {}
+        }
         var event = new CustomEvent('NativePurchaseResult', { detail: ${JSON.stringify(payload)} });
         document.dispatchEvent(event);
         if (typeof window.onNativePurchaseResult === 'function') {
@@ -118,7 +169,8 @@ export default function WebViewScreen() {
           break;
         }
 
-        case 'RESTORE': {
+        case 'RESTORE':
+        case 'RESTORE_PURCHASES': {
           try {
             const result = await restorePurchases();
             postMessageToWeb({ type: 'RESTORE_RESULT', success: true, customerInfo: result.customerInfo });
@@ -204,7 +256,8 @@ export default function WebViewScreen() {
         ref={webViewRef}
         source={{ uri: APP_URL }}
         style={styles.webview}
-        injectedJavaScript={INJECTED_JS}
+        injectedJavaScriptBeforeContentLoaded={injectedJs}
+        injectedJavaScript={injectedJs}
         onMessage={handleMessage}
         onLoadProgress={handleLoadProgress}
         onLoadEnd={handleLoadEnd}
