@@ -11,6 +11,20 @@ const CONSUMABLE_EVENT_TYPES = new Set([
   'NON_RENEWING_PURCHASE',
 ]);
 
+const MAX_ERROR_MESSAGE_LENGTH = 1000;
+const MAX_ERROR_STACK_LENGTH = 2000;
+
+interface RevenueCatWebhookEvent {
+  type?: string;
+  app_user_id?: string;
+  product_id?: string;
+  transaction_id?: string;
+}
+
+interface RevenueCatWebhookBody {
+  event?: RevenueCatWebhookEvent;
+}
+
 function timingSafeEqual(left: string | null, right: string | undefined): boolean {
   if (typeof left !== 'string' || typeof right !== 'string') {
     return false;
@@ -28,9 +42,16 @@ function timingSafeEqual(left: string | null, right: string | undefined): boolea
   return diff === 0;
 }
 
+function isNotFoundError(error: unknown): boolean {
+  const status = (error as { status?: number })?.status;
+  const code = (error as { code?: string })?.code;
+  const message = String((error as { message?: string })?.message || '').toLowerCase();
+  return status === 404 || code === 'NOT_FOUND' || message.includes('not found');
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  let body: any = {};
+  let body: RevenueCatWebhookBody = {};
 
   try {
     const authHeader = req.headers.get('authorization');
@@ -65,7 +86,17 @@ Deno.serve(async (req) => {
       return Response.json({ received: true, duplicate: true });
     }
 
-    const user = await base44.asServiceRole.entities.User.get(appUserId).catch(() => null);
+    let user = null;
+    try {
+      user = await base44.asServiceRole.entities.User.get(appUserId);
+    } catch (userError) {
+      if (isNotFoundError(userError)) {
+        console.log('RevenueCat webhook user not found:', appUserId);
+        return Response.json({ received: true });
+      }
+      throw userError;
+    }
+
     if (!user) {
       console.log('RevenueCat webhook user not found:', appUserId);
       return Response.json({ received: true });
@@ -105,8 +136,8 @@ Deno.serve(async (req) => {
         error_type: 'iap',
         severity: 'error',
         function_name: 'handleRevenueCatWebhook',
-        error_message: String(error?.message || error).slice(0, 1000),
-        error_stack: String(error?.stack || '').slice(0, 2000),
+        error_message: String((error as { message?: string })?.message || error).slice(0, MAX_ERROR_MESSAGE_LENGTH),
+        error_stack: String((error as { stack?: string })?.stack || '').slice(0, MAX_ERROR_STACK_LENGTH),
         context: {
           eventType: body?.event?.type,
           appUserId: body?.event?.app_user_id,
