@@ -191,3 +191,67 @@ export const submitReceiptToServer = async (receiptData) => {
     alert('There was a problem verifying your purchase. Please contact support if the issue persists.');
   }
 };
+
+/**
+ * Generic helper: posts a message to the native layer and waits for a
+ * specific response type via window.__nativeBus.
+ */
+const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
+  return new Promise((resolve, reject) => {
+    if (!window.ReactNativeWebView) {
+      reject(new Error('Native bridge not available'));
+      return;
+    }
+
+    let resolved = false;
+    const prevBus = window.__nativeBus;
+    const timer = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      window.__nativeBus = prevBus;
+      reject(new Error('Native request timed out'));
+    }, timeoutMs);
+
+    window.__nativeBus = (msg) => {
+      if (msg && msg.type === responseType) {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timer);
+        window.__nativeBus = prevBus;
+        resolve(msg);
+      } else if (typeof prevBus === 'function') {
+        prevBus(msg);
+      }
+    };
+
+    try {
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    } catch (e) {
+      resolved = true;
+      clearTimeout(timer);
+      window.__nativeBus = prevBus;
+      reject(e);
+    }
+  });
+};
+
+/**
+ * Triggers native Apple Sign In via the RN bridge.
+ * Resolves with { success, identityToken, authorizationCode, user, email, fullName }
+ */
+export const triggerAppleSignIn = () =>
+  postNativeAndWait({ type: 'APPLE_SIGN_IN' }, 'APPLE_SIGN_IN_RESULT', 120000);
+
+/**
+ * Triggers a RevenueCat in-app purchase via the RN bridge.
+ * Resolves with { success, productId, platform, customerInfo?, error? }
+ */
+export const triggerRevenueCatPurchase = (productId) =>
+  postNativeAndWait({ type: 'PURCHASE', productId }, 'PURCHASE_RESULT', 120000);
+
+/**
+ * Restores purchases via RevenueCat through the RN bridge.
+ * Resolves with { success, customerInfo?, error? }
+ */
+export const triggerRestorePurchases = () =>
+  postNativeAndWait({ type: 'RESTORE_PURCHASES' }, 'RESTORE_RESULT', 30000);

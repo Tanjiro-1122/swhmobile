@@ -22,6 +22,11 @@ export default function GoogleSignInButton({ className = "" }) {
   const isAndroidDevice = /Android/.test(navigator.userAgent);
   const isAppleDevice = /iPhone|iPad|iPod|Mac/.test(navigator.userAgent);
   
+  // Always hide on the native iOS wrapper
+  if (window.__SWH_NATIVE__ && !isAndroidDevice) {
+    return null;
+  }
+
   // Show Google button on Android devices, or on non-Apple devices
   if (isAppleDevice && !isAndroidDevice) {
     return null;
