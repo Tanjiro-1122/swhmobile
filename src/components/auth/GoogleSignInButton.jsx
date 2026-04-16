@@ -4,6 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export default function GoogleSignInButton({ className = "" }) {
+  // Never show Google Sign In inside the iOS native wrapper
+  if (window.__SWH_NATIVE__ && /iPhone|iPad|iPod/.test(navigator.userAgent || '')) {
+    return null;
+  }
+
+  return <GoogleSignInButtonContent className={className} />;
+}
+
+function GoogleSignInButtonContent({ className = "" }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {

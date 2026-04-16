@@ -192,69 +192,52 @@ export const submitReceiptToServer = async (receiptData) => {
   }
 };
 
-/**
- * Generic helper: posts a message to the native layer and waits for a
- * specific response type via window.__nativeBus.
- */
-const ensureNativeBusDispatcher = () => {
-  if (window.__nativeBusDispatcherInstalled) {
-    return;
-  }
-
-  const previousBus = window.__nativeBus;
-  window.__nativeBusWaiters = window.__nativeBusWaiters || {};
-
-  window.__nativeBus = (msg) => {
-    const type = msg?.type;
-    const listener = type ? window.__nativeBusWaiters?.[type] : null;
-    if (typeof listener === 'function') {
-      listener(msg);
-    }
-
-    if (typeof previousBus === 'function') {
-      previousBus(msg);
-    }
-  };
-
-  window.__nativeBusDispatcherInstalled = true;
-};
-
-const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
+const postNativeMessage = (message, responseType, timeoutMs = 60000) => {
   return new Promise((resolve, reject) => {
     if (!window.ReactNativeWebView) {
       reject(new Error('Native bridge not available'));
       return;
     }
 
-    ensureNativeBusDispatcher();
+    const previousBus = window.__nativeBus;
+    let settled = false;
+    let timer = null;
 
-    if (window.__nativeBusWaiters?.[responseType]) {
-      reject(new Error(`${responseType} request already in progress`));
-      return;
-    }
+    const wrappedBus = (msg) => {
+      if (!settled && msg?.type === responseType) {
+        settled = true;
+        clearTimeout(timer);
+        if (window.__nativeBus === wrappedBus) {
+          window.__nativeBus = previousBus;
+        }
+        resolve(msg);
+        return;
+      }
 
-    let resolved = false;
-    const timer = setTimeout(() => {
-      if (resolved) return;
-      resolved = true;
-      delete window.__nativeBusWaiters[responseType];
+      if (typeof previousBus === 'function') {
+        previousBus(msg);
+      }
+    };
+
+    window.__nativeBus = wrappedBus;
+
+    timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      if (window.__nativeBus === wrappedBus) {
+        window.__nativeBus = previousBus;
+      }
       reject(new Error('Native request timed out'));
     }, timeoutMs);
-
-    window.__nativeBusWaiters[responseType] = (msg) => {
-      if (!msg || msg.type !== responseType || resolved) return;
-      resolved = true;
-      clearTimeout(timer);
-      delete window.__nativeBusWaiters[responseType];
-      resolve(msg);
-    };
 
     try {
       window.ReactNativeWebView.postMessage(JSON.stringify(message));
     } catch (e) {
-      resolved = true;
+      settled = true;
       clearTimeout(timer);
-      delete window.__nativeBusWaiters[responseType];
+      if (window.__nativeBus === wrappedBus) {
+        window.__nativeBus = previousBus;
+      }
       reject(e);
     }
   });
@@ -265,18 +248,18 @@ const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
  * Resolves with { success, identityToken, authorizationCode, user, email, fullName }
  */
 export const triggerAppleSignIn = () =>
-  postNativeAndWait({ type: 'APPLE_SIGN_IN' }, 'APPLE_SIGN_IN_RESULT', 120000);
+  postNativeMessage({ type: 'APPLE_SIGN_IN' }, 'APPLE_SIGN_IN_RESULT', 60000);
 
 /**
  * Triggers a RevenueCat in-app purchase via the RN bridge.
  * Resolves with { success, productId, platform, customerInfo?, error? }
  */
 export const triggerRevenueCatPurchase = (productId) =>
-  postNativeAndWait({ type: 'PURCHASE', productId }, 'PURCHASE_RESULT', 120000);
+  postNativeMessage({ type: 'PURCHASE', productId }, 'PURCHASE_RESULT', 120000);
 
 /**
  * Restores purchases via RevenueCat through the RN bridge.
  * Resolves with { success, customerInfo?, error? }
  */
 export const triggerRestorePurchases = () =>
-  postNativeAndWait({ type: 'RESTORE_PURCHASES' }, 'RESTORE_RESULT', 30000);
+  postNativeMessage({ type: 'RESTORE_PURCHASES' }, 'RESTORE_RESULT', 30000);
