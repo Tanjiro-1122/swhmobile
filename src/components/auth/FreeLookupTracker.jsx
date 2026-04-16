@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, Sparkles, Crown, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { usePlatform } from "@/components/hooks/usePlatform";
+import { triggerAppleSignIn } from "@/components/utils/iapBridge";
 
 
 // Helper to get the first day of next month
@@ -234,6 +236,8 @@ export function useFreeLookupTracker() {
 export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(isAuthProp ?? false);
+  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
+  const { isIOSNative } = usePlatform();
   
   useEffect(() => {
     // Check auth if not passed as prop
@@ -302,6 +306,40 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
       console.error('Subscription error:', error);
       alert('Failed to start checkout. Please try again.');
       setIsProcessing(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsAppleSignInLoading(true);
+    try {
+      const result = await triggerAppleSignIn();
+      if (!result.success) {
+        if (result.error !== 'user_cancelled') {
+          alert('Apple Sign In failed. Please try again.');
+        }
+        return;
+      }
+
+      const resp = await base44.functions.invoke('handleAppleSignIn', {
+        action: 'nativeSignIn',
+        identityToken: result.identityToken,
+        authorizationCode: result.authorizationCode,
+        user: result.user,
+        email: result.email,
+        fullName: result.fullName,
+      });
+
+      if (resp.data?.success && resp.data?.sessionToken) {
+        await base44.auth.setToken(resp.data.sessionToken);
+        window.location.reload();
+      } else {
+        alert(resp.data?.error || 'Sign in failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Apple Sign In error:', err);
+      alert('Apple Sign In failed. Please try again.');
+    } finally {
+      setIsAppleSignInLoading(false);
     }
   };
 
@@ -424,6 +462,15 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
                   <p className="text-center text-sm text-gray-700 mb-3">
                     <strong>Sign in required</strong> to use free searches (5/month)
                   </p>
+                  {isIOSNative && (
+                    <Button
+                      onClick={handleAppleSignIn}
+                      disabled={isAppleSignInLoading}
+                      className="w-full mb-3 bg-black hover:bg-gray-900 text-white font-bold"
+                    >
+                      {isAppleSignInLoading ? 'Signing in...' : 'Sign in with Apple'}
+                    </Button>
+                  )}
                   <Button
                     onClick={() => base44.auth.redirectToLogin()}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
