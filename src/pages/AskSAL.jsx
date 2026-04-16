@@ -17,6 +17,7 @@ const SESSION_MESSAGES_KEY = 'sal_messages';
 const SESSION_CONVERSATION_KEY = 'sal_conversation';
 const SESSION_SHOW_INTRO_KEY = 'sal_showIntro';
 const LAST_MEMORY_KEY = 'sal_last_memory';
+const MAX_MEMORY_DISPLAY_LENGTH = 120;
 
 function AskSALPage() {
     const [messages, setMessages] = useState([]);
@@ -81,18 +82,16 @@ function AskSALPage() {
         if (savedConversation) {
             setConversation(savedConversation);
             setShowIntro(false);
-            setHasRestoredSession(true);
-            return;
-        }
-
-        if (savedShowIntro !== null) {
+        } else if (savedShowIntro !== null) {
             setShowIntro(savedShowIntro);
         }
 
         if (!hasSessionData) {
             const lastMemory = localStorage.getItem(LAST_MEMORY_KEY);
             if (lastMemory) {
-                const truncatedMemory = lastMemory.length > 120 ? `${lastMemory.slice(0, 120)}...` : lastMemory;
+                const truncatedMemory = lastMemory.length > MAX_MEMORY_DISPLAY_LENGTH
+                    ? `${lastMemory.slice(0, MAX_MEMORY_DISPLAY_LENGTH)}...`
+                    : lastMemory;
                 setShowIntro(false);
                 setMessages([{
                     role: 'assistant',
