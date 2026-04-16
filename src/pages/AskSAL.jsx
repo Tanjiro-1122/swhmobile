@@ -13,6 +13,11 @@ import RequireAuth from '@/components/auth/RequireAuth';
 
 const ANIMATED_OWL_VIDEO = 'https://i.imgur.com/U6Qr1lM.mp4';
 const AGENT_NAME = 'bettingAssistant';
+const SESSION_MESSAGES_KEY = 'sal_messages';
+const SESSION_CONVERSATION_KEY = 'sal_conversation';
+const SESSION_SHOW_INTRO_KEY = 'sal_showIntro';
+const LAST_MEMORY_KEY = 'sal_last_memory';
+const MAX_MEMORY_DISPLAY_LENGTH = 120;
 
 function AskSALPage() {
     const [messages, setMessages] = useState([]);
@@ -22,11 +27,109 @@ function AskSALPage() {
     const [isSending, setIsSending] = useState(false);
     const [processingStep, setProcessingStep] = useState(null);
     const [showIntro, setShowIntro] = useState(true);
+    const [hasRestoredSession, setHasRestoredSession] = useState(false);
     const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        let savedMessages = null;
+        let savedConversation = null;
+        let savedShowIntro = null;
+        let hasSessionData = false;
+
+        try {
+            const rawMessages = sessionStorage.getItem(SESSION_MESSAGES_KEY);
+            if (rawMessages !== null) {
+                hasSessionData = true;
+                const parsedMessages = JSON.parse(rawMessages);
+                if (Array.isArray(parsedMessages)) {
+                    savedMessages = parsedMessages;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to parse saved SAL messages:', error);
+        }
+
+        try {
+            const rawConversation = sessionStorage.getItem(SESSION_CONVERSATION_KEY);
+            if (rawConversation !== null) {
+                hasSessionData = true;
+                const parsedConversation = JSON.parse(rawConversation);
+                if (parsedConversation && typeof parsedConversation === 'object') {
+                    savedConversation = parsedConversation;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to parse saved SAL conversation:', error);
+        }
+
+        try {
+            const rawShowIntro = sessionStorage.getItem(SESSION_SHOW_INTRO_KEY);
+            if (rawShowIntro !== null) {
+                hasSessionData = true;
+                const parsedShowIntro = JSON.parse(rawShowIntro);
+                if (typeof parsedShowIntro === 'boolean') {
+                    savedShowIntro = parsedShowIntro;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to parse saved SAL intro state:', error);
+        }
+
+        if (savedMessages) {
+            setMessages(savedMessages);
+        }
+
+        if (savedConversation) {
+            setConversation(savedConversation);
+            setShowIntro(false);
+        } else if (savedShowIntro !== null) {
+            setShowIntro(savedShowIntro);
+        }
+
+        if (!hasSessionData) {
+            const lastMemory = localStorage.getItem(LAST_MEMORY_KEY);
+            if (lastMemory) {
+                const truncatedMemory = lastMemory.length > MAX_MEMORY_DISPLAY_LENGTH
+                    ? `${lastMemory.slice(0, MAX_MEMORY_DISPLAY_LENGTH)}...`
+                    : lastMemory;
+                setShowIntro(false);
+                setMessages([{
+                    role: 'assistant',
+                    content: `Welcome back, my friend! Last time, we were exploring: "${truncatedMemory}" — shall we pick up where we left off, or venture into new territory?`
+                }]);
+            }
+        }
+
+        setHasRestoredSession(true);
+    }, []);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    useEffect(() => {
+        if (!hasRestoredSession) return;
+        sessionStorage.setItem(SESSION_MESSAGES_KEY, JSON.stringify(messages));
+
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage?.role === 'assistant' && lastMessage.content) {
+            localStorage.setItem(LAST_MEMORY_KEY, lastMessage.content);
+        }
+    }, [messages, hasRestoredSession]);
+
+    useEffect(() => {
+        if (!hasRestoredSession) return;
+        if (conversation) {
+            sessionStorage.setItem(SESSION_CONVERSATION_KEY, JSON.stringify(conversation));
+        } else {
+            sessionStorage.removeItem(SESSION_CONVERSATION_KEY);
+        }
+    }, [conversation, hasRestoredSession]);
+
+    useEffect(() => {
+        if (!hasRestoredSession) return;
+        sessionStorage.setItem(SESSION_SHOW_INTRO_KEY, JSON.stringify(showIntro));
+    }, [showIntro, hasRestoredSession]);
 
     useEffect(() => {
         if (!conversation) return;
