@@ -11,6 +11,23 @@ const CONSUMABLE_EVENT_TYPES = new Set([
   'NON_RENEWING_PURCHASE',
 ]);
 
+function timingSafeEqual(left: string | null, right: string | undefined): boolean {
+  if (typeof left !== 'string' || typeof right !== 'string') {
+    return false;
+  }
+
+  const leftBytes = new TextEncoder().encode(left);
+  const rightBytes = new TextEncoder().encode(right);
+  const maxLength = Math.max(leftBytes.length, rightBytes.length);
+  let diff = leftBytes.length ^ rightBytes.length;
+
+  for (let i = 0; i < maxLength; i++) {
+    diff |= (leftBytes[i] ?? 0) ^ (rightBytes[i] ?? 0);
+  }
+
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   let body: any = {};
@@ -19,7 +36,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('authorization');
     const expectedAuth = Deno.env.get('REVENUECAT_WEBHOOK_SECRET');
 
-    if (authHeader !== expectedAuth) {
+    if (!timingSafeEqual(authHeader, expectedAuth)) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -30,7 +47,6 @@ Deno.serve(async (req) => {
       app_user_id: appUserId,
       product_id: productId,
       transaction_id: transactionId,
-      environment,
     } = event;
 
     if (!CONSUMABLE_EVENT_TYPES.has(type)) {
