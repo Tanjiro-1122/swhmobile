@@ -79,7 +79,17 @@ export default function WebViewScreen() {
         } catch (_error) {}
 
         if (!deviceId) {
-          deviceId = 'swh-' + metadata.platform + '-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+          var randomPart = '';
+          if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+            var bytes = new Uint8Array(12);
+            window.crypto.getRandomValues(bytes);
+            randomPart = Array.from(bytes).map(function(byte) {
+              return byte.toString(16).padStart(2, '0');
+            }).join('');
+          } else {
+            randomPart = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+          }
+          deviceId = 'swh-' + metadata.platform + '-' + randomPart;
           try {
             if (window.localStorage) {
               window.localStorage.setItem(storageKey, deviceId);
@@ -257,7 +267,6 @@ export default function WebViewScreen() {
         source={{ uri: APP_URL }}
         style={styles.webview}
         injectedJavaScriptBeforeContentLoaded={injectedJs}
-        injectedJavaScript={injectedJs}
         onMessage={handleMessage}
         onLoadProgress={handleLoadProgress}
         onLoadEnd={handleLoadEnd}
