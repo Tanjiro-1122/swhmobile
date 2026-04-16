@@ -12,7 +12,7 @@ import { createPageUrl } from "@/utils";
 import { usePlatform } from '@/components/hooks/usePlatform';
 
 import RestorePurchasesModal from "@/components/hub/RestorePurchasesModal";
-import { callNativeIAPWithCallback, submitReceiptToServer } from "@/components/utils/iapBridge";
+import { callNativeIAPWithCallback, submitReceiptToServer, triggerRevenueCatPurchase, triggerRestorePurchases } from "@/components/utils/iapBridge";
 
 export default function Pricing() {
   const [processingItem, setProcessingItem] = useState(null);
@@ -232,11 +232,28 @@ export default function Pricing() {
     }
   };
 
-  // IAP for native app users only - ANDROID ONLY (iOS subscriptions removed)
   const handleIAPSubscribe = async (plan) => {
-    // iOS: Redirect to web for subscriptions
+    // iOS: Use RevenueCat
     if (isIOSNative) {
-      alert('iOS subscriptions are not available. Please use credit packs or visit our website for subscriptions.');
+      setProcessingItem(plan);
+      const productId = plan === 'premium'
+        ? 'com.sportswagerhelper.premium.monthly'
+        : 'com.sportswagerhelper.vip.annual';
+      try {
+        const result = await triggerRevenueCatPurchase(productId);
+        if (result.success) {
+          localStorage.setItem('pending_iap_product', productId);
+          localStorage.setItem('pending_iap_platform', 'ios');
+          window.location.href = '/PostPurchaseSignIn';
+        } else if (result.error !== 'user_cancelled') {
+          alert(`Purchase failed: ${result.error || 'Unknown error'}. Please try again.`);
+        }
+      } catch (err) {
+        console.error('[Pricing] iOS RevenueCat purchase error:', err);
+        alert('Purchase failed. Please try again.');
+      } finally {
+        setProcessingItem(null);
+      }
       return;
     }
 
@@ -379,11 +396,11 @@ export default function Pricing() {
             }
 
             // Native App IAP Logic
-            if (isNativeApp && iapReady) {
+            if (isNativeApp && (iapReady || isIOSNative)) {
                 console.log('Using IAP for native app');
                 // Note: IAP trial logic is separate and not part of this change.
                 await handleIAPSubscribe(plan); 
-            } else if (isNativeApp && !iapReady) {
+            } else if (isNativeApp && !iapReady && !isIOSNative) {
                 alert("In-app purchasing is currently unavailable. Please try again later.");
             }
           };
@@ -395,6 +412,26 @@ export default function Pricing() {
     }
 
     setProcessingItem(pack.id);
+
+    if (isIOSNative) {
+      try {
+        const result = await triggerRevenueCatPurchase(pack.productId);
+        if (result.success) {
+          localStorage.setItem('pending_iap_product', pack.productId);
+          localStorage.setItem('pending_iap_platform', 'ios');
+          localStorage.setItem('pending_iap_credits', pack.credits.toString());
+          window.location.href = '/PostPurchaseSignIn';
+        } else if (result.error !== 'user_cancelled') {
+          alert(`Purchase failed: ${result.error || 'Unknown error'}. Please try again.`);
+        }
+      } catch (err) {
+        console.error('[Pricing] iOS RevenueCat credit purchase error:', err);
+        alert('Purchase failed. Please try again.');
+      } finally {
+        setProcessingItem(null);
+      }
+      return;
+    }
 
     // Clear any previous timeout
     if (iapTimeoutRef.current) {
@@ -629,14 +666,13 @@ export default function Pricing() {
             </Card>
           </motion.div>
 
-          {/* Premium Monthly - Hide on iOS */}
-          {!isIOSNative && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="md:col-span-1"
-            >
+          {/* Premium Monthly */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="md:col-span-1"
+          >
               <Card className={`h-full border-2 ${currentPlan === 'premium_monthly' ? 'border-purple-500 shadow-2xl' : 'border-purple-200'} relative`}>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                   <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg whitespace-nowrap">
@@ -682,17 +718,15 @@ export default function Pricing() {
                     )}
                 </CardContent>
               </Card>
-            </motion.div>
-          )}
+          </motion.div>
 
-          {/* VIP Annual - Hide on iOS */}
-          {!isIOSNative && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="md:col-span-2 lg:col-span-1"
-            >
+          {/* VIP Annual */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="md:col-span-2 lg:col-span-1"
+          >
               <Card className={`h-full border-2 ${currentPlan === 'vip_annual' ? 'border-yellow-500 shadow-2xl' : 'border-yellow-200'} relative`}>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                   <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold shadow-lg animate-pulse whitespace-nowrap">
@@ -744,8 +778,7 @@ export default function Pricing() {
                     )}
                 </CardContent>
               </Card>
-            </motion.div>
-          )}
+          </motion.div>
         </div>
 
         {/* Feature Comparison - Better iPad readability */}
@@ -1038,7 +1071,19 @@ export default function Pricing() {
           <div className="text-center mb-8">
             <Button
               variant="link"
-              onClick={() => setShowRestoreModal(true)}
+              onClick={isIOSNative ? async () => {
+                try {
+                  const result = await triggerRestorePurchases();
+                  if (result.success) {
+                    alert('Purchases restored! Please sign in to activate.');
+                    window.location.href = '/PostPurchaseSignIn';
+                  } else {
+                    alert(result.error || 'No purchases found to restore.');
+                  }
+                } catch {
+                  alert('Restore failed. Please try again.');
+                }
+              } : () => setShowRestoreModal(true)}
               className="text-blue-600 hover:text-blue-700 underline text-sm lg:text-base"
             >
               Legacy subscriber? Restore purchases
