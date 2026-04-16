@@ -196,6 +196,29 @@ export const submitReceiptToServer = async (receiptData) => {
  * Generic helper: posts a message to the native layer and waits for a
  * specific response type via window.__nativeBus.
  */
+const ensureNativeBusDispatcher = () => {
+  if (window.__nativeBusDispatcherInstalled) {
+    return;
+  }
+
+  const previousBus = window.__nativeBus;
+  window.__nativeBusWaiters = window.__nativeBusWaiters || {};
+
+  window.__nativeBus = (msg) => {
+    const type = msg?.type;
+    const listener = type ? window.__nativeBusWaiters?.[type] : null;
+    if (typeof listener === 'function') {
+      listener(msg);
+    }
+
+    if (typeof previousBus === 'function') {
+      previousBus(msg);
+    }
+  };
+
+  window.__nativeBusDispatcherInstalled = true;
+};
+
 const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
   return new Promise((resolve, reject) => {
     if (!window.ReactNativeWebView) {
@@ -203,25 +226,27 @@ const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
       return;
     }
 
+    ensureNativeBusDispatcher();
+
+    if (window.__nativeBusWaiters?.[responseType]) {
+      reject(new Error(`${responseType} request already in progress`));
+      return;
+    }
+
     let resolved = false;
-    const prevBus = window.__nativeBus;
     const timer = setTimeout(() => {
       if (resolved) return;
       resolved = true;
-      window.__nativeBus = prevBus;
+      delete window.__nativeBusWaiters[responseType];
       reject(new Error('Native request timed out'));
     }, timeoutMs);
 
-    window.__nativeBus = (msg) => {
-      if (msg && msg.type === responseType) {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timer);
-        window.__nativeBus = prevBus;
-        resolve(msg);
-      } else if (typeof prevBus === 'function') {
-        prevBus(msg);
-      }
+    window.__nativeBusWaiters[responseType] = (msg) => {
+      if (!msg || msg.type !== responseType || resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      delete window.__nativeBusWaiters[responseType];
+      resolve(msg);
     };
 
     try {
@@ -229,7 +254,7 @@ const postNativeAndWait = (message, responseType, timeoutMs = 60000) => {
     } catch (e) {
       resolved = true;
       clearTimeout(timer);
-      window.__nativeBus = prevBus;
+      delete window.__nativeBusWaiters[responseType];
       reject(e);
     }
   });
