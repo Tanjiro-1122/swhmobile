@@ -45,8 +45,8 @@ def player_stats(request: PlayerStatsRequest):
         result = agent.get_player_stats(request.player_name, request.sport, request.season)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/team")
@@ -59,8 +59,8 @@ def team_stats(request: TeamStatsRequest):
         result = agent.get_team_stats(request.team_name, request.sport, request.season)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/sport")
@@ -73,8 +73,8 @@ def sport_stats_post(request: SportStatsRequest):
         result = agent.get_sports_stats(request.sport, request.league)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/sport")
@@ -88,8 +88,8 @@ def sport_stats_get(sport: str, league: Optional[str] = None):
         result = agent.get_sports_stats(sport, league)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/live-scores")
@@ -103,8 +103,8 @@ def live_scores(sport: str = "all"):
         result = agent.get_live_scores(sport)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/live-scores/nba")
@@ -117,8 +117,8 @@ def nba_live_scores():
         result = agent.get_nba_live_scores()
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/live-odds")
@@ -132,5 +132,5 @@ def live_odds(sport: str = "basketball_nba", market: str = "h2h"):
         result = agent.get_live_odds(sport, market)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)

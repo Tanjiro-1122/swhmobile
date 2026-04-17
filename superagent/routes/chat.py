@@ -56,8 +56,8 @@ def sal_chat(request: SalChatRequest):
 
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/ask")
@@ -71,5 +71,5 @@ def ask(request: AskRequest):
         result = agent.ask_sal(request.message, [], request.context)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)

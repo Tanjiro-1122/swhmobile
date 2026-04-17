@@ -38,8 +38,8 @@ def enhanced_prediction(request: EnhancedPredictionRequest):
         result = agent.enhanced_prediction(request.match_data)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/top-ten")
@@ -53,8 +53,8 @@ def top_ten_post(request: TopTenRequest):
         result = agent.get_top_ten_data(request.sport, request.league)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/top-ten")
@@ -69,5 +69,5 @@ def top_ten_get(sport: str, league: Optional[str] = None):
         result = agent.get_top_ten_data(sport, league)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)

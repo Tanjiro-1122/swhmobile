@@ -4,7 +4,7 @@ from utils.config import ODDS_API_KEY
 
 
 def implied_probability(decimal_odds: float) -> float:
-    if not decimal_odds or decimal_odds <= 0:
+    if decimal_odds is None or decimal_odds <= 0:
         return 0.0
     return round(1 / decimal_odds, 4)
 
@@ -19,6 +19,8 @@ def american_to_decimal(american_odds: float) -> float:
 
 def normalize_odds(value: float) -> float:
     if value is None:
+        return 0.0
+    if not isinstance(value, (int, float)):
         return 0.0
     if value >= 1.01:
         return float(value)

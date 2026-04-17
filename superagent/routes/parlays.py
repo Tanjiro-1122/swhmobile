@@ -35,5 +35,5 @@ def generate(request: GenerateParlayRequest):
         result = agent.generate_parlay(request.games, request.bankroll, request.risk_level)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)

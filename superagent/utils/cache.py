@@ -7,7 +7,7 @@ _cache = TTLCache(maxsize=200, ttl=CACHE_TTL)
 
 def cache_key(prefix: str, data: dict) -> str:
     payload = json.dumps(data, sort_keys=True, default=str)
-    h = hashlib.md5(payload.encode()).hexdigest()
+    h = hashlib.sha256(payload.encode()).hexdigest()
     return f"{prefix}:{h}"
 
 def get_cached(key: str):

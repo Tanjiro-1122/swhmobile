@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections import defaultdict
 from datetime import datetime, timezone
 from statistics import mean
@@ -46,6 +47,7 @@ class SportsSuperAgent:
             content = getattr(response, "content", "")
             return json.loads(content) if content else fallback
         except Exception:
+            logging.exception("LLM JSON call failed")
             return fallback
 
     def analyze_match(self, home_team: str, away_team: str, sport: str, context: Dict[str, Any] | None = None) -> Dict[str, Any]:
@@ -252,7 +254,7 @@ class SportsSuperAgent:
 
     def calculate_calibration(self, predictions: List[float], outcomes: List[int]) -> Dict[str, Any]:
         if len(predictions) != len(outcomes):
-            raise ValueError("predictions and outcomes must have same length")
+            raise ValueError(f"predictions ({len(predictions)}) and outcomes ({len(outcomes)}) must have same length")
         if not predictions:
             return {
                 "total_predictions": 0,

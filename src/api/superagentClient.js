@@ -19,7 +19,17 @@ class SuperAgentClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`SuperAgent error: ${res.status} ${await res.text()}`);
+    if (!res.ok) {
+      let details = '';
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const payload = await res.json().catch(() => null);
+        details = payload?.error || payload?.message || JSON.stringify(payload || {});
+      } else {
+        details = await res.text();
+      }
+      throw new Error(`SuperAgent error: ${res.status} ${details}`.trim());
+    }
     return res.json();
   }
 

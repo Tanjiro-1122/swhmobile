@@ -1,3 +1,4 @@
+import json
 from time import perf_counter
 from typing import Any, Dict, List, Optional
 
@@ -68,8 +69,8 @@ def match_preview(request: MatchPreviewRequest):
         )
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/odds-value")
@@ -83,8 +84,8 @@ def odds_value(request: OddsValueRequest):
         result = agent.analyze_odds_value(request.odds_data, request.sport)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/calibration")
@@ -100,8 +101,8 @@ def calibration(request: CalibrationRequest):
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
     except ValueError as exc:
         return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 400)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.get("/dashboard-stats")
@@ -110,7 +111,6 @@ def dashboard_stats_get(user_id: str, bets: Optional[str] = None):
     try:
         parsed_bets = []
         if bets:
-            import json
             parsed_bets = json.loads(bets)
         payload = {"user_id": user_id, "bets": parsed_bets}
         key = cache_key("analysis:dashboard-stats", payload)
@@ -120,8 +120,8 @@ def dashboard_stats_get(user_id: str, bets: Optional[str] = None):
         result = agent.get_dashboard_stats(user_id, parsed_bets)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
 
 
 @router.post("/dashboard-stats")
@@ -134,5 +134,5 @@ def dashboard_stats_post(request: DashboardStatsRequest):
         result = agent.get_dashboard_stats(request.user_id, request.bets)
         set_cached(key, result)
         return timed_response({"status": "success", "data": result, "metadata": {"cached": False}}, start)
-    except Exception as exc:
-        return timed_response({"status": "error", "error": str(exc), "data": {}}, start, 500)
+    except Exception:
+        return timed_response({"status": "error", "error": "Internal server error", "data": {}}, start, 500)
