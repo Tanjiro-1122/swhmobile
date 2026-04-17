@@ -13,16 +13,19 @@ export default function SubscriptionContent() {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
-  React.useEffect(() => {
-    const ua = navigator.userAgent || '';
-    setIsIOS(/iPhone|iPad|iPod/i.test(ua));
-    setIsAndroid(/Android/i.test(ua));
-  }, []);
-
   const { data: currentUser, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  React.useEffect(() => {
+    const ua = navigator.userAgent || '';
+    const uaIsIOS = /iPhone|iPad|iPod/i.test(ua);
+    const uaIsAndroid = /Android/i.test(ua);
+    const platform = currentUser?.purchase_platform;
+    setIsIOS(platform === 'ios' || (!platform && uaIsIOS));
+    setIsAndroid(platform === 'android' || (!platform && uaIsAndroid));
+  }, [currentUser]);
 
   const handleManageBilling = async () => {
     setIsLoadingPortal(true);

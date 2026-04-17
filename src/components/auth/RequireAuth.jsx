@@ -9,8 +9,14 @@ import { triggerAppleSignIn } from '@/components/utils/iapBridge';
 
 import RestorePurchasesModal from "../hub/RestorePurchasesModal";
 export default function RequireAuth({ children, pageName = "this feature" }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      return base44.auth.getToken?.() ? true : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isLoading, setIsLoading] = useState(isAuthenticated === null);
   const [isMobileApp, setIsMobileApp] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const { isIOSNative, isNativeApp } = usePlatform();
@@ -21,18 +27,28 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
   }, [isNativeApp]);
 
   useEffect(() => {
+    let isMounted = true;
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
-        setIsAuthenticated(authenticated);
+        if (isMounted) {
+          setIsAuthenticated(authenticated);
+        }
       } catch (error) {
         console.error("Auth check error:", error);
-        setIsAuthenticated(false);
+        if (isMounted) {
+          setIsAuthenticated(false);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
     checkAuth();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleLogin = () => {

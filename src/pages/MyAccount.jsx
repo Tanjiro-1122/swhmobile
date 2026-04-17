@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,6 +18,68 @@ function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activatingIAP, setActivatingIAP] = useState(false);
+  const [iapError, setIapError] = useState("");
+
+  const activatePendingIAP = useCallback(async () => {
+    const receipt = localStorage.getItem('pending_iap_receipt');
+    const productId = localStorage.getItem('pending_iap_product');
+    const platform = localStorage.getItem('pending_iap_platform') || 'ios';
+    
+    // Apple account linking data
+    const appleProviderId = localStorage.getItem('apple_provider_id');
+    const appleProviderEmail = localStorage.getItem('apple_provider_email');
+    const appleIsPrivate = localStorage.getItem('apple_is_private_email') === 'true';
+    
+    if (productId) {
+      setActivatingIAP(true);
+      setIapError("");
+      try {
+        // Link Apple account if provider data exists
+        if (appleProviderId) {
+          console.log('Linking Apple account by provider_id:', appleProviderId);
+          await base44.auth.updateMe({
+            apple_provider_id: appleProviderId,
+            apple_provider_email: appleProviderEmail || '',
+            apple_is_private_email: appleIsPrivate,
+            apple_linked_at: new Date().toISOString()
+          });
+        }
+
+        const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
+        
+        // Check if we have real receipt or just pending marker
+        const isRealReceipt = receipt && receipt.length > 20 && receipt !== '1';
+        
+        const response = await base44.functions.invoke(functionName, 
+          isRealReceipt 
+            ? { receipt, productId, purchaseToken: receipt }
+            : { action: 'activatePending', productId, platform }
+        );
+
+        if (response.data.success) {
+          setPaymentSuccess(true);
+          setIapError("");
+          setActiveTab("subscription");
+          
+          // Clean up all localStorage
+          localStorage.removeItem('pending_iap_receipt');
+          localStorage.removeItem('pending_iap_product');
+          localStorage.removeItem('pending_iap_platform');
+          localStorage.removeItem('pending_iap_credits');
+          localStorage.removeItem('apple_provider_id');
+          localStorage.removeItem('apple_provider_email');
+          localStorage.removeItem('apple_is_private_email');
+        } else {
+          setIapError(response.data?.error || 'We could not activate your purchase. Please try restoring purchases or contact support.');
+        }
+      } catch (error) {
+        console.error('IAP activation error:', error);
+        setIapError('There was a problem activating your purchase. Please try again or contact support.');
+      } finally {
+        setActivatingIAP(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -49,64 +111,7 @@ function MyAccountContent() {
     if (params.toString() && window.location.href !== newUrl) {
       window.history.replaceState({}, '', newUrl);
     }
-  }, []);
-
-  const activatePendingIAP = async () => {
-    const receipt = localStorage.getItem('pending_iap_receipt');
-    const productId = localStorage.getItem('pending_iap_product');
-    const platform = localStorage.getItem('pending_iap_platform') || 'ios';
-    
-    // Apple account linking data
-    const appleProviderId = localStorage.getItem('apple_provider_id');
-    const appleProviderEmail = localStorage.getItem('apple_provider_email');
-    const appleIsPrivate = localStorage.getItem('apple_is_private_email') === 'true';
-    
-    if (productId) {
-      setActivatingIAP(true);
-      try {
-        // Link Apple account if provider data exists
-        if (appleProviderId) {
-          console.log('Linking Apple account by provider_id:', appleProviderId);
-          await base44.auth.updateMe({
-            apple_provider_id: appleProviderId,
-            apple_provider_email: appleProviderEmail || '',
-            apple_is_private_email: appleIsPrivate,
-            apple_linked_at: new Date().toISOString()
-          });
-        }
-
-        const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
-        
-        // Check if we have real receipt or just pending marker
-        const isRealReceipt = receipt && receipt.length > 20 && receipt !== '1';
-        
-        const response = await base44.functions.invoke(functionName, 
-          isRealReceipt 
-            ? { receipt, productId, purchaseToken: receipt }
-            : { action: 'activatePending', productId, platform }
-        );
-
-        if (response.data.success) {
-          setPaymentSuccess(true);
-          setActiveTab("subscription");
-          
-          // Clean up all localStorage
-          localStorage.removeItem('pending_iap_receipt');
-          localStorage.removeItem('pending_iap_product');
-          localStorage.removeItem('pending_iap_platform');
-          localStorage.removeItem('apple_provider_id');
-          localStorage.removeItem('apple_provider_email');
-          localStorage.removeItem('apple_is_private_email');
-        } else {
-          console.warn('IAP activation failed:', response.data);
-        }
-      } catch (error) {
-        console.error('IAP activation error:', error);
-      } finally {
-        setActivatingIAP(false);
-      }
-    }
-  };
+  }, [activatePendingIAP]);
 
   return (
         <div className="overflow-x-hidden">
@@ -141,6 +146,14 @@ function MyAccountContent() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
                 <AlertDescription className="text-green-800 font-semibold">
                   🎉 Payment successful! Your subscription is now active. Welcome to the club!
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {iapError && (
+              <Alert className="mb-6 bg-red-50 border-2 border-red-300">
+                <AlertDescription className="text-red-800 font-semibold">
+                  {iapError}
                 </AlertDescription>
               </Alert>
             )}

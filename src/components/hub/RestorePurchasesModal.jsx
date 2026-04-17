@@ -97,9 +97,24 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
               if (data.isSuccess && data.purchases && data.purchases.length > 0) {
                 try {
                   // Find most recent subscription purchase
-                  const subscriptionPurchase = data.purchases.find(p => 
-                    p.productId && (p.productId.includes('premium') || p.productId.includes('vip') || p.productId.includes('annual'))
-                  );
+                  const subscriptionPurchase = [...data.purchases]
+                    .sort((a, b) => {
+                      const rawTimeA = a.purchaseTime || a.purchaseDate || 0;
+                      const rawTimeB = b.purchaseTime || b.purchaseDate || 0;
+                      const timeA = typeof rawTimeA === 'number' ? rawTimeA : Date.parse(rawTimeA) || 0;
+                      const timeB = typeof rawTimeB === 'number' ? rawTimeB : Date.parse(rawTimeB) || 0;
+                      return timeB - timeA;
+                    })
+                    .find(p => 
+                      p.productId && (
+                        p.productId.includes('premium') ||
+                        p.productId.includes('vip') ||
+                        p.productId.includes('annual') ||
+                        p.productId.includes('unlimited') ||
+                        p.productId.includes('half_year') ||
+                        p.productId.includes('basic')
+                      )
+                    );
 
                   if (!subscriptionPurchase) {
                     setResult({

@@ -92,7 +92,11 @@ export function useFreeLookupTracker() {
                 setIsLoading(false);
                 return;
               }
-            } else if (tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly' || tier === 'influencer') {
+            } else if (
+              tier === 'legacy' || tier === 'vip_annual' || tier === 'premium_monthly' ||
+              tier === 'influencer' || tier === 'unlimited_monthly' || tier === 'unlimited_yearly' ||
+              tier === 'half_year' || tier === 'basic_monthly'
+            ) {
               // Legacy, VIP Annual (no expiry set), Premium Monthly, and Influencer users have UNLIMITED searches
               setLookupsRemaining(999); // Unlimited
               setIsLoading(false);
@@ -144,7 +148,11 @@ export function useFreeLookupTracker() {
 
   const recordLookup = async () => {
     // NEVER count lookups for paid tiers
-    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer') {
+    if (
+      userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' ||
+      userTier === 'influencer' || userTier === 'unlimited_monthly' || userTier === 'unlimited_yearly' ||
+      userTier === 'half_year' || userTier === 'basic_monthly'
+    ) {
       return true;
     }
     
@@ -212,7 +220,11 @@ export function useFreeLookupTracker() {
     });
     
     // ALWAYS allow paid tiers
-    if (userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer') {
+    if (
+      userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' ||
+      userTier === 'influencer' || userTier === 'unlimited_monthly' || userTier === 'unlimited_yearly' ||
+      userTier === 'half_year' || userTier === 'basic_monthly'
+    ) {
       console.log('[FreeLookupTracker] Paid tier detected, allowing lookup');
       return true;
     }

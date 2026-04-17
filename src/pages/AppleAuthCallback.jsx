@@ -47,7 +47,7 @@ export default function AppleAuthCallback() {
           }
 
           if (resp.data?.reason === 'link_required') {
-            navigate('/link-account', { state: { hint: resp.data.message } });
+            navigate('/MyAccount', { state: { hint: resp.data.message } });
             return;
           }
 
