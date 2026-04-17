@@ -288,6 +288,10 @@ export default function AdminPurchaseAudit() {
                       <SelectItem value="premium_monthly">Premium Monthly</SelectItem>
                       <SelectItem value="vip_annual">VIP Annual</SelectItem>
                       <SelectItem value="legacy">Legacy (Lifetime)</SelectItem>
+                      <SelectItem value="unlimited_monthly">Unlimited Monthly</SelectItem>
+                      <SelectItem value="unlimited_yearly">Unlimited Yearly</SelectItem>
+                      <SelectItem value="half_year">Half Year Special</SelectItem>
+                      <SelectItem value="basic_monthly">Basic Monthly</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

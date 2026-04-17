@@ -109,6 +109,10 @@ function AdminPanelContent() {
     vip_annual: allUsers.filter(u => u.subscription_type === 'vip_annual').length,
     legacy: allUsers.filter(u => u.subscription_type === 'legacy').length,
     influencer: allUsers.filter(u => u.subscription_type === 'influencer').length,
+    unlimited_monthly: allUsers.filter(u => u.subscription_type === 'unlimited_monthly').length,
+    unlimited_yearly: allUsers.filter(u => u.subscription_type === 'unlimited_yearly').length,
+    half_year: allUsers.filter(u => u.subscription_type === 'half_year').length,
+    basic_monthly: allUsers.filter(u => u.subscription_type === 'basic_monthly').length,
   };
 
   // Get influencer accounts with countdown info
@@ -417,6 +421,11 @@ function AdminPanelContent() {
                   <SelectItem value="premium_monthly">Premium Monthly</SelectItem>
                   <SelectItem value="vip_annual">VIP Annual</SelectItem>
                   <SelectItem value="legacy">Legacy</SelectItem>
+                  <SelectItem value="influencer">🌟 Influencer</SelectItem>
+                  <SelectItem value="unlimited_monthly">Unlimited Monthly</SelectItem>
+                  <SelectItem value="unlimited_yearly">Unlimited Yearly</SelectItem>
+                  <SelectItem value="half_year">Half Year</SelectItem>
+                  <SelectItem value="basic_monthly">Basic Monthly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
