@@ -14,7 +14,7 @@ import Constants from 'expo-constants';
 import PurchaseModal from './PurchaseModal';
 import { restorePurchases, checkEntitlement } from './RevenueCatService';
 
-const APP_URL = 'https://sportswagerhelper.base44.app';
+const APP_URL = 'https://sports-wager-helper.vercel.app';
 
 /**
  * JavaScript injected into the WebView so the web app can communicate
@@ -360,3 +360,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
