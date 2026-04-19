@@ -3,9 +3,9 @@ import Purchases from 'react-native-purchases';
 
 // ⚠️ Public SDK keys — safe to be in client code (not secret keys)
 // iOS key from RevenueCat dashboard → Projects → Sports Wager Helper → Apps → iOS
-// REPLACE 'PASTE_IOS_KEY_HERE' with your actual appl_xxxxxxxxx key
-const REVENUECAT_API_KEY_IOS = 'PASTE_IOS_KEY_HERE';
-const REVENUECAT_API_KEY_ANDROID = 'PASTE_ANDROID_KEY_HERE';
+// REPLACE 'appl_gCTrteiTHnaclzveBxPzKFKEbrC' with your actual appl_xxxxxxxxx key
+const REVENUECAT_API_KEY_IOS = 'appl_gCTrteiTHnaclzveBxPzKFKEbrC';
+const REVENUECAT_API_KEY_ANDROID = 'goog_FZSBeUnrDQyPWQloQGdlxAOLRYE';
 
 export const ENTITLEMENT_ID = 'entl5ad30a0ac8';
 
