@@ -97,22 +97,22 @@ export default function Pricing() {
     
     // Only check for IAP readiness if we detected a native app
     if (isNativeApp) {
+      // Check if ReactNativeWebView bridge is available (our RN wrapper)
       const checkIAPReady = () => {
-        const wtnExists = typeof window.WTN !== 'undefined';
-        const iapExists = wtnExists && typeof window.WTN.inAppPurchase === 'function';
-        setIapReady(iapExists);
-        return iapExists;
+        const rnwvReady = typeof window.ReactNativeWebView !== 'undefined';
+        setIapReady(rnwvReady);
+        return rnwvReady;
       };
       
       checkIAPReady();
       let attempts = 0;
-      const maxAttempts = 30;
+      const maxAttempts = 20;
       const interval = setInterval(() => {
         attempts++;
         if (checkIAPReady() || attempts >= maxAttempts) {
           clearInterval(interval);
         }
-      }, 500);
+      }, 300);
       
       return () => clearInterval(interval);
     } else {
@@ -1105,3 +1105,4 @@ export default function Pricing() {
     </div>
   );
 }
+
