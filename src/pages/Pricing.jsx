@@ -417,11 +417,10 @@ export default function Pricing() {
       try {
         const result = await triggerRevenueCatPurchase(pack.productId);
         if (result.success) {
-          localStorage.setItem('pending_iap_product', pack.productId);
-          localStorage.setItem('pending_iap_platform', 'ios');
-          localStorage.setItem('pending_iap_credits', pack.credits.toString());
-          window.location.href = '/PostPurchaseSignIn';
-        } else if (result.error !== 'user_cancelled') {
+          // RevenueCat webhook handles credit grant server-side automatically.
+          // Just show a success message and let user continue.
+          alert(`✅ ${pack.credits} Search Credits purchased! Your credits will appear in your account within a few seconds. Pull to refresh if needed.`);
+        } else if (!result.cancelled && result.error !== 'user_cancelled') {
           alert(`Purchase failed: ${result.error || 'Unknown error'}. Please try again.`);
         }
       } catch (err) {
