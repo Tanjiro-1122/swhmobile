@@ -1,8 +1,11 @@
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 
-const REVENUECAT_API_KEY_IOS = process.env.REVENUECAT_API_KEY_IOS || '';
-const REVENUECAT_API_KEY_ANDROID = process.env.REVENUECAT_API_KEY_ANDROID || '';
+// ⚠️ Public SDK keys — safe to be in client code (not secret keys)
+// iOS key from RevenueCat dashboard → Projects → Sports Wager Helper → Apps → iOS
+// REPLACE 'PASTE_IOS_KEY_HERE' with your actual appl_xxxxxxxxx key
+const REVENUECAT_API_KEY_IOS = 'PASTE_IOS_KEY_HERE';
+const REVENUECAT_API_KEY_ANDROID = 'PASTE_ANDROID_KEY_HERE';
 
 export const ENTITLEMENT_ID = 'entl5ad30a0ac8';
 
@@ -21,8 +24,9 @@ export const initializePurchases = async () => {
     const apiKey =
       Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
 
-    if (!apiKey) {
-      console.warn('[RevenueCat] API key is not set. Check REVENUECAT_API_KEY_IOS / REVENUECAT_API_KEY_ANDROID environment variables.');
+    if (!apiKey || apiKey.startsWith('PASTE_')) {
+      console.error('[RevenueCat] ⚠️ API key not set! Open RevenueCatService.js and replace PASTE_IOS_KEY_HERE with your appl_xxx key from RevenueCat dashboard.');
+      return; // Don't crash — just skip init
     }
 
     await Purchases.configure({ apiKey });
@@ -112,3 +116,4 @@ export const checkEntitlement = async () => {
     return false;
   }
 };
+
