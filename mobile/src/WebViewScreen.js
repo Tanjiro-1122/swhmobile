@@ -14,7 +14,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 
 import PurchaseModal from './PurchaseModal';
-import { restorePurchases, checkEntitlement } from './RevenueCatService';
+import { restorePurchases, checkEntitlement, loginUser } from './RevenueCatService';
 
 const APP_URL = 'https://sports-wager-helper.vercel.app';
 
@@ -249,6 +249,20 @@ export default function WebViewScreen() {
         case 'CHECK_ENTITLEMENT': {
           const isActive = await checkEntitlement();
           postMessageToWeb({ type: 'ENTITLEMENT_RESULT', isActive });
+          break;
+        }
+
+        case 'SAVE_SESSION': {
+          // Called after Apple Sign-In succeeds — log in to RevenueCat with Base44 user ID
+          try {
+            const { userId } = data;
+            if (userId) {
+              await loginUser(userId);
+              console.log('[WebViewScreen] RevenueCat logged in with userId:', userId);
+            }
+          } catch (err) {
+            console.warn('[WebViewScreen] SAVE_SESSION loginUser error:', err.message);
+          }
           break;
         }
 

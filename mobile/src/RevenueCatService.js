@@ -117,3 +117,19 @@ export const checkEntitlement = async () => {
   }
 };
 
+
+/**
+ * Log in a user to RevenueCat with their Base44 entity ID.
+ * This links purchases to their account across devices.
+ * @param {string} userId - The Base44 user ID
+ */
+export const loginUser = async (userId) => {
+  if (!userId) return;
+  try {
+    const { customerInfo } = await Purchases.logIn(userId);
+    console.log('[RevenueCat] Logged in user:', userId, customerInfo);
+    return customerInfo;
+  } catch (error) {
+    console.error('[RevenueCat] logIn error:', error);
+  }
+};
