@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
+import { triggerAppleSignIn } from "@/components/utils/iapBridge";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogIn, Zap, Globe } from "lucide-react";
 
@@ -27,7 +28,37 @@ export default function Splash() {
     check();
   }, []);
 
-  const handleSignIn = () => base44.auth.redirectToLogin(createPageUrl("Dashboard"));
+  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    setIsAppleSignInLoading(true);
+    try {
+      const result = await triggerAppleSignIn();
+      if (!result.success) {
+        if (result.error !== "user_cancelled") alert("Sign in failed. Please try again.");
+        return;
+      }
+      const resp = await base44.functions.invoke("handleAppleSignIn", {
+        action: "nativeSignIn",
+        identityToken: result.identityToken,
+        authorizationCode: result.authorizationCode,
+        user: result.user,
+        email: result.email,
+        fullName: result.fullName,
+      });
+      if (resp.data?.success && resp.data?.sessionToken) {
+        await base44.auth.setToken(resp.data.sessionToken);
+        navigate(createPageUrl("Dashboard"), { replace: true });
+      } else {
+        alert(resp.data?.error || "Sign in failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Sign in error:", err);
+      alert("Sign in failed. Please try again.");
+    } finally {
+      setIsAppleSignInLoading(false);
+    }
+  };
   const handleGuest = () => navigate(createPageUrl("Dashboard"), { replace: true });
 
   if (checking) {

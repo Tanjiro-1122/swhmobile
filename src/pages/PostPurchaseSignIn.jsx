@@ -25,7 +25,7 @@ export default function PostPurchaseSignIn() {
   }, []);
 
   const handleEmailSignIn = () => {
-    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+    window.location.href = '/PostPurchaseSignIn';
   };
 
   const handleAppleSignIn = async () => {

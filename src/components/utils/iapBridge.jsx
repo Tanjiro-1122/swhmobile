@@ -140,7 +140,7 @@ export const submitReceiptToServer = async (receiptData) => {
     console.warn('submitReceiptToServer: user not authenticated — saving receipt and redirecting to login');
     savePendingReceipt(receiptData);
     // MyAccount will pick up the pending receipt via ?activate_iap=true after login.
-    base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+    window.location.href = '/PostPurchaseSignIn';
     return;
   }
 
@@ -178,7 +178,7 @@ export const submitReceiptToServer = async (receiptData) => {
     if (status === 401) {
       console.warn('submitReceiptToServer: 401 response — saving receipt and redirecting to login');
       savePendingReceipt(receiptData);
-      base44.auth.redirectToLogin('/MyAccount?activate_iap=true');
+      window.location.href = '/PostPurchaseSignIn';
       return;
     }
 

@@ -104,7 +104,7 @@ function AlertsContent() {
               Sign in to set up custom alerts for your bets
             </p>
             <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+              onClick={() => window.location.href = '/Splash'}
               className="bg-indigo-600 hover:bg-indigo-700"
             >
               Sign In

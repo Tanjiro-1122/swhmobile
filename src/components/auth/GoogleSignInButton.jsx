@@ -20,7 +20,7 @@ function GoogleSignInButtonContent({ className = "" }) {
     try {
       // Redirect to Base44's login which includes Google option
       // The Base44 platform handles Google OAuth when configured
-      base44.auth.redirectToLogin(window.location.href);
+      // sign-in handled natively
     } catch (error) {
       console.error('Google Sign In error:', error);
       setIsLoading(false);

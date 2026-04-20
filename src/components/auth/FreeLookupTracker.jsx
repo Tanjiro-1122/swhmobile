@@ -484,7 +484,7 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
                     </Button>
                   )}
                   <Button
-                    onClick={() => base44.auth.redirectToLogin()}
+                    onClick={() => window.location.href = '/Splash'}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
                   >
                     Sign In to Get 5 Free Searches

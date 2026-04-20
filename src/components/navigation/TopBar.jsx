@@ -37,7 +37,7 @@ const TopBar = () => {
     
     if (isNativeApp) return null;
 
-    const handleLogin = () => base44.auth.redirectToLogin(window.location.href);
+    const handleLogin = () => {}; // sign-in handled by Splash / RequireAuth
     const handleLogout = () => base44.auth.logout('/');
 
     return (

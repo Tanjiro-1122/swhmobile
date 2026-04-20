@@ -5,7 +5,7 @@ export default function EmailLoginModal({ open, onOpenChange }) {
   useEffect(() => {
     if (open) {
       // Redirect to Base44's built-in auth page
-      base44.auth.redirectToLogin(window.location.href);
+      // sign-in handled natively via Apple Sign In
       onOpenChange(false);
     }
   }, [open, onOpenChange]);

@@ -51,10 +51,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
     };
   }, []);
 
-  const handleLogin = () => {
-    // Use current URL for redirect back after login
-    base44.auth.redirectToLogin(window.location.href);
-  };
+  const handleLogin = () => {}; // disabled — Apple Sign In used instead
 
   const handleViewPricing = () => {
     window.location.href = '/Pricing';

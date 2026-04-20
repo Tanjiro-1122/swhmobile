@@ -155,7 +155,7 @@ function ROITrackerContent() {
               Sign in to track your betting history and ROI
             </p>
             <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+              onClick={() => window.location.href = '/Splash'}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
               Sign In

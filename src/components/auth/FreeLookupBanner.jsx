@@ -8,7 +8,7 @@ export default function FreeLookupBanner({ lookupsRemaining, isAuthenticated }) 
   if (isAuthenticated || lookupsRemaining === 5) return null;
 
   const handleSignup = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+    // sign-in handled by RequireAuth / Apple Sign In flow
   };
 
   const getColorScheme = () => {

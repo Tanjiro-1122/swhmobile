@@ -325,7 +325,7 @@ export default function Pricing() {
             </button>
           ) : (
             <button
-              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              onClick={() => window.location.href = '/Splash'}
               className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2"
             >
               <LogIn className="w-4 h-4" /> Sign In

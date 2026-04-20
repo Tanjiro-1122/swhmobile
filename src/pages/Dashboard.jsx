@@ -155,7 +155,7 @@ export default function Dashboard() {
               <p className="text-gray-500 text-xs mt-0.5">Sign in to save your results</p>
             </div>
             <button
-              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              onClick={() => window.location.href = '/Splash')}
               className="text-xs font-bold text-lime-400 bg-lime-500/20 px-3 py-1.5 rounded-xl"
             >
               Sign In

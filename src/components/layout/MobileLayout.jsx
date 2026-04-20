@@ -49,8 +49,7 @@ export default function MobileLayout({ children, currentPageName }) {
     }
   };
 
-  const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+  const handleLogin = () => {}; // sign-in handled by Splash / RequireAuth
   };
 
   // Stadium background component for consistent styling
