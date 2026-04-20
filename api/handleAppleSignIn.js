@@ -61,15 +61,13 @@ function firstOfNextMonth() {
 
 async function createUser(payload) {
   const defaults = {
-    stripe_customer_id: "",            // required string — empty until Stripe assigns one
     subscription_type: "free",
     subscription_status: "inactive",
-    subscription_expiry_date: "",      // required string — empty for free users
+    subscription_expiry_date: "",
     free_lookups_reset_date: firstOfNextMonth(),
     credits: 5,
+    search_credits: 5,
     monthly_free_lookups_used: 0,
-    completed_lessons: [],
-    data_storage_consent: false,
     role: "user",
   };
   return b44Fetch(`/entities/User`, {
@@ -83,6 +81,21 @@ async function updateUser(id, payload) {
     method: "PUT",
     body: JSON.stringify(payload),
   });
+}
+
+// Create a Base44 session token for the user so the web app can
+// authenticate against Base44 directly (for rate-limit bypass, etc.)
+async function createSessionToken(userId) {
+  try {
+    const data = await b44Fetch(`/auth/service/session`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId }),
+    });
+    return data?.session_token || data?.token || null;
+  } catch (e) {
+    console.warn('[createSessionToken] failed:', e.message);
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -111,7 +124,7 @@ export default async function handler(req, res) {
     let dbUser = await findUserByAppleId(appleUserId);
     if (!dbUser && email) dbUser = await findUserByEmail(email);
 
-    // 2. Create new user
+    // 2. Create new user if not found
     if (!dbUser) {
       const givenName = fullName?.givenName || '';
       const familyName = fullName?.familyName || '';
@@ -123,18 +136,24 @@ export default async function handler(req, res) {
         full_name: name,
       });
     } else {
-      // Patch missing apple_user_id or email
+      // Patch missing fields
       const updates = {};
       if (!dbUser.apple_user_id) updates.apple_user_id = appleUserId;
       if (!dbUser.email && email) updates.email = email;
+      // Ensure search_credits exists for existing users
+      if (dbUser.search_credits == null && dbUser.credits == null) updates.search_credits = 5;
       if (Object.keys(updates).length > 0) {
         await updateUser(dbUser.id, updates);
         dbUser = { ...dbUser, ...updates };
       }
     }
 
+    // 3. Create a Base44 session token for authenticated API calls
+    const sessionToken = await createSessionToken(dbUser.id);
+
     return res.status(200).json({
       success: true,
+      sessionToken,          // may be null if Base44 session API not available
       user: {
         id: dbUser.id,
         email: dbUser.email,
