@@ -9,12 +9,12 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
   const [restoring, setRestoring] = useState(false);
   const [result, setResult] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
+
 
   useEffect(() => {
     const ua = navigator.userAgent || '';
     setIsIOS(/iPhone|iPad|iPod/i.test(ua));
-    setIsAndroid(/Android/i.test(ua));
+
   }, []);
 
   // Reset state when modal closes
@@ -184,8 +184,8 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
   };
 
   const Icon = isIOS ? Apple : Smartphone;
-  const storeName = isIOS ? "App Store" : isAndroid ? "Google Play" : "App Store/Google Play";
-  const accountType = isIOS ? "Apple ID" : isAndroid ? "Google account" : "account";
+  const storeName = "App Store";
+  const accountType = "Apple ID";
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -223,7 +223,7 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
             <p className="font-semibold">Instructions:</p>
             <ol className="list-decimal list-inside space-y-1 ml-2">
               <li>Make sure you're signed in to the same {accountType} used for purchase</li>
-              <li>Open the Sports Wager Helper {isIOS ? "iOS" : isAndroid ? "Android" : "mobile"} app</li>
+              <li>Open the Sports Wager Helper iOS app</li>
               <li>Click the "Restore Purchases" button below</li>
               <li>Your subscription will be linked to this account</li>
             </ol>

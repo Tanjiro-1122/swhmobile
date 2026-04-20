@@ -12,10 +12,10 @@ export default function PlatformBenefits() {
         <section className="py-16">
             <div className="text-center mb-12">
                 <h2 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4">
-                    Two Platforms. <span className="text-lime-400">One Goal.</span>
+                    Two Ways to Play. <span className="text-lime-400">One Goal.</span>
                 </h2>
                 <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                    Use the mobile app for quick lookups on the go, and the website for deep analysis and power tools.
+                    Use the iOS app for quick lookups on the go, and the website for deep analysis and power tools.
                 </p>
             </div>
             
@@ -62,15 +62,7 @@ export default function PlatformBenefits() {
                             {showStoreBadges && (
                                 <div className="mt-8 pt-6 border-t border-cyan-500/20">
                                     <p className="text-sm text-slate-400 mb-4">
-                                        {isAndroidNative ? (
-                                            <>
-                                                Available on <span className="text-cyan-300 font-semibold">Android</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                Available on <span className="text-cyan-300 font-semibold">iOS</span> and <span className="text-cyan-300 font-semibold">Android</span>
-                                            </>
-                                        )}
+                                        Available on <span className="text-cyan-300 font-semibold">iOS</span>
                                     </p>
                                     <div className="flex flex-col items-start gap-2">
                                         {!isAndroidNative && (
