@@ -3,7 +3,7 @@
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_KEY = process.env.SWH_BASE44_API_KEY || process.env.BASE44_SERVICE_TOKEN || "";
+const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
 
 function decodeAppleJwt(token) {
   try {
@@ -11,8 +11,7 @@ function decodeAppleJwt(token) {
     if (parts.length < 2) return {};
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
-    const decoded = Buffer.from(padded, 'base64').toString('utf8');
-    return JSON.parse(decoded);
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'));
   } catch { return {}; }
 }
 
@@ -33,8 +32,7 @@ async function b44Fetch(path, opts = {}) {
 }
 
 function toRecords(data) {
-  if (Array.isArray(data)) return data;
-  return data?.records ?? data?.items ?? [];
+  return Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
 }
 
 async function findUserByAppleId(appleUserId) {
@@ -54,29 +52,25 @@ async function findUserByEmail(email) {
   } catch { return null; }
 }
 
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function oneYearFromNow() {
+function firstOfNextMonth() {
   const d = new Date();
-  d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString();
+  d.setMonth(d.getMonth() + 1);
+  d.setDate(1);
+  return d.toISOString().split('T')[0];
 }
 
 async function createUser(payload) {
-  const now = new Date().toISOString();
   const defaults = {
-    stripe_customer_id: null,
-    subscription_expiry_date: null,
-    free_lookups_reset_date: today(),
-    subscription_status: "free",
-    subscription_type: null,
-    search_credits: 5,
-    free_daily_lookups: 5,
-    free_lookups_used: 0,
+    stripe_customer_id: "",            // required string — empty until Stripe assigns one
+    subscription_type: "free",
+    subscription_status: "inactive",
+    subscription_expiry_date: "",      // required string — empty for free users
+    free_lookups_reset_date: firstOfNextMonth(),
+    credits: 5,
+    monthly_free_lookups_used: 0,
+    completed_lessons: [],
+    data_storage_consent: false,
     role: "user",
-    is_active: true,
   };
   return b44Fetch(`/entities/User`, {
     method: "POST",
@@ -92,11 +86,9 @@ async function updateUser(id, payload) {
 }
 
 export default async function handler(req, res) {
-  // CORS headers for native webview
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -115,15 +107,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Could not extract user ID from token' });
     }
 
-    // 1. Find by apple_user_id
+    // 1. Find existing user
     let dbUser = await findUserByAppleId(appleUserId);
+    if (!dbUser && email) dbUser = await findUserByEmail(email);
 
-    // 2. Fallback to email
-    if (!dbUser && email) {
-      dbUser = await findUserByEmail(email);
-    }
-
-    // 3. Create new user
+    // 2. Create new user
     if (!dbUser) {
       const givenName = fullName?.givenName || '';
       const familyName = fullName?.familyName || '';
@@ -131,11 +119,11 @@ export default async function handler(req, res) {
 
       dbUser = await createUser({
         apple_user_id: appleUserId,
-        email: email || null,
+        email: email || "",
         full_name: name,
       });
     } else {
-      // Patch missing fields
+      // Patch missing apple_user_id or email
       const updates = {};
       if (!dbUser.apple_user_id) updates.apple_user_id = appleUserId;
       if (!dbUser.email && email) updates.email = email;
@@ -152,10 +140,10 @@ export default async function handler(req, res) {
         email: dbUser.email,
         full_name: dbUser.full_name,
         apple_user_id: dbUser.apple_user_id,
-        subscription_status: dbUser.subscription_status || 'free',
-        search_credits: dbUser.search_credits ?? 5,
-        free_lookups_used: dbUser.free_lookups_used ?? 0,
-        free_daily_lookups: dbUser.free_daily_lookups ?? 5,
+        subscription_type: dbUser.subscription_type || 'free',
+        subscription_status: dbUser.subscription_status || 'inactive',
+        credits: dbUser.credits ?? 5,
+        monthly_free_lookups_used: dbUser.monthly_free_lookups_used ?? 0,
       },
     });
 
