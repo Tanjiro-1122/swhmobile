@@ -82,7 +82,7 @@ const SPORT_KEY_MAP: Record<string, string[]> = {
 };
 
 async function fetchLiveOdds(sport: string): Promise<string> {
-  const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY') || Deno.env.get('ODDS_API_KEY');
+  const oddsApiKey = Deno.env.get('ODDS_API_KEY');
   if (!oddsApiKey) return 'Live odds unavailable (API key not configured).';
 
   const normalizedSport = sport.toLowerCase().trim();
