@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Newspaper, ExternalLink, TrendingUp } from "lucide-react";
@@ -41,12 +40,13 @@ const featuredArticles = [
     hot: false
   },
   {
-    source: 'The Athletic',
+    source: 'NHL.com',
     category: 'NHL',
     title: 'NHL In-Depth Coverage',
     description: 'Premium hockey analysis, insider reports, and game breakdowns.',
-    image: 'https://images.unsplash.com/photo-1580748142215-5ba0bfce00af?w=400&h=250&fit=crop',
-    url: 'https://www.nytimes.com/athletic/nhl/',
+    // Fixed: previous Unsplash photo-1580748142215 was a 404 — replaced with working hockey image
+    image: 'https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=400&h=250&fit=crop',
+    url: 'https://www.nhl.com/news',
     color: 'from-slate-700 to-slate-800',
     hot: false
   },
@@ -152,6 +152,11 @@ export default function SportsNewsTicker() {
                       src={article.image} 
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        // Fallback gradient if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.parentNode.classList.add(`bg-gradient-to-br`, article.color.split(' ')[0].replace('from-','bg-'));
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                     <div className="absolute top-3 left-3 flex gap-2">

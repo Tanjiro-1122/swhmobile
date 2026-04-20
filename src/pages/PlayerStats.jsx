@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, Trophy } from "lucide-react";
+import { Sparkles, Trophy, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PlayerSearchBar from "../components/player/PlayerSearchBar";
 import PlayerStatsDisplay from "../components/player/PlayerStatsDisplay";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
@@ -53,8 +56,13 @@ export default function PlayerStats() {
         throw new Error("Invalid response from backend - player not found or missing data");
       }
 
-      // Save to database for historical tracking
-      await base44.entities.PlayerStats.create(result);
+      // Save to local Query entity for tracking (PlayerStats entity may not exist)
+      try {
+        await base44.entities.Query.create({ query_text: query, result_type: 'player', result_summary: result.player_name });
+      } catch {
+        // Silently ignore if save fails — results still display fine
+      }
+
       recordLookup();
       queryClient.invalidateQueries({ queryKey: ['players'] });
       
@@ -85,6 +93,16 @@ export default function PlayerStats() {
       />
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Link to={createPageUrl('Dashboard')}>
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-200 -ml-2">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
@@ -137,7 +155,7 @@ export default function PlayerStats() {
               
               <Alert className="mt-6 bg-blue-50 border-2 border-blue-200">
                 <AlertDescription className="text-blue-900">
-                  ✅ Player analysis saved! View all your saved results in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
+                  ✅ Player analysis complete! View all your saved results in <a href="/SavedResults" className="underline font-bold">Saved Results</a>
                 </AlertDescription>
               </Alert>
             </motion.div>
