@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'VIP access required' }, { status: 403 });
         }
 
-        const apiKey = Deno.env.get("THE_ODDS_API_KEY");
+        const apiKey = Deno.env.get("ODDS_API_KEY") ?? Deno.env.get("THE_ODDS_API_KEY");
         
         if (!apiKey) {
             return Response.json({ error: 'API key not configured' }, { status: 500 });

@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     }
 
     const { sportKey } = await req.json();
-    const apiKey = Deno.env.get("THE_ODDS_API_KEY");
+    const apiKey = Deno.env.get("ODDS_API_KEY") ?? Deno.env.get("THE_ODDS_API_KEY");
 
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key not configured on the server.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
