@@ -203,7 +203,7 @@ export default function Pricing() {
         if (result.success) {
           localStorage.setItem("pending_iap_product", plan.productId);
           localStorage.setItem("pending_iap_platform", "ios");
-          window.location.href = "/PostPurchaseSignIn";
+          window.location.href = "/Dashboard";
         } else if (result.error !== "user_cancelled") {
           alert(`Purchase failed: ${result.error || "Unknown error"}`);
         }
@@ -242,7 +242,7 @@ export default function Pricing() {
             });
             localStorage.setItem("pending_iap_product", data.productId || plan.productId);
             localStorage.setItem("pending_iap_platform", data.purchaseToken ? "android" : "ios");
-            window.location.href = "/PostPurchaseSignIn";
+            window.location.href = "/Dashboard";
           } else {
             const cancelled = data.isCancelled || ["user_cancelled","cancelled","payment_cancelled"].includes(data.error);
             if (!cancelled && data.error) alert(`Purchase failed: ${data.error}. Please try again.`);

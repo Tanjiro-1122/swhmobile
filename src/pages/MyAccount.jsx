@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Heart, Trophy, CreditCard, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { User, Heart, Trophy, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import ProfileContent from "@/components/hub/ProfileContent";
 import PreferencesContent from "@/components/hub/PreferencesContent";
 import SavedResultsContent from "@/components/hub/SavedResultsContent";
-import SubscriptionContent from "@/components/hub/SubscriptionContent";
 
 
 function MyAccountContent() {
@@ -59,8 +58,7 @@ function MyAccountContent() {
         if (response.data.success) {
           setPaymentSuccess(true);
           setIapError("");
-          setActiveTab("subscription");
-          
+                    
           // Clean up all localStorage
           localStorage.removeItem('pending_iap_receipt');
           localStorage.removeItem('pending_iap_product');
@@ -87,13 +85,12 @@ function MyAccountContent() {
     // Handle payment success first (before tab param since it also sets tab)
     if (params.get('payment_success') === 'true') {
       setPaymentSuccess(true);
-      setActiveTab("subscription");
-      // Auto-hide after 8 seconds
+            // Auto-hide after 8 seconds
       setTimeout(() => setPaymentSuccess(false), 8000);
     } else {
       // Handle tab parameter only if not payment success
       const tabParam = params.get('tab');
-      if (tabParam && ['profile', 'subscription', 'preferences', 'saved'].includes(tabParam)) {
+      if (tabParam && ['profile', 'preferences', 'saved'].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
@@ -168,13 +165,7 @@ function MyAccountContent() {
                 <User className="w-4 h-4 flex-shrink-0" />
                 <span>Profile</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="subscription" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-              >
-                <CreditCard className="w-4 h-4 flex-shrink-0" />
-                <span>Plan</span>
-              </TabsTrigger>
+
               <TabsTrigger 
                 value="preferences" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
@@ -196,9 +187,6 @@ function MyAccountContent() {
             <ProfileContent />
           </TabsContent>
 
-          <TabsContent value="subscription">
-            <SubscriptionContent />
-          </TabsContent>
 
           <TabsContent value="preferences">
             <PreferencesContent />
