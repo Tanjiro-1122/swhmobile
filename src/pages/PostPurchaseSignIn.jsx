@@ -24,11 +24,7 @@ export default function PostPurchaseSignIn() {
     }
   }, []);
 
-  const handleEmailSignIn = () => {
-    window.location.href = '/PostPurchaseSignIn';
-  };
-
-  const handleAppleSignIn = async () => {
+const handleAppleSignIn = async () => {
     setIsAppleSignInLoading(true);
     try {
       const result = await triggerAppleSignIn();
@@ -94,7 +90,7 @@ export default function PostPurchaseSignIn() {
 
             {/* Sign In Options */}
             <div className="space-y-4">
-              {isIOSNative && (
+              {
                 <Button
                   onClick={handleAppleSignIn}
                   disabled={isAppleSignInLoading}
@@ -110,14 +106,6 @@ export default function PostPurchaseSignIn() {
                   )}
                 </Button>
               )}
-              {/* Email Sign In */}
-              <Button
-                onClick={handleEmailSignIn}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-xl"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Sign in with Email
-              </Button>
             </div>
 
             {/* Pending purchase info */}

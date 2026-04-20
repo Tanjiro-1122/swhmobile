@@ -179,12 +179,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                     )}
                   </Button>
                 )}
-                <Button
-                  onClick={handleLogin}
-                  className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg py-6 font-bold shadow-lg"
-                >
-                  Sign In with Email
-                </Button>
+
 
                 <Button
                   onClick={handleViewPricing}
