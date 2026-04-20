@@ -1,7 +1,5 @@
 // api/handleAppleSignIn.js
 // Vercel serverless function — handles Apple Sign In for SWH
-// Decodes the Apple identity token, finds or creates the user in Base44,
-// and returns a session token the app can use.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
@@ -29,15 +27,20 @@ async function b44Fetch(path, opts = {}) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`Base44 ${res.status}: ${text.slice(0, 200)}`);
+    throw new Error(`Base44 ${res.status}: ${text.slice(0, 300)}`);
   }
   return res.json();
+}
+
+function toRecords(data) {
+  if (Array.isArray(data)) return data;
+  return data?.records ?? data?.items ?? [];
 }
 
 async function findUserByAppleId(appleUserId) {
   try {
     const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`);
-    const records = Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
+    const records = toRecords(data);
     return records.length > 0 ? records[0] : null;
   } catch { return null; }
 }
@@ -46,15 +49,38 @@ async function findUserByEmail(email) {
   if (!email) return null;
   try {
     const data = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=1`);
-    const records = Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
+    const records = toRecords(data);
     return records.length > 0 ? records[0] : null;
   } catch { return null; }
 }
 
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function oneYearFromNow() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString();
+}
+
 async function createUser(payload) {
+  const now = new Date().toISOString();
+  const defaults = {
+    stripe_customer_id: null,
+    subscription_expiry_date: null,
+    free_lookups_reset_date: today(),
+    subscription_status: "free",
+    subscription_type: null,
+    search_credits: 5,
+    free_daily_lookups: 5,
+    free_lookups_used: 0,
+    role: "user",
+    is_active: true,
+  };
   return b44Fetch(`/entities/User`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...defaults, ...payload }),
   });
 }
 
@@ -65,60 +91,51 @@ async function updateUser(id, payload) {
   });
 }
 
-async function createSession(userId) {
-  // Create a session token via Base44 auth
-  const res = await b44Fetch(`/auth/sessions`, {
-    method: "POST",
-    body: JSON.stringify({ user_id: userId }),
-  });
-  return res?.token || res?.session_token || null;
-}
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  // CORS headers for native webview
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { action, identityToken, authorizationCode, user, email: emailArg, fullName } = req.body || {};
+    const { identityToken, email: emailArg, fullName } = req.body || {};
 
     if (!identityToken) {
-      return res.status(400).json({ success: false, error: "identityToken is required" });
+      return res.status(400).json({ success: false, error: 'identityToken is required' });
     }
 
-    // Decode the Apple JWT (not verified cryptographically — used only for lookup)
     const payload = decodeAppleJwt(identityToken);
     const appleUserId = payload.sub;
     const email = emailArg || payload.email || null;
 
     if (!appleUserId) {
-      return res.status(400).json({ success: false, error: "Could not extract user ID from token" });
+      return res.status(400).json({ success: false, error: 'Could not extract user ID from token' });
     }
 
-    // 1. Try to find existing user by apple_user_id
+    // 1. Find by apple_user_id
     let dbUser = await findUserByAppleId(appleUserId);
 
-    // 2. Fall back to email lookup
+    // 2. Fallback to email
     if (!dbUser && email) {
       dbUser = await findUserByEmail(email);
     }
 
-    // 3. Create new user if not found
+    // 3. Create new user
     if (!dbUser) {
-      const name = fullName
-        ? `${fullName.givenName || ""} ${fullName.familyName || ""}`.trim()
-        : (email ? email.split("@")[0] : "User");
+      const givenName = fullName?.givenName || '';
+      const familyName = fullName?.familyName || '';
+      const name = `${givenName} ${familyName}`.trim() || (email ? email.split('@')[0] : 'User');
 
       dbUser = await createUser({
         apple_user_id: appleUserId,
         email: email || null,
-        full_name: name || null,
-        subscription_status: "free",
-        search_credits: 5,
-        role: "user",
+        full_name: name,
       });
     } else {
-      // Update apple_user_id if missing
+      // Patch missing fields
       const updates = {};
       if (!dbUser.apple_user_id) updates.apple_user_id = appleUserId;
       if (!dbUser.email && email) updates.email = email;
@@ -128,29 +145,22 @@ export default async function handler(req, res) {
       }
     }
 
-    // 4. Create a session token
-    let sessionToken = null;
-    try {
-      sessionToken = await createSession(dbUser.id);
-    } catch (e) {
-      console.warn("createSession failed:", e.message);
-    }
-
-    // Even if session creation fails, return the user so the app can store locally
     return res.status(200).json({
       success: true,
-      sessionToken,
       user: {
         id: dbUser.id,
         email: dbUser.email,
         full_name: dbUser.full_name,
         apple_user_id: dbUser.apple_user_id,
-        subscription_status: dbUser.subscription_status || "free",
+        subscription_status: dbUser.subscription_status || 'free',
         search_credits: dbUser.search_credits ?? 5,
+        free_lookups_used: dbUser.free_lookups_used ?? 0,
+        free_daily_lookups: dbUser.free_daily_lookups ?? 5,
       },
     });
+
   } catch (err) {
-    console.error("[handleAppleSignIn] error:", err.message);
+    console.error('[handleAppleSignIn] error:', err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 }
