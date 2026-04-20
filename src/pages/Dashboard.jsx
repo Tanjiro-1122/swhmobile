@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import {
   Zap, Crown, Bot, BarChart2, Users, Activity,
@@ -85,17 +83,14 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState("Welcome");
 
-  const { data: currentUser } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: async () => {
-      try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) return null;
-        return await base44.auth.me();
-      } catch { return null; }
-    },
-    staleTime: 5 * 60 * 1000,
-  });
+  // Read user from localStorage (set by Apple Sign-In via /api/handleAppleSignIn)
+  const currentUser = (() => {
+    try {
+      const stored = localStorage.getItem("swh_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  })();
+
 
   useEffect(() => {
     const h = new Date().getHours();
