@@ -100,7 +100,7 @@ export default function Dashboard() {
   }, []);
 
   const firstName = currentUser?.full_name?.split(" ")[0] || null;
-  const credits = currentUser?.search_credits ?? 5;
+  const credits = currentUser?.search_credits ?? currentUser?.credits ?? 5;
   const isPaid = ["premium_monthly","vip_annual","legacy"].includes(currentUser?.subscription_type);
   const isGuest = !currentUser;
 

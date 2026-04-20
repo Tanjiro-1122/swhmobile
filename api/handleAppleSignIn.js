@@ -143,6 +143,7 @@ export default async function handler(req, res) {
         subscription_type: dbUser.subscription_type || 'free',
         subscription_status: dbUser.subscription_status || 'inactive',
         credits: dbUser.credits ?? 5,
+        search_credits: dbUser.search_credits ?? dbUser.credits ?? 5,
         monthly_free_lookups_used: dbUser.monthly_free_lookups_used ?? 0,
       },
     });
