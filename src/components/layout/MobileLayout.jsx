@@ -75,8 +75,8 @@ export default function MobileLayout({ children, currentPageName }) {
         <DomainChangeBanner />
         <AgeGate />
 
-        {/* Fixed Header - 56px height, respects iOS safe area */}
-        <div className="fixed top-0 left-0 right-0 z-40">
+        {/* Fixed Header - hidden on Splash/Dashboard */}
+        {currentPageName !== "Splash" && currentPageName !== "Dashboard" && <div className="fixed top-0 left-0 right-0 z-40">
           <header className="relative bg-slate-900/95 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="flex items-center justify-between h-14 px-4 lg:px-6">
               <div className="flex items-center gap-3">
@@ -185,17 +185,18 @@ export default function MobileLayout({ children, currentPageName }) {
               </div>
             </div>
           </header>
-        </div>
+        </div>}
 
-        {/* Main Content - offset for header (56px) */}
-        <main className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(56px + env(safe-area-inset-top))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full">
-            {children}
-          </div>
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto" style={{ paddingTop: currentPageName === "Splash" || currentPageName === "Dashboard" ? '0' : 'calc(56px + env(safe-area-inset-top))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          {currentPageName === "Splash" || currentPageName === "Dashboard"
+            ? children
+            : <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full">{children}</div>
+          }
         </main>
 
         {/* Floating Dashboard Button - Futuristic style */}
-        {currentPageName !== 'Dashboard' && (
+        {currentPageName !== 'Dashboard' && currentPageName !== 'Splash' && (
           <motion.div
             className="fixed right-4 z-[100]"
             style={{ bottom: `calc(1rem + env(safe-area-inset-bottom))` }}

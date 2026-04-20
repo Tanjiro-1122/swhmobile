@@ -43,10 +43,11 @@
  *
  * To change the main page from HomePage to Dashboard, use find_replace:
  *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
+ *   New: mainPage: "Splash",
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Splash from './pages/Splash';
 import AIAssistant from './pages/AIAssistant';
 import AIParlayBuilder from './pages/AIParlayBuilder';
 import AIPerformance from './pages/AIPerformance';
@@ -92,6 +93,7 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Splash": Splash,
     "AIAssistant": AIAssistant,
     "AIParlayBuilder": AIParlayBuilder,
     "AIPerformance": AIPerformance,
@@ -136,7 +138,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Dashboard",
+    mainPage: "Splash",
     Pages: PAGES,
     Layout: __Layout,
 };

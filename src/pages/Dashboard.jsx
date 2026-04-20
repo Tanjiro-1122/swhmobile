@@ -1,274 +1,267 @@
-import React, { useState } from "react";
-import { createPageUrl } from "@/utils";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { usePlatform } from "@/components/hooks/usePlatform";
-import Footer from "@/components/layout/Footer";
-
-import { Settings, Check, PieChart, Activity, Users, User, BarChart2, Gem, Loader2 } from "lucide-react";
-
 import { motion } from "framer-motion";
-import TodaysPredictions from "@/components/predictions/TodaysPredictions";
-import WebExclusiveCard from "@/components/dashboard/WebExclusiveCard";
-import NeonCard from "@/components/dashboard/NeonCard";
-import FeaturedCard from "@/components/dashboard/FeaturedCard";
-import CircuitBackground from "@/components/dashboard/CircuitBackground";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import QuickStatsBar from "@/components/dashboard/QuickStatsBar";
-import AIAccuracyWidget from "@/components/dashboard/AIAccuracyWidget";
-import SportsNewsWidget from "@/components/dashboard/SportsNewsWidget";
+import {
+  Zap, Crown, Bot, BarChart2, Users, Activity,
+  ChevronRight, Globe, Search, Star, Flame
+} from "lucide-react";
 
+const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
+const SAL_LOGO  = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
 
-// Featured items shown prominently at the top
-const featuredItems = [
-    { id: "assistant", title: "S.A.L. HUB", subtitle: "Chat, Learn & Connect", description: "AI chat, lessons, briefs & community", Icon: null, customIcon: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg", page: "AIAssistant", tag: "ALL-IN-ONE", tagColor: "bg-gradient-to-r from-purple-500 to-cyan-500 text-white" },
-    { id: "analysis", title: "ANALYSIS HUB", subtitle: "AI-Powered Insights", description: "Match analysis, player stats, team insights", Icon: PieChart, page: "AnalysisHub", tag: "MOST POPULAR", tagColor: "bg-yellow-500 text-black", paidOnly: true },
+// ─── Menu items ───────────────────────────────────────────────────────────────
+const MENU = [
+  {
+    id: "sal",
+    title: "Ask S.A.L.",
+    subtitle: "AI Sports Detective",
+    description: "Chat with your AI analyst — ask anything about any match, team, or player.",
+    page: "AskSAL",
+    image: SAL_LOGO,
+    tag: "SIGNATURE",
+    tagColor: "bg-purple-500",
+    cost: "1 credit per question",
+    accent: "purple",
+  },
+  {
+    id: "analysis",
+    title: "Match Analysis",
+    subtitle: "AI-Powered Predictions",
+    description: "Deep dive into any matchup — odds, trends, and AI picks in seconds.",
+    page: "AnalysisHub",
+    icon: BarChart2,
+    tag: "POPULAR",
+    tagColor: "bg-yellow-500 text-black",
+    cost: "1 credit per analysis",
+    accent: "yellow",
+  },
+  {
+    id: "player",
+    title: "Player Stats",
+    subtitle: "Live Performance Data",
+    description: "Search any player across all major sports for stats and AI insight.",
+    page: "PlayerStats",
+    icon: Users,
+    tag: null,
+    cost: "1 credit per search",
+    accent: "cyan",
+  },
+  {
+    id: "team",
+    title: "Team Stats",
+    subtitle: "Full Team Breakdown",
+    description: "Rankings, records, injury reports, and AI-scored strength ratings.",
+    page: "TeamStats",
+    icon: Star,
+    tag: null,
+    cost: "1 credit per search",
+    accent: "cyan",
+  },
+  {
+    id: "live",
+    title: "Live Scores & News",
+    subtitle: "Real-Time Ticker",
+    description: "Live scores, breaking sports news, and game updates as they happen.",
+    page: "SportsNewsTicker",
+    icon: Flame,
+    tag: "LIVE",
+    tagColor: "bg-red-500",
+    cost: "Free",
+    accent: "red",
+  },
 ];
 
-// Secondary menu items - reduced to most essential (no duplicates of featured items)
-const secondaryMenuItems = [
-    { id: "tracking", title: "TRACKING TOOLS", subtitle: "Track & Analyze", description: "Performance tracker, calculators, odds", Icon: Activity, page: "BettingHub", tag: "WEB ONLY", tagColor: "bg-cyan-500 text-black", webOnly: true, paidOnly: true },
-    { id: "community", title: "COMMUNITY", subtitle: "Connect & Share", description: "Join discussions, share picks", Icon: Users, page: "CommunityHub", tag: "SOCIAL", tagColor: "bg-purple-500 text-white" },
-    { id: "sportsnews", title: "LIVE SCORES", subtitle: "Live Updates", description: "Live scores & news ticker", Icon: Activity, page: "SportsNewsTicker", tag: "LIVE", tagColor: "bg-red-500 text-white" },
-    { id: "topten", title: "TOP TEN", subtitle: "Rankings", description: "Top players & team standings", Icon: BarChart2, page: "TopTen", tag: "NEW", tagColor: "bg-blue-500 text-white", paidOnly: true },
-    { id: "account", title: "MY ACCOUNT", subtitle: "Profile & Settings", description: "Saved results, subscription", Icon: User, page: "MyAccount", tag: null },
-    { id: "pricing", title: "PRICING", subtitle: "Unlock Full Power", description: "View plans and upgrade", Icon: Gem, page: "Pricing", tag: "BEST VALUE", tagColor: "bg-purple-500 text-white" },
-];
-
-// S.A.L. owl logo for AI Assistant
-const SAL_OWL_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
-
-// Combined for mobile view - only use featured items (no duplicates from secondary)
-const allMenuItems = [...featuredItems, ...secondaryMenuItems].map(item => 
-    item.id === 'assistant' ? { ...item, customIcon: SAL_OWL_LOGO } : item
-);
-
-// Assign glow colors based on card type
-const getGlowColor = (id) => {
-    const colorMap = {
-        assistant: "purple",
-        analysis: "purple",
-        tracking: "cyan",
-        community: "lime",
-        briefs: "cyan",
-        account: "purple",
-        sportsnews: "orange",
-        thenews: "lime",
-        topten: "cyan",
-        pricing: "gold"
-    };
-    return colorMap[id] || "purple";
+const ACCENT_STYLES = {
+  purple: { border: "border-purple-500/30", glow: "bg-purple-500/10", icon: "text-purple-400", tag: "text-white" },
+  yellow: { border: "border-yellow-500/30", glow: "bg-yellow-500/10", icon: "text-yellow-400", tag: "text-black" },
+  cyan:   { border: "border-cyan-500/30",   glow: "bg-cyan-500/10",   icon: "text-cyan-400",   tag: "text-white" },
+  red:    { border: "border-red-500/30",    glow: "bg-red-500/10",    icon: "text-red-400",    tag: "text-white" },
 };
-
-const MenuGrid = ({ menuItems, webExclusiveItems = [], isAdmin, gridClasses }) => (
-    <div className={`grid ${gridClasses} gap-5`}>
-        {menuItems.map((item, index) => (
-            <NeonCard 
-                key={item.id} 
-                item={item} 
-                index={index} 
-                glowColor={getGlowColor(item.id)}
-            />
-        ))}
-        
-        {/* Web Exclusive Cards for Mobile */}
-        {webExclusiveItems.map((item, index) => (
-            <WebExclusiveCard key={item.id} item={item} index={menuItems.length + index} />
-        ))}
-
-        {isAdmin && (
-            <NeonCard 
-                item={{
-                    id: "admin",
-                    title: "ADMIN PANEL",
-                    subtitle: "Manage App",
-                    description: "Administrative tools",
-                    Icon: Settings,
-                    page: "AdminPanel",
-                    tag: "ADMIN",
-                    tagColor: "bg-red-500 text-white"
-                }}
-                index={menuItems.length}
-                glowColor="orange"
-            />
-        )}
-    </div>
-);
-
-const WebDashboardContent = ({ featuredItems, menuItems, isAdmin, userName, isPaidUser }) => {
-    // Filter featured items based on subscription
-    const visibleFeatured = featuredItems.filter(item => isPaidUser || !item.paidOnly);
-    
-    return (
-        <div className="w-full relative z-10">
-            <DashboardHeader userName={userName} />
-            
-            {/* Quick Stats Bar */}
-            <QuickStatsBar />
-
-            {/* Featured Actions - Primary CTAs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {visibleFeatured.map((item, index) => (
-                    <FeaturedCard key={item.id} item={item} index={index} />
-                ))}
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                {/* Today's Predictions - takes 2 columns */}
-                <div className="lg:col-span-2">
-                    <TodaysPredictions />
-                </div>
-                
-                {/* Right sidebar with AI Accuracy */}
-                <div className="space-y-6">
-                    <AIAccuracyWidget />
-                    <SportsNewsWidget />
-                </div>
-            </div>
-            
-            {/* Secondary Navigation Grid - Compact 3-column */}
-            <div className="mb-4">
-                <h2 className="text-lg font-bold text-slate-300 mb-4">More Tools</h2>
-            </div>
-            <MenuGrid menuItems={menuItems} isAdmin={isAdmin} gridClasses="grid-cols-2 lg:grid-cols-3" />
-        </div>
-    );
-};
-
-const MobileDashboardContent = ({ menuItems, webExclusiveItems, isAdmin }) => {
-    return (
-        <div className="w-full">
-            <motion.div 
-                className="text-center pt-2 pb-6"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                {/* Glowing logo container */}
-                <div className="relative inline-block mb-4">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-3xl blur-xl opacity-40 animate-pulse" />
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png"
-                        alt="SWH Logo"
-                        className="relative w-20 h-20 rounded-3xl object-cover shadow-2xl border-2 border-purple-500/50"
-                    />
-                </div>
-                <h1 className="text-2xl font-black tracking-tighter">
-                    <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
-                        SPORTS WAGER HELPER
-                    </span>
-                </h1>
-                <p className="text-slate-400 mt-1 text-sm font-medium">
-                    AI-Powered Sports Analytics
-                </p>
-            </motion.div>
-            
-            {/* 2-column grid for tablets, 1-column for phones */}
-            <MenuGrid menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} gridClasses="grid-cols-1 sm:grid-cols-2" />
-        </div>
-    );
-};
-
 
 export default function Dashboard() {
-    const { isNativeApp, isMobileScreen } = usePlatform();
-    const navigate = useNavigate();
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const navigate = useNavigate();
+  const [greeting, setGreeting] = useState("Welcome");
 
-    React.useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        // Handle payment success from both Dashboard and MyAccount redirects
-        if (urlParams.get('payment_success') === 'true') {
-            setShowSuccessMessage(true);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => setShowSuccessMessage(false), 5000);
-        }
-    }, []);
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) return null;
+        return await base44.auth.me();
+      } catch { return null; }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const { data: currentUser, isLoading } = useQuery({
-        queryKey: ['currentUser'],
-        queryFn: async () => {
-            const isAuth = await base44.auth.isAuthenticated();
-            if (!isAuth) return null;
-            return base44.auth.me();
-        },
-    });
+  useEffect(() => {
+    const h = new Date().getHours();
+    if (h < 12) setGreeting("Good morning");
+    else if (h < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  }, []);
 
-    // Redirect unauthenticated users to Home
-    React.useEffect(() => {
-        if (!isLoading && !currentUser) {
-            navigate(createPageUrl('Home'), { replace: true });
-        }
-    }, [isLoading, currentUser, navigate]);
+  const firstName = currentUser?.full_name?.split(" ")[0] || null;
+  const credits = currentUser?.search_credits ?? 5;
+  const isPaid = ["premium_monthly","vip_annual","legacy"].includes(currentUser?.subscription_type);
+  const isGuest = !currentUser;
 
-    if (isLoading || !currentUser) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
-            </div>
-        );
-    }
+  return (
+    <div className="min-h-screen bg-gray-950 text-white pb-24">
 
-    const isAdmin = currentUser?.role === 'admin';
-    const isMobile = isNativeApp || isMobileScreen;
-    const userTier = currentUser?.subscription_type || 'free';
-    const isPaidUser = userTier === 'legacy' || userTier === 'vip_annual' || userTier === 'premium_monthly' || userTier === 'influencer';
-    
-    // Filter menu items based on user tier and platform
-    const filterMenuItems = (items) => {
-        return items.filter(item => {
-            // If user is free, hide paid-only items
-            if (!isPaidUser && item.paidOnly) return false;
-            return true;
-        });
-    };
-    
-    // For mobile: use all items combined, for web: use secondary items only (featured shown separately)
-    const filteredAllItems = filterMenuItems(allMenuItems);
-    const filteredSecondaryItems = filterMenuItems(secondaryMenuItems);
-    const filteredFeaturedItems = filterMenuItems(featuredItems);
-    
-    const menuItems = isMobile ? filteredAllItems.filter(item => !item.webOnly) : filteredSecondaryItems;
-    const webExclusiveItems = isMobile ? filteredAllItems.filter(item => item.webOnly) : [];
-    
-    if (isMobile) {
-        return (
-            <>
-                {showSuccessMessage && (
-                    <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
-                        <Check className="w-5 h-5" />
-                        <span className="font-bold">Payment successful!</span>
-                    </motion.div>
-                )}
-                <MobileDashboardContent menuItems={menuItems} webExclusiveItems={webExclusiveItems} isAdmin={isAdmin} />
-                <Footer />
-            </>
-        );
-    }
-
-    return (
-        <div className="min-h-screen relative">
-            <CircuitBackground />
-
-            {showSuccessMessage && (
-                <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-xl shadow-2xl shadow-green-500/30 flex items-center gap-2 border border-green-400/30">
-                    <Check className="w-5 h-5" />
-                    <span className="font-bold">Payment successful!</span>
-                </motion.div>
-            )}
-
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <WebDashboardContent 
-                    featuredItems={filteredFeaturedItems}
-                    menuItems={menuItems} 
-                    isAdmin={isAdmin} 
-                    userName={currentUser?.full_name}
-                    isPaidUser={isPaidUser}
-                />
-            </div>
-
-            <Footer />
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="px-5 pt-8 pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-500 text-xs uppercase tracking-widest font-semibold">{greeting}</p>
+            <h1 className="text-xl font-black mt-0.5">
+              {firstName ? `${firstName} 👋` : "Sports Wager Helper"}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Credit badge */}
+            <button
+              onClick={() => navigate(createPageUrl("Pricing"))}
+              className="flex items-center gap-1.5 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2"
+            >
+              <Zap className="w-4 h-4 text-lime-400" />
+              <span className="text-sm font-bold text-white">
+                {isPaid ? "∞" : credits}
+              </span>
+              <span className="text-gray-500 text-xs">credits</span>
+            </button>
+            {/* Avatar / account */}
+            <button
+              onClick={() => navigate(createPageUrl("MyAccount"))}
+              className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center overflow-hidden"
+            >
+              <img src={SWH_LOGO} alt="SWH" className="w-full h-full object-cover" />
+            </button>
+          </div>
         </div>
-    );
-    }
+
+        {/* Guest nudge */}
+        {isGuest && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 bg-lime-500/10 border border-lime-500/20 rounded-2xl px-4 py-3 flex items-center justify-between"
+          >
+            <div>
+              <p className="text-lime-300 text-xs font-bold">5 free searches remaining</p>
+              <p className="text-gray-500 text-xs mt-0.5">Sign in to save your results</p>
+            </div>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="text-xs font-bold text-lime-400 bg-lime-500/20 px-3 py-1.5 rounded-xl"
+            >
+              Sign In
+            </button>
+          </motion.div>
+        )}
+
+        {/* VIP / Premium badge */}
+        {isPaid && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl px-4 py-2.5 flex items-center gap-2"
+          >
+            <Crown className="w-4 h-4 text-yellow-400" />
+            <p className="text-yellow-300 text-xs font-bold">
+              {currentUser?.subscription_type === "legacy" ? "Legacy Member — Unlimited Access" :
+               currentUser?.subscription_type === "vip_annual" ? "VIP Annual — Unlimited Access" :
+               "Premium — Unlimited Access"}
+            </p>
+          </motion.div>
+        )}
+      </div>
+
+      {/* ── Menu label ─────────────────────────────────────────────────────── */}
+      <div className="px-5 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-800" />
+          <p className="text-gray-600 text-xs uppercase tracking-widest font-semibold">Today's Menu</p>
+          <div className="h-px flex-1 bg-gray-800" />
+        </div>
+      </div>
+
+      {/* ── Menu Cards ─────────────────────────────────────────────────────── */}
+      <div className="px-4 flex flex-col gap-4">
+        {MENU.map((item, i) => {
+          const a = ACCENT_STYLES[item.accent];
+          const Icon = item.icon;
+
+          return (
+            <motion.button
+              key={item.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.07, duration: 0.3 }}
+              onClick={() => navigate(createPageUrl(item.page))}
+              className={`w-full text-left rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-4 active:scale-[0.98] transition-transform`}
+            >
+              {/* Icon / image */}
+              <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center">
+                {item.image ? (
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <Icon className={`w-7 h-7 ${a.icon}`} />
+                )}
+              </div>
+
+              {/* Text */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-black text-base text-white">{item.title}</span>
+                  {item.tag && (
+                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${item.tagColor} ${a.tag}`}>
+                      {item.tag}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 text-xs leading-snug line-clamp-2">{item.description}</p>
+                <div className="mt-1.5 flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-lime-500" />
+                  <span className="text-lime-500/80 text-[10px] font-semibold">{item.cost}</span>
+                </div>
+              </div>
+
+              <ChevronRight className="w-5 h-5 text-gray-600 flex-shrink-0" />
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* ── Get More Credits CTA ────────────────────────────────────────────── */}
+      {!isPaid && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mx-4 mt-6"
+        >
+          <button
+            onClick={() => navigate(createPageUrl("Pricing"))}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-lime-500 to-emerald-500 text-gray-950 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          >
+            <Zap className="w-4 h-4" />
+            Get More Search Credits
+          </button>
+        </motion.div>
+      )}
+
+      {/* ── Website FYI ─────────────────────────────────────────────────────── */}
+      <div className="mx-4 mt-4 mb-2 flex items-center justify-center gap-2 bg-gray-900/50 border border-gray-800 rounded-2xl px-4 py-3">
+        <Globe className="w-4 h-4 text-lime-500 flex-shrink-0" />
+        <p className="text-gray-500 text-xs leading-tight">
+          <span className="text-gray-400 font-semibold">FYI:</span> For the complete AI experience with unlimited tools, visit{" "}
+          <span className="text-lime-400 font-bold">sportswagerhelper.com</span>
+        </p>
+      </div>
+    </div>
+  );
+}
