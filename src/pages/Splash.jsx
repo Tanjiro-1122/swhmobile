@@ -16,7 +16,16 @@ export default function Splash() {
   useEffect(() => {
     const check = async () => {
       try {
-        const isAuth = await base44.auth.isAuthenticated();
+        // Check for stored user session
+        const storedUser = localStorage.getItem("swh_user");
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          if (u?.id) {
+            navigate(createPageUrl("Dashboard"), { replace: true });
+            return;
+          }
+        }
+        const isAuth = await base44.auth.isAuthenticated().catch(() => false);
         if (isAuth) {
           navigate(createPageUrl("Dashboard"), { replace: true });
           return;
@@ -38,19 +47,40 @@ export default function Splash() {
         if (result.error !== "user_cancelled") alert("Sign in failed. Please try again.");
         return;
       }
-      const resp = await base44.functions.invoke("handleAppleSignIn", {
-        action: "nativeSignIn",
-        identityToken: result.identityToken,
-        authorizationCode: result.authorizationCode,
-        user: result.user,
-        email: result.email,
-        fullName: result.fullName,
+
+      // Call our Vercel API route
+      const resp = await fetch("/api/handleAppleSignIn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "nativeSignIn",
+          identityToken: result.identityToken,
+          authorizationCode: result.authorizationCode,
+          user: result.user,
+          email: result.email,
+          fullName: result.fullName,
+        }),
       });
-      if (resp.data?.success && resp.data?.sessionToken) {
-        await base44.auth.setToken(resp.data.sessionToken);
+
+      const data = await resp.json();
+
+      if (data?.success) {
+        // Store user locally
+        localStorage.setItem("swh_user", JSON.stringify(data.user));
+        localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
+
+        // Set Base44 session token if we got one
+        if (data.sessionToken) {
+          try {
+            await base44.auth.setToken(data.sessionToken);
+          } catch (e) {
+            console.warn("setToken failed:", e.message);
+          }
+        }
+
         navigate(createPageUrl("Dashboard"), { replace: true });
       } else {
-        alert(resp.data?.error || "Sign in failed. Please try again.");
+        alert(data?.error || "Sign in failed. Please try again.");
       }
     } catch (err) {
       console.error("Sign in error:", err);
@@ -59,6 +89,7 @@ export default function Splash() {
       setIsAppleSignInLoading(false);
     }
   };
+
   const handleGuest = () => navigate(createPageUrl("Dashboard"), { replace: true });
 
   if (checking) {
@@ -162,10 +193,11 @@ export default function Splash() {
             {/* Sign In */}
             <button
               onClick={handleSignIn}
-              className="w-full py-4 rounded-2xl bg-lime-400 text-gray-950 font-black text-base flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              disabled={isAppleSignInLoading}
+              className="w-full py-4 rounded-2xl bg-lime-400 text-gray-950 font-black text-base flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-60"
             >
               <LogIn className="w-5 h-5" />
-              Sign In / Create Account
+              {isAppleSignInLoading ? "Signing in..." : "Sign In / Create Account"}
             </button>
 
             {/* Guest */}
