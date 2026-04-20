@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,6 +18,11 @@ function AIParlayBuilderContent() {
   const queryClient = useQueryClient();
 
   const { lookupsRemaining, recordLookup, canLookup, userTier } = useFreeLookupTracker();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsAuthenticated).catch(() => setIsAuthenticated(false));
+  }, []);
 
   const saveParlayMutation = useMutation({
     mutationFn: (parlayData) => base44.entities.Parlay.create(parlayData),
@@ -56,7 +61,12 @@ function AIParlayBuilderContent() {
 
     } catch (err) {
       console.error("Parlay generation error:", err);
-      setError(err.message || "Failed to generate parlay. Please try again.");
+      const status = err?.status ?? err?.response?.status;
+      if (status === 429 || err.message?.toLowerCase().includes("rate limit") || err.message?.toLowerCase().includes("limit reached")) {
+        setShowLimitModal(true);
+      } else {
+        setError(err.message || "Failed to generate parlay. Please try again.");
+      }
     }
 
     setIsGenerating(false);
@@ -81,7 +91,7 @@ function AIParlayBuilderContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={true} userTier={userTier} />
+      <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
         onClose={() => setShowLimitModal(false)}
