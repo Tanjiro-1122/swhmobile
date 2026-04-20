@@ -50,7 +50,6 @@ export default function MobileLayout({ children, currentPageName }) {
   };
 
   const handleLogin = () => {}; // sign-in handled by Splash / RequireAuth
-  };
 
   // Stadium background component for consistent styling
   const StadiumBackground = () => (
