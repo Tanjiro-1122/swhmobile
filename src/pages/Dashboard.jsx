@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import {
   Zap, Crown, Bot, BarChart2, Users, Activity,
-  ChevronRight, Globe, Search, Star, Flame
+  ChevronRight, Globe, Search, Star, Flame, Shield
 } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
@@ -252,6 +252,20 @@ export default function Dashboard() {
             Get More Search Credits
           </button>
         </motion.div>
+      )}
+
+      {/* ── Admin shortcut — only shown for admin email ─────────────────────── */}
+      {currentUser?.email === "huertasfam1@icloud.com" && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          onClick={() => navigate(createPageUrl("AdminPanel"))}
+          className="mx-4 mt-4 w-[calc(100%-2rem)] py-3 rounded-2xl bg-gray-900 border border-lime-500/30 text-lime-400 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        >
+          <Shield className="w-4 h-4" />
+          Admin Control Center
+        </motion.button>
       )}
 
       {/* ── Website FYI ─────────────────────────────────────────────────────── */}
