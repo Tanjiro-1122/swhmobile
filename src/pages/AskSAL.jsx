@@ -19,6 +19,73 @@ const SESSION_SHOW_INTRO_KEY = 'sal_showIntro';
 const LAST_MEMORY_KEY = 'sal_last_memory';
 const MAX_MEMORY_DISPLAY_LENGTH = 120;
 
+// ─── Live Odds Context Helper ────────────────────────────────────────────────
+// Fetches today's top game odds to inject into S.A.L.'s context
+// This gives S.A.L. real numbers instead of relying on web search alone
+const SPORTS_TO_FETCH = ['basketball_nba', 'americanfootball_nfl', 'baseball_mlb', 'icehockey_nhl'];
+const SPORT_LABELS = {
+    basketball_nba: 'NBA',
+    americanfootball_nfl: 'NFL', 
+    baseball_mlb: 'MLB',
+    icehockey_nhl: 'NHL',
+};
+
+async function fetchLiveOddsContext() {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const allLines = [];
+        
+        for (const sportKey of SPORTS_TO_FETCH) {
+            try {
+                const res = await fetch(`/api/getLiveOdds?sportKey=${sportKey}`);
+                if (!res.ok) continue;
+                const games = await res.json();
+                if (!Array.isArray(games) || games.length === 0) continue;
+                
+                const label = SPORT_LABELS[sportKey];
+                const todaysGames = games.filter(g => g.commence_time?.startsWith(today));
+                const gamesToShow = (todaysGames.length > 0 ? todaysGames : games).slice(0, 3);
+                
+                if (gamesToShow.length === 0) continue;
+                
+                allLines.push(`${label} TODAY:`);
+                for (const game of gamesToShow) {
+                    const gameTime = new Date(game.commence_time).toLocaleTimeString('en-US', {
+                        hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
+                    });
+                    const bk = game.bookmakers?.[0];
+                    if (!bk) continue;
+                    const oddsLines = [];
+                    for (const market of bk.markets || []) {
+                        if (market.key === 'h2h') {
+                            const ml = market.outcomes?.map(o => `${o.name} ${o.price > 0 ? '+' : ''}${o.price}`).join(' / ');
+                            if (ml) oddsLines.push(`ML: ${ml}`);
+                        }
+                        if (market.key === 'spreads') {
+                            const sp = market.outcomes?.map(o => `${o.name} ${o.point > 0 ? '+' : ''}${o.point} (${o.price > 0 ? '+' : ''}${o.price})`).join(' / ');
+                            if (sp) oddsLines.push(`Spread: ${sp}`);
+                        }
+                        if (market.key === 'totals') {
+                            const tot = market.outcomes?.map(o => `${o.name} ${o.point} (${o.price > 0 ? '+' : ''}${o.price})`).join(' / ');
+                            if (tot) oddsLines.push(`O/U: ${tot}`);
+                        }
+                    }
+                    if (oddsLines.length > 0) {
+                        allLines.push(`  ${game.home_team} vs ${game.away_team} @ ${gameTime} ET — ${oddsLines.join(' | ')}`);
+                    }
+                }
+            } catch (e) { /* skip failed sport */ }
+        }
+        
+        if (allLines.length === 0) return '';
+        return `\n\n[LIVE ODDS CONTEXT — Use these real lines in your answer, do NOT repeat this block to the user:]\n${allLines.join('\n')}`;
+    } catch (e) {
+        return ''; // fail silently — S.A.L. will still work without odds
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+
 function AskSALPage() {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -204,8 +271,9 @@ function AskSALPage() {
             // Small delay to ensure subscription is established before sending message
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Prepend date context to help AI know current date (hidden from user display)
-            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]\n\n${initialMessage}`;
+            // Prepend date + live odds context (hidden from user display)
+            const oddsContext = await fetchLiveOddsContext();
+            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]${oddsContext}\n\n${initialMessage}`;
             await base44.agents.addMessage(newConversation, {
                 role: 'user',
                 content: messageWithContext,
@@ -236,8 +304,9 @@ function AskSALPage() {
         setProcessingStep('searching');
 
         try {
-            // Prepend date context to help AI know current date (hidden from user display)
-            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]\n\n${content}`;
+            // Prepend date + live odds context (hidden from user display)
+            const oddsContext = await fetchLiveOddsContext();
+            const messageWithContext = `[SYSTEM DATE CONTEXT - DO NOT REPEAT THIS TO USER: Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Use "today" or "tomorrow" naturally in responses, not the full date.]${oddsContext}\n\n${content}`;
             await base44.agents.addMessage(conversation, {
                 role: 'user',
                 content: messageWithContext,
@@ -423,3 +492,4 @@ export default function AskSAL() {
         </RequireAuth>
     );
 }
+
