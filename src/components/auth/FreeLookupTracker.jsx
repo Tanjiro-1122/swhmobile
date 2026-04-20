@@ -131,13 +131,13 @@ export function useFreeLookupTracker() {
             setLookupsRemaining(Math.max(0, 5 - used));
           }
         } else {
-          // Not authenticated - no free lookups allowed, must sign in
-          setLookupsRemaining(0);
+          // Not authenticated - IP-based limit enforced server-side, show 5 free on UI
+          setLookupsRemaining(5);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        // Not authenticated - no free lookups allowed
-        setLookupsRemaining(0);
+        // Default to 5 free — backend will enforce the real limit
+        setLookupsRemaining(5);
       } finally {
         setIsLoading(false);
       }
@@ -237,9 +237,9 @@ export function useFreeLookupTracker() {
       return currentUsed < 5 || currentCredits > 0;
     }
     
-    // For non-authenticated users - must sign in first
-    console.log('[FreeLookupTracker] Not authenticated or no currentUser');
-    return false;
+    // For non-authenticated users - let them try; backend enforces IP limit
+    console.log('[FreeLookupTracker] Not authenticated — IP-based limit applies');
+    return lookupsRemaining > 0;
   };
 
   return { lookupsRemaining, searchCredits, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };

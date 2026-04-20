@@ -63,7 +63,11 @@ export default function TeamStats() {
       
     } catch (err) {
       console.error("Team analysis error:", err);
-      setError(err.message || "Failed to analyze team. Please try again with full team name or different spelling.");
+      if (err?.status === 429 || err?.message?.includes('free_limit_reached')) {
+        setShowLimitModal(true);
+      } else {
+        setError(err.message || "Failed to analyze team. Please try again with full team name or different spelling.");
+      }
     }
 
     setIsSearching(false);

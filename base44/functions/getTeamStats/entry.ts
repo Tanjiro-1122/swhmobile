@@ -1,13 +1,88 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// ─── IP RATE LIMIT (server-side, reinstall-proof) ───────────────────────────
+const PAID_TIERS = ['legacy','vip_annual','premium_monthly','influencer',
+  'unlimited_monthly','unlimited_yearly','half_year','basic_monthly'];
+const FREE_LIMIT = 5;
+
+async function checkIpRateLimit(req: Request, base44: any): Promise<Response | null> {
+  // Try to get the real IP from headers (Vercel/Cloudflare set these)
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('cf-connecting-ip') ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
+
+  // Get user — if authenticated + paid, bypass entirely
+  let user: any = null;
+  try { user = await base44.auth.me(); } catch {}
+  if (user && PAID_TIERS.includes(user.subscription_type || '')) return null;
+
+  // Admin bypass
+  if (user?.role === 'admin') return null;
+
+  // For authenticated free users, also check their server-side monthly counter
+  if (user) {
+    const used = user.monthly_free_lookups_used || 0;
+    if (used >= FREE_LIMIT) {
+      return new Response(JSON.stringify({
+        error: 'free_limit_reached',
+        message: 'You have used all 5 free monthly searches. Subscribe to keep going.',
+        lookups_used: used,
+        limit: FREE_LIMIT
+      }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+    }
+    return null; // authenticated free user within limit — let through
+  }
+
+  // Unauthenticated: enforce IP-based limit
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // Look up existing record
+  const svc = base44.asServiceRole;
+  let records: any[] = [];
+  try {
+    const res = await svc.entities.IpRateLimit.filter({ ip, month_key: monthKey });
+    records = res || [];
+  } catch {}
+
+  const existing = records[0];
+  const usedCount = existing?.search_count || 0;
+
+  if (usedCount >= FREE_LIMIT) {
+    return new Response(JSON.stringify({
+      error: 'free_limit_reached',
+      message: 'You have used all 5 free searches this month. Sign up to continue.',
+      lookups_used: usedCount,
+      limit: FREE_LIMIT
+    }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // Increment
+  try {
+    if (existing) {
+      await svc.entities.IpRateLimit.update(existing.id, { search_count: usedCount + 1 });
+    } else {
+      await svc.entities.IpRateLimit.create({ ip, month_key: monthKey, search_count: 1 });
+    }
+  } catch (e) {
+    console.error('Rate limit write error:', e);
+    // Don't block the user if the write fails — fail open
+  }
+
+  return null; // under limit, allow through
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    const user = await base44.auth.me();
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    }
+    // IP rate limit check (reinstall-proof, server-side)
+    const limitResponse = await checkIpRateLimit(req, base44);
+    if (limitResponse) return limitResponse;
 
     const { query } = await req.json();
     if (!query) {

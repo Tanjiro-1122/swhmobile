@@ -63,7 +63,12 @@ export default function PlayerStats() {
       
     } catch (err) {
       console.error("Player analysis error:", err);
-      setError(err.message || "Failed to analyze player. Please try again with full name or different spelling.");
+      // Handle IP rate limit (429) with friendly message
+      if (err?.status === 429 || err?.message?.includes('free_limit_reached')) {
+        setShowLimitModal(true);
+      } else {
+        setError(err.message || "Failed to analyze player. Please try again with full name or different spelling.");
+      }
     }
 
     setIsSearching(false);
