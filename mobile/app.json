@@ -1,57 +1,65 @@
 {
-  "expo": {
-    "name": "Sports Wager Helper",
-    "slug": "sports-wager-helper",
-    "version": "10.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1e3a5f"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.SportsWagerHelper.app",
-      "buildNumber": "10",
-      "infoPlist": {
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": false,
-          "NSExceptionDomains": {
-            "sportswagerhelper.base44.app": {
-              "NSExceptionAllowsInsecureHTTPLoads": false,
-              "NSIncludesSubdomains": true
-            }
-          }
+    "expo": {
+        "name": "Sports Wager Helper",
+        "slug": "sports-wager-helper",
+        "version": "10.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#1e3a5f"
         },
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "package": "com.wnapp.id1761803023263",
-      "versionCode": 10,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1e3a5f"
-      },
-      "permissions": [
-        "INTERNET",
-        "ACCESS_NETWORK_STATE"
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "scheme": "sportswagerhelper",
-    "extra": {
-      "eas": {
-        "projectId": "73d687c2-cdf2-4c2c-9d4d-a5ec211ab0c0"
-      }
-    },
-    "owner": "huertasfam"
-  }
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.SportsWagerHelper.app",
+            "buildNumber": "10",
+            "infoPlist": {
+                "NSAppTransportSecurity": {
+                    "NSAllowsArbitraryLoads": false,
+                    "NSExceptionDomains": {
+                        "sportswagerhelper.base44.app": {
+                            "NSExceptionAllowsInsecureHTTPLoads": false,
+                            "NSIncludesSubdomains": true
+                        }
+                    }
+                },
+                "ITSAppUsesNonExemptEncryption": false
+            },
+            "entitlements": {
+                "com.apple.developer.applesignin": [
+                    "Default"
+                ]
+            }
+        },
+        "android": {
+            "package": "com.wnapp.id1761803023263",
+            "versionCode": 10,
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#1e3a5f"
+            },
+            "permissions": [
+                "INTERNET",
+                "ACCESS_NETWORK_STATE"
+            ]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "scheme": "sportswagerhelper",
+        "extra": {
+            "eas": {
+                "projectId": "73d687c2-cdf2-4c2c-9d4d-a5ec211ab0c0"
+            }
+        },
+        "owner": "huertasfam",
+        "plugins": [
+            "expo-apple-authentication"
+        ]
+    }
 }

@@ -10,25 +10,17 @@ import {
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 
 import PurchaseModal from './PurchaseModal';
 import { restorePurchases, checkEntitlement } from './RevenueCatService';
 
 const APP_URL = 'https://sports-wager-helper.vercel.app';
 
-/**
- * JavaScript injected into the WebView so the web app can communicate
- * purchase intent to the native layer via window.ReactNativeWebView.postMessage.
- *
- * The web app can call:
- *   window.ReactNativeWebView.postMessage(JSON.stringify({
- *     type: 'PURCHASE',  productId: 'com.sportswagerhelper.credits.25'
- *   }))
- *   window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'RESTORE' }))
- *   window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CHECK_ENTITLEMENT' }))
- *
- * The native layer sends results back via window.onNativePurchaseResult(payload).
- */
+// Guard against duplicate Apple Sign In requests
+let appleSignInInProgress = false;
+
 export default function WebViewScreen() {
   const webViewRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -65,6 +57,9 @@ export default function WebViewScreen() {
         if (window.__rnBridgeInjected) return true;
         window.__rnBridgeInjected = true;
 
+        // Set up __nativeBus so postNativeMessage can register listeners
+        if (!window.__nativeBus) { window.__nativeBus = function(msg) {}; }
+
         var metadata = ${metadataJson};
         window.__SWH_NATIVE__ = true;
         window.__SWH_NATIVE_META__ = metadata;
@@ -87,7 +82,6 @@ export default function WebViewScreen() {
               return byte.toString(16).padStart(2, '0');
             }).join('');
           } else {
-            // Fallback for older WebViews where crypto may be unavailable.
             randomPart = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
           }
           deviceId = 'swh-' + metadata.platform + '-' + randomPart;
@@ -101,7 +95,6 @@ export default function WebViewScreen() {
         window.__SWH_DEVICE_ID__ = deviceId;
         window.__SWH_NATIVE_META__.deviceId = deviceId;
 
-        // Expose a helper so the website can easily trigger purchases
         window.NativePurchase = {
           buyCredits: function(productId) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -117,17 +110,15 @@ export default function WebViewScreen() {
           }
         };
 
-        // Notify the web app that the native bridge is ready
         document.dispatchEvent(new CustomEvent('NativeBridgeReady', { detail: window.__SWH_NATIVE_META__ }));
         return true;
       })();
     `;
   }, [bridgeMetadata]);
 
-  // Handle Android hardware back button
+  // Android hardware back button
   useEffect(() => {
     if (Platform.OS !== 'android') return;
-
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (canGoBack && webViewRef.current) {
         webViewRef.current.goBack();
@@ -135,21 +126,16 @@ export default function WebViewScreen() {
       }
       return false;
     });
-
     return () => subscription.remove();
   }, [canGoBack]);
 
-  /** Send a JSON payload back to the WebView */
+  /** Send a JSON payload back to the WebView via __nativeBus */
   const postMessageToWeb = useCallback((payload) => {
     if (!webViewRef.current) return;
     const js = `
       (function() {
-        // Compatibility bus used by web-side iapBridge.postNativeMessage.
-        // Expected shape: window.__nativeBus(payloadObject) => void
         if (typeof window.__nativeBus === 'function') {
-          try {
-            window.__nativeBus(${JSON.stringify(payload)});
-          } catch (_error) {}
+          try { window.__nativeBus(${JSON.stringify(payload)}); } catch (_e) {}
         }
         var event = new CustomEvent('NativePurchaseResult', { detail: ${JSON.stringify(payload)} });
         document.dispatchEvent(event);
@@ -161,6 +147,68 @@ export default function WebViewScreen() {
     `;
     webViewRef.current.injectJavaScript(js);
   }, []);
+
+  /** Handle Apple Sign In natively */
+  const handleNativeAppleSignIn = useCallback(async () => {
+    if (appleSignInInProgress) {
+      console.log('[SWH] Apple sign-in already in progress, ignoring duplicate');
+      return;
+    }
+    appleSignInInProgress = true;
+
+    try {
+      const available = await AppleAuthentication.isAvailableAsync();
+      if (!available) {
+        postMessageToWeb({ type: 'APPLE_SIGN_IN_RESULT', success: false, error: 'Apple Sign-In not available on this device' });
+        return;
+      }
+
+      // Generate a secure nonce
+      const rawNonce = Array.from(
+        await Crypto.getRandomBytesAsync(32),
+        (b) => b.toString(16).padStart(2, '0')
+      ).join('');
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        rawNonce
+      );
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+
+      // Build fullName string
+      let fullNameStr = null;
+      if (credential.fullName) {
+        const parts = [credential.fullName.givenName, credential.fullName.familyName].filter(Boolean);
+        fullNameStr = parts.join(' ') || null;
+      }
+
+      postMessageToWeb({
+        type: 'APPLE_SIGN_IN_RESULT',
+        success: true,
+        identityToken: credential.identityToken,
+        authorizationCode: credential.authorizationCode,
+        user: credential.user,
+        email: credential.email || null,
+        fullName: fullNameStr,
+        nonce: rawNonce,
+      });
+    } catch (err) {
+      if (err.code === 'ERR_REQUEST_CANCELED' || err.code === 'ERR_CANCELED') {
+        postMessageToWeb({ type: 'APPLE_SIGN_IN_RESULT', success: false, error: 'user_cancelled' });
+      } else {
+        console.error('[SWH] Apple Sign In error:', err);
+        postMessageToWeb({ type: 'APPLE_SIGN_IN_RESULT', success: false, error: err.message || 'Sign in failed' });
+      }
+    } finally {
+      appleSignInInProgress = false;
+    }
+  }, [postMessageToWeb]);
 
   /** Handle messages posted from the WebView */
   const handleMessage = useCallback(
@@ -176,6 +224,11 @@ export default function WebViewScreen() {
       const { type, productId } = data;
 
       switch (type) {
+        case 'APPLE_SIGN_IN': {
+          await handleNativeAppleSignIn();
+          break;
+        }
+
         case 'PURCHASE': {
           setSelectedProductId(productId ?? null);
           setPurchaseModalVisible(true);
@@ -203,7 +256,7 @@ export default function WebViewScreen() {
           console.log('[WebViewScreen] Unknown message type:', type);
       }
     },
-    [postMessageToWeb],
+    [postMessageToWeb, handleNativeAppleSignIn],
   );
 
   const handlePurchaseComplete = useCallback(
@@ -215,36 +268,21 @@ export default function WebViewScreen() {
 
   const handleLoadProgress = ({ nativeEvent }) => {
     setLoadProgress(nativeEvent.progress);
-    if (nativeEvent.progress >= 1) {
-      setIsLoading(false);
-    }
+    if (nativeEvent.progress >= 1) setIsLoading(false);
   };
 
-  const handleLoadEnd = () => {
-    setIsLoading(false);
-  };
-
-  const handleError = () => {
-    setHasError(true);
-    setIsLoading(false);
-  };
-
-  const handleReload = () => {
-    setHasError(false);
-    setIsLoading(true);
-    webViewRef.current?.reload();
-  };
+  const handleLoadEnd = () => setIsLoading(false);
+  const handleError = () => { setHasError(true); setIsLoading(false); };
+  const handleReload = () => { setHasError(false); setIsLoading(true); webViewRef.current?.reload(); };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Progress bar */}
       {isLoading && loadProgress > 0 && loadProgress < 1 && (
         <View style={styles.progressBarContainer}>
           <View style={[styles.progressBar, { width: `${loadProgress * 100}%` }]} />
         </View>
       )}
 
-      {/* Initial loading spinner */}
       {isLoading && loadProgress === 0 && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#1e3a5f" />
@@ -252,16 +290,11 @@ export default function WebViewScreen() {
         </View>
       )}
 
-      {/* Error state */}
       {hasError && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to Load</Text>
-          <Text style={styles.errorMessage}>
-            Please check your internet connection and try again.
-          </Text>
-          <Text style={styles.retryButton} onPress={handleReload}>
-            Tap to Retry
-          </Text>
+          <Text style={styles.errorMessage}>Please check your internet connection and try again.</Text>
+          <Text style={styles.retryButton} onPress={handleReload}>Tap to Retry</Text>
         </View>
       )}
 
@@ -300,13 +333,8 @@ export default function WebViewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1e3a5f',
-  },
-  webview: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#1e3a5f' },
+  webview: { flex: 1 },
   progressBarContainer: {
     height: 3,
     backgroundColor: '#e2e8f0',
@@ -316,48 +344,24 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  progressBar: {
-    height: 3,
-    backgroundColor: '#3b82f6',
-  },
+  progressBar: { height: '100%', backgroundColor: '#3b82f6' },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#1e3a5f',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 5,
   },
-  loadingText: {
-    color: '#ffffff',
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: '500',
-  },
+  loadingText: { color: '#ffffff', marginTop: 12, fontSize: 16 },
   errorContainer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
+    backgroundColor: '#1e3a5f',
     justifyContent: 'center',
-    padding: 32,
+    alignItems: 'center',
+    padding: 24,
     zIndex: 5,
   },
-  errorTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1e3a5f',
-    marginBottom: 10,
-  },
-  errorMessage: {
-    fontSize: 15,
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  retryButton: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3b82f6',
-    textDecorationLine: 'underline',
-  },
+  errorTitle: { color: '#ffffff', fontSize: 22, fontWeight: 'bold', marginBottom: 8 },
+  errorMessage: { color: '#94a3b8', textAlign: 'center', marginBottom: 20 },
+  retryButton: { color: '#3b82f6', fontSize: 16, fontWeight: '600' },
 });
-
