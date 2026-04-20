@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Crown, Zap, Check, Loader2, RotateCcw, Star } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePlatform } from "@/components/hooks/usePlatform";
 import {
   triggerRevenueCatPurchase,
@@ -59,6 +59,8 @@ const SUBSCRIPTION_PLANS = [
 export default function Pricing() {
   const [processingItem, setProcessingItem] = useState(null);
   const [activeTab, setActiveTab] = useState("credits");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [creditsGranted, setCreditsGranted] = useState(0);
 
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
@@ -99,7 +101,13 @@ export default function Pricing() {
       try {
         const result = await triggerRevenueCatPurchase(pack.productId);
         if (result.success) {
-          alert(`✅ ${pack.credits} credits added! They'll appear in your account in a few seconds.`);
+          // Grant credits locally immediately — no sign-in needed for credit packs
+          const existing = parseInt(localStorage.getItem("swh_search_credits") || "5", 10);
+          const newTotal = existing + pack.credits;
+          localStorage.setItem("swh_search_credits", String(newTotal));
+          // Notify RevenueCat webhook handles server-side grant too
+          setCreditsGranted(pack.credits);
+          setShowSuccessModal(true);
         } else if (result.error !== "user_cancelled") {
           alert(`Purchase failed: ${result.error || "Unknown error"}. Please try again.`);
         }
@@ -123,16 +131,19 @@ export default function Pricing() {
           if (iapTimeoutRef.current) { clearTimeout(iapTimeoutRef.current); iapTimeoutRef.current = null; }
           if (!isMountedRef.current) return;
           if (data.isSuccess && (data.receiptData || data.purchaseToken)) {
+            // Submit to server for verification — credits granted via webhook, no sign-in required
             submitReceiptToServer({
               receipt: data.receiptData,
               purchaseToken: data.purchaseToken,
               productId: data.productId || pack.productId,
               platform: data.purchaseToken ? "android" : "ios",
             });
-            localStorage.setItem("pending_iap_product", data.productId || pack.productId);
-            localStorage.setItem("pending_iap_platform", data.purchaseToken ? "android" : "ios");
-            localStorage.setItem("pending_iap_credits", pack.credits.toString());
-            window.location.href = "/PostPurchaseSignIn";
+            // Grant credits locally immediately
+            const existing = parseInt(localStorage.getItem("swh_search_credits") || "5", 10);
+            localStorage.setItem("swh_search_credits", String(existing + pack.credits));
+            setProcessingItem(null);
+            setCreditsGranted(pack.credits);
+            setShowSuccessModal(true);
           } else {
             const cancelled = data.isCancelled || ["user_cancelled","cancelled","payment_cancelled"].includes(data.error);
             if (!cancelled && data.error) alert(`Purchase failed: ${data.error}. Please try again.`);
@@ -230,6 +241,40 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 pt-6 pb-24">
+
+      {/* ── Credit Purchase Success Modal ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-8"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-gray-900 border border-cyan-500/40 rounded-3xl p-8 text-center w-full max-w-sm"
+            >
+              <div className="text-5xl mb-4">⚡️</div>
+              <h2 className="text-2xl font-black text-white mb-2">Credits Added!</h2>
+              <p className="text-gray-400 text-sm mb-1">
+                <span className="text-cyan-400 font-black text-xl">{creditsGranted}</span> search credits
+              </p>
+              <p className="text-gray-500 text-xs mb-6">
+                Your credits are ready to use right now — no sign-in needed.
+              </p>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-3 rounded-2xl bg-cyan-500 text-gray-950 font-black text-sm"
+              >
+                Start Searching
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
       <div className="text-center mb-6">
