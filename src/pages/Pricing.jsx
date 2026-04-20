@@ -69,9 +69,43 @@ export default function Pricing() {
 
   useEffect(() => {
     isMountedRef.current = true;
+
+    // Listen for post-purchase Apple sign-in result from native wrapper
+    const handleNativeMessage = (event) => {
+      try {
+        let msg = event.data;
+        if (typeof msg === 'string') msg = JSON.parse(msg);
+        if (typeof msg === 'string') msg = JSON.parse(msg);
+
+        if (msg?.type === 'POST_PURCHASE_APPLE_SIGN_IN') {
+          if (msg.success && msg.identityToken) {
+            // Silently link account in background — fire and forget
+            base44.functions.invoke('appleAuth', {
+              identityToken: msg.identityToken,
+              authorizationCode: msg.authorizationCode,
+              user: msg.user,
+              email: msg.email,
+              fullName: msg.fullName,
+              creditsAmount: msg.creditsAmount,
+              productId: msg.productId,
+              source: 'post_purchase',
+            }).catch(e => console.warn('[PostPurchaseAppleSignIn] silent link failed:', e));
+          }
+          // Either way credits are already granted — nothing else to do on web
+        }
+      } catch {}
+    };
+
+    window.addEventListener('message', handleNativeMessage);
+    if (typeof window.__nativeBus !== 'undefined') {
+      const prev = window.__nativeBus;
+      window.__nativeBus = (msg) => { handleNativeMessage({ data: msg }); prev(msg); };
+    }
+
     return () => {
       isMountedRef.current = false;
       if (iapTimeoutRef.current) clearTimeout(iapTimeoutRef.current);
+      window.removeEventListener('message', handleNativeMessage);
     };
   }, []);
 
