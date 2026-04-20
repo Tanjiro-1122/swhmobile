@@ -45,7 +45,7 @@ export default function Pricing() {
         if (msg?.type === "POST_PURCHASE_APPLE_SIGN_IN") {
           if (msg.success && msg.identityToken) {
             base44.functions
-              .invoke("appleAuth", {
+              .invoke("appleSignIn", {
                 identityToken: msg.identityToken,
                 authorizationCode: msg.authorizationCode,
                 user: msg.user,

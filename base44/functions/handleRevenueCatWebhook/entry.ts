@@ -19,6 +19,7 @@ interface RevenueCatWebhookEvent {
   app_user_id?: string;
   product_id?: string;
   transaction_id?: string;
+  environment?: string;
 }
 
 interface RevenueCatWebhookBody {
@@ -26,19 +27,14 @@ interface RevenueCatWebhookBody {
 }
 
 function timingSafeEqual(left: string | null, right: string | undefined): boolean {
-  if (typeof left !== 'string' || typeof right !== 'string') {
-    return false;
-  }
-
+  if (typeof left !== 'string' || typeof right !== 'string') return false;
   const leftBytes = new TextEncoder().encode(left);
   const rightBytes = new TextEncoder().encode(right);
   const maxLength = Math.max(leftBytes.length, rightBytes.length);
   let diff = leftBytes.length ^ rightBytes.length;
-
   for (let i = 0; i < maxLength; i++) {
     diff |= (leftBytes[i] ?? 0) ^ (rightBytes[i] ?? 0);
   }
-
   return diff === 0;
 }
 
@@ -47,6 +43,32 @@ function isNotFoundError(error: unknown): boolean {
   const code = (error as { code?: string })?.code;
   const message = String((error as { message?: string })?.message || '').toLowerCase();
   return status === 404 || code === 'NOT_FOUND' || message.includes('not found');
+}
+
+async function findUser(base44: any, appUserId: string): Promise<any | null> {
+  // Strategy 1: appUserId is a Base44 entity ID (direct lookup)
+  try {
+    const user = await base44.asServiceRole.entities.User.get(appUserId);
+    if (user) return user;
+  } catch (e) {
+    if (!isNotFoundError(e)) throw e;
+  }
+
+  // Strategy 2: appUserId is an Apple sub — filter by apple_user_id
+  try {
+    const byAppleId = await base44.asServiceRole.entities.User.filter({ apple_user_id: appUserId });
+    if (byAppleId && byAppleId.length > 0) return byAppleId[0];
+  } catch {}
+
+  // Strategy 3: appUserId might be email
+  if (appUserId.includes('@')) {
+    try {
+      const byEmail = await base44.asServiceRole.entities.User.filter({ email: appUserId });
+      if (byEmail && byEmail.length > 0) return byEmail[0];
+    } catch {}
+  }
+
+  return null;
 }
 
 Deno.serve(async (req) => {
@@ -78,28 +100,33 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required webhook fields' }, { status: 400 });
     }
 
-    const existing = await base44.asServiceRole.entities.PurchaseAudit.filter({
-      transaction_id: transactionId,
-    });
-
-    if (existing.length > 0) {
-      return Response.json({ received: true, duplicate: true });
-    }
-
-    let user = null;
+    // Deduplicate by transaction_id
     try {
-      user = await base44.asServiceRole.entities.User.get(appUserId);
-    } catch (userError) {
-      if (isNotFoundError(userError)) {
-        console.log('RevenueCat webhook user not found:', appUserId);
-        return Response.json({ received: true });
+      const existing = await base44.asServiceRole.entities.PurchaseAudit.filter({
+        transaction_id: transactionId,
+      });
+      if (existing.length > 0) {
+        return Response.json({ received: true, duplicate: true });
       }
-      throw userError;
-    }
+    } catch {}
 
+    const user = await findUser(base44, appUserId);
     if (!user) {
-      console.log('RevenueCat webhook user not found:', appUserId);
-      return Response.json({ received: true });
+      console.log('RevenueCat webhook: user not found for appUserId:', appUserId);
+      // Still log the purchase attempt for manual recovery
+      try {
+        await base44.asServiceRole.entities.PurchaseAudit.create({
+          user_email: appUserId,
+          platform: 'apple',
+          product_id: productId,
+          transaction_id: transactionId,
+          status: 'pending_user',
+          granted_credits: 0,
+          source: 'revenuecat_webhook',
+          notes: `User not found for appUserId: ${appUserId}`,
+        });
+      } catch {}
+      return Response.json({ received: true, note: 'user_not_found' });
     }
 
     const creditsToAdd = CREDIT_PACK_MAPPING[productId];
@@ -107,27 +134,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unknown product ID', productId }, { status: 400 });
     }
 
-    await base44.asServiceRole.entities.PurchaseAudit.create({
-      user_email: user.email,
-      platform: 'apple',
-      product_id: productId,
-      transaction_id: transactionId,
-      status: 'verified',
-      granted_credits: creditsToAdd,
-      source: 'revenuecat_webhook',
-    });
-
     const totalCredits = (user.search_credits || 0) + creditsToAdd;
 
     await base44.asServiceRole.entities.User.update(user.id, {
       search_credits: totalCredits,
     });
 
+    try {
+      await base44.asServiceRole.entities.PurchaseAudit.create({
+        user_email: user.email,
+        platform: 'apple',
+        product_id: productId,
+        transaction_id: transactionId,
+        status: 'verified',
+        granted_credits: creditsToAdd,
+        source: 'revenuecat_webhook',
+      });
+    } catch {}
+
     return Response.json({
       received: true,
       creditsAdded: creditsToAdd,
       totalCredits,
+      userId: user.id,
     });
+
   } catch (error) {
     console.error('handleRevenueCatWebhook error:', error);
 
@@ -146,9 +177,7 @@ Deno.serve(async (req) => {
           environment: body?.event?.environment,
         },
       });
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
+    } catch {}
 
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }

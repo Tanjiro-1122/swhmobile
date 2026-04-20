@@ -343,6 +343,20 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
 
       if (resp.data?.success && resp.data?.sessionToken) {
         await base44.auth.setToken(resp.data.sessionToken);
+        // Notify native wrapper so RevenueCat gets linked to Base44 entity ID
+        if (window.ReactNativeWebView && resp.data?.user?.id) {
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'SAVE_SESSION',
+              data: {
+                userId: resp.data.user.id,
+                email: resp.data.user.email || '',
+                isPremium: resp.data.user.subscription_status === 'active',
+                plan: resp.data.user.subscription_type || 'free',
+              }
+            }));
+          } catch (e) {}
+        }
         window.location.reload();
       } else {
         alert(resp.data?.error || 'Sign in failed. Please try again.');

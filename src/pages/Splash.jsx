@@ -78,6 +78,20 @@ export default function Splash() {
           }
         }
 
+        // Notify native wrapper so RevenueCat gets logged in with Base44 entity ID
+        if (window.ReactNativeWebView && data.user?.id) {
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'SAVE_SESSION',
+              data: {
+                userId: data.user.id,
+                email: data.user.email || '',
+                isPremium: data.user.subscription_status === 'active',
+                plan: data.user.subscription_type || 'free',
+              }
+            }));
+          } catch (e) { /* non-native env */ }
+        }
         navigate(createPageUrl("Dashboard"), { replace: true });
       } else {
         alert(data?.error || "Sign in failed. Please try again.");
