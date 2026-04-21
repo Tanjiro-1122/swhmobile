@@ -185,11 +185,9 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Signed in — show email + logout hint */}
-        {currentUser && (
-          <p className="text-gray-600 text-xs mt-2">
-            {currentUser.email || ""} · <button onClick={() => setShowLogoutConfirm(true)} className="text-gray-500 underline">Sign out</button>
-          </p>
+        {/* Signed in — show email */}
+        {currentUser && currentUser.email && (
+          <p className="text-gray-600 text-xs mt-2">{currentUser.email}</p>
         )}
 
         {/* VIP badge */}
