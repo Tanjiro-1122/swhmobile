@@ -59,6 +59,23 @@ function firstOfNextMonth() {
   return d.toISOString().split('T')[0];
 }
 
+// Build the best display name from available sources
+function buildDisplayName(fullName, email, appleJwt) {
+  // 1. Try fullName object sent from native (Apple only sends this on FIRST sign-in)
+  if (fullName?.givenName || fullName?.familyName) {
+    const name = [fullName.givenName, fullName.familyName].filter(Boolean).join(' ').trim();
+    if (name) return name;
+  }
+  // 2. Try name from JWT (rare but possible)
+  if (appleJwt?.name) return appleJwt.name;
+  // 3. Use email prefix as fallback display name
+  if (email) {
+    const prefix = email.split('@')[0];
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+  return 'SWH User';
+}
+
 async function createUser(payload) {
   const defaults = {
     subscription_type: "free",
@@ -69,7 +86,7 @@ async function createUser(payload) {
     search_credits: 5,
     monthly_free_lookups_used: 0,
     role: "user",
-    stripe_customer_id: "",  // required field — default empty
+    stripe_customer_id: "",
   };
   return b44Fetch(`/entities/User`, {
     method: "POST",
@@ -84,8 +101,6 @@ async function updateUser(id, payload) {
   });
 }
 
-// Create a Base44 session token for the user so the web app can
-// authenticate against Base44 directly (for rate-limit bypass, etc.)
 async function createSessionToken(userId) {
   try {
     const data = await b44Fetch(`/auth/service/session`, {
@@ -113,35 +128,36 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'identityToken is required' });
     }
 
-    const payload = decodeAppleJwt(identityToken);
-    const appleUserId = payload.sub;
-    const email = emailArg || payload.email || null;
+    const jwtPayload = decodeAppleJwt(identityToken);
+    const appleUserId = jwtPayload.sub;
+    const email = emailArg || jwtPayload.email || null;
 
     if (!appleUserId) {
       return res.status(400).json({ success: false, error: 'Could not extract user ID from token' });
     }
 
+    // Build the best name we can
+    const displayName = buildDisplayName(fullName, email, jwtPayload);
+
     // 1. Find existing user
     let dbUser = await findUserByAppleId(appleUserId);
     if (!dbUser && email) dbUser = await findUserByEmail(email);
 
-    // 2. Create new user if not found
+    // 2. Create or update
     if (!dbUser) {
-      const givenName = fullName?.givenName || '';
-      const familyName = fullName?.familyName || '';
-      const name = `${givenName} ${familyName}`.trim() || (email ? email.split('@')[0] : 'User');
-
       dbUser = await createUser({
         apple_user_id: appleUserId,
-        email: email || "",
-        full_name: name,
+        email: email || `apple_${appleUserId}@privaterelay.appleid.com`,
+        full_name: displayName,
       });
     } else {
-      // Patch missing fields
       const updates = {};
       if (!dbUser.apple_user_id) updates.apple_user_id = appleUserId;
       if (!dbUser.email && email) updates.email = email;
-      // Ensure search_credits exists for existing users
+      // Update name if it's still the default placeholder
+      if (dbUser.full_name === 'SWH User' || dbUser.full_name === 'User' || !dbUser.full_name) {
+        updates.full_name = displayName;
+      }
       if (dbUser.search_credits == null && dbUser.credits == null) updates.search_credits = 5;
       if (Object.keys(updates).length > 0) {
         await updateUser(dbUser.id, updates);
@@ -149,12 +165,12 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Create a Base44 session token for authenticated API calls
     const sessionToken = await createSessionToken(dbUser.id);
 
+    // Return full user object so frontend can store everything
     return res.status(200).json({
       success: true,
-      sessionToken,          // may be null if Base44 session API not available
+      sessionToken,
       user: {
         id: dbUser.id,
         email: dbUser.email,
@@ -165,6 +181,7 @@ export default async function handler(req, res) {
         credits: dbUser.credits ?? 5,
         search_credits: dbUser.search_credits ?? dbUser.credits ?? 5,
         monthly_free_lookups_used: dbUser.monthly_free_lookups_used ?? 0,
+        role: dbUser.role || 'user',
       },
     });
 
