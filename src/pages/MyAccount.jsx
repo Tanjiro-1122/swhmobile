@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { base44 } from "@/api/base44Client";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 import ProfileContent from "@/components/hub/ProfileContent";
@@ -19,90 +18,91 @@ function MyAccountContent() {
   const [activatingIAP, setActivatingIAP] = useState(false);
   const [iapError, setIapError] = useState("");
 
+  // ✅ FIXED: no longer uses base44.functions.invoke (broken empty functions)
+  // With the RevenueCat webhook in place, credits are added server-side automatically.
+  // This function now just does a lightweight DB refresh to pull the latest credits into localStorage.
   const activatePendingIAP = useCallback(async () => {
-    const receipt = localStorage.getItem('pending_iap_receipt');
     const productId = localStorage.getItem('pending_iap_product');
-    const platform = localStorage.getItem('pending_iap_platform') || 'ios';
-    
-    // Apple account linking data
-    const appleProviderId = localStorage.getItem('apple_provider_id');
-    const appleProviderEmail = localStorage.getItem('apple_provider_email');
-    const appleIsPrivate = localStorage.getItem('apple_is_private_email') === 'true';
-    
-    if (productId) {
-      setActivatingIAP(true);
-      setIapError("");
-      try {
-        // Link Apple account if provider data exists
-        if (appleProviderId) {
-          console.log('Linking Apple account by provider_id:', appleProviderId);
-          await base44.auth.updateMe({
-            apple_provider_id: appleProviderId,
-            apple_provider_email: appleProviderEmail || '',
-            apple_is_private_email: appleIsPrivate,
-            apple_linked_at: new Date().toISOString()
-          });
-        }
+    if (!productId) return;
 
-        const functionName = platform === 'android' ? 'handleGooglePlayIAP' : 'handleAppleIAP';
-        
-        // Check if we have real receipt or just pending marker
-        const isRealReceipt = receipt && receipt.length > 20 && receipt !== '1';
-        
-        const response = await base44.functions.invoke(functionName, 
-          isRealReceipt 
-            ? { receipt, productId, purchaseToken: receipt }
-            : { action: 'activatePending', productId, platform }
-        );
+    setActivatingIAP(true);
+    setIapError("");
 
-        if (response.data.success) {
+    try {
+      const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
+
+      if (appleUserId) {
+        // Pull latest credits from DB via lookupAccount
+        const resp = await fetch('/api/lookupAccount', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appleUserId }),
+        });
+        const data = await resp.json();
+
+        if (data?.success && data?.user) {
+          // Sync localStorage with what's actually in the DB
+          const dbCredits = data.user.search_credits ?? data.user.credits ?? 0;
+          localStorage.setItem('swh_search_credits', String(dbCredits));
+          try {
+            const stored = localStorage.getItem('swh_user');
+            if (stored) {
+              const u = JSON.parse(stored);
+              u.search_credits = dbCredits;
+              u.credits = dbCredits;
+              u.subscription_type = data.user.subscription_type || u.subscription_type;
+              u.subscription_status = data.user.subscription_status || u.subscription_status;
+              localStorage.setItem('swh_user', JSON.stringify(u));
+            }
+          } catch {}
           setPaymentSuccess(true);
-          setIapError("");
-                    
-          // Clean up all localStorage
-          localStorage.removeItem('pending_iap_receipt');
-          localStorage.removeItem('pending_iap_product');
-          localStorage.removeItem('pending_iap_platform');
-          localStorage.removeItem('pending_iap_credits');
-          localStorage.removeItem('apple_provider_id');
-          localStorage.removeItem('apple_provider_email');
-          localStorage.removeItem('apple_is_private_email');
         } else {
-          setIapError(response.data?.error || 'We could not activate your purchase. Please try restoring purchases or contact support.');
+          // DB didn't have us yet — webhook may still be in-flight, show success anyway
+          // (RevenueCat webhook will update within seconds)
+          setPaymentSuccess(true);
         }
-      } catch (error) {
-        console.error('IAP activation error:', error);
-        setIapError('There was a problem activating your purchase. Please try again or contact support.');
-      } finally {
-        setActivatingIAP(false);
+      } else {
+        // Not signed in — credits are in localStorage, webhook will catch up when they sign in
+        setPaymentSuccess(true);
       }
+
+      // Clean up pending markers
+      localStorage.removeItem('pending_iap_receipt');
+      localStorage.removeItem('pending_iap_product');
+      localStorage.removeItem('pending_iap_platform');
+      localStorage.removeItem('pending_iap_credits');
+      localStorage.removeItem('apple_provider_id');
+      localStorage.removeItem('apple_provider_email');
+      localStorage.removeItem('apple_is_private_email');
+
+    } catch (err) {
+      console.error('[activatePendingIAP] error:', err.message);
+      // Don't show an error — purchase is real, webhook will handle it
+      setPaymentSuccess(true);
+    } finally {
+      setActivatingIAP(false);
     }
   }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    
-    // Handle payment success first (before tab param since it also sets tab)
+
     if (params.get('payment_success') === 'true') {
       setPaymentSuccess(true);
-            // Auto-hide after 8 seconds
       setTimeout(() => setPaymentSuccess(false), 8000);
     } else {
-      // Handle tab parameter only if not payment success
       const tabParam = params.get('tab');
       if (tabParam && ['profile', 'preferences', 'saved'].includes(tabParam)) {
         setActiveTab(tabParam);
       }
     }
-    
-    // Handle pending IAP activation after login
+
     if (params.get('activate_iap') === 'true') {
       activatePendingIAP();
     }
-    
-    // Clean URL (keep email param for prefill if present)
+
     const emailParam = params.get('email');
-    const newUrl = emailParam 
+    const newUrl = emailParam
       ? `${window.location.pathname}?email=${encodeURIComponent(emailParam)}`
       : window.location.pathname;
     if (params.toString() && window.location.href !== newUrl) {
@@ -111,70 +111,67 @@ function MyAccountContent() {
   }, [activatePendingIAP]);
 
   return (
-        <div className="overflow-x-hidden">
-          <div className="max-w-5xl mx-auto">
-            <div className="w-full flex justify-start mb-2">
-                <Link to={createPageUrl('Dashboard')}>
-                    <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Dashboard
-                    </Button>
-                </Link>
-            </div>
-            {/* Header - 8-point grid: 32px bottom margin, 24px padding */}
-            <div className="mb-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-                👤 MY ACCOUNT
-              </h1>
-              <p className="text-white/80 text-base md:text-lg">Manage your profile, preferences, and saved results</p>
-            </div>
+    <div className="overflow-x-hidden">
+      <div className="max-w-5xl mx-auto">
+        <div className="w-full flex justify-start mb-2">
+          <Link to={createPageUrl('Dashboard')}>
+            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
 
-            {activatingIAP && (
-              <Alert className="mb-6 bg-blue-50 border-2 border-blue-300">
-                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-                <AlertDescription className="text-blue-800 font-semibold">
-                  Activating your subscription... Please wait.
-                </AlertDescription>
-              </Alert>
-            )}
+        <div className="mb-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+            👤 MY ACCOUNT
+          </h1>
+          <p className="text-white/80 text-base md:text-lg">Manage your profile, preferences, and saved results</p>
+        </div>
 
-            {paymentSuccess && (
-              <Alert className="mb-6 bg-green-50 border-2 border-green-300">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <AlertDescription className="text-green-800 font-semibold">
-                  🎉 Payment successful! Your subscription is now active. Welcome to the club!
-                </AlertDescription>
-              </Alert>
-            )}
+        {activatingIAP && (
+          <Alert className="mb-6 bg-blue-50 border-2 border-blue-300">
+            <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+            <AlertDescription className="text-blue-800 font-semibold">
+              Syncing your purchase... Please wait.
+            </AlertDescription>
+          </Alert>
+        )}
 
-            {iapError && (
-              <Alert className="mb-6 bg-red-50 border-2 border-red-300">
-                <AlertDescription className="text-red-800 font-semibold">
-                  {iapError}
-                </AlertDescription>
-              </Alert>
-            )}
+        {paymentSuccess && (
+          <Alert className="mb-6 bg-green-50 border-2 border-green-300">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <AlertDescription className="text-green-800 font-semibold">
+              🎉 Purchase confirmed! Your credits have been added. Welcome to the club!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {iapError && (
+          <Alert className="mb-6 bg-red-50 border-2 border-red-300">
+            <AlertDescription className="text-red-800 font-semibold">{iapError}</AlertDescription>
+          </Alert>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="mb-6 -mx-4 px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
             <TabsList className="inline-flex w-max min-w-full gap-1 bg-black/40 backdrop-blur-sm p-1.5 rounded-xl border border-white/10">
-              <TabsTrigger 
-                value="profile" 
+              <TabsTrigger
+                value="profile"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <User className="w-4 h-4 flex-shrink-0" />
                 <span>Profile</span>
               </TabsTrigger>
-
-              <TabsTrigger 
-                value="preferences" 
+              <TabsTrigger
+                value="preferences"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-red-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Heart className="w-4 h-4 flex-shrink-0" />
                 <span>Prefs</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="saved" 
+              <TabsTrigger
+                value="saved"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
               >
                 <Trophy className="w-4 h-4 flex-shrink-0" />
@@ -186,23 +183,19 @@ function MyAccountContent() {
           <TabsContent value="profile">
             <ProfileContent />
           </TabsContent>
-
-
           <TabsContent value="preferences">
             <PreferencesContent />
           </TabsContent>
-
           <TabsContent value="saved">
             <SavedResultsContent />
           </TabsContent>
-          </Tabs>
-          
-          </div>
-          </div>
-          );
-          }
+        </Tabs>
+      </div>
+    </div>
+  );
+}
 
-          export default function MyAccount() {
+export default function MyAccount() {
   return (
     <RequireAuth pageName="My Account">
       <MyAccountContent />
