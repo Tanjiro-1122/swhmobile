@@ -12,6 +12,10 @@ import {
   callNativeIAPWithCallback,
   submitReceiptToServer,
   triggerAppleSignIn,
+  triggerRevenueCatPurchase,
+  triggerRestorePurchases,
+  triggerGetCustomerInfo,
+  persistCreditsToDB,
 } from "@/components/utils/iapBridge";
 
 const CREDIT_PACKS = [
@@ -160,9 +164,22 @@ export default function Pricing() {
       });
       const data = await resp.json();
       if (data?.success) {
-        localStorage.setItem("swh_user", JSON.stringify(data.user));
+        // ✅ Check if user had pending localStorage credits before sign-in
+        const pendingCredits = parseInt(localStorage.getItem('swh_search_credits') || '0', 10);
+        const dbCredits = data.user.search_credits ?? data.user.credits ?? 5;
+        // Use whichever is higher (DB or localStorage — user may have bought before signing in)
+        const finalCredits = Math.max(pendingCredits, dbCredits);
+
+        const mergedUser = { ...data.user, search_credits: finalCredits, credits: finalCredits };
+        localStorage.setItem("swh_user", JSON.stringify(mergedUser));
         localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
-        localStorage.setItem("swh_search_credits", String(data.user.search_credits ?? 5));
+        localStorage.setItem("swh_search_credits", String(finalCredits));
+
+        // ✅ If pending credits > DB credits, persist the higher value
+        if (pendingCredits > dbCredits) {
+          persistCreditsToDB(data.user.apple_user_id, pendingCredits - dbCredits, 'pre_signin_credits').catch(console.warn);
+        }
+
         if (data.sessionToken) {
           try { await base44.auth.setToken(data.sessionToken); } catch {}
         }
@@ -201,10 +218,15 @@ export default function Pricing() {
       try {
         const result = await triggerRevenueCatPurchase(pack.productId);
         if (result.success) {
-          // ✅ Update both localStorage keys so Dashboard credit count is accurate
+          // ✅ Update localStorage immediately so UI updates fast
           addCreditsToLocalStorage(pack.credits);
           setCreditsGranted(pack.credits);
           setShowSuccessModal(true);
+          // ✅ Persist to DB so credits survive reinstall
+          const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
+          if (appleUserId) {
+            persistCreditsToDB(appleUserId, pack.credits, pack.productId).catch(console.warn);
+          }
         } else if (result.error !== "user_cancelled") {
           alert(
             `Purchase failed: ${result.error || "Unknown error"}. Please try again.`
@@ -277,7 +299,34 @@ export default function Pricing() {
     if (processingItem) return;
     setProcessingItem("restore");
     try {
-      await triggerRestorePurchases();
+      const restoreResult = await triggerRestorePurchases();
+      // ✅ If restore found an active subscription, sync it back to DB
+      if (restoreResult?.isActive) {
+        const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
+        if (appleUserId) {
+          try {
+            await fetch('/api/handleAppleSignIn', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                identityToken: localStorage.getItem('swh_identity_token') || 'restore',
+                appleUserId,
+                subscriptionType: restoreResult.activePlan || 'premium_monthly',
+                subscriptionStatus: 'active',
+                action: 'restoreSync',
+              }),
+            });
+          } catch (e) { console.warn('[restore] DB sync failed:', e.message); }
+        }
+        const user = JSON.parse(localStorage.getItem('swh_user') || '{}');
+        user.subscription_status = 'active';
+        user.subscription_type = restoreResult.activePlan || 'premium_monthly';
+        localStorage.setItem('swh_user', JSON.stringify(user));
+        alert('✅ Your subscription has been restored!');
+        queryClient.invalidateQueries(['currentUser']);
+        goToDashboard();
+        return;
+      }
     } catch (e) {
       console.warn("Restore error:", e);
     } finally {

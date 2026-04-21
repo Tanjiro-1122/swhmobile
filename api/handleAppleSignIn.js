@@ -120,7 +120,28 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { identityToken, email: emailArg, fullName } = req.body || {};
+    const { identityToken, email: emailArg, fullName, action, appleUserId: directAppleUserId, subscriptionType, subscriptionStatus } = req.body || {};
+
+    // ── Restore sync: called after RevenueCat restore finds active subscription
+    if (action === 'restoreSync' && directAppleUserId) {
+      try {
+        const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(directAppleUserId)}&limit=1`);
+        const records = toRecords(data);
+        const user = records[0];
+        if (user) {
+          await b44Fetch(`/entities/User/${user.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              subscription_type: subscriptionType || 'premium_monthly',
+              subscription_status: subscriptionStatus || 'active',
+            }),
+          });
+        }
+        return res.status(200).json({ success: true, action: 'restoreSync' });
+      } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+      }
+    }
 
     if (!identityToken) {
       return res.status(400).json({ success: false, error: 'identityToken is required' });

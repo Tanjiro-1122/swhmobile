@@ -263,3 +263,47 @@ export const triggerRevenueCatPurchase = (productId) =>
  */
 export const triggerRestorePurchases = () =>
   postNativeMessage({ type: 'RESTORE_PURCHASES' }, 'RESTORE_RESULT', 30000);
+
+/**
+ * Gets current RevenueCat customer info (active entitlements, subscription status).
+ * Used to guard against double-purchasing a subscription.
+ * Resolves with { success, isActive, activePlan, entitlements, expiryDate, error? }
+ */
+export const triggerGetCustomerInfo = () =>
+  postNativeMessage({ type: 'GET_CUSTOMER_INFO' }, 'CUSTOMER_INFO_RESULT', 30000);
+
+/**
+ * Persists purchased credits to the Base44 database.
+ * Call this after every successful credit pack purchase.
+ * @param {string} appleUserId - The user's Apple ID
+ * @param {number} creditsToAdd - Number of credits to add
+ * @param {string} productId - The product ID purchased
+ */
+export const persistCreditsToDB = async (appleUserId, creditsToAdd, productId) => {
+  if (!appleUserId) {
+    console.warn('[persistCreditsToDB] No appleUserId — credits saved to localStorage only');
+    return { success: false, reason: 'no_user_id' };
+  }
+  try {
+    const resp = await fetch('/api/addCredits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appleUserId, creditsToAdd, productId }),
+    });
+    const data = await resp.json();
+    if (data.success) {
+      console.log(`[persistCreditsToDB] ✅ ${creditsToAdd} credits saved to DB. Total: ${data.totalCredits}`);
+      // Keep localStorage in sync with DB
+      localStorage.setItem('swh_search_credits', String(data.totalCredits));
+      localStorage.setItem('swh_credits', String(data.totalCredits));
+      const user = JSON.parse(localStorage.getItem('swh_user') || '{}');
+      user.search_credits = data.totalCredits;
+      user.credits = data.totalCredits;
+      localStorage.setItem('swh_user', JSON.stringify(user));
+    }
+    return data;
+  } catch (err) {
+    console.error('[persistCreditsToDB] Failed:', err.message);
+    return { success: false, error: err.message };
+  }
+};
