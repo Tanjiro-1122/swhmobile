@@ -9,12 +9,10 @@ import { createPageUrl } from "@/utils";
 import {
   triggerRevenueCatPurchase,
   triggerRestorePurchases,
+  triggerGetCustomerInfo,
   callNativeIAPWithCallback,
   submitReceiptToServer,
   triggerAppleSignIn,
-  triggerRevenueCatPurchase,
-  triggerRestorePurchases,
-  triggerGetCustomerInfo,
   persistCreditsToDB,
 } from "@/components/utils/iapBridge";
 
