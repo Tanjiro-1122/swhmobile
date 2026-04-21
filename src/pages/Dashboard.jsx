@@ -4,13 +4,20 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import {
   Zap, Crown, Bot, BarChart2, Users, Activity,
-  ChevronRight, Globe, Search, Star, Flame, Shield
+  ChevronRight, Globe, Search, Star, Flame, Shield,
+  Settings, Database, TrendingUp, AlertTriangle, Lock
 } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
-const SAL_LOGO  = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
+const SAL_LOGO  = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg");
 
-// ─── Menu items ───────────────────────────────────────────────────────────────
+// Admin emails / apple IDs — Javier's accounts
+const ADMIN_IDENTIFIERS = [
+  "huertasfam@gmail.com",
+  "huertasfam1@icloud.com",
+  "huertasfam",
+];
+
 const MENU = [
   {
     id: "sal",
@@ -79,30 +86,51 @@ const ACCENT_STYLES = {
   red:    { border: "border-red-500/30",    glow: "bg-red-500/10",    icon: "text-red-400",    tag: "text-white" },
 };
 
+function getDisplayName(user) {
+  if (!user) return null;
+  // Try full_name first
+  if (user.full_name && user.full_name !== "SWH User" && user.full_name !== "User") {
+    return user.full_name.split(" ")[0];
+  }
+  // Try email prefix
+  if (user.email) {
+    const prefix = user.email.split("@")[0];
+    // Capitalize first letter
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+  return null;
+}
+
+function isAdmin(user) {
+  if (!user) return false;
+  const email = (user.email || "").toLowerCase();
+  const name = (user.full_name || "").toLowerCase();
+  return ADMIN_IDENTIFIERS.some(id => email.includes(id.toLowerCase()) || name.includes(id.toLowerCase()));
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState("Welcome");
-
-  // Read user from localStorage (set by Apple Sign-In via /api/handleAppleSignIn)
-  const currentUser = (() => {
-    try {
-      const stored = localStorage.getItem("swh_user");
-      return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
-  })();
-
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    // Load user from localStorage
+    try {
+      const stored = localStorage.getItem("swh_user");
+      if (stored) setCurrentUser(JSON.parse(stored));
+    } catch {}
+
     const h = new Date().getHours();
     if (h < 12) setGreeting("Good morning");
     else if (h < 17) setGreeting("Good afternoon");
     else setGreeting("Good evening");
   }, []);
 
-  const firstName = currentUser?.full_name?.split(" ")[0] || null;
-  const credits = currentUser?.search_credits ?? currentUser?.credits ?? 5;
+  const displayName = getDisplayName(currentUser);
+  const credits = currentUser?.search_credits ?? currentUser?.credits ?? parseInt(localStorage.getItem("swh_search_credits") || "5", 10);
   const isPaid = ["premium_monthly","vip_annual","legacy"].includes(currentUser?.subscription_type);
   const isGuest = !currentUser;
+  const userIsAdmin = isAdmin(currentUser);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white pb-24">
@@ -113,11 +141,10 @@ export default function Dashboard() {
           <div>
             <p className="text-gray-500 text-xs uppercase tracking-widest font-semibold">{greeting}</p>
             <h1 className="text-xl font-black mt-0.5">
-              {firstName ? `${firstName} 👋` : "Sports Wager Helper"}
+              {displayName ? `${displayName} 👋` : "Sports Wager Helper"}
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* Credit badge */}
             <button
               onClick={() => navigate(createPageUrl("Pricing"))}
               className="flex items-center gap-1.5 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2"
@@ -128,7 +155,6 @@ export default function Dashboard() {
               </span>
               <span className="text-gray-500 text-xs">credits</span>
             </button>
-            {/* Avatar / account */}
             <button
               onClick={() => navigate(createPageUrl("MyAccount"))}
               className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center overflow-hidden"
@@ -150,7 +176,7 @@ export default function Dashboard() {
               <p className="text-gray-500 text-xs mt-0.5">Sign in to save your results</p>
             </div>
             <button
-              onClick={() => window.location.href = '/Splash'}
+              onClick={() => navigate(createPageUrl("Splash"))}
               className="text-xs font-bold text-lime-400 bg-lime-500/20 px-3 py-1.5 rounded-xl"
             >
               Sign In
@@ -189,7 +215,6 @@ export default function Dashboard() {
         {MENU.map((item, i) => {
           const a = ACCENT_STYLES[item.accent];
           const Icon = item.icon;
-
           return (
             <motion.button
               key={item.id}
@@ -199,7 +224,6 @@ export default function Dashboard() {
               onClick={() => navigate(createPageUrl(item.page))}
               className={`w-full text-left rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-4 active:scale-[0.98] transition-transform`}
             >
-              {/* Icon / image */}
               <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center">
                 {item.image ? (
                   <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -207,8 +231,6 @@ export default function Dashboard() {
                   <Icon className={`w-7 h-7 ${a.icon}`} />
                 )}
               </div>
-
-              {/* Text */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="font-black text-base text-white">{item.title}</span>
@@ -224,11 +246,56 @@ export default function Dashboard() {
                   <span className="text-lime-500/80 text-[10px] font-semibold">{item.cost}</span>
                 </div>
               </div>
-
               <ChevronRight className="w-5 h-5 text-gray-600 flex-shrink-0" />
             </motion.button>
           );
         })}
+
+        {/* ── ADMIN TILE — only shown to Javier ──────────────────────────── */}
+        {userIsAdmin && (
+          <motion.button
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: MENU.length * 0.07 + 0.1, duration: 0.3 }}
+            onClick={() => navigate(createPageUrl("AdminPanel"))}
+            className="w-full text-left rounded-2xl border border-orange-500/40 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-4 flex items-center gap-4 active:scale-[0.98] transition-transform relative overflow-hidden"
+          >
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+              <Shield className="w-7 h-7 text-white" />
+            </div>
+
+            <div className="flex-1 min-w-0 relative">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="font-black text-base text-white">Admin Panel</span>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-orange-500 text-white">
+                  OWNER
+                </span>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-red-600 text-white">
+                  PRIVATE
+                </span>
+              </div>
+              <p className="text-gray-400 text-xs leading-snug">
+                Users · Revenue · Error logs · Purchase audits · System health
+              </p>
+              <div className="mt-1.5 flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-green-400 text-[10px] font-semibold">Live data</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-orange-400" />
+                  <span className="text-orange-400/80 text-[10px] font-semibold">Owner only</span>
+                </div>
+              </div>
+            </div>
+
+            <ChevronRight className="w-5 h-5 text-orange-500/60 flex-shrink-0 relative" />
+          </motion.button>
+        )}
       </div>
 
       {/* ── Get More Credits CTA ────────────────────────────────────────────── */}
@@ -244,33 +311,10 @@ export default function Dashboard() {
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-lime-500 to-emerald-500 text-gray-950 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
           >
             <Zap className="w-4 h-4" />
-            Get More Search Credits
+            Get More Credits
           </button>
         </motion.div>
       )}
-
-      {/* ── Admin shortcut — only shown for admin email ─────────────────────── */}
-      {currentUser?.email === "huertasfam1@icloud.com" && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          onClick={() => navigate(createPageUrl("AdminPanel"))}
-          className="mx-4 mt-4 w-[calc(100%-2rem)] py-3 rounded-2xl bg-gray-900 border border-lime-500/30 text-lime-400 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
-        >
-          <Shield className="w-4 h-4" />
-          Admin Control Center
-        </motion.button>
-      )}
-
-      {/* ── Website FYI ─────────────────────────────────────────────────────── */}
-      <div className="mx-4 mt-4 mb-2 flex items-center justify-center gap-2 bg-gray-900/50 border border-gray-800 rounded-2xl px-4 py-3">
-        <Globe className="w-4 h-4 text-lime-500 flex-shrink-0" />
-        <p className="text-gray-500 text-xs leading-tight">
-          <span className="text-gray-400 font-semibold">FYI:</span> For the complete AI experience with unlimited tools, visit{" "}
-          <span className="text-lime-400 font-bold">sportswagerhelper.com</span>
-        </p>
-      </div>
     </div>
   );
 }
