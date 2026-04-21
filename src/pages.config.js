@@ -29,6 +29,7 @@
  *   import Home from './pages/Home';
  *   import Settings from './pages/Settings';
  *   import LinkAccount from './pages/LinkAccount';
+import EmailSignIn from './pages/EmailSignIn';
 import __Layout from './Layout.jsx';
  *
  *   export const PAGES = {
@@ -91,6 +92,7 @@ import TopStats from './pages/TopStats';
 import TopTen from './pages/TopTen';
 import UserPreferences from './pages/UserPreferences';
 import LinkAccount from './pages/LinkAccount';
+import EmailSignIn from './pages/EmailSignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +121,7 @@ export const PAGES = {
     "Index": Index,
     "LearningCenter": LearningCenter,
     "LinkAccount": LinkAccount,
+    "EmailSignIn": EmailSignIn,
     "LiveOdds": LiveOdds,
     "MyAccount": MyAccount,
     "MyInsights": MyInsights,
