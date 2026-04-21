@@ -44,7 +44,7 @@ You help users:
 Always be helpful, engaging, and accurate. If you're unsure about very recent events, acknowledge it and provide the best analysis you can with available context.`;
 
   // Build conversation history (last 10 messages to stay within token limits)
-  const recentHistory = (history || []).slice(-10).map((m: any) => ({
+  const recentHistory = (history || []).slice(-10).map((m) => ({
     role: m.role === 'user' ? 'user' : 'assistant',
     content: m.content || '',
   }));
@@ -87,7 +87,7 @@ Always be helpful, engaging, and accurate. If you're unsure about very recent ev
       reply: content,
       role: 'assistant',
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('[SAL] Error:', err.message);
     return res.status(500).json({ error: err.message || 'Failed to get AI response' });
   }
