@@ -73,11 +73,16 @@ function buildDisplayName(fullName, email, jwtPayload) {
 }
 
 async function createUser(payload) {
+  const today = new Date();
+  const firstNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split("T")[0];
   return b44Fetch(`/entities/User`, {
     method: "POST",
     body: JSON.stringify({
       subscription_type: "free",
       subscription_status: "inactive",
+      subscription_expiry_date: "",
+      free_lookups_reset_date: firstNextMonth,
+      stripe_customer_id: "",
       credits: 5,
       search_credits: 5,
       monthly_free_lookups_used: 0,
