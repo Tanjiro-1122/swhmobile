@@ -126,8 +126,8 @@ export default function LinkAccount() {
                 <div>
                   <h3 className="font-bold text-sm text-white mb-1">Already have a web account?</h3>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    If you subscribed or bought credits on{" "}
-                    <span className="text-cyan-400 font-medium">sports-wager-helper.vercel.app</span>,
+                    If you subscribed or bought credits on the web at{" "}
+                    <span className="text-cyan-400 font-medium">sportswagerhelper.com</span>,
                     enter that email below and we'll transfer everything — your plan, credits, and history — to this device.
                   </p>
                 </div>
