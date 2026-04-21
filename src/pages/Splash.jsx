@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { triggerAppleSignIn } from "@/components/utils/iapBridge";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, Zap, Globe } from "lucide-react";
+import { LogIn, Zap, Loader2 } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
 
@@ -12,11 +12,12 @@ export default function Splash() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const check = async () => {
       try {
-        // Check for stored user session
         const storedUser = localStorage.getItem("swh_user");
         if (storedUser) {
           const u = JSON.parse(storedUser);
@@ -37,27 +38,29 @@ export default function Splash() {
     check();
   }, []);
 
-  const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
-
   const handleSignIn = async () => {
     setIsAppleSignInLoading(true);
+    setError("");
     try {
       const result = await triggerAppleSignIn();
+
       if (!result.success) {
-        if (result.error !== "user_cancelled") alert("Sign in failed. Please try again.");
+        if (result.error !== "user_cancelled") {
+          setError("Sign in failed. Please try again.");
+        }
         return;
       }
 
-      // Call our Vercel API route
+      // Call our Vercel API — fullName comes as a string from the wrapper
       const resp = await fetch("/api/handleAppleSignIn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "nativeSignIn",
           identityToken: result.identityToken,
           authorizationCode: result.authorizationCode,
           user: result.user,
           email: result.email,
+          // wrapper sends fullName as string e.g. "Javier Huertas"
           fullName: result.fullName,
         }),
       });
@@ -65,175 +68,131 @@ export default function Splash() {
       const data = await resp.json();
 
       if (data?.success) {
-        // Store user locally
-        localStorage.setItem("swh_user", JSON.stringify(data.user));
+        // Save full user object to localStorage — Dashboard reads from here
+        const userToStore = {
+          ...data.user,
+          // Merge existing credits from localStorage if the server shows 5 (default)
+          search_credits: Math.max(
+            data.user.search_credits ?? 5,
+            parseInt(localStorage.getItem("swh_search_credits") || "0", 10)
+          ),
+        };
+        localStorage.setItem("swh_user", JSON.stringify(userToStore));
         localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
+        localStorage.setItem("swh_search_credits", String(userToStore.search_credits));
 
-        // Set Base44 session token if we got one
+        // Tell the native wrapper to persist the session too
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: "SAVE_SESSION",
+            data: {
+              userId: data.user.apple_user_id,
+              email: data.user.email,
+              isPremium: false,
+              plan: data.user.subscription_type || "free",
+            },
+          }));
+        }
+
         if (data.sessionToken) {
-          try {
-            await base44.auth.setToken(data.sessionToken);
-          } catch (e) {
-            console.warn("setToken failed:", e.message);
-          }
+          try { await base44.auth.setToken(data.sessionToken); } catch {}
         }
 
-        // Notify native wrapper so RevenueCat gets logged in with Base44 entity ID
-        if (window.ReactNativeWebView && data.user?.id) {
-          try {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'SAVE_SESSION',
-              data: {
-                userId: data.user.id,
-                email: data.user.email || '',
-                isPremium: data.user.subscription_status === 'active',
-                plan: data.user.subscription_type || 'free',
-              }
-            }));
-          } catch (e) { /* non-native env */ }
-        }
         navigate(createPageUrl("Dashboard"), { replace: true });
       } else {
-        alert(data?.error || "Sign in failed. Please try again.");
+        setError(data?.error || "Sign in failed. Please try again.");
       }
     } catch (err) {
-      console.error("Sign in error:", err);
-      alert("Sign in failed. Please try again.");
+      console.error("Apple Sign In error:", err);
+      setError("Sign in failed. Please try again.");
     } finally {
       setIsAppleSignInLoading(false);
     }
   };
 
-  const handleGuest = () => navigate(createPageUrl("Dashboard"), { replace: true });
+  const handleGuest = () => {
+    navigate(createPageUrl("Dashboard"), { replace: true });
+  };
 
   if (checking) {
     return (
-      <div className="fixed inset-0 bg-gray-950 flex items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-        >
-          <img src={SWH_LOGO} alt="SWH" className="w-20 h-20 rounded-2xl" />
-        </motion.div>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-lime-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-950 overflow-hidden flex flex-col">
-
-      {/* Background glow blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-80px] left-[-80px] w-80 h-80 bg-lime-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-60px] right-[-60px] w-72 h-72 bg-purple-600/10 rounded-full blur-3xl" />
-      </div>
-
-      {/* TOP — Logo + name */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-        <AnimatePresence>
-          {ready && (
-            <>
-              {/* Logo */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="mb-6"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-lime-400/20 rounded-3xl blur-xl scale-110" />
-                  <img
-                    src={SWH_LOGO}
-                    alt="Sports Wager Helper"
-                    className="relative w-28 h-28 rounded-3xl border border-lime-500/30 shadow-2xl"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Title */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                <h1 className="text-3xl font-black text-white tracking-tight leading-tight">
-                  Sports Wager
-                  <br />
-                  <span className="text-lime-400">Helper</span>
-                </h1>
-                <p className="text-gray-400 text-sm mt-3 leading-relaxed max-w-xs mx-auto">
-                  AI-powered sports analysis in your pocket. Get smarter picks, live odds & player insights.
-                </p>
-              </motion.div>
-
-              {/* Divider line */}
-              <motion.div
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="w-16 h-px bg-gradient-to-r from-transparent via-lime-400 to-transparent mt-8 mb-8"
-              />
-
-              {/* Feature pills */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                className="flex flex-wrap gap-2 justify-center"
-              >
-                {["AI Match Picks", "Live Odds", "Player Stats", "Team Analysis"].map((f) => (
-                  <span
-                    key={f}
-                    className="text-xs font-semibold text-lime-300/80 bg-lime-500/10 border border-lime-500/20 px-3 py-1 rounded-full"
-                  >
-                    {f}
-                  </span>
-                ))}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* BOTTOM — CTAs */}
-      <AnimatePresence>
-        {ready && (
+    <AnimatePresence>
+      {ready && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-between px-6 pt-16 pb-12"
+        >
+          {/* Logo + title */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="px-6 pb-12 flex flex-col gap-3"
+            transition={{ delay: 0.1 }}
+            className="flex flex-col items-center gap-5"
           >
-            {/* Sign In */}
+            <div className="w-24 h-24 rounded-3xl overflow-hidden border-2 border-lime-500/30 shadow-xl shadow-lime-500/10">
+              <img src={SWH_LOGO} alt="SWH" className="w-full h-full object-cover" />
+            </div>
+            <div className="text-center">
+              <h1 className="text-3xl font-black tracking-tight">Sports Wager Helper</h1>
+              <p className="text-gray-400 text-sm mt-1">AI-powered sports intelligence</p>
+            </div>
+
+            {/* Feature pills */}
+            <div className="flex flex-wrap gap-2 justify-center mt-2">
+              {["Match Analysis", "Player Stats", "AI Predictions", "Live Scores"].map(f => (
+                <span key={f} className="text-xs px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300">
+                  {f}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="w-full flex flex-col gap-3"
+          >
+            {error && (
+              <p className="text-red-400 text-sm text-center px-4">{error}</p>
+            )}
+
             <button
               onClick={handleSignIn}
               disabled={isAppleSignInLoading}
-              className="w-full py-4 rounded-2xl bg-lime-400 text-gray-950 font-black text-base flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-60"
+              className="w-full py-4 rounded-2xl bg-white text-gray-950 font-black text-base flex items-center justify-center gap-3 active:scale-95 transition-transform disabled:opacity-60"
             >
-              <LogIn className="w-5 h-5" />
-              {isAppleSignInLoading ? "Signing in..." : "Sign In / Create Account"}
+              {isAppleSignInLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="text-xl"></span>
+              )}
+              {isAppleSignInLoading ? "Signing in..." : "Sign in with Apple"}
             </button>
 
-            {/* Guest */}
             <button
               onClick={handleGuest}
-              className="w-full py-4 rounded-2xl bg-gray-800/80 border border-gray-700 text-gray-300 font-bold text-base active:scale-95 transition-transform"
+              className="w-full py-3.5 rounded-2xl border border-gray-700 text-gray-400 font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              Browse as Guest
-              <span className="text-gray-500 font-normal text-sm ml-1">· 5 free searches</span>
+              <Zap className="w-4 h-4 text-lime-400" />
+              Continue as Guest (5 free searches)
             </button>
 
-            {/* Website FYI */}
-            <div className="mt-2 flex items-center justify-center gap-2 text-gray-600 text-xs">
-              <Globe className="w-3.5 h-3.5 text-lime-600" />
-              <span>
-                For the full AI experience, visit{" "}
-                <span className="text-lime-500 font-semibold">sportswagerhelper.com</span>
-              </span>
-            </div>
+            <p className="text-center text-gray-600 text-xs mt-2">
+              By continuing, you agree to our Terms of Service and Privacy Policy.
+            </p>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
