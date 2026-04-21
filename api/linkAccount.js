@@ -1,6 +1,5 @@
 // api/linkAccount.js
-// Links a mobile Apple Sign-In account to an existing web account by email match.
-// The user provides their web email → we find it in the DB → transfer credits + subscription.
+// Step 2 of account linking: verify the code and merge accounts.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
@@ -9,19 +8,15 @@ const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
 function b44Headers() {
   return { "Content-Type": "application/json", "api_key": B44_KEY };
 }
-
 async function b44Fetch(path, opts = {}) {
   const res = await fetch(`${B44_BASE}${path}`, {
     ...opts,
     headers: { ...b44Headers(), ...(opts.headers || {}) },
   });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Base44 ${res.status}: ${text.slice(0, 300)}`);
-  }
-  return res.json();
+  const text = await res.text().catch(() => "");
+  if (!res.ok) throw new Error(`Base44 ${res.status}: ${text.slice(0, 300)}`);
+  try { return JSON.parse(text); } catch { return {}; }
 }
-
 function toRecords(data) {
   return Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
 }
@@ -34,31 +29,39 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { mobileUserId, webEmail } = req.body || {};
+    const { mobileUserId, webUserId, code } = req.body || {};
 
-    if (!mobileUserId || !webEmail) {
-      return res.status(400).json({ success: false, error: 'mobileUserId and webEmail are required' });
+    if (!mobileUserId || !webUserId || !code) {
+      return res.status(400).json({ success: false, error: 'mobileUserId, webUserId, and code are required' });
     }
 
-    const email = webEmail.trim().toLowerCase();
+    // 1. Fetch the web user to check the code
+    const webData = await b44Fetch(`/entities/User/${webUserId}`);
+    const webUser = webData?.record ?? webData;
 
-    // 1. Find the web account by email
-    const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=5`);
-    const webRecords = toRecords(webData);
-
-    // Find the best match — prefer one with real subscription/credits (not the mobile account)
-    const webUser = webRecords.find(u => u.id !== mobileUserId && (
-      u.subscription_type !== 'free' || (u.credits > 5) || (u.search_credits > 5) || !u.apple_user_id
-    )) || webRecords.find(u => u.id !== mobileUserId);
-
-    if (!webUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'No web account found with that email. Make sure you use the same email you signed up with on the website.'
-      });
+    if (!webUser?.id) {
+      return res.status(404).json({ success: false, error: 'Web account not found.' });
     }
 
-    // 2. Get the mobile account
+    // 2. Validate the code
+    const storedCode = webUser.link_verification_code;
+    const expiresAt = webUser.link_verification_expires;
+    const linkedMobileId = webUser.link_verification_mobile_id;
+
+    if (!storedCode) {
+      return res.status(400).json({ success: false, error: 'No verification code found. Please request a new one.' });
+    }
+    if (storedCode !== String(code).trim()) {
+      return res.status(400).json({ success: false, error: 'Incorrect code. Please try again.' });
+    }
+    if (expiresAt && new Date(expiresAt) < new Date()) {
+      return res.status(400).json({ success: false, error: 'This code has expired. Please request a new one.' });
+    }
+    if (linkedMobileId && linkedMobileId !== mobileUserId) {
+      return res.status(400).json({ success: false, error: 'This code was issued for a different device. Please request a new one.' });
+    }
+
+    // 3. Fetch mobile account
     const mobileData = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(mobileUserId)}&limit=1`);
     const mobileRecords = toRecords(mobileData);
     const mobileUser = mobileRecords[0] || null;
@@ -67,59 +70,69 @@ export default async function handler(req, res) {
       return res.status(404).json({ success: false, error: 'Mobile account not found. Try signing out and back in first.' });
     }
 
-    // 3. Merge: copy subscription + credits from web → mobile account
-    // Keep the higher credit count
+    // 4. Merge: take best of both
     const mergedCredits = Math.max(
       webUser.search_credits ?? webUser.credits ?? 0,
       mobileUser.search_credits ?? mobileUser.credits ?? 0
     );
+    const mergedPlan = (webUser.subscription_type && webUser.subscription_type !== 'free')
+      ? webUser.subscription_type
+      : mobileUser.subscription_type || 'free';
+    const mergedStatus = (webUser.subscription_status === 'active')
+      ? 'active'
+      : mobileUser.subscription_status || 'inactive';
 
     const updates = {
-      // Transfer subscription from web account
-      subscription_type: webUser.subscription_type || mobileUser.subscription_type || 'free',
-      subscription_status: webUser.subscription_status || mobileUser.subscription_status || 'inactive',
+      subscription_type: mergedPlan,
+      subscription_status: mergedStatus,
       subscription_expiry_date: webUser.subscription_expiry_date || mobileUser.subscription_expiry_date || '',
-      // Carry over the better credit count
       search_credits: mergedCredits,
       credits: mergedCredits,
       monthly_free_lookups_used: Math.min(
         webUser.monthly_free_lookups_used ?? 0,
         mobileUser.monthly_free_lookups_used ?? 0
       ),
-      // Link the email so future sign-ins auto-match
-      email: email,
-      // Mark as linked so we don't double-link
+      email: webUser.email,
       linked_web_account_id: webUser.id,
+      // Clear verification fields
+      link_verification_code: null,
+      link_verification_expires: null,
+      link_verification_mobile_id: null,
     };
 
-    // Update mobile account with merged data
+    // Update mobile account
     await b44Fetch(`/entities/User/${mobileUser.id}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
 
-    // Also mark web account as linked to prevent duplicate accounts
+    // Mark web account as linked
     await b44Fetch(`/entities/User/${webUser.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ linked_mobile_account_id: mobileUser.id }),
-    }).catch(() => {}); // non-critical
+      body: JSON.stringify({
+        linked_mobile_account_id: mobileUser.id,
+        link_verification_code: null,
+        link_verification_expires: null,
+        link_verification_mobile_id: null,
+      }),
+    }).catch(() => {});
 
     const merged = { ...mobileUser, ...updates };
 
     return res.status(200).json({
       success: true,
-      message: `Account linked! Your ${webUser.subscription_type || 'free'} plan and ${mergedCredits} credits are now active.`,
+      message: `Account linked! Your ${mergedPlan} plan and ${mergedCredits} credits are now active on this device.`,
       user: {
         id: merged.id,
         email: merged.email,
-        full_name: merged.full_name,
+        full_name: merged.full_name || webUser.full_name || '',
         apple_user_id: merged.apple_user_id,
-        subscription_type: merged.subscription_type,
-        subscription_status: merged.subscription_status,
+        subscription_type: mergedPlan,
+        subscription_status: mergedStatus,
         credits: mergedCredits,
         search_credits: mergedCredits,
         monthly_free_lookups_used: merged.monthly_free_lookups_used,
-        role: merged.role || 'user',
+        role: merged.role || webUser.role || 'user',
       }
     });
 
