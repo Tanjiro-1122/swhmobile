@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import {
   Zap, Crown, BarChart2, Users, Star, Flame,
-  ChevronRight, Shield, Lock, LogOut
+  ChevronRight, Shield, Lock, LogOut, Link2
 } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
@@ -293,6 +293,17 @@ export default function Dashboard() {
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-lime-500 to-emerald-500 text-gray-950 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
           >
             <Zap className="w-4 h-4" /> Get More Credits
+          </button>
+        </motion.div>
+      )}
+
+      {/* ── Link Web Account ─────────────────────────────────────────────── */}
+      {currentUser && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mx-4 mt-3 mb-6">
+          <button onClick={() => navigate(createPageUrl("LinkAccount"))}
+            className="w-full py-3.5 rounded-2xl border border-gray-700 text-gray-400 font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          >
+            <Link2 className="w-4 h-4 text-cyan-400" /> Already have a web account? Link it
           </button>
         </motion.div>
       )}
