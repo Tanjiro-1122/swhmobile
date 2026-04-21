@@ -48,56 +48,83 @@ export function useFreeLookupTracker() {
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
-        
-        // ✅ Mobile fallback: if Base44 SDK session is gone but swh_user is in localStorage, use that
+
+        // Mobile fallback: if Base44 SDK session is gone but swh_user is in localStorage, use that
         let localUser = null;
         try {
           const stored = localStorage.getItem('swh_user');
           if (stored) localUser = JSON.parse(stored);
         } catch {}
-        
+
         const isAuth = authenticated || (localUser?.id != null);
         setIsAuthenticated(isAuth);
-        
+
         if (isAuth) {
           try {
-            const user = authenticated ? await base44.auth.me() : localUser;
+            let user = authenticated ? await base44.auth.me() : localUser;
+
+            // ✅ FRESH INSTALL / DELETE-AND-REINSTALL RECOVERY
+            // If we have an apple_user_id but swh_user credits look like the default (≤5)
+            // or the object is sparse, do a DB sync to recover real credits + tier.
+            const appleUserId = localStorage.getItem('swh_apple_user_id') || user?.apple_user_id || '';
+            const localCredits = parseInt(localStorage.getItem('swh_search_credits') || '0', 10);
+            const looksLikeFreshInstall = appleUserId && (!localUser || localCredits <= 5);
+
+            if (looksLikeFreshInstall) {
+              try {
+                const resp = await fetch('/api/lookupAccount', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ appleUserId }),
+                });
+                const dbData = await resp.json();
+                if (dbData?.success && dbData?.user) {
+                  const dbUser = dbData.user;
+                  const dbCredits = dbUser.search_credits ?? dbUser.credits ?? 0;
+                  // Merge DB data into local user — DB is the source of truth
+                  user = { ...user, ...dbUser };
+                  // Update localStorage so future reads are correct
+                  localStorage.setItem('swh_search_credits', String(dbCredits));
+                  try {
+                    const stored = localStorage.getItem('swh_user');
+                    const merged = stored ? { ...JSON.parse(stored), ...dbUser } : dbUser;
+                    localStorage.setItem('swh_user', JSON.stringify(merged));
+                  } catch {}
+                  console.log('[FreeLookupTracker] ✅ DB sync on fresh install — credits:', dbCredits);
+                }
+              } catch (syncErr) {
+                console.warn('[FreeLookupTracker] DB sync failed (non-fatal):', syncErr.message);
+              }
+            }
+
             setCurrentUser(user);
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
-            
+
             // Check if VIP annual has expired.
-            // Backend functions write the expiry to either subscription_expiry_date (Stripe)
-            // or subscription_expires_at (Apple / Google Play / manual activation); check both.
             const vipExpiry = user.subscription_expiry_date || user.subscription_expires_at;
             if (tier === 'vip_annual' && vipExpiry) {
               const expiryDate = new Date(vipExpiry);
               if (new Date() > expiryDate) {
-                // VIP expired, treat as free user
                 setUserTier('free');
-                // Continue to free user logic below
               } else {
-                setLookupsRemaining(999); // Unlimited - still valid
+                setLookupsRemaining(999);
                 setIsLoading(false);
                 return;
               }
             } else if (tier === 'influencer') {
-              // Check if influencer access has expired (7 days).
-              // Expiry stored in subscription_expiry_date by the admin panel / expiry function.
               const influencerExpiry = user.subscription_expiry_date || user.subscription_expires_at;
               if (influencerExpiry) {
                 const expiryDate = new Date(influencerExpiry);
                 if (new Date() > expiryDate) {
-                  // Influencer expired, treat as free user
                   setUserTier('free');
-                  // Continue to free user logic below
                 } else {
-                  setLookupsRemaining(999); // Unlimited - still valid
+                  setLookupsRemaining(999);
                   setIsLoading(false);
                   return;
                 }
               } else {
-                setLookupsRemaining(999); // No expiry set — still active
+                setLookupsRemaining(999);
                 setIsLoading(false);
                 return;
               }
@@ -106,19 +133,16 @@ export function useFreeLookupTracker() {
               tier === 'influencer' || tier === 'unlimited_monthly' || tier === 'unlimited_yearly' ||
               tier === 'half_year' || tier === 'basic_monthly'
             ) {
-              // Legacy, VIP Annual (no expiry set), Premium Monthly, and Influencer users have UNLIMITED searches
-              setLookupsRemaining(999); // Unlimited
+              setLookupsRemaining(999);
               setIsLoading(false);
               return;
             }
-            
+
             // Free user logic - check monthly renewable lookups
             let monthlyUsed = user.monthly_free_lookups_used || 0;
             const resetDate = user.free_lookups_reset_date;
-            
-            // Check if we need to reset monthly lookups
+
             if (shouldResetMonthlyLookups(resetDate)) {
-              // Reset the counter for the new month
               monthlyUsed = 0;
               const newResetDate = getNextMonthResetDate();
               await base44.auth.updateMe({
@@ -127,31 +151,52 @@ export function useFreeLookupTracker() {
               });
             }
 
-            // Load purchased search credits
             const credits = user.search_credits || 0;
             setSearchCredits(credits);
-            
-            // Total remaining = monthly free slots + purchased credits
             setLookupsRemaining(Math.max(0, 5 - monthlyUsed) + credits);
+
           } catch (error) {
             console.error('Error fetching user:', error);
-            // If error fetching user, treat as free with localStorage fallback
             const used = parseInt(localStorage.getItem('freeLookups') || '0');
             setLookupsRemaining(Math.max(0, 5 - used));
           }
         } else {
-          // Not authenticated - IP-based limit enforced server-side, show 5 free on UI
+          // ✅ GUEST FRESH INSTALL RECOVERY
+          // Not signed in but we have an apple_user_id in localStorage from wrapper session restore
+          const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
+          if (appleUserId) {
+            try {
+              const resp = await fetch('/api/lookupAccount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appleUserId }),
+              });
+              const dbData = await resp.json();
+              if (dbData?.success && dbData?.user) {
+                const dbUser = dbData.user;
+                const dbCredits = dbUser.search_credits ?? dbUser.credits ?? 0;
+                localStorage.setItem('swh_search_credits', String(dbCredits));
+                localStorage.setItem('swh_user', JSON.stringify(dbUser));
+                setIsAuthenticated(true);
+                setCurrentUser(dbUser);
+                setUserTier(dbUser.subscription_type || 'free');
+                const monthlyUsed = dbUser.monthly_free_lookups_used || 0;
+                setLookupsRemaining(Math.max(0, 5 - monthlyUsed) + dbCredits);
+                setIsLoading(false);
+                return;
+              }
+            } catch {}
+          }
           setLookupsRemaining(5);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        // Default to 5 free — backend will enforce the real limit
         setLookupsRemaining(5);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
