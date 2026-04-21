@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { triggerAppleSignIn } from "@/components/utils/iapBridge";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, Zap, Loader2 } from "lucide-react";
+import { LogIn, Zap, Loader2, Mail } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
 
@@ -194,7 +194,14 @@ export default function Splash() {
               Continue as Guest (5 free searches)
             </button>
 
-            <p className="text-center text-gray-600 text-xs mt-2">
+            <button
+              onClick={() => navigate(createPageUrl("EmailSignIn"))}
+              className="text-sm text-gray-500 text-center py-1 active:opacity-70 transition-opacity"
+            >
+              <span className="text-lime-500 font-semibold">I have a web account</span> — sign in with email
+            </button>
+
+            <p className="text-center text-gray-600 text-xs mt-1">
               By continuing, you agree to our Terms of Service and Privacy Policy.
             </p>
           </motion.div>
