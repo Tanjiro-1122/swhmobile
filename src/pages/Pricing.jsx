@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { Zap, Loader2, RotateCcw, LogIn } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Zap, Loader2, RotateCcw, LogIn, ArrowLeft, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePlatform } from "@/components/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
@@ -29,13 +29,13 @@ export default function Pricing() {
   const iapTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { isIOSNative, isAndroidNative } = usePlatform();
 
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Listen for post-purchase Apple sign-in result from native wrapper
     const handleNativeMessage = (event) => {
       try {
         let msg = event.data;
@@ -83,6 +83,8 @@ export default function Pricing() {
     queryKey: ["currentUser"],
     queryFn: async () => {
       try {
+        const stored = localStorage.getItem("swh_user");
+        if (stored) return JSON.parse(stored);
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) return null;
         return await base44.auth.me();
@@ -94,8 +96,12 @@ export default function Pricing() {
 
   const isSignedIn = !!currentUser;
 
-  // ── Apple Sign In ────────────────────────────────────────────────────────
+  // ── Go back to dashboard ────────────────────────────────────────────────
+  const goToDashboard = () => {
+    navigate(createPageUrl("Dashboard"), { replace: true });
+  };
 
+  // ── Apple Sign In ────────────────────────────────────────────────────────
   const handleAppleSignIn = async () => {
     setIsSigningIn(true);
     try {
@@ -106,19 +112,30 @@ export default function Pricing() {
         }
         return;
       }
-      const resp = await base44.functions.invoke("handleAppleSignIn", {
-        action: "nativeSignIn",
-        identityToken: result.identityToken,
-        authorizationCode: result.authorizationCode,
-        user: result.user,
-        email: result.email,
-        fullName: result.fullName,
+      const resp = await fetch("/api/handleAppleSignIn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "nativeSignIn",
+          identityToken: result.identityToken,
+          authorizationCode: result.authorizationCode,
+          user: result.user,
+          email: result.email,
+          fullName: result.fullName,
+        }),
       });
-      if (resp.data?.success && resp.data?.sessionToken) {
-        await base44.auth.setToken(resp.data.sessionToken);
-        navigate(createPageUrl("Dashboard"), { replace: true });
+      const data = await resp.json();
+      if (data?.success) {
+        localStorage.setItem("swh_user", JSON.stringify(data.user));
+        localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
+        if (data.sessionToken) {
+          await base44.auth.setToken(data.sessionToken);
+        }
+        // Refresh user query
+        queryClient.invalidateQueries(["currentUser"]);
+        goToDashboard();
       } else {
-        alert(resp.data?.error || "Sign in failed. Please try again.");
+        alert(data?.error || "Sign in failed. Please try again.");
       }
     } catch (err) {
       console.error("Apple Sign In error:", err);
@@ -129,7 +146,6 @@ export default function Pricing() {
   };
 
   // ── Credit purchase ──────────────────────────────────────────────────────
-
   const handleBuyCredits = async (pack) => {
     if (processingItem) return;
     setProcessingItem(pack.id);
@@ -220,7 +236,6 @@ export default function Pricing() {
   };
 
   // ── Restore ──────────────────────────────────────────────────────────────
-
   const handleRestore = async () => {
     if (processingItem) return;
     setProcessingItem("restore");
@@ -236,6 +251,15 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 pt-6 pb-24">
 
+      {/* ── Back Button ─────────────────────────────────────────────────── */}
+      <button
+        onClick={goToDashboard}
+        className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="text-sm font-medium">Back to Dashboard</span>
+      </button>
+
       {/* ── Credit Purchase Success Modal ──────────────────────────────── */}
       <AnimatePresence>
         {showSuccessModal && (
@@ -249,8 +273,16 @@ export default function Pricing() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-gray-900 border border-cyan-500/40 rounded-3xl p-8 text-center w-full max-w-sm"
+              className="bg-gray-900 border border-cyan-500/40 rounded-3xl p-8 text-center w-full max-w-sm relative"
             >
+              {/* ✕ close button — always visible */}
+              <button
+                onClick={goToDashboard}
+                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
               <div className="text-5xl mb-4">⚡️</div>
               <h2 className="text-2xl font-black text-white mb-2">Credits Added!</h2>
               <p className="text-gray-400 text-sm mb-1">
@@ -261,24 +293,28 @@ export default function Pricing() {
                 Sign in to sync your credits across devices, or start searching right now.
               </p>
 
-              {/* Sign in to save credits */}
+              {/* Sign in to save credits — only show if not already signed in */}
               {!isSignedIn && isIOSNative && (
                 <button
                   onClick={async () => {
                     setShowSuccessModal(false);
                     await handleAppleSignIn();
                   }}
+                  disabled={isSigningIn}
                   className="w-full py-3 rounded-2xl bg-black border border-white/20 text-white font-bold text-sm mb-3 flex items-center justify-center gap-2"
                 >
-                  <span className="text-lg"></span> Sign in with Apple to save credits
+                  {isSigningIn ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="text-lg"></span>
+                  )}
+                  Sign in with Apple to save credits
                 </button>
               )}
 
+              {/* Start Searching — always navigates to Dashboard */}
               <button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  navigate(createPageUrl("Dashboard"), { replace: true });
-                }}
+                onClick={goToDashboard}
                 className="w-full py-3 rounded-2xl bg-cyan-500 text-gray-950 font-black text-sm"
               >
                 Start Searching →
@@ -288,89 +324,63 @@ export default function Pricing() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-black tracking-tight">Get More Credits</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Pay once · Use anytime · Credits never expire
-        </p>
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-black text-white mb-1">Get More Credits</h1>
+        <p className="text-gray-500 text-sm">Pay once · Use anytime · Credits never expire</p>
       </div>
 
-      {/* Sign In Banner — shown to guests */}
-      {!isSignedIn && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-5 rounded-2xl bg-blue-500/10 border border-blue-500/30 p-4"
-        >
-          <p className="text-blue-300 text-sm font-semibold mb-1">
-            🔒 Sign in to save your credits
-          </p>
-          <p className="text-blue-400/70 text-xs mb-3">
-            Without signing in, credits are stored on this device only.
-          </p>
-          {isIOSNative ? (
-            <button
-              onClick={handleAppleSignIn}
-              disabled={isSigningIn}
-              className="w-full py-2.5 rounded-xl bg-black border border-white/20 text-white font-bold text-sm flex items-center justify-center gap-2"
-            >
-              {isSigningIn ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <span className="text-lg"></span> Sign in with Apple
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={() => window.location.href = '/Splash'}
-              className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2"
-            >
-              <LogIn className="w-4 h-4" /> Sign In
-            </button>
-          )}
-        </motion.div>
+      {/* ── Sign-in nudge (only shown when not signed in) ──────────────── */}
+      {!isSignedIn && isIOSNative && (
+        <div className="mb-6 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <p className="text-yellow-400 font-bold text-sm mb-1">🔒 Sign in to save your credits</p>
+          <p className="text-gray-400 text-xs mb-3">Without signing in, credits are stored on this device only.</p>
+          <button
+            onClick={handleAppleSignIn}
+            disabled={isSigningIn}
+            className="w-full py-2.5 rounded-xl bg-black border border-white/20 text-white font-bold text-sm flex items-center justify-center gap-2"
+          >
+            {isSigningIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <span></span>}
+            Sign in with Apple
+          </button>
+        </div>
       )}
 
-      {/* Credit Packs */}
-      <div className="flex flex-col gap-4">
+      {/* ── Credit packs ────────────────────────────────────────────────── */}
+      <div className="space-y-4 mb-8">
         {CREDIT_PACKS.map((pack) => (
-          <motion.div
+          <div
             key={pack.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
             className={`relative rounded-2xl border p-5 flex items-center justify-between ${
               pack.highlight
-                ? "border-cyan-400 bg-cyan-500/10"
-                : "border-gray-800 bg-gray-900"
+                ? "border-cyan-500/60 bg-cyan-500/5"
+                : "border-gray-800 bg-gray-900/50"
             }`}
           >
             {pack.highlight && (
-              <span className="absolute -top-2.5 left-4 bg-cyan-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                MOST POPULAR
+              <span className="absolute -top-3 left-4 bg-cyan-500 text-gray-950 text-xs font-black px-3 py-0.5 rounded-full uppercase tracking-wide">
+                Most Popular
               </span>
             )}
             <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-black">{pack.credits}</span>
-                <span className="text-gray-400 text-sm font-semibold">credits</span>
-              </div>
-              <p className="text-gray-500 text-xs mt-0.5">
+              <p className="text-2xl font-black text-white">
+                {pack.credits}{" "}
+                <span className="text-base font-semibold text-gray-400">credits</span>
+              </p>
+              <p className="text-xs text-gray-500">
                 ${(pack.price / pack.credits).toFixed(2)} per search
               </p>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span className="text-xl font-black">${pack.price.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-white font-black text-lg">${pack.price}</span>
               <button
                 onClick={() => handleBuyCredits(pack)}
-                disabled={processingItem !== null}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50 ${
+                disabled={!!processingItem}
+                className={`px-5 py-2 rounded-xl font-black text-sm transition-all ${
                   pack.highlight
-                    ? "bg-cyan-500 hover:bg-cyan-400 text-white"
-                    : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
+                    ? "bg-cyan-500 text-gray-950 hover:bg-cyan-400"
+                    : "bg-gray-700 text-white hover:bg-gray-600"
+                } disabled:opacity-50`}
               >
                 {processingItem === pack.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -379,25 +389,21 @@ export default function Pricing() {
                 )}
               </button>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      <p className="text-center text-gray-600 text-xs mt-6 px-4">
-        Credits are used for AI match analysis, player stats, and team breakdowns.
-      </p>
-
-      {/* Restore Purchases */}
-      <div className="mt-8 text-center">
+      {/* ── Restore ─────────────────────────────────────────────────────── */}
+      <div className="text-center">
         <button
           onClick={handleRestore}
-          disabled={processingItem === "restore"}
-          className="flex items-center gap-1.5 text-gray-600 text-xs mx-auto hover:text-gray-300 transition-colors disabled:opacity-50"
+          disabled={!!processingItem}
+          className="flex items-center gap-2 mx-auto text-gray-500 hover:text-gray-300 text-sm transition-colors"
         >
           {processingItem === "restore" ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
           )}
           Restore Purchases
         </button>
