@@ -1,6 +1,4 @@
 // api/handleAppleSignIn.js
-// Vercel serverless function — handles Apple Sign In for SWH
-
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
@@ -52,23 +50,21 @@ async function findUserByEmail(email) {
   } catch { return null; }
 }
 
-function firstOfNextMonth() {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  d.setDate(1);
-  return d.toISOString().split('T')[0];
-}
-
-// Build the best display name from available sources
-function buildDisplayName(fullName, email, appleJwt) {
-  // 1. Try fullName object sent from native (Apple only sends this on FIRST sign-in)
-  if (fullName?.givenName || fullName?.familyName) {
+// Build best display name from all available sources
+// fullName can be a string ("Javier Huertas") or an object ({givenName, familyName})
+function buildDisplayName(fullName, email, jwtPayload) {
+  // 1. fullName as string (how wrapper sends it)
+  if (typeof fullName === 'string' && fullName.trim().length > 0) {
+    return fullName.trim();
+  }
+  // 2. fullName as object {givenName, familyName}
+  if (fullName && typeof fullName === 'object') {
     const name = [fullName.givenName, fullName.familyName].filter(Boolean).join(' ').trim();
     if (name) return name;
   }
-  // 2. Try name from JWT (rare but possible)
-  if (appleJwt?.name) return appleJwt.name;
-  // 3. Use email prefix as fallback display name
+  // 3. JWT name claim
+  if (jwtPayload?.name) return jwtPayload.name;
+  // 4. Email prefix (huertasfam1@icloud.com → Huertasfam1)
   if (email) {
     const prefix = email.split('@')[0];
     return prefix.charAt(0).toUpperCase() + prefix.slice(1);
@@ -77,20 +73,17 @@ function buildDisplayName(fullName, email, appleJwt) {
 }
 
 async function createUser(payload) {
-  const defaults = {
-    subscription_type: "free",
-    subscription_status: "inactive",
-    subscription_expiry_date: "",
-    free_lookups_reset_date: firstOfNextMonth(),
-    credits: 5,
-    search_credits: 5,
-    monthly_free_lookups_used: 0,
-    role: "user",
-    stripe_customer_id: "",
-  };
   return b44Fetch(`/entities/User`, {
     method: "POST",
-    body: JSON.stringify({ ...defaults, ...payload }),
+    body: JSON.stringify({
+      subscription_type: "free",
+      subscription_status: "inactive",
+      credits: 5,
+      search_credits: 5,
+      monthly_free_lookups_used: 0,
+      role: "user",
+      ...payload,
+    }),
   });
 }
 
@@ -136,28 +129,27 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Could not extract user ID from token' });
     }
 
-    // Build the best name we can
     const displayName = buildDisplayName(fullName, email, jwtPayload);
 
-    // 1. Find existing user
+    // Find existing user by apple ID first, then email
     let dbUser = await findUserByAppleId(appleUserId);
     if (!dbUser && email) dbUser = await findUserByEmail(email);
 
-    // 2. Create or update
     if (!dbUser) {
+      // New user
       dbUser = await createUser({
         apple_user_id: appleUserId,
         email: email || `apple_${appleUserId}@privaterelay.appleid.com`,
         full_name: displayName,
       });
     } else {
+      // Update any missing/stale fields
       const updates = {};
       if (!dbUser.apple_user_id) updates.apple_user_id = appleUserId;
       if (!dbUser.email && email) updates.email = email;
-      // Update name if it's still the default placeholder
-      if (dbUser.full_name === 'SWH User' || dbUser.full_name === 'User' || !dbUser.full_name) {
-        updates.full_name = displayName;
-      }
+      // Fix bad placeholder names
+      const badNames = ['SWH User', 'User', '', null, undefined];
+      if (badNames.includes(dbUser.full_name)) updates.full_name = displayName;
       if (dbUser.search_credits == null && dbUser.credits == null) updates.search_credits = 5;
       if (Object.keys(updates).length > 0) {
         await updateUser(dbUser.id, updates);
@@ -167,15 +159,14 @@ export default async function handler(req, res) {
 
     const sessionToken = await createSessionToken(dbUser.id);
 
-    // Return full user object so frontend can store everything
     return res.status(200).json({
       success: true,
       sessionToken,
       user: {
         id: dbUser.id,
-        email: dbUser.email,
+        email: dbUser.email || email,
         full_name: dbUser.full_name,
-        apple_user_id: dbUser.apple_user_id,
+        apple_user_id: dbUser.apple_user_id || appleUserId,
         subscription_type: dbUser.subscription_type || 'free',
         subscription_status: dbUser.subscription_status || 'inactive',
         credits: dbUser.credits ?? 5,
