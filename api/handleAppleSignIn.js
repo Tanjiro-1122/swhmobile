@@ -154,7 +154,9 @@ export default async function handler(req, res) {
       if (!dbUser.email && email) updates.email = email;
       // Fix bad placeholder names
       const badNames = ['SWH User', 'User', '', null, undefined];
-      if (badNames.includes(dbUser.full_name)) updates.full_name = displayName;
+      const currentName = dbUser.full_name || '';
+      const isRawAppleId = currentName.startsWith('Apple_') || currentName.includes('@privaterelay') || currentName.length > 50;
+      if (badNames.includes(dbUser.full_name) || isRawAppleId) updates.full_name = displayName;
       if (dbUser.search_credits == null && dbUser.credits == null) updates.search_credits = 5;
       if (Object.keys(updates).length > 0) {
         await updateUser(dbUser.id, updates);

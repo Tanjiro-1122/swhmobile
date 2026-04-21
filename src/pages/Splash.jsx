@@ -80,6 +80,12 @@ export default function Splash() {
         localStorage.setItem("swh_user", JSON.stringify(userToStore));
         localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
         localStorage.setItem("swh_search_credits", String(userToStore.search_credits));
+        // ✅ Save display name so Dashboard always shows real name, not Apple ID
+        if (userToStore.full_name && !userToStore.full_name.startsWith("Apple_") && !userToStore.full_name.includes("privaterelay")) {
+          localStorage.setItem("swh_full_name", userToStore.full_name);
+        } else if (result.fullName) {
+          localStorage.setItem("swh_full_name", result.fullName);
+        }
 
         // Tell the native wrapper to persist the session too
         if (window.ReactNativeWebView) {
@@ -88,8 +94,9 @@ export default function Splash() {
             data: {
               userId: data.user.apple_user_id,
               email: data.user.email,
-              isPremium: false,
+              isPremium: data.user.subscription_status === "active",
               plan: data.user.subscription_type || "free",
+              fullName: data.user.full_name || result.fullName || null,
             },
           }));
         }

@@ -48,11 +48,20 @@ export function useFreeLookupTracker() {
     const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
-        setIsAuthenticated(authenticated);
         
-        if (authenticated) {
+        // ✅ Mobile fallback: if Base44 SDK session is gone but swh_user is in localStorage, use that
+        let localUser = null;
+        try {
+          const stored = localStorage.getItem('swh_user');
+          if (stored) localUser = JSON.parse(stored);
+        } catch {}
+        
+        const isAuth = authenticated || (localUser?.id != null);
+        setIsAuthenticated(isAuth);
+        
+        if (isAuth) {
           try {
-            const user = await base44.auth.me();
+            const user = authenticated ? await base44.auth.me() : localUser;
             setCurrentUser(user);
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
