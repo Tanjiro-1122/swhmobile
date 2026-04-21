@@ -43,17 +43,20 @@ export default function TeamStats() {
     setCurrentTeam(null);
 
     try {
-      // Call the backend function instead of invoking LLM directly
-      const response = await base44.functions.invoke('getTeamStats', { query });
-      
-      if (response.data.error) {
-        throw new Error(response.data.error);
+      // ✅ Use Vercel API route — NOT base44.functions.invoke (broken)
+      const resp = await fetch('/api/getTeamStats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || 'Team not found. Try using full team name.');
       }
-      
-      const result = response.data;
+      const result = await resp.json();
 
       if (!result || !result.team_name) {
-        throw new Error("Invalid response from backend - team not found or missing data");
+        throw new Error("Team not found. Please try using the full team name.");
       }
 
       // Save to local Query entity for tracking (TeamStats entity may not exist)

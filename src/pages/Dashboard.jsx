@@ -28,14 +28,24 @@ const ACCENT_STYLES = {
 };
 
 function getDisplayName(user) {
-  if (!user) return null;
+  // ✅ Also check swh_full_name localStorage key (set by wrapper on Apple Sign-In)
+  const storedName = (() => { try { return localStorage.getItem("swh_full_name") || null; } catch { return null; } })();
+
+  if (!user) return storedName ? storedName.split(" ")[0] : null;
   const name = user.full_name || "";
-  if (name && name !== "SWH User" && name !== "User") {
+
+  // Reject raw Apple IDs (Apple_XXXXXX...) and placeholder names
+  const badNames = ["SWH User", "User", ""];
+  const isAppleId = name.startsWith("Apple_0") || name.includes("@privaterelay") || name.length > 40;
+
+  if (name && !badNames.includes(name) && !isAppleId) {
     return name.split(" ")[0];
   }
-  if (user.email) {
+  // Fall back to stored name from wrapper
+  if (storedName) return storedName.split(" ")[0];
+  if (user.email && !user.email.includes("privaterelay")) {
     const prefix = user.email.split("@")[0];
-    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    if (!prefix.startsWith("apple_")) return prefix.charAt(0).toUpperCase() + prefix.slice(1);
   }
   return null;
 }

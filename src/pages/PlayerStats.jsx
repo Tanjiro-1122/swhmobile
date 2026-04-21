@@ -43,17 +43,20 @@ export default function PlayerStats() {
     setCurrentPlayer(null);
 
     try {
-      // Call the backend function instead of invoking LLM directly
-      const response = await base44.functions.invoke('getPlayerStats', { query });
-
-      if (response.data.error) {
-        throw new Error(response.data.error);
+      // ✅ Use Vercel API route — NOT base44.functions.invoke (broken)
+      const resp = await fetch('/api/getPlayerStats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || 'Player not found. Try using full name.');
       }
-      
-      const result = response.data;
+      const result = await resp.json();
 
-      if (!result || !result.player_name || !result.next_game) {
-        throw new Error("Invalid response from backend - player not found or missing data");
+      if (!result || !result.player_name) {
+        throw new Error("Player not found. Please try using the full name.");
       }
 
       // Save to local Query entity for tracking (PlayerStats entity may not exist)
