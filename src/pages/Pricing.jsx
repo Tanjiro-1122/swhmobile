@@ -20,6 +20,27 @@ const CREDIT_PACKS = [
   { id: "large",  credits: 100, price: 14.99, productId: "com.sportswagerhelper.credits.100", label: "Best Value" },
 ];
 
+// ✅ Helper: update credits in both swh_user and swh_search_credits keys
+function addCreditsToLocalStorage(creditsToAdd) {
+  // Update swh_search_credits (legacy key)
+  const existing = parseInt(localStorage.getItem("swh_search_credits") || "5", 10);
+  const newTotal = existing + creditsToAdd;
+  localStorage.setItem("swh_search_credits", String(newTotal));
+
+  // ✅ Also update swh_user.search_credits so Dashboard reads the right value
+  try {
+    const stored = localStorage.getItem("swh_user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      const userCredits = user.search_credits ?? user.credits ?? existing;
+      const updatedUser = { ...user, search_credits: userCredits + creditsToAdd };
+      localStorage.setItem("swh_user", JSON.stringify(updatedUser));
+    }
+  } catch {}
+
+  return newTotal;
+}
+
 export default function Pricing() {
   const [processingItem, setProcessingItem] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -44,16 +65,29 @@ export default function Pricing() {
 
         if (msg?.type === "POST_PURCHASE_APPLE_SIGN_IN") {
           if (msg.success && msg.identityToken) {
-            base44.functions
-              .invoke("appleSignIn", {
+            // ✅ Use Vercel API route — NOT base44.functions.invoke (broken/empty)
+            fetch("/api/handleAppleSignIn", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
                 identityToken: msg.identityToken,
                 authorizationCode: msg.authorizationCode,
                 user: msg.user,
                 email: msg.email,
                 fullName: msg.fullName,
-                creditsAmount: msg.creditsAmount,
-                productId: msg.productId,
-                source: "post_purchase",
+              }),
+            })
+              .then((r) => r.json())
+              .then((data) => {
+                if (data?.success) {
+                  // Save user + session
+                  localStorage.setItem("swh_user", JSON.stringify(data.user));
+                  localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
+                  localStorage.setItem("swh_search_credits", String(data.user.search_credits ?? 5));
+                  if (data.sessionToken) {
+                    base44.auth.setToken(data.sessionToken).catch(() => {});
+                  }
+                }
               })
               .catch((e) =>
                 console.warn("[PostPurchaseAppleSignIn] silent link failed:", e)
@@ -128,8 +162,21 @@ export default function Pricing() {
       if (data?.success) {
         localStorage.setItem("swh_user", JSON.stringify(data.user));
         localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
+        localStorage.setItem("swh_search_credits", String(data.user.search_credits ?? 5));
         if (data.sessionToken) {
-          await base44.auth.setToken(data.sessionToken);
+          try { await base44.auth.setToken(data.sessionToken); } catch {}
+        }
+        // Notify native wrapper
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: "SAVE_SESSION",
+            data: {
+              userId: data.user.apple_user_id,
+              email: data.user.email || "",
+              isPremium: data.user.subscription_status === "active",
+              plan: data.user.subscription_type || "free",
+            },
+          }));
         }
         // Refresh user query
         queryClient.invalidateQueries(["currentUser"]);
@@ -154,12 +201,8 @@ export default function Pricing() {
       try {
         const result = await triggerRevenueCatPurchase(pack.productId);
         if (result.success) {
-          const existing = parseInt(
-            localStorage.getItem("swh_search_credits") || "5",
-            10
-          );
-          const newTotal = existing + pack.credits;
-          localStorage.setItem("swh_search_credits", String(newTotal));
+          // ✅ Update both localStorage keys so Dashboard credit count is accurate
+          addCreditsToLocalStorage(pack.credits);
           setCreditsGranted(pack.credits);
           setShowSuccessModal(true);
         } else if (result.error !== "user_cancelled") {
@@ -203,14 +246,8 @@ export default function Pricing() {
               productId: data.productId || pack.productId,
               platform: data.purchaseToken ? "android" : "ios",
             });
-            const existing = parseInt(
-              localStorage.getItem("swh_search_credits") || "5",
-              10
-            );
-            localStorage.setItem(
-              "swh_search_credits",
-              String(existing + pack.credits)
-            );
+            // ✅ Update both localStorage keys
+            addCreditsToLocalStorage(pack.credits);
             setProcessingItem(null);
             setCreditsGranted(pack.credits);
             setShowSuccessModal(true);

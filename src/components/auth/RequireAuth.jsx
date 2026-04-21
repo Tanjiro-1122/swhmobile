@@ -67,21 +67,49 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
         }
         return;
       }
-      // Exchange the identity token with the backend
-      const resp = await base44.functions.invoke('handleAppleSignIn', {
-        action: 'nativeSignIn',
-        identityToken: result.identityToken,
-        authorizationCode: result.authorizationCode,
-        user: result.user,
-        email: result.email,
-        fullName: result.fullName,
+
+      // ✅ Use Vercel API route — NOT base44.functions (which is empty/broken)
+      const resp = await fetch('/api/handleAppleSignIn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'nativeSignIn',
+          identityToken: result.identityToken,
+          authorizationCode: result.authorizationCode,
+          user: result.user,
+          email: result.email,
+          fullName: result.fullName,
+        }),
       });
-      if (resp.data?.success && resp.data?.sessionToken) {
-        await base44.auth.setToken(resp.data.sessionToken);
+      const data = await resp.json();
+
+      if (data?.success) {
+        // Save user to localStorage (same pattern as Splash.jsx)
+        localStorage.setItem('swh_user', JSON.stringify(data.user));
+        localStorage.setItem('swh_apple_user_id', data.user.apple_user_id || '');
+        localStorage.setItem('swh_search_credits', String(data.user.search_credits ?? 5));
+
+        if (data.sessionToken) {
+          try { await base44.auth.setToken(data.sessionToken); } catch {}
+        }
+
+        // Notify native wrapper
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'SAVE_SESSION',
+            data: {
+              userId: data.user.apple_user_id,
+              email: data.user.email || '',
+              isPremium: data.user.subscription_status === 'active',
+              plan: data.user.subscription_type || 'free',
+            },
+          }));
+        }
+
         const hasPendingIAP = !!localStorage.getItem('pending_iap_product');
         window.location.href = hasPendingIAP ? '/MyAccount?activate_iap=true' : window.location.pathname;
       } else {
-        alert(resp.data?.error || 'Sign in failed. Please try again.');
+        alert(data?.error || 'Sign in failed. Please try again.');
       }
     } catch (err) {
       console.error('Apple Sign In error:', err);
@@ -173,13 +201,12 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                       <span className="animate-spin">⏳</span>
                     ) : (
                       <>
-                        <span className="text-xl"></span>
+                        <span className="text-xl"></span>
                         Sign in with Apple
                       </>
                     )}
                   </Button>
                 )}
-
 
                 <Button
                   onClick={handleViewPricing}
