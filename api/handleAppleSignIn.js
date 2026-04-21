@@ -69,6 +69,7 @@ async function createUser(payload) {
     search_credits: 5,
     monthly_free_lookups_used: 0,
     role: "user",
+    stripe_customer_id: "",  // required field — default empty
   };
   return b44Fetch(`/entities/User`, {
     method: "POST",
