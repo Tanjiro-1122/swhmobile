@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import RequireAuth from "../components/auth/RequireAuth";
+import { useNavigate } from 'react-router-dom';
 
 function ParlayBuilderContent() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentParlay, setCurrentParlay] = useState({
     parlay_name: "",
@@ -181,6 +183,17 @@ function ParlayBuilderContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
