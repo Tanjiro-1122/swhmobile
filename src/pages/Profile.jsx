@@ -21,8 +21,10 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -111,6 +113,17 @@ export default function Profile() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading your profile...</p>
