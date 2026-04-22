@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, BarChart3, Trophy, AlertCircle, CheckCircle2, Activity } from "lucide-react";
 import RequireAuth from "../components/auth/RequireAuth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useNavigate } from 'react-router-dom';
 
 function AIPerformanceContent() {
+  const navigate = useNavigate();
   const { data: calibrationData, isLoading, error, refetch } = useQuery({
     queryKey: ['calibration'],
     queryFn: async () => {
@@ -35,6 +37,17 @@ function AIPerformanceContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Activity className="w-12 h-12 text-blue-500 animate-spin" />
