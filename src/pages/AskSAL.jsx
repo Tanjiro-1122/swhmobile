@@ -12,6 +12,15 @@ const SESSION_KEY = 'sal_messages_v3';
 const SPORT_KEYS = ['basketball_nba','americanfootball_nfl','baseball_mlb','icehockey_nhl'];
 const SPORT_LABELS = { basketball_nba:'NBA', americanfootball_nfl:'NFL', baseball_mlb:'MLB', icehockey_nhl:'NHL' };
 
+// Only fetch odds when the message is actually about sports/betting
+const ODDS_WORDS = ["bet","wager","odds","spread","parlay","pick","tonight","today","game","match",
+  "nba","nfl","mlb","nhl","soccer","mma","boxing","line","over","under","prop","value","favorite",
+  "underdog","win","lose","score","vs","prediction","predict","analyze","analysis","should i"];
+function needsOdds(msg) {
+  const lower = (msg||"").toLowerCase();
+  return ODDS_WORDS.some(w => lower.includes(w));
+}
+
 async function fetchOddsContext() {
   try {
     const today = new Date().toISOString().split('T')[0];
@@ -132,7 +141,7 @@ function AskSALPage() {
     setMessages(prev => [...prev, newMsg]);
     setSending(true);
     try {
-      const oddsCtx = await fetchOddsContext();
+      const oddsCtx = needsOdds(text) ? await fetchOddsContext() : "";
       const today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
       const resp = await fetch('/api/sal', {
         method: 'POST',
