@@ -85,7 +85,7 @@ export default function TeamStats() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white"  # fixedcreen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 text-white">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
