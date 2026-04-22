@@ -170,7 +170,9 @@ function LiveOddsContent() {
     setError(null);
     
     try {
-      const response = await base44.functions.invoke('getLiveOdds', { sportKey });
+      const resp = await fetch(`/api/getLiveOdds?sport=${encodeURIComponent(sportKey)}`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const response = { data: await resp.json() };
 
       if (response.data.error) {
         throw new Error(response.data.error);
