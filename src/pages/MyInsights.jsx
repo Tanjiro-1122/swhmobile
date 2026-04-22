@@ -34,7 +34,13 @@ function MyInsightsContent() {
     setError(null);
     
     try {
-      const response = await base44.functions.invoke('generatePersonalizedInsights', {});
+      const resp = await fetch('/api/sal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Generate personalized sports betting insights based on recent trends. Cover NBA, NFL, MLB and NHL. Include 3 key insights, value bets of the day, and a tip for bankroll management. Be concise and actionable.' })
+          });
+          const salData = await resp.json();
+          const response = { data: { insights: salData.reply || salData.message || '', generated_at: new Date().toISOString() } };
       console.log('Insights response:', response.data);
       setInsights(response.data);
     } catch (err) {
