@@ -69,7 +69,7 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${RESEND_KEY}`,
       },
       body: JSON.stringify({
-        from: "Sports Wager Helper <noreply@sportswagerhelper.com>",
+        from: "Sports Wager Helper <onboarding@resend.dev>",
         to: [email],
         subject: "Your Sports Wager Helper verification code",
         html: `
