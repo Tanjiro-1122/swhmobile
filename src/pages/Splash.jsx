@@ -28,8 +28,8 @@ function AgeGate({ onConfirm }) {
         <div className="text-center">
           <h1 className="text-2xl font-black tracking-tight mb-2">Age Verification</h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Sports Wager Helper contains sports betting content. You must be{" "}
-            <span className="text-white font-bold">18 years or older</span> to use this app.
+            Sports Wager Helper provides AI-assisted sports analysis. You must be{" "}
+            <span className="text-white font-bold">18 years or older</span> to access this app.
           </p>
         </div>
 
@@ -44,15 +44,15 @@ function AgeGate({ onConfirm }) {
             {checked && <span className="text-black font-black text-xs">✓</span>}
           </div>
           <p className="text-sm text-gray-300 leading-snug">
-            I confirm that I am 18 years of age or older and legally permitted to access sports betting content in my jurisdiction.
+            I confirm that I am 18 years of age or older and understand this app provides sports analysis and information only — not financial or betting advice.
           </p>
         </button>
 
         {/* Responsible gambling */}
         <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 text-center">
-          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Responsible Gambling</p>
+          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Responsible Sports Wagering</p>
           <p className="text-gray-400 text-xs leading-relaxed">
-            Gambling should be for entertainment only. Never bet more than you can afford to lose.
+            Sports wagering should be for entertainment only. This app provides information — always wager responsibly and within your means.
           </p>
           <a
             href="tel:18005224700"
