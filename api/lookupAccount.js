@@ -50,10 +50,13 @@ export default async function handler(req, res) {
   try {
     const { appleUserId, email } = req.body || {};
 
+    // Fetch all users once — filter client-side (query params unreliable)
+    const allData = await b44Fetch(`/entities/User?limit=500`);
+    const allUsers = toRecords(allData);
+
     // ── Mode 1: look up by apple_user_id (mobile account refresh) ─────
     if (appleUserId) {
-      const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`);
-      const user = toRecords(data)[0] ?? null;
+      const user = allUsers.find(u => u.apple_user_id === appleUserId) ?? null;
       if (!user) return res.status(404).json({ success: false, error: "Account not found." });
       return res.status(200).json({ success: true, user: safeUser(user) });
     }
@@ -61,8 +64,7 @@ export default async function handler(req, res) {
     // ── Mode 2: look up by email (check if a web account exists before linking) ─
     if (email) {
       const trimmed = email.trim().toLowerCase();
-      const data = await b44Fetch(`/entities/User?email=${encodeURIComponent(trimmed)}&limit=5`);
-      const records = toRecords(data);
+      const records = allUsers.filter(u => (u.email || '').toLowerCase() === trimmed);
 
       if (!records.length) {
         return res.status(404).json({
