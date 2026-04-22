@@ -2,6 +2,28 @@
 // Vercel serverless function — S.A.L. (Sports Analysis & Logic) AI chat endpoint
 // Replaces the broken base44.agents approach with a direct OpenAI streaming call
 
+// api/sal.js — S.A.L. with live odds context
+const ODDS_KEY = process.env.THE_ODDS_API_KEY || process.env.ODDS_API_KEY || "";
+
+async function getLiveOdds() {
+  try {
+    const sports = ["basketball_nba","americanfootball_nfl","baseball_mlb","icehockey_nhl"];
+    const results = [];
+    for (const sport of sports.slice(0,2)) {
+      const res = await fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${ODDS_KEY}&regions=us&markets=h2h&oddsFormat=american&bookmakers=draftkings&dateFormat=iso`,
+        { signal: AbortSignal.timeout(4000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      data.slice(0,5).forEach(g => {
+        const dk = g.bookmakers?.[0]?.markets?.[0]?.outcomes || [];
+        results.push(`${sport.split("_")[1].toUpperCase()}: ${g.home_team} vs ${g.away_team} (${g.commence_time?.slice(0,10)}) — ${dk.map(o=>`${o.name} ${o.price>0?"+":""}${o.price}`).join(" | ")}`);
+      });
+    }
+    return results.join("
+") || "No live odds available.";
+  } catch { return "Odds unavailable."; }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -14,6 +36,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
+  const liveOdds = await getLiveOdds();
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey) {
     return res.status(500).json({ error: 'OpenAI API key not configured' });
@@ -32,7 +55,11 @@ Your personality:
 - When asked about betting/wagers, give thoughtful analysis but always include responsible gambling reminders
 - Keep responses concise but substantive — 2-4 paragraphs max unless a full breakdown is requested
 - Use markdown formatting: **bold** for key stats/names, bullet points for lists
-- If asked about live scores or today's games, note that your knowledge has a training cutoff but provide context on the teams/matchups
+- You have access to LIVE ODDS DATA below — use it when discussing today's games, spreads, or picks
+- Always encourage responsible gambling
+
+LIVE ODDS (today):
+${liveOdds}
 
 You help users:
 - Analyze matchups and predict outcomes
