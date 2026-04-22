@@ -90,7 +90,15 @@ const fetchData = async () => {
   setLoadingTeams(true);
 
   try {
-    const response = await base44.functions.invoke('fetchTopTen', { sport });
+    const resp = await fetch('/api/sal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `List the current top 10 players and top 5 teams for ${sport}. Format as JSON with two arrays: players (name, team, stat, value) and teams (name, record, ranking).` })
+          });
+          const salData = await resp.json();
+          let parsed = { players: [], teams: [] };
+          try { const m = (salData.reply||'').match(/\{.*\}/s); if(m) parsed = JSON.parse(m[0]); } catch {}
+          const response = { data: parsed };
 
     if (response.data?.players) {
       setPlayers(response.data.players);
