@@ -86,7 +86,7 @@ export default function PlayerStats() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-gray-950 text-white">
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
@@ -99,8 +99,8 @@ export default function PlayerStats() {
         {/* Back Button */}
         <div className="mb-4">
           <Link to={createPageUrl('Dashboard')}>
-            <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-200 -ml-2">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+            <Button variant="outline" className="min-h-[48px] px-5 py-3 text-base font-bold text-white border-gray-600 bg-gray-800 hover:bg-gray-700">
+              <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Dashboard
             </Button>
           </Link>
@@ -112,19 +112,19 @@ export default function PlayerStats() {
               <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-black text-gray-900">Player Stats & Predictions</h1>
-              <p className="text-gray-600">Analyze any player's performance and get AI-powered predictions</p>
+              <h1 className="text-4xl font-black text-white">Player Stats & Predictions</h1>
+              <p className="text-gray-400">Analyze any player's performance and get AI-powered predictions</p>
             </div>
           </div>
         </div>
 
-        <Card className="p-6 mb-8 border-2 border-purple-200 bg-white shadow-xl">
+        <Card className="p-6 mb-8 border border-purple-500/30 bg-gray-900 shadow-xl">
           <PlayerSearchBar onSearch={handleSearch} isSearching={isSearching} />
         </Card>
 
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-50 border-2 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 bg-red-900/30 border border-red-500/50">
+            <AlertDescription className="text-red-300">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -138,8 +138,8 @@ export default function PlayerStats() {
                   <Sparkles className="w-10 h-10 text-purple-500" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Player Data</h3>
-              <p className="text-gray-700">Fetching complete game-by-game stats from Basketball-Reference & StatMuse...</p>
+              <h3 className="text-xl font-bold text-white mb-2">Analyzing Player Data</h3>
+              <p className="text-gray-300">Fetching complete game-by-game stats from Basketball-Reference & StatMuse...</p>
               <p className="text-sm text-gray-500 mt-2">This may take 10-15 seconds for detailed data extraction</p>
             </div>
           </div>
