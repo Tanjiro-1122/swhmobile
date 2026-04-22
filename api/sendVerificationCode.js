@@ -1,5 +1,5 @@
 // api/sendVerificationCode.js
-// Sends a 6-digit code via Base44 emailLogin AND stores it on the web user record for verification.
+// Sends code via Base44 emailLogin. Verification happens in linkAccount.js via verify_code action.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     const email = webEmail.trim().toLowerCase();
 
-    // ── 1. Find the web account ───────────────────────────────────────
+    // ── 1. Verify the web account exists ─────────────────────────────
     const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=10`);
     const webRecords = toRecords(webData);
     const webUser = webRecords.find(u => u.id !== mobileUserId) || webRecords[0];
@@ -49,21 +49,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // ── 2. Generate a 6-digit code ────────────────────────────────────
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-    // ── 3. Store code on web user record ──────────────────────────────
+    // ── 2. Store mobile user ID on the web record so we can find it during verify ──
     await b44Fetch(`/entities/User/${webUser.id}`, {
       method: "PUT",
-      body: JSON.stringify({
-        link_verification_code: code,
-        link_verification_expires: expires,
-        link_verification_mobile_id: mobileUserId,
-      }),
+      body: JSON.stringify({ link_verification_mobile_id: mobileUserId }),
     });
 
-    // ── 4. Send email via Base44 emailLogin (send_code) ───────────────
+    // ── 3. Send code via Base44 emailLogin — Base44 manages the code internally ──
     const emailRes = await fetch(B44_FUNCTION_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
