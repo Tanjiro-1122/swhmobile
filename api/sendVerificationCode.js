@@ -1,4 +1,5 @@
-// api/sendVerificationCode.js — send via Base44 emailLogin, store mobileUserId
+// api/sendVerificationCode.js
+// Just finds the web account by email and sends the code. No mobile ID needed.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
@@ -22,26 +23,28 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { mobileUserId, webEmail } = req.body || {};
-    if (!mobileUserId || !webEmail) {
-      return res.status(400).json({ success: false, error: "mobileUserId and webEmail are required." });
+    const { webEmail, appleUserId } = req.body || {};
+    if (!webEmail) {
+      return res.status(400).json({ success: false, error: "webEmail is required." });
     }
     const email = webEmail.trim().toLowerCase();
 
-    // 1. Verify web account exists
-    const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=10`);
+    // 1. Make sure this email exists in the DB
+    const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=5`);
     const webUser = toRecords(webData)[0];
     if (!webUser) {
       return res.status(404).json({ success: false, error: "No account found with that email. Use the exact email from sportswagerhelper.com." });
     }
 
-    // 2. Store the mobileUserId on the web record so linkAccount can find it
-    await b44Fetch(`/entities/User/${webUser.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ link_verification_mobile_id: mobileUserId }),
-    });
+    // 2. Store appleUserId for the verify step (optional but helpful)
+    if (appleUserId) {
+      await b44Fetch(`/entities/User/${webUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ link_verification_mobile_id: appleUserId }),
+      }).catch(() => {});
+    }
 
-    // 3. Send via Base44 emailLogin (it manages the code internally)
+    // 3. Send the code via Base44 emailLogin
     const emailRes = await fetch(B44_FUNCTION_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,10 +52,14 @@ export default async function handler(req, res) {
     });
     const emailData = await emailRes.json().catch(() => ({}));
     if (!emailData.success) {
-      return res.status(500).json({ success: false, error: emailData.message || "Failed to send email." });
+      return res.status(500).json({ success: false, error: emailData.message || "Failed to send email. Please try again." });
     }
 
-    return res.status(200).json({ success: true, message: `Code sent to ${email}. Expires in 15 minutes.`, webUserId: webUser.id });
+    return res.status(200).json({
+      success: true,
+      message: `Code sent to ${email}. Check your inbox.`,
+      webUserId: webUser.id,
+    });
   } catch (err) {
     console.error("[sendVerificationCode]", err.message);
     return res.status(500).json({ success: false, error: "Server error. Please try again." });
