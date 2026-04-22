@@ -52,7 +52,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-blue-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white">
+      <Card className="border border-blue-500/30 shadow-xl bg-gray-900">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white relative p-4 sm:p-6">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -95,27 +95,27 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           {/* Current Record */}
           {team.current_record && (
             <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-blue-600" />
                 Current Record
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                   <div className="text-2xl font-black text-green-600">{team.current_record.wins}</div>
                   <div className="text-xs text-gray-600 font-semibold">Wins</div>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                   <div className="text-2xl font-black text-red-600">{team.current_record.losses}</div>
                   <div className="text-xs text-gray-600 font-semibold">Losses</div>
                 </div>
                 {team.current_record.draws !== undefined && team.current_record.draws > 0 && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                     <div className="text-2xl font-black text-gray-600">{team.current_record.draws}</div>
                     <div className="text-xs text-gray-600 font-semibold">Draws</div>
                   </div>
                 )}
                 {team.current_record.win_percentage !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 text-center">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                     <div className="text-2xl font-black text-blue-600">
                       {(team.current_record.win_percentage * 100).toFixed(1)}%
                     </div>
@@ -129,7 +129,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           {/* Season Averages */}
           {team.season_averages && Object.keys(team.season_averages).length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-600" />
                 Season Averages
               </h3>
@@ -167,20 +167,20 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           {/* Last 5 Games */}
           {team.last_five_games && team.last_five_games.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
                 Last {team.last_five_games.length} Games
               </h3>
               <div className="space-y-2">
                 {team.last_five_games.map((game, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                  <div key={idx} className="bg-gray-800 border border-gray-700 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Badge variant={getResultBadge(game.result)}>
                           {game.result}
                         </Badge>
                         <span className="text-sm text-gray-600">{formatDate(game.date)}</span>
-                        <span className="text-sm font-semibold text-gray-900">vs {game.opponent}</span>
+                        <span className="text-sm font-semibold text-white">vs {game.opponent}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="font-mono">
@@ -202,7 +202,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           {/* Next Game Prediction - ENHANCED */}
           {team.next_game && (
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-300">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-600" />
                 🎯 Next Game AI Projections
               </h3>
@@ -211,7 +211,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-gray-600">vs</div>
-                    <div className="text-xl font-bold text-gray-900">{team.next_game.opponent}</div>
+                    <div className="text-xl font-bold text-white">{team.next_game.opponent}</div>
                   </div>
                   <div className="text-right">
                     <Badge className="bg-orange-600 text-white mb-1">{team.next_game.date}</Badge>
@@ -222,7 +222,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
                 </div>
 
                 {/* Prediction Box */}
-                <div className="bg-white p-5 rounded-lg border-2 border-orange-300 shadow-md">
+                <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="text-4xl">{getOutcomeIcon(team.next_game.predicted_outcome)}</div>
                     <div>
@@ -349,7 +349,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
 
                   {/* Reasoning */}
                   {team.next_game.reasoning && (
-                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                       <div className="text-xs font-bold text-gray-500 mb-1">AI ANALYSIS:</div>
                       <p className="text-sm text-gray-700">{team.next_game.reasoning}</p>
                     </div>
@@ -362,7 +362,7 @@ export default function TeamStatsDisplay({ team, onDelete }) {
           {/* Key Players */}
           {team.key_players && team.key_players.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-600" />
                 Key Players
               </h3>
@@ -385,9 +385,9 @@ export default function TeamStatsDisplay({ team, onDelete }) {
               </h3>
               <div className="space-y-2">
                 {team.injuries.map((injury, idx) => (
-                  <div key={idx} className="bg-white p-3 rounded-lg border border-red-200">
+                  <div key={idx} className="bg-gray-800 p-3 rounded-lg border border-gray-700">
                     <div className="flex items-center justify-between">
-                      <div className="font-semibold text-gray-900">{injury.player_name}</div>
+                      <div className="font-semibold text-white">{injury.player_name}</div>
                       <Badge variant="destructive">{injury.status}</Badge>
                     </div>
                     <div className="text-sm text-gray-600 mt-1">{injury.injury}</div>
