@@ -18,7 +18,9 @@ const isAdminEmail = (email) => ADMIN_EMAILS.some(a => (email||"lower").toLowerC
 // ─── Tier config ─────────────────────────────────────────────────────────────
 const TIERS = [
   { value: "free",            label: "Free",            color: "text-gray-400",   bg: "bg-gray-800" },
+  { value: "pro",             label: "Pro",             color: "text-purple-400", bg: "bg-purple-900/40" },
   { value: "premium_monthly", label: "Premium Monthly", color: "text-purple-400", bg: "bg-purple-900/40" },
+  { value: "lifetime_vip",    label: "Lifetime VIP",    color: "text-yellow-400", bg: "bg-yellow-900/40" },
   { value: "vip_annual",      label: "VIP Annual",      color: "text-yellow-400", bg: "bg-yellow-900/40" },
   { value: "legacy",          label: "Legacy",          color: "text-amber-400",  bg: "bg-amber-900/40" },
   { value: "influencer",      label: "Influencer",      color: "text-pink-400",   bg: "bg-pink-900/40" },
