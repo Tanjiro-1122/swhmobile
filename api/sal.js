@@ -1,7 +1,3 @@
-// api/sal.js
-// Vercel serverless function — S.A.L. (Sports Analysis & Logic) AI chat endpoint
-// Replaces the broken base44.agents approach with a direct OpenAI streaming call
-
 // api/sal.js — S.A.L. with live odds context
 const ODDS_KEY = process.env.THE_ODDS_API_KEY || process.env.ODDS_API_KEY || "";
 
@@ -19,8 +15,7 @@ async function getLiveOdds() {
         results.push(`${sport.split("_")[1].toUpperCase()}: ${g.home_team} vs ${g.away_team} (${g.commence_time?.slice(0,10)}) — ${dk.map(o=>`${o.name} ${o.price>0?"+":""}${o.price}`).join(" | ")}`);
       });
     }
-    return results.join("
-") || "No live odds available.";
+    return results.join("\n") || "No live odds available.";
   } catch { return "Odds unavailable."; }
 }
 
@@ -119,3 +114,4 @@ Always be helpful, engaging, and accurate. If you're unsure about very recent ev
     return res.status(500).json({ error: err.message || 'Failed to get AI response' });
   }
 }
+
