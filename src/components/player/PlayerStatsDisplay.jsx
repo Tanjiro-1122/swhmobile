@@ -344,7 +344,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-2 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white">
+      <Card className="border border-purple-500/30 shadow-xl bg-gray-900 bg-white">
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white relative p-4 sm:p-6">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -436,61 +436,61 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {/* Basketball Stats */}
                 {player.season_averages.points_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-purple-500/20">
                     <div className="text-2xl font-black text-purple-600">{player.season_averages.points_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">PPG</div>
                   </div>
                 )}
                 {player.season_averages.rebounds_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-blue-500/20">
                     <div className="text-2xl font-black text-blue-600">{player.season_averages.rebounds_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">RPG</div>
                   </div>
                 )}
                 {player.season_averages.assists_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-green-500/20">
                     <div className="text-2xl font-black text-green-600">{player.season_averages.assists_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">APG</div>
                   </div>
                 )}
                 {player.season_averages.steals_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-yellow-500/20">
                     <div className="text-2xl font-black text-yellow-600">{player.season_averages.steals_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">SPG</div>
                   </div>
                 )}
                 {player.season_averages.blocks_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-red-500/20">
                     <div className="text-2xl font-black text-red-600">{player.season_averages.blocks_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">BPG</div>
                   </div>
                 )}
                 {player.season_averages.three_pointers_made_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-orange-500/20">
                     <div className="text-2xl font-black text-orange-600">{player.season_averages.three_pointers_made_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">3PM/G</div>
                   </div>
                 )}
                 {player.season_averages.field_goal_percentage !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-gray-600/30">
                     <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.field_goal_percentage)}%</div>
                     <div className="text-xs text-gray-600 font-semibold">FG%</div>
                   </div>
                 )}
                 {player.season_averages.three_point_percentage !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-gray-600/30">
                     <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.three_point_percentage)}%</div>
                     <div className="text-xs text-gray-600 font-semibold">3P%</div>
                   </div>
                 )}
                 {player.season_averages.free_throw_percentage !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-gray-300 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-gray-600/30">
                     <div className="text-2xl font-black text-gray-700">{formatPercentage(player.season_averages.free_throw_percentage)}%</div>
                     <div className="text-xs text-gray-600 font-semibold">FT%</div>
                   </div>
                 )}
                 {player.season_averages.minutes_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-indigo-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-indigo-500/20">
                     <div className="text-2xl font-black text-indigo-600">{player.season_averages.minutes_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">MPG</div>
                   </div>
@@ -498,7 +498,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                 
                 {/* Football Stats - Calculate per game if totals were returned */}
                 {player.season_averages.passing_yards_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-blue-500/20">
                     <div className="text-2xl font-black text-blue-600">
                       {/* If value > 400, it's likely a season total - divide by games played (approx 16) */}
                       {player.season_averages.passing_yards_per_game > 400 
@@ -509,7 +509,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                   </div>
                 )}
                 {player.season_averages.rushing_yards_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-orange-500/20">
                     <div className="text-2xl font-black text-orange-600">
                       {/* If value > 150, it's likely a season total */}
                       {player.season_averages.rushing_yards_per_game > 150 
@@ -520,7 +520,7 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                   </div>
                 )}
                 {player.season_averages.receptions_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-purple-500/20">
                     <div className="text-2xl font-black text-purple-600">
                       {/* If value > 20, it's likely a season total */}
                       {player.season_averages.receptions_per_game > 20 
@@ -533,31 +533,31 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                 
                 {/* Baseball Stats */}
                 {player.season_averages.batting_average !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-blue-500/20">
                     <div className="text-2xl font-black text-blue-600">{player.season_averages.batting_average.toFixed(3)}</div>
                     <div className="text-xs text-gray-600 font-semibold">AVG</div>
                   </div>
                 )}
                 {player.season_averages.home_runs !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-orange-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-orange-500/20">
                     <div className="text-2xl font-black text-orange-600">{player.season_averages.home_runs}</div>
                     <div className="text-xs text-gray-600 font-semibold">HR</div>
                   </div>
                 )}
                 {player.season_averages.rbis !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-green-500/20">
                     <div className="text-2xl font-black text-green-600">{player.season_averages.rbis}</div>
                     <div className="text-xs text-gray-600 font-semibold">RBI</div>
                   </div>
                 )}
                 {player.season_averages.era !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-red-500/20">
                     <div className="text-2xl font-black text-red-600">{player.season_averages.era}</div>
                     <div className="text-xs text-gray-600 font-semibold">ERA</div>
                   </div>
                 )}
                 {player.season_averages.strikeouts !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-purple-500/20">
                     <div className="text-2xl font-black text-purple-600">{player.season_averages.strikeouts}</div>
                     <div className="text-xs text-gray-600 font-semibold">K</div>
                   </div>
@@ -565,25 +565,25 @@ export default function PlayerStatsDisplay({ player, onDelete }) {
                 
                 {/* Soccer Stats */}
                 {player.season_averages.goals_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-green-500/20">
                     <div className="text-2xl font-black text-green-600">{player.season_averages.goals_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">Goals/G</div>
                   </div>
                 )}
                 {player.season_averages.shots_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-blue-500/20">
                     <div className="text-2xl font-black text-blue-600">{player.season_averages.shots_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">Shots/G</div>
                   </div>
                 )}
                 {player.season_averages.passes_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-yellow-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-yellow-500/20">
                     <div className="text-2xl font-black text-yellow-600">{player.season_averages.passes_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">Passes/G</div>
                   </div>
                 )}
                 {player.season_averages.tackles_per_game !== undefined && (
-                  <div className="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                  <div className="bg-gray-800 p-3 rounded-lg border border-red-500/20">
                     <div className="text-2xl font-black text-red-600">{player.season_averages.tackles_per_game}</div>
                     <div className="text-xs text-gray-600 font-semibold">Tackles/G</div>
                   </div>
