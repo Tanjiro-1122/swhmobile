@@ -1,12 +1,7 @@
-// api/adminFix.js
-// ONE-TIME USE: Sets Javier's account to admin role
-// Delete this file after use
-
+// api/adminFix.js - v2
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
-
-const JAVIER_APPLE_EMAIL = "apple_001996.3aefceb61d1249ca86530398890e539f.0021@privaterelay.appleid.com";
 
 function b44Headers() {
   return { "Content-Type": "application/json", "api_key": B44_KEY };
@@ -22,28 +17,46 @@ async function b44Fetch(path, opts = {}) {
 }
 
 export default async function handler(req, res) {
-  // Secret guard
   if (req.query.secret !== "swh-admin-fix-2026") {
     return res.status(403).json({ error: "Forbidden" });
   }
 
-  // 1. Find all records with Javier's Apple email
-  const listRes = await b44Fetch(`/entities/User?email=${encodeURIComponent(JAVIER_APPLE_EMAIL)}&limit=50`);
-  if (!listRes.ok) return res.status(500).json({ error: "List failed", detail: listRes.body });
+  // Step 1: List ALL users, no filter
+  const listRes = await b44Fetch(`/entities/User?limit=100`);
+  if (!listRes.ok) return res.status(500).json({ error: "List failed", detail: listRes.body, key_length: B44_KEY.length });
 
   let records;
-  try { records = JSON.parse(listRes.body); } catch { return res.status(500).json({ error: "Parse failed" }); }
-  if (!Array.isArray(records)) records = records?.records ?? [];
+  try { records = JSON.parse(listRes.body); } catch { return res.status(500).json({ error: "Parse failed", raw: listRes.body.slice(0,200) }); }
+  if (!Array.isArray(records)) records = records?.records ?? records?.items ?? [];
+
+  // Step 2: Find Javier's record (apple relay email contains "001996")
+  const javierRecords = records.filter(u => 
+    (u.email || '').includes('001996') || 
+    (u.email || '').includes('huertasfam')
+  );
 
   // Sort oldest first
-  records.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+  javierRecords.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
-  const keep = records[0]; // oldest = real account
-  const dupes = records.slice(1);
+  const keep = javierRecords[0];
+  const dupes = javierRecords.slice(1);
+  
+  // Also find blanks
+  const blanks = records.filter(u => !u.email || u.email.trim() === '');
 
-  const results = { kept: null, deleted: [], upgraded: null, errors: [] };
+  const results = { 
+    total_users: records.length,
+    javier_records_found: javierRecords.length,
+    kept_id: keep?.id || null,
+    kept_email: keep?.email || null,
+    dupes_count: dupes.length,
+    blanks_count: blanks.length,
+    upgraded: null, 
+    deleted: [], 
+    errors: [] 
+  };
 
-  // 2. Upgrade the oldest record to admin
+  // Step 3: Upgrade the keeper to admin
   if (keep) {
     const upRes = await b44Fetch(`/entities/User/${keep.id}`, {
       method: "PUT",
@@ -58,27 +71,14 @@ export default async function handler(req, res) {
         subscription_type: "pro",
       }),
     });
-    results.kept = keep.id;
-    results.upgraded = upRes.ok ? "success" : upRes.body;
+    results.upgraded = upRes.ok ? "success" : `FAILED: ${upRes.body.slice(0,200)}`;
   }
 
-  // 3. Delete dupes
-  for (const dupe of dupes) {
+  // Step 4: Delete dupes
+  for (const dupe of [...dupes, ...blanks]) {
     const delRes = await b44Fetch(`/entities/User/${dupe.id}`, { method: "DELETE" });
     if (delRes.ok) results.deleted.push(dupe.id);
-    else results.errors.push({ id: dupe.id, error: delRes.body });
-  }
-
-  // 4. Also delete blank records
-  const blankRes = await b44Fetch(`/entities/User?email=&limit=50`);
-  if (blankRes.ok) {
-    let blanks;
-    try { blanks = JSON.parse(blankRes.body); } catch { blanks = []; }
-    if (!Array.isArray(blanks)) blanks = blanks?.records ?? [];
-    for (const blank of blanks) {
-      const delRes = await b44Fetch(`/entities/User/${blank.id}`, { method: "DELETE" });
-      if (delRes.ok) results.deleted.push(blank.id + " (blank)");
-    }
+    else results.errors.push({ id: dupe.id, err: delRes.body.slice(0,100) });
   }
 
   return res.status(200).json({ success: true, results });
