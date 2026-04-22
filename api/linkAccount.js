@@ -1,8 +1,9 @@
 // api/linkAccount.js
-// Verifies stored code on web user record, then merges web + mobile accounts.
+// Verifies code via Base44 emailLogin verify_code, then merges web + mobile accounts.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
+const B44_FUNCTION_URL = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
 
 function b44Headers() {
@@ -37,7 +38,22 @@ export default async function handler(req, res) {
 
     const email = webEmail.trim().toLowerCase();
 
-    // ── 1. Find the web account by email ─────────────────────────────
+    // ── 1. Verify code via Base44 emailLogin ──────────────────────────
+    const verifyRes = await fetch(B44_FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "verify_code", email, code: String(code).trim() }),
+    });
+    const verifyData = await verifyRes.json().catch(() => ({}));
+
+    if (!verifyData.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Incorrect or expired code. Please try again.",
+      });
+    }
+
+    // ── 2. Find the web account by email ─────────────────────────────
     const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=10`);
     const webRecords = toRecords(webData);
     const webUser = webRecords.find(u => u.id !== mobileUserId) || webRecords[0];
@@ -46,21 +62,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ success: false, error: "Web account not found." });
     }
 
-    // ── 2. Validate the stored code ───────────────────────────────────
-    const storedCode = String(webUser.link_verification_code || "").trim();
-    const expiresAt  = webUser.link_verification_expires;
-
-    if (!storedCode) {
-      return res.status(400).json({ success: false, error: "No verification code found. Please request a new one." });
-    }
-    if (storedCode !== String(code).trim()) {
-      return res.status(400).json({ success: false, error: "Incorrect code. Double-check and try again." });
-    }
-    if (expiresAt && new Date(expiresAt) < new Date()) {
-      return res.status(400).json({ success: false, error: "This code has expired. Please request a new one." });
-    }
-
-    // ── 3. Find mobile account — by DB id first, fallback to apple_user_id ──
+    // ── 3. Find mobile account — by DB id, fallback to apple_user_id ─
     let mobileUser = null;
     try {
       const byId = await b44Fetch(`/entities/User/${mobileUserId}`);
@@ -69,6 +71,13 @@ export default async function handler(req, res) {
     if (!mobileUser) {
       const mobileData = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(mobileUserId)}&limit=1`);
       mobileUser = toRecords(mobileData)[0] ?? null;
+    }
+    // Last resort: use link_verification_mobile_id stored during send step
+    if (!mobileUser && webUser.link_verification_mobile_id) {
+      try {
+        const byStoredId = await b44Fetch(`/entities/User/${webUser.link_verification_mobile_id}`);
+        if (byStoredId?.id) mobileUser = byStoredId;
+      } catch {}
     }
 
     if (!mobileUser) {
@@ -116,13 +125,10 @@ export default async function handler(req, res) {
       body: JSON.stringify(mobileUpdates),
     });
 
-    // Clear verification fields + link back on web record
     await b44Fetch(`/entities/User/${webUser.id}`, {
       method: "PUT",
       body: JSON.stringify({
-        linked_mobile_account_id:   mobileUser.id,
-        link_verification_code:     null,
-        link_verification_expires:  null,
+        linked_mobile_account_id:    mobileUser.id,
         link_verification_mobile_id: null,
       }),
     }).catch(e => console.warn("[linkAccount] web cleanup failed:", e.message));
