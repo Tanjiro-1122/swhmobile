@@ -17,7 +17,8 @@ export default function LinkAccount() {
   const [success, setSuccess] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  const mobileUserId = localStorage.getItem("swh_apple_user_id") || "";
+  const _swhUser = JSON.parse(localStorage.getItem("swh_user") || "{}");
+  const mobileUserId = _swhUser.id || localStorage.getItem("swh_apple_user_id") || "";
 
   // Step 1: Send verification code
   const handleSendCode = async () => {
