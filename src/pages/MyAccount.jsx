@@ -300,9 +300,9 @@ function MyAccountContent() {
 
         {/* Responsible Gambling Footer */}
         <div className="mt-8 mb-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-4 text-center">
-          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Gamble Responsibly</p>
+          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Wager Responsibly</p>
           <p className="text-gray-500 text-xs leading-relaxed mb-2">
-            Sports Wager Helper is for informational purposes only. Please gamble responsibly and within your means.
+            Sports Wager Helper provides AI-assisted sports analysis for informational purposes only. It is not a gambling app. Always wager responsibly and within your means.
           </p>
           <a
             href="tel:18005224700"
