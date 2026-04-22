@@ -66,7 +66,7 @@ export default function LinkAccount() {
       const resp = await fetch("/api/linkAccount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileUserId, webUserId, code: code.trim() }),
+        body: JSON.stringify({ mobileUserId, webEmail: email.trim().toLowerCase(), code: code.trim() }),
       });
       const data = await resp.json();
       if (data.success) {
