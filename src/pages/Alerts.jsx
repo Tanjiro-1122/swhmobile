@@ -13,8 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 
 function AlertsContent() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newAlert, setNewAlert] = useState({
     alert_type: "odds_change",
@@ -96,6 +98,17 @@ function AlertsContent() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
         <Card className="max-w-md">
           <CardContent className="p-12 text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-indigo-600" />
