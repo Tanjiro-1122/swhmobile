@@ -40,7 +40,7 @@ async function findUser(appUserId, email) {
   // Try apple_user_id first
   if (appUserId) {
     try {
-      const d = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(appUserId)}&limit=1`);
+      const allD = await b44Fetch(`/entities/User?limit=500`); const allUsers = toRecords(allD);
       const u = toRecords(d)[0];
       if (u) return u;
     } catch {}
@@ -48,7 +48,7 @@ async function findUser(appUserId, email) {
   // Try by email
   if (email) {
     try {
-      const d = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=1`);
+      // email lookup via allUsers below
       const u = toRecords(d)[0];
       if (u) return u;
     } catch {}
