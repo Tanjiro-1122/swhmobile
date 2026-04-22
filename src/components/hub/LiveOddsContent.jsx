@@ -30,7 +30,8 @@ export default function LiveOddsContent() {
   const { data: apiKeyData, isLoading: isLoadingKey, error: keyError } = useQuery({
     queryKey: ['oddsApiKey'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getOddsApiKey');
+      // API key not needed client-side — odds fetched via /api/getLiveOdds
+            const response = { data: { apiKey: null } };
       return response.data;
     },
     enabled: hasAccess,
