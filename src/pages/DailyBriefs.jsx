@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, Newspaper, Star, TrendingUp, Cloudy, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { detectPlatform } from '@/components/utils/platform';
 
 
 const BriefSection = ({ title, icon, children }) => (
@@ -55,25 +54,10 @@ const PickCard = ({ pick }) => {
 
 
 export default function DailyBriefsPage() {
-  const { isWeb } = detectPlatform();
-
   const { data: briefs, isLoading, error } = useQuery({
     queryKey: ["bettingBriefs"],
-    queryFn: () => base44.entities.BettingBrief.list("-brief_date", 10), // Get latest 10
-    enabled: isWeb, // Only fetch data on the web
+    queryFn: () => base44.entities.BettingBrief.list("-brief_date", 10),
   });
-
-  if (!isWeb) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-100 text-center p-8">
-        <Newspaper className="w-16 h-16 text-slate-400 mb-4" />
-        <h1 className="text-2xl font-bold text-slate-800">Feature Not Available</h1>
-        <p className="text-slate-600 mt-2">
-          Daily Briefs are exclusively available on our website for a more detailed reading experience.
-        </p>
-      </div>
-    );
-  }
 
   const brief = briefs?.[0]; // Show the most recent brief
 
@@ -87,8 +71,8 @@ export default function DailyBriefsPage() {
           </Button>
         </Link>
         <header className="mb-8">
-          <h1 className="text-4xl font-black text-slate-900">Daily Betting Briefs</h1>
-          <p className="text-lg text-slate-600">Your AI-powered morning digest of the betting landscape.</p>
+          <h1 className="text-4xl font-black text-slate-900">Daily Sports Briefs</h1>
+          <p className="text-lg text-slate-600">Your AI-powered morning digest of today's sports landscape.</p>
         </header>
 
         {isLoading && (
