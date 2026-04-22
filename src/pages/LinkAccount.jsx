@@ -250,7 +250,7 @@ export default function LinkAccount() {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-gray-300">6-digit verification code</label>
               <input
-                type="number"
+                type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={6}
