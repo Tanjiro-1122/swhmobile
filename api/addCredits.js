@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     // Find user by apple ID
-    const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`);
+    const data = await b44Fetch(`/entities/User?limit=500`);
     const records = toRecords(data);
     const user = records[0] || null;
 
