@@ -34,7 +34,13 @@ function getDisplayName(user) {
 }
 function isAdmin(user) {
   if (!user) return false;
-  return ADMIN_EMAILS.some(a => (user.email || "").toLowerCase().includes(a.toLowerCase()));
+  const email = (user.email || "").toLowerCase();
+  const userId = (user.apple_user_id || user.user_id || user.id || "").toLowerCase();
+  const name = (user.full_name || user.name || user.displayName || "").toLowerCase();
+  return ADMIN_EMAILS.some(a => {
+    const al = a.toLowerCase();
+    return email.includes(al) || userId.includes(al) || name.includes(al);
+  });
 }
 
 // ─── Sidebar nav items ──────────────────────────────────────────────────────
@@ -95,7 +101,7 @@ const COLOR_MAP = {
 function Sidebar({ activePage, navigate, user, onLogout, credits, isPaid }) {
   const displayName = getDisplayName(user);
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-gray-900 border-r border-gray-800 fixed left-0 top-0 bottom-0 z-30">
+    <aside className="flex flex-col w-full h-full bg-gray-900 border-r border-gray-800">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-800">
         <div className="relative">
@@ -483,9 +489,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">
-      {/* Sidebar (desktop) */}
-      <Sidebar activePage="Dashboard" navigate={navigate} user={currentUser}
-        onLogout={() => setShowLogoutConfirm(true)} credits={credits} isPaid={isPaid} />
+      {/* Sidebar (desktop only) */}
+      <div className="hidden lg:flex flex-col w-64 min-h-screen bg-gray-900 border-r border-gray-800 fixed left-0 top-0 bottom-0 z-30">
+        <Sidebar activePage="Dashboard" navigate={navigate} user={currentUser}
+          onLogout={() => setShowLogoutConfirm(true)} credits={credits} isPaid={isPaid} />
+      </div>
 
       {/* Mobile nav overlay */}
       <AnimatePresence>
@@ -530,11 +538,18 @@ export default function Dashboard() {
             <img src={SWH_LOGO} alt="" className="w-7 h-7 rounded-lg" />
             <span className="font-black text-white text-sm">SWH</span>
           </div>
-          <button onClick={() => navigate(createPageUrl("Pricing"))}
-            className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2">
-            <Zap className="w-3.5 h-3.5 text-lime-400" />
-            <span className="text-xs font-black text-white">{isPaid ? "∞" : credits}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(createPageUrl("Pricing"))}
+              className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2">
+              <Zap className="w-3.5 h-3.5 text-lime-400" />
+              <span className="text-xs font-black text-white">{isPaid ? "∞" : credits}</span>
+            </button>
+            <button onClick={() => setShowLogoutConfirm(true)}
+              className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center border border-gray-700"
+              title="Sign Out">
+              <LogOut className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
         </div>
 
         <div className="px-4 lg:px-8 py-6 space-y-6 max-w-6xl mx-auto">
