@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Heart, Trophy, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { User, Heart, Trophy, CheckCircle, Loader2, ArrowLeft, Trash2, Phone, AlertTriangle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,15 +12,128 @@ import PreferencesContent from "@/components/hub/PreferencesContent";
 import SavedResultsContent from "@/components/hub/SavedResultsContent";
 
 
+function DeleteAccountSection() {
+  const navigate = useNavigate();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const handleDelete = async () => {
+    if (!checked) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const appleUserId = localStorage.getItem("swh_apple_user_id") || "";
+      const resp = await fetch("/api/deleteAccount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appleUserId }),
+      });
+      const data = await resp.json();
+      if (data?.success) {
+        // Clear all local data
+        ["swh_user","swh_apple_user_id","swh_user_id","swh_is_premium",
+         "swh_plan","swh_email","swh_search_credits","swh_full_name"].forEach(k => localStorage.removeItem(k));
+        sessionStorage.clear();
+        setDeleted(true);
+        setTimeout(() => navigate(createPageUrl("Splash"), { replace: true }), 3000);
+      } else {
+        setDeleteError(data?.error || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      setDeleteError("Network error. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (deleted) {
+    return (
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 text-center">
+        <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3" />
+        <p className="text-white font-bold">Account deleted.</p>
+        <p className="text-gray-400 text-sm mt-1">All your data has been removed. Redirecting...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-900 border border-red-900/40 rounded-2xl p-5 mt-6">
+      <div className="flex items-center gap-2 mb-3">
+        <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+        <h3 className="text-red-400 font-bold text-sm">Danger Zone</h3>
+      </div>
+
+      {!showConfirm ? (
+        <>
+          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+            Permanently delete your account and all associated data. This cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-700/60 text-red-400 text-sm font-semibold hover:bg-red-500/10 active:scale-95 transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete My Account
+          </button>
+        </>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <p className="text-gray-300 text-sm leading-relaxed">
+            This will permanently delete your account, all saved analyses, credit history, and personal data. <strong className="text-red-400">This cannot be undone.</strong>
+          </p>
+
+          <button
+            onClick={() => setChecked(!checked)}
+            className="flex items-start gap-3 bg-gray-800 border border-gray-700 rounded-xl p-3 active:scale-95 transition-transform text-left"
+          >
+            <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+              checked ? "bg-red-500 border-red-500" : "border-gray-600"
+            }`}>
+              {checked && <span className="text-white font-black text-xs">✓</span>}
+            </div>
+            <p className="text-sm text-gray-300 leading-snug">
+              I understand this is permanent and cannot be undone. Delete my account and all my data.
+            </p>
+          </button>
+
+          {deleteError && (
+            <p className="text-red-400 text-sm">{deleteError}</p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setShowConfirm(false); setChecked(false); setDeleteError(""); }}
+              className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 text-sm font-semibold active:scale-95 transition-transform"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={!checked || deleting}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                checked && !deleting ? "bg-red-600 text-white" : "bg-gray-800 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              {deleting ? "Deleting..." : "Confirm Delete"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function MyAccountContent() {
   const [activeTab, setActiveTab] = useState("profile");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activatingIAP, setActivatingIAP] = useState(false);
   const [iapError, setIapError] = useState("");
 
-  // ✅ FIXED: no longer uses base44.functions.invoke (broken empty functions)
-  // With the RevenueCat webhook in place, credits are added server-side automatically.
-  // This function now just does a lightweight DB refresh to pull the latest credits into localStorage.
   const activatePendingIAP = useCallback(async () => {
     const productId = localStorage.getItem('pending_iap_product');
     if (!productId) return;
@@ -32,7 +145,6 @@ function MyAccountContent() {
       const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
 
       if (appleUserId) {
-        // Pull latest credits from DB via lookupAccount
         const resp = await fetch('/api/lookupAccount', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -41,7 +153,6 @@ function MyAccountContent() {
         const data = await resp.json();
 
         if (data?.success && data?.user) {
-          // Sync localStorage with what's actually in the DB
           const dbCredits = data.user.search_credits ?? data.user.credits ?? 0;
           localStorage.setItem('swh_search_credits', String(dbCredits));
           try {
@@ -57,16 +168,12 @@ function MyAccountContent() {
           } catch {}
           setPaymentSuccess(true);
         } else {
-          // DB didn't have us yet — webhook may still be in-flight, show success anyway
-          // (RevenueCat webhook will update within seconds)
           setPaymentSuccess(true);
         }
       } else {
-        // Not signed in — credits are in localStorage, webhook will catch up when they sign in
         setPaymentSuccess(true);
       }
 
-      // Clean up pending markers
       localStorage.removeItem('pending_iap_receipt');
       localStorage.removeItem('pending_iap_product');
       localStorage.removeItem('pending_iap_platform');
@@ -77,7 +184,6 @@ function MyAccountContent() {
 
     } catch (err) {
       console.error('[activatePendingIAP] error:', err.message);
-      // Don't show an error — purchase is real, webhook will handle it
       setPaymentSuccess(true);
     } finally {
       setActivatingIAP(false);
@@ -182,6 +288,7 @@ function MyAccountContent() {
 
           <TabsContent value="profile">
             <ProfileContent />
+            <DeleteAccountSection />
           </TabsContent>
           <TabsContent value="preferences">
             <PreferencesContent />
@@ -190,6 +297,21 @@ function MyAccountContent() {
             <SavedResultsContent />
           </TabsContent>
         </Tabs>
+
+        {/* Responsible Gambling Footer */}
+        <div className="mt-8 mb-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-4 text-center">
+          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Gamble Responsibly</p>
+          <p className="text-gray-500 text-xs leading-relaxed mb-2">
+            Sports Wager Helper is for informational purposes only. Please gamble responsibly and within your means.
+          </p>
+          <a
+            href="tel:18005224700"
+            className="inline-flex items-center gap-1.5 text-yellow-400 font-bold text-xs active:opacity-70"
+          >
+            <Phone className="w-3 h-3" />
+            Problem Gambling Helpline: 1-800-522-4700 (Free & Confidential)
+          </a>
+        </div>
       </div>
     </div>
   );
