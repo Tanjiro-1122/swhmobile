@@ -33,20 +33,26 @@ function toRecords(data) {
   return Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
 }
 
+// Fetch all users and find client-side (Base44 filter params are unreliable)
+async function getAllUsers() {
+  try {
+    const data = await b44Fetch(`/entities/User?limit=500`);
+    return toRecords(data);
+  } catch { return []; }
+}
+
 async function findUserByAppleId(appleUserId) {
   try {
-    const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`);
-    const records = toRecords(data);
-    return records.length > 0 ? records[0] : null;
+    const all = await getAllUsers();
+    return all.find(u => u.apple_user_id === appleUserId) || null;
   } catch { return null; }
 }
 
 async function findUserByEmail(email) {
   if (!email) return null;
   try {
-    const data = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=1`);
-    const records = toRecords(data);
-    return records.length > 0 ? records[0] : null;
+    const all = await getAllUsers();
+    return all.find(u => u.email && u.email.toLowerCase() === email.toLowerCase()) || null;
   } catch { return null; }
 }
 
@@ -125,9 +131,9 @@ export default async function handler(req, res) {
     // ── Restore sync: called after RevenueCat restore finds active subscription
     if (action === 'restoreSync' && directAppleUserId) {
       try {
-        const data = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(directAppleUserId)}&limit=1`);
-        const records = toRecords(data);
-        const user = records[0];
+        const allUsers = await getAllUsers();
+        const user = allUsers.find(u => u.apple_user_id === directAppleUserId) || null;
+        const records = user ? [user] : [];
         if (user) {
           await b44Fetch(`/entities/User/${user.id}`, {
             method: 'PUT',
