@@ -69,8 +69,16 @@ export default async function handler(req, res) {
     }
 
     // ── 3. Fetch the mobile account ───────────────────────────────────
-    const mobileData = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(mobileUserId)}&limit=1`);
-    const mobileUser = toRecords(mobileData)[0] ?? null;
+    // Try direct ID lookup first (most reliable), fallback to apple_user_id query
+    let mobileUser = null;
+    try {
+      const byId = await b44Fetch(`/entities/User/${mobileUserId}`);
+      if (byId?.id) mobileUser = byId;
+    } catch {}
+    if (!mobileUser) {
+      const mobileData = await b44Fetch(`/entities/User?apple_user_id=${encodeURIComponent(mobileUserId)}&limit=1`);
+      mobileUser = toRecords(mobileData)[0] ?? null;
+    }
 
     if (!mobileUser) {
       return res.status(404).json({ success: false, error: "Mobile account not found. Try signing out and back in first." });
