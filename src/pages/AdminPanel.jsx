@@ -109,7 +109,7 @@ const UserRow = ({ user, onUpdateTier, onGrantCredits, onBan, updating }) => {
                 </div>
                 <div className="bg-gray-800 rounded-xl p-3">
                   <p className="text-gray-500">Search Credits</p>
-                  <p className="text-lime-400 font-black mt-0.5">{user.search_credits ?? 5}</p>
+                  <p className="text-lime-400 font-black mt-0.5">{user.credits ?? user.search_credits ?? 0}</p>
                 </div>
                 <div className="bg-gray-800 rounded-xl p-3">
                   <p className="text-gray-500">Role</p>
@@ -275,7 +275,7 @@ export default function AdminPanel() {
   const mobileUsers = allUsers.filter(u => u.apple_user_id && u.apple_user_id.startsWith("apple_"));
   const webOnlyUsers = allUsers.filter(u => !u.apple_user_id || !u.apple_user_id.startsWith("apple_"));
   const linkedUsers = allUsers.filter(u => u.apple_user_id && u.linked_web_account_id);
-  const totalCredits = allUsers.reduce((a, u) => a + (u.search_credits || u.credits || 0), 0);
+  const totalCredits = allUsers.reduce((a, u) => a + (u.credits || u.search_credits || 0), 0);
   const avgCredits = allUsers.length ? (totalCredits / allUsers.length).toFixed(1) : 0;
 
   // ── Mutations ───────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export default function AdminPanel() {
   const grantCredits = async (userId, amount, current) => {
     setUpdatingUser(userId);
     try {
-      await base44.entities.User.update(userId, { search_credits: (current || 0) + amount });
+      await base44.entities.User.update(userId, { credits: (current || 0) + amount });
       await refetchUsers();
       showToast(`+${amount} credits granted`);
     } catch {
@@ -350,11 +350,11 @@ export default function AdminPanel() {
   // ── Stats ───────────────────────────────────────────────────────────────────
   const total = allUsers.length;
   const free = allUsers.filter(u => !u.subscription_type || u.subscription_type === "free").length;
-  const premium = allUsers.filter(u => u.subscription_type === "premium_monthly").length;
-  const vip = allUsers.filter(u => u.subscription_type === "vip_annual").length;
+  const premium = allUsers.filter(u => u.subscription_type === "pro" || u.subscription_type === "premium_monthly").length;
+  const vip = allUsers.filter(u => u.subscription_type === "lifetime_vip" || u.subscription_type === "vip_annual").length;
   const legacy = allUsers.filter(u => u.subscription_type === "legacy").length;
   const influencer = allUsers.filter(u => u.subscription_type === "influencer").length;
-  const paid = premium + vip + legacy;
+  const paid = premium + vip + legacy + influencer;
   const mrr = (premium * 19.99) + (vip * 149.99 / 12) + (legacy * 0);
   const verifiedPurchases = purchases.filter(p => p.status === "verified").length;
   const failedPurchases = purchases.filter(p => p.status === "failed").length;
@@ -689,7 +689,7 @@ export default function AdminPanel() {
                     </div>
                     <div className="text-right">
                       <p className={`text-xs font-black ${tierColor(u.subscription_type)}`}>{tierLabel(u.subscription_type)}</p>
-                      <p className="text-[10px] text-gray-500">{u.search_credits ?? u.credits ?? 0} credits</p>
+                      <p className="text-[10px] text-gray-500">{u.credits ?? u.search_credits ?? 0} credits</p>
                     </div>
                   </div>
                 ))}
@@ -712,7 +712,7 @@ export default function AdminPanel() {
                     </div>
                     <div className="text-right">
                       <p className={`text-xs font-black ${tierColor(u.subscription_type)}`}>{tierLabel(u.subscription_type)}</p>
-                      <p className="text-[10px] text-gray-500">{u.search_credits ?? u.credits ?? 0} credits</p>
+                      <p className="text-[10px] text-gray-500">{u.credits ?? u.search_credits ?? 0} credits</p>
                     </div>
                   </div>
                 ))}
