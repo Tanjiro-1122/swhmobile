@@ -18,22 +18,20 @@ export default function LinkAccount() {
   const [resendCooldown, setResendCooldown] = useState(0);
 
   const _swhUser = JSON.parse(localStorage.getItem("swh_user") || "{}");
-  const mobileUserId = _swhUser.id || localStorage.getItem("swh_apple_user_id") || "";
+  const appleUserId = _swhUser.apple_user_id || localStorage.getItem("swh_apple_user_id") || "";
 
   // Step 1: Send verification code
   const handleSendCode = async () => {
     if (!email.trim()) { setError("Please enter your email."); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) { setError("Please enter a valid email address."); return; }
-    if (!mobileUserId) { setError("You need to be signed in with Apple first. Go back and sign in."); return; }
-
     setLoading(true);
     setError("");
     try {
       const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileUserId, webEmail: email.trim().toLowerCase() }),
+        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase() }),
       });
       const data = await resp.json();
       if (data.success) {
@@ -67,7 +65,7 @@ export default function LinkAccount() {
       const resp = await fetch("/api/linkAccount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileUserId, webEmail: email.trim().toLowerCase(), code: code.trim() }),
+        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase(), code: code.trim() }),
       });
       const data = await resp.json();
       if (data.success) {
@@ -100,7 +98,7 @@ export default function LinkAccount() {
       const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileUserId, webEmail: email.trim().toLowerCase() }),
+        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase() }),
       });
       const data = await resp.json();
       if (data.success) {
