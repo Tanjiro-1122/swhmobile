@@ -11,8 +11,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Settings, Bell, Heart, TrendingUp, Save, Sparkles, Trophy, Users, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import RequireAuth from "../components/auth/RequireAuth";
+import { useNavigate } from 'react-router-dom';
 
 function UserPreferencesContent() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -148,6 +150,17 @@ function UserPreferencesContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
         <Sparkles className="w-12 h-12 text-purple-500 animate-spin" />
       </div>
     );
