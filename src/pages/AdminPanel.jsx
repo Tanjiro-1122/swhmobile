@@ -271,6 +271,13 @@ export default function AdminPanel() {
     enabled: isAdminEmail(currentUser?.email),
   });
 
+  // ── Platform split stats ─────────────────────────────────────────────────────
+  const mobileUsers = allUsers.filter(u => u.apple_user_id && u.apple_user_id.startsWith("apple_"));
+  const webOnlyUsers = allUsers.filter(u => !u.apple_user_id || !u.apple_user_id.startsWith("apple_"));
+  const linkedUsers = allUsers.filter(u => u.apple_user_id && u.linked_web_account_id);
+  const totalCredits = allUsers.reduce((a, u) => a + (u.search_credits || u.credits || 0), 0);
+  const avgCredits = total ? (totalCredits / total).toFixed(1) : 0;
+
   // ── Mutations ───────────────────────────────────────────────────────────────
   const updateTier = async (userId, tier) => {
     setUpdatingUser(userId);
@@ -379,6 +386,7 @@ export default function AdminPanel() {
     { id: "overview",  label: "Overview",  icon: BarChart2 },
     { id: "users",     label: "Users",     icon: Users },
     { id: "purchases", label: "Purchases", icon: Receipt },
+    { id: "platform",  label: "Platform",  icon: Activity },
   ];
 
   return (
@@ -631,6 +639,91 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
+
+      {/* ── PLATFORM TAB ──────────────────────────────────────────────────────── */}
+      {tab === "platform" && (
+        <div className="px-4 space-y-4 pb-4">
+
+          <div className="bg-gray-900 rounded-2xl p-4 border border-white/5">
+            <h3 className="text-sm font-black text-white mb-3 uppercase tracking-wide">📱 User Source Breakdown</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Mobile (Apple)", value: mobileUsers.length, color: "text-blue-400", icon: "🍎" },
+                { label: "Web Only", value: webOnlyUsers.length, color: "text-purple-400", icon: "🌐" },
+                { label: "Linked Both", value: linkedUsers.length, color: "text-lime-400", icon: "🔗" },
+              ].map(s => (
+                <div key={s.label} className="bg-gray-800 rounded-xl p-3 text-center">
+                  <div className="text-xl mb-1">{s.icon}</div>
+                  <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
+                  <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl p-4 border border-white/5">
+            <h3 className="text-sm font-black text-white mb-3 uppercase tracking-wide">🔑 Search Credits</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gray-800 rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-yellow-400">{totalCredits}</div>
+                <div className="text-[10px] text-gray-500 mt-0.5">Total Credits Held</div>
+              </div>
+              <div className="bg-gray-800 rounded-xl p-3 text-center">
+                <div className="text-2xl font-black text-cyan-400">{avgCredits}</div>
+                <div className="text-[10px] text-gray-500 mt-0.5">Avg Per User</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl p-4 border border-white/5">
+            <h3 className="text-sm font-black text-white mb-3 uppercase tracking-wide">🍎 Mobile App Users ({mobileUsers.length})</h3>
+            {mobileUsers.length === 0 ? (
+              <p className="text-gray-500 text-sm text-center py-4">No mobile users yet</p>
+            ) : (
+              <div className="space-y-2">
+                {mobileUsers.slice(0, 25).map(u => (
+                  <div key={u.id} className="flex items-center justify-between bg-gray-800 rounded-xl px-3 py-2">
+                    <div>
+                      <p className="text-xs font-bold text-white">{u.full_name || u.email || "Anonymous"}</p>
+                      <p className="text-[10px] text-gray-500">{u.email || (u.apple_user_id||"").slice(0,24)+"…"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-xs font-black ${tierColor(u.subscription_type)}`}>{tierLabel(u.subscription_type)}</p>
+                      <p className="text-[10px] text-gray-500">{u.search_credits ?? u.credits ?? 0} credits</p>
+                    </div>
+                  </div>
+                ))}
+                {mobileUsers.length > 25 && <p className="text-center text-xs text-gray-500 pt-1">+{mobileUsers.length - 25} more</p>}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl p-4 border border-white/5">
+            <h3 className="text-sm font-black text-white mb-3 uppercase tracking-wide">🌐 Web App Users ({webOnlyUsers.length})</h3>
+            {webOnlyUsers.length === 0 ? (
+              <p className="text-gray-500 text-sm text-center py-4">No web-only users</p>
+            ) : (
+              <div className="space-y-2">
+                {webOnlyUsers.slice(0, 25).map(u => (
+                  <div key={u.id} className="flex items-center justify-between bg-gray-800 rounded-xl px-3 py-2">
+                    <div>
+                      <p className="text-xs font-bold text-white">{u.full_name || u.email || "—"}</p>
+                      <p className="text-[10px] text-gray-500">{u.email || "no email"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-xs font-black ${tierColor(u.subscription_type)}`}>{tierLabel(u.subscription_type)}</p>
+                      <p className="text-[10px] text-gray-500">{u.search_credits ?? u.credits ?? 0} credits</p>
+                    </div>
+                  </div>
+                ))}
+                {webOnlyUsers.length > 25 && <p className="text-center text-xs text-gray-500 pt-1">+{webOnlyUsers.length - 25} more</p>}
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }
