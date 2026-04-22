@@ -10,8 +10,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from "framer-motion";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
+import { useNavigate } from 'react-router-dom';
 
 function LiveOddsContent() {
+  const navigate = useNavigate();
   const [selectedSport, setSelectedSport] = useState("basketball_nba");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -307,6 +309,17 @@ function LiveOddsContent() {
 
     return (
       <div className="bg-white rounded-xl border-2 border-gray-200 p-4">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
         <div className="flex items-center justify-between mb-3">
           <div>
             <h5 className="font-bold text-gray-900">{marketDesc}</h5>
