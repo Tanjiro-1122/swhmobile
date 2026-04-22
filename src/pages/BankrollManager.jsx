@@ -13,8 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge"; // Ensure Badge is imported if used
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { useNavigate } from 'react-router-dom';
 
 function BankrollManagerContent() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEntry, setNewEntry] = useState({
     entry_type: "deposit",
@@ -121,6 +123,17 @@ function BankrollManagerContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
