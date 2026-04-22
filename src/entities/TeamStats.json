@@ -163,6 +163,14 @@
           "type": "string"
         }
       }
+    },
+    "cached_date": {
+      "type": "string",
+      "description": "Date this record was cached (YYYY-MM-DD). Used to check freshness."
+    },
+    "cached_data": {
+      "type": "string",
+      "description": "Full JSON blob of the last AI analysis result for instant replay."
     }
   },
   "required": [
