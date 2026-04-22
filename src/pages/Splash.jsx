@@ -4,16 +4,98 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { triggerAppleSignIn } from "@/components/utils/iapBridge";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, Zap, Loader2, Mail } from "lucide-react";
+import { LogIn, Zap, Loader2, Mail, ShieldCheck, Phone } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
 
+// ─── Age Gate Screen ─────────────────────────────────────────────────────────
+function AgeGate({ onConfirm }) {
+  const [checked, setChecked] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-6 py-12"
+    >
+      <div className="w-full max-w-sm flex flex-col items-center gap-6">
+        {/* Icon */}
+        <div className="w-20 h-20 rounded-3xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-center">
+          <ShieldCheck className="w-10 h-10 text-lime-400" />
+        </div>
+
+        <div className="text-center">
+          <h1 className="text-2xl font-black tracking-tight mb-2">Age Verification</h1>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            Sports Wager Helper contains sports betting content. You must be{" "}
+            <span className="text-white font-bold">18 years or older</span> to use this app.
+          </p>
+        </div>
+
+        {/* Checkbox */}
+        <button
+          onClick={() => setChecked(!checked)}
+          className="w-full flex items-start gap-3 bg-gray-900 border border-gray-700 rounded-2xl p-4 active:scale-95 transition-transform text-left"
+        >
+          <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+            checked ? "bg-lime-500 border-lime-500" : "border-gray-600"
+          }`}>
+            {checked && <span className="text-black font-black text-xs">✓</span>}
+          </div>
+          <p className="text-sm text-gray-300 leading-snug">
+            I confirm that I am 18 years of age or older and legally permitted to access sports betting content in my jurisdiction.
+          </p>
+        </button>
+
+        {/* Responsible gambling */}
+        <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 text-center">
+          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Responsible Gambling</p>
+          <p className="text-gray-400 text-xs leading-relaxed">
+            Gambling should be for entertainment only. Never bet more than you can afford to lose.
+          </p>
+          <a
+            href="tel:18005224700"
+            className="flex items-center justify-center gap-1.5 mt-2 text-yellow-400 font-bold text-xs active:opacity-70"
+          >
+            <Phone className="w-3 h-3" />
+            Problem Gambling Helpline: 1-800-522-4700
+          </a>
+        </div>
+
+        {/* Legal links */}
+        <p className="text-center text-gray-600 text-xs">
+          By continuing you agree to our{" "}
+          <a href="/TermsOfService" className="text-lime-400 underline">Terms of Service</a>
+          {" "}and{" "}
+          <a href="/PrivacyPolicy" className="text-lime-400 underline">Privacy Policy</a>.
+        </p>
+
+        {/* Confirm button */}
+        <button
+          onClick={() => { if (checked) onConfirm(); }}
+          disabled={!checked}
+          className={`w-full py-4 rounded-2xl font-black text-base transition-all active:scale-95 ${
+            checked
+              ? "bg-lime-500 text-gray-950 shadow-lg shadow-lime-500/20"
+              : "bg-gray-800 text-gray-600 cursor-not-allowed"
+          }`}
+        >
+          I'm 18+ — Enter App
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Splash ─────────────────────────────────────────────────────────────
 export default function Splash() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [checking, setChecking] = useState(true);
   const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ageVerified, setAgeVerified] = useState(false);
 
   useEffect(() => {
     const check = async () => {
@@ -32,11 +114,21 @@ export default function Splash() {
           return;
         }
       } catch {}
+
+      // Check if age was already verified this session
+      const alreadyVerified = sessionStorage.getItem("swh_age_verified") === "true";
+      if (alreadyVerified) setAgeVerified(true);
+
       setChecking(false);
       setTimeout(() => setReady(true), 100);
     };
     check();
   }, []);
+
+  const handleAgeConfirm = () => {
+    sessionStorage.setItem("swh_age_verified", "true");
+    setAgeVerified(true);
+  };
 
   const handleSignIn = async () => {
     setIsAppleSignInLoading(true);
@@ -51,7 +143,6 @@ export default function Splash() {
         return;
       }
 
-      // Call our Vercel API — fullName comes as a string from the wrapper
       const resp = await fetch("/api/handleAppleSignIn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,7 +151,6 @@ export default function Splash() {
           authorizationCode: result.authorizationCode,
           user: result.user,
           email: result.email,
-          // wrapper sends fullName as string e.g. "Javier Huertas"
           fullName: result.fullName,
         }),
       });
@@ -68,10 +158,8 @@ export default function Splash() {
       const data = await resp.json();
 
       if (data?.success) {
-        // Save full user object to localStorage — Dashboard reads from here
         const userToStore = {
           ...data.user,
-          // Merge existing credits from localStorage if the server shows 5 (default)
           search_credits: Math.max(
             data.user.search_credits ?? 5,
             parseInt(localStorage.getItem("swh_search_credits") || "0", 10)
@@ -80,14 +168,12 @@ export default function Splash() {
         localStorage.setItem("swh_user", JSON.stringify(userToStore));
         localStorage.setItem("swh_apple_user_id", data.user.apple_user_id || "");
         localStorage.setItem("swh_search_credits", String(userToStore.search_credits));
-        // ✅ Save display name so Dashboard always shows real name, not Apple ID
         if (userToStore.full_name && !userToStore.full_name.startsWith("Apple_") && !userToStore.full_name.includes("privaterelay")) {
           localStorage.setItem("swh_full_name", userToStore.full_name);
         } else if (result.fullName) {
           localStorage.setItem("swh_full_name", result.fullName);
         }
 
-        // Tell the native wrapper to persist the session too
         if (window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
             type: "SAVE_SESSION",
@@ -130,11 +216,19 @@ export default function Splash() {
   }
 
   return (
-    <AnimatePresence>
-      {ready && (
+    <AnimatePresence mode="wait">
+      {/* Step 1: Age Gate */}
+      {ready && !ageVerified && (
+        <AgeGate key="age-gate" onConfirm={handleAgeConfirm} />
+      )}
+
+      {/* Step 2: Sign In */}
+      {ready && ageVerified && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          key="sign-in"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0 }}
           className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-between px-6 pt-16 pb-12"
         >
           {/* Logo + title */}
@@ -201,9 +295,22 @@ export default function Splash() {
               <span className="text-lime-500 font-semibold">I have a web account</span> — sign in with email
             </button>
 
-            <p className="text-center text-gray-600 text-xs mt-1">
-              By continuing, you agree to our Terms of Service and Privacy Policy.
-            </p>
+            {/* Legal footer */}
+            <div className="flex flex-col items-center gap-2 mt-1">
+              <p className="text-center text-gray-600 text-xs">
+                By continuing you agree to our{" "}
+                <a href="/TermsOfService" className="text-lime-400 underline">Terms of Service</a>
+                {" "}and{" "}
+                <a href="/PrivacyPolicy" className="text-lime-400 underline">Privacy Policy</a>.
+              </p>
+              <a
+                href="tel:18005224700"
+                className="flex items-center gap-1.5 text-gray-600 text-xs active:opacity-70"
+              >
+                <Phone className="w-3 h-3" />
+                Problem Gambling Helpline: 1-800-522-4700
+              </a>
+            </div>
           </motion.div>
         </motion.div>
       )}
