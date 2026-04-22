@@ -42,8 +42,10 @@ export default async function handler(req, res) {
     }
 
     // 2. Find the web account by email — this is THE account
-    const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=5`);
-    const webUser = toRecords(webData)[0];
+    const webData = await b44Fetch(`/entities/User?limit=500`);
+    const allUsers = toRecords(webData);
+    const webUser = allUsers.find(u => (u.email||"").toLowerCase() === email) || null;
+    // webUser already set above
     if (!webUser) return res.status(404).json({ success: false, error: "Account not found." });
 
     // 3. Stamp apple_user_id onto the web account so mobile lookups work going forward
