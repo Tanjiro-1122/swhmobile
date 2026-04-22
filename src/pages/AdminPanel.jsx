@@ -12,7 +12,8 @@ import {
   BarChart2, CreditCard, LogOut, X, Check, Ban
 } from "lucide-react";
 
-const ADMIN_EMAIL = "huertasfam1@icloud.com";
+const ADMIN_EMAILS = ["huertasfam@gmail.com", "huertasfam1@icloud.com", "huertasfam"];
+const isAdminEmail = (email) => ADMIN_EMAILS.some(a => (email||"lower").toLowerCase().includes(a.toLowerCase()));
 
 // ─── Tier config ─────────────────────────────────────────────────────────────
 const TIERS = [
@@ -250,13 +251,13 @@ export default function AdminPanel() {
   const { data: allUsers = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["adminUsers"],
     queryFn: () => base44.entities.User.list("-created_date", 1000),
-    enabled: currentUser?.email === ADMIN_EMAIL,
+    enabled: isAdminEmail(currentUser?.email),
   });
 
   const { data: purchases = [], isLoading: purchasesLoading } = useQuery({
     queryKey: ["adminPurchases"],
     queryFn: () => base44.entities.PurchaseAudit.list("-created_date", 100),
-    enabled: currentUser?.email === ADMIN_EMAIL,
+    enabled: isAdminEmail(currentUser?.email),
   });
 
   // ── Mutations ───────────────────────────────────────────────────────────────
@@ -312,7 +313,7 @@ export default function AdminPanel() {
     );
   }
 
-  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+  if (!currentUser || !isAdminEmail(currentUser.email)) {
     return (
       <div className="fixed inset-0 bg-gray-950 flex flex-col items-center justify-center gap-4 px-8 text-center">
         <Shield className="w-16 h-16 text-red-500" />
