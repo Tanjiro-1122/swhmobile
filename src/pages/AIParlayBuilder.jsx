@@ -9,8 +9,10 @@ import ParlayDisplay from "../components/parlay/ParlayDisplay";
 import RequireAuth from "../components/auth/RequireAuth";
 import { useFreeLookupTracker, FreeLookupModal, FreeLookupBanner } from "../components/auth/FreeLookupTracker";
 import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
 function AIParlayBuilderContent() {
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [currentParlay, setCurrentParlay] = useState(null);
@@ -91,6 +93,17 @@ function AIParlayBuilderContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
       <FreeLookupBanner lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} userTier={userTier} />
       <FreeLookupModal 
         show={showLimitModal} 
