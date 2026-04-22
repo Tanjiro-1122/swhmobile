@@ -86,39 +86,30 @@ function AnalysisHubContent() {
                 <span>Stats</span>
               </TabsTrigger>
 
-              {/* Web-only tabs */}
-              {isWeb && (
-                <>
-                  <TabsTrigger
-                    value="matchpreview"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Swords className="w-4 h-4 flex-shrink-0" />
-                    <span>Match Preview</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="historical"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  >
-                    <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                    <span>Historical</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="strategy"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Settings2 className="w-4 h-4 flex-shrink-0" />
-                    <span>Strategy Tools</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="export"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Download className="w-4 h-4 flex-shrink-0" />
-                    <span>Data Export</span>
-                  </TabsTrigger>
-                </>
-              )}
+              {/* Webclusive tabs — greyed out on mobile */}
+              {[
+                { value: "matchpreview", icon: <Swords className="w-4 h-4 flex-shrink-0" />, label: "Match Preview" },
+                { value: "historical",   icon: <BarChart3 className="w-4 h-4 flex-shrink-0" />, label: "Historical" },
+                { value: "strategy",     icon: <Settings2 className="w-4 h-4 flex-shrink-0" />, label: "Strategy" },
+                { value: "export",       icon: <Download className="w-4 h-4 flex-shrink-0" />, label: "Export" },
+              ].map(tab => isWeb ? (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white text-white/70 text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                >
+                  {tab.icon}<span>{tab.label}</span>
+                </TabsTrigger>
+              ) : (
+                <div
+                  key={tab.value}
+                  title="Webclusive — visit sportswagerhelper.com"
+                  className="opacity-40 cursor-not-allowed text-xs py-2.5 px-3 min-h-[40px] flex items-center justify-center gap-1.5 whitespace-nowrap text-white/40 rounded-lg border border-white/10"
+                >
+                  {tab.icon}<span>{tab.label}</span>
+                  <span className="text-[9px] ml-0.5 text-yellow-400/70">🌐</span>
+                </div>
+              ))}
             </TabsList>
           </div>
 
