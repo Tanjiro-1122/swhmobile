@@ -276,7 +276,7 @@ export default function AdminPanel() {
   const webOnlyUsers = allUsers.filter(u => !u.apple_user_id || !u.apple_user_id.startsWith("apple_"));
   const linkedUsers = allUsers.filter(u => u.apple_user_id && u.linked_web_account_id);
   const totalCredits = allUsers.reduce((a, u) => a + (u.search_credits || u.credits || 0), 0);
-  const avgCredits = total ? (totalCredits / total).toFixed(1) : 0;
+  const avgCredits = allUsers.length ? (totalCredits / allUsers.length).toFixed(1) : 0;
 
   // ── Mutations ───────────────────────────────────────────────────────────────
   const updateTier = async (userId, tier) => {
