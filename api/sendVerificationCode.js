@@ -1,10 +1,9 @@
-// api/sendVerificationCode.js
-// Sends code via Base44 emailLogin. Verification happens in linkAccount.js via verify_code action.
+// api/sendVerificationCode.js — generates our own code, stores it, emails it via Resend
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_FUNCTION_URL = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
+const RESEND_KEY = process.env.RESEND_API_KEY || "";
 
 function b44Headers() {
   return { "Content-Type": "application/json", "api_key": B44_KEY };
@@ -37,7 +36,7 @@ export default async function handler(req, res) {
 
     const email = webEmail.trim().toLowerCase();
 
-    // ── 1. Verify the web account exists ─────────────────────────────
+    // ── 1. Find the web account ───────────────────────────────────────
     const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=10`);
     const webRecords = toRecords(webData);
     const webUser = webRecords.find(u => u.id !== mobileUserId) || webRecords[0];
@@ -49,24 +48,52 @@ export default async function handler(req, res) {
       });
     }
 
-    // ── 2. Store mobile user ID on the web record so we can find it during verify ──
+    // ── 2. Generate code + store it ───────────────────────────────────
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
     await b44Fetch(`/entities/User/${webUser.id}`, {
       method: "PUT",
-      body: JSON.stringify({ link_verification_mobile_id: mobileUserId }),
+      body: JSON.stringify({
+        link_verification_code: code,
+        link_verification_expires: expires,
+        link_verification_mobile_id: mobileUserId,
+      }),
     });
 
-    // ── 3. Send code via Base44 emailLogin — Base44 manages the code internally ──
-    const emailRes = await fetch(B44_FUNCTION_URL, {
+    // ── 3. Send email via Resend ──────────────────────────────────────
+    const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "send_code", email }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${RESEND_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Sports Wager Helper <noreply@sportswagerhelper.com>",
+        to: [email],
+        subject: "Your Sports Wager Helper verification code",
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#111;color:#fff;padding:32px;border-radius:12px;">
+            <h2 style="color:#84cc16;margin-bottom:8px;">Sports Wager Helper</h2>
+            <p style="color:#aaa;margin-bottom:24px;">Link your web account to the mobile app</p>
+            <div style="background:#1f2937;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px;">
+              <p style="color:#9ca3af;font-size:14px;margin:0 0 8px;">Your verification code</p>
+              <p style="font-size:42px;font-weight:900;letter-spacing:12px;color:#fff;margin:0;">${code}</p>
+              <p style="color:#6b7280;font-size:12px;margin:12px 0 0;">Expires in 15 minutes</p>
+            </div>
+            <p style="color:#6b7280;font-size:12px;">If you didn't request this, you can ignore this email.</p>
+          </div>
+        `,
+      }),
     });
+
     const emailData = await emailRes.json().catch(() => ({}));
 
-    if (!emailData.success) {
+    if (!emailRes.ok) {
+      console.error("[sendVerificationCode] Resend error:", JSON.stringify(emailData));
       return res.status(500).json({
         success: false,
-        error: emailData.message || emailData.error || "Failed to send verification email.",
+        error: "Failed to send verification email. Please try again.",
       });
     }
 
