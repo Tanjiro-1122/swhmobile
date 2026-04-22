@@ -1,11 +1,10 @@
 import { useState, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2, Newspaper, ArrowLeft } from "lucide-react";
+import { Zap, BarChart3, Bell, Calculator, TrendingUp, Wallet, ClipboardList, Target, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import RequireAuth from "@/components/auth/RequireAuth";
-import { detectPlatform } from '@/components/utils/platform';
 
 // Lazy load heavy content components
 const ParlayBuilderContent = lazy(() => import("@/components/poweruser/ParlayBuilderContent"));
@@ -25,20 +24,7 @@ const LoadingSpinner = () => (
 );
 
 function BettingHubContent() {
-  const { isWeb } = detectPlatform();
   const [activeTab, setActiveTab] = useState("tracker");
-
-  if (!isWeb) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] text-center p-8">
-        <Newspaper className="w-16 h-16 text-slate-400 mb-4" />
-        <h1 className="text-2xl font-bold text-white">Feature Not Available</h1>
-        <p className="text-slate-400 mt-2 max-w-sm">
-          Tracking Tools are exclusively available on our website for a more detailed experience.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="overflow-x-hidden">
