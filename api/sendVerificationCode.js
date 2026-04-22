@@ -1,9 +1,9 @@
 // api/sendVerificationCode.js
-// Proxies Base44's built-in emailLogin to send a 6-digit code to the user's web account email.
+// Sends a 6-digit code via Base44 emailLogin AND stores it on the web user record for verification.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
-const B44_FUNCTION_URL = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
+const B44_FUNCTION_URL = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
 
 function b44Headers() {
@@ -31,38 +31,45 @@ export default async function handler(req, res) {
 
   try {
     const { mobileUserId, webEmail } = req.body || {};
-
     if (!mobileUserId || !webEmail) {
       return res.status(400).json({ success: false, error: "mobileUserId and webEmail are required." });
     }
 
     const email = webEmail.trim().toLowerCase();
 
-    // ── 1. Verify the web account actually exists ─────────────────────
+    // ── 1. Find the web account ───────────────────────────────────────
     const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=10`);
     const webRecords = toRecords(webData);
-
-    const webUser =
-      webRecords.find(u => u.id !== mobileUserId && (
-        (u.subscription_type && u.subscription_type !== "free") ||
-        (u.search_credits > 5) || (u.credits > 5) || !u.apple_user_id
-      )) ||
-      webRecords.find(u => u.id !== mobileUserId);
+    const webUser = webRecords.find(u => u.id !== mobileUserId) || webRecords[0];
 
     if (!webUser) {
       return res.status(404).json({
         success: false,
-        error: "No account found with that email. Use the exact email you signed up with on sportswagerhelper.com.",
+        error: "No account found with that email. Use the exact email from sportswagerhelper.com.",
       });
     }
 
-    // ── 2. Send code via Base44's built-in emailLogin ─────────────────
+    // ── 2. Generate a 6-digit code ────────────────────────────────────
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    // ── 3. Store code on web user record ──────────────────────────────
+    await b44Fetch(`/entities/User/${webUser.id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        link_verification_code: code,
+        link_verification_expires: expires,
+        link_verification_mobile_id: mobileUserId,
+      }),
+    });
+
+    // ── 4. Send email via Base44 emailLogin (send_code) ───────────────
     const emailRes = await fetch(B44_FUNCTION_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "send_code", email }),
     });
-    const emailData = await emailRes.json();
+    const emailData = await emailRes.json().catch(() => ({}));
 
     if (!emailData.success) {
       return res.status(500).json({
