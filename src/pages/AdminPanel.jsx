@@ -237,13 +237,24 @@ export default function AdminPanel() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Auth check ──────────────────────────────────────────────────────────────
+  // ── Auth check — mobile uses localStorage, web uses base44 session ──────────
   const { data: currentUser, isLoading: authLoading } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) return null;
-      return await base44.auth.me();
+      // First check localStorage (mobile Apple Sign-In path)
+      try {
+        const stored = localStorage.getItem("swh_user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.email || parsed?.apple_user_id) return parsed;
+        }
+      } catch {}
+      // Fallback: base44 session (web path)
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) return await base44.auth.me();
+      } catch {}
+      return null;
     },
   });
 
