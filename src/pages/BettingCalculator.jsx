@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calculator, DollarSign, TrendingUp, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 
 export default function BettingCalculator() {
+  const navigate = useNavigate();
   // Single Bet Calculator
   const [stake, setStake] = useState("");
   const [odds, setOdds] = useState("");
@@ -104,6 +106,17 @@ export default function BettingCalculator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "none", border: "none", cursor: "pointer",
+          color: "#888", fontSize: 14, padding: "12px 16px 4px",
+          fontWeight: 500
+        }}
+      >
+        ← Back
+      </button>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
