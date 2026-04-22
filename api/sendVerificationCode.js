@@ -29,9 +29,10 @@ export default async function handler(req, res) {
     }
     const email = webEmail.trim().toLowerCase();
 
-    // 1. Make sure this email exists in the DB
-    const webData = await b44Fetch(`/entities/User?email=${encodeURIComponent(email)}&limit=5`);
-    const webUser = toRecords(webData)[0];
+    // 1. Make sure this email exists in the DB (fetch all, filter client-side — query params unreliable)
+    const webData = await b44Fetch(`/entities/User?limit=500`);
+    const allUsers = toRecords(webData);
+    const webUser = allUsers.find(u => (u.email || '').toLowerCase() === email) || null;
     if (!webUser) {
       return res.status(404).json({ success: false, error: "No account found with that email. Use the exact email from sportswagerhelper.com." });
     }
