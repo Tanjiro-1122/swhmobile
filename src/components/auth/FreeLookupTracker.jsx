@@ -25,7 +25,7 @@ const shouldResetMonthlyLookups = (resetDateStr) => {
 };
 
 export function useFreeLookupTracker() {
-  const [lookupsRemaining, setLookupsRemaining] = useState(5);
+  const [lookupsRemaining, setLookupsRemaining] = useState(() => { try { const u = parseInt(localStorage.getItem("swh_guest_lookups_used") || "0", 10); return Math.max(0, 5 - u); } catch { return 5; } });
   const [searchCredits, setSearchCredits] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userTier, setUserTier] = useState('free');
@@ -187,11 +187,11 @@ export function useFreeLookupTracker() {
               }
             } catch {}
           }
-          setLookupsRemaining(5);
+          const guestUsed = parseInt(localStorage.getItem("swh_guest_lookups_used") || "0", 10); setLookupsRemaining(Math.max(0, 5 - guestUsed));
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        setLookupsRemaining(5);
+        const guestUsed3 = parseInt(localStorage.getItem("swh_guest_lookups_used") || "0", 10); setLookupsRemaining(Math.max(0, 5 - guestUsed3));
       } finally {
         setIsLoading(false);
       }
@@ -256,8 +256,12 @@ export function useFreeLookupTracker() {
       return false;
     }
     
-    // For non-authenticated users - must sign in first
-    return false;
+    // For guest users — decrement local counter
+    const used = parseInt(localStorage.getItem('swh_guest_lookups_used') || '0', 10);
+    if (used >= 5) return false;
+    localStorage.setItem('swh_guest_lookups_used', String(used + 1));
+    setLookupsRemaining(prev => Math.max(0, prev - 1));
+    return true;
   };
 
   const canLookup = () => {

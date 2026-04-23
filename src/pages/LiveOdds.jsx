@@ -184,7 +184,7 @@ function LiveOddsContent() {
         setHasLoadedOnce(true);
       }
 
-      const games = data.map(game => {
+      const games = (data.games || data).map(game => {
         const draftkings = game.bookmakers?.find(b => b.key === 'draftkings');
         const fanduel = game.bookmakers?.find(b => b.key === 'fanduel');
         const betmgm = game.bookmakers?.find(b => b.key === 'betmgm');
