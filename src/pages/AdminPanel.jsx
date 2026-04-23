@@ -9,7 +9,7 @@ import {
   Receipt, CheckCircle, XCircle, Crown, Star, Sparkles,
   Zap, TrendingUp, Activity, ChevronDown, ChevronUp,
   Trash2, Edit3, RefreshCw, Eye, EyeOff, Award,
-  BarChart2, CreditCard, LogOut, X, Check, Ban
+  BarChart2, CreditCard, LogOut, X, Check, Ban, ArrowLeft
 } from "lucide-react";
 
 const ADMIN_EMAILS = ["huertasfam@gmail.com", "huertasfam1@icloud.com", "huertasfam"];
@@ -263,7 +263,12 @@ export default function AdminPanel() {
   // ── Data ────────────────────────────────────────────────────────────────────
   const { data: allUsers = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["adminUsers"],
-    queryFn: () => base44.entities.User.list("-created_date", 1000),
+    queryFn: async () => {
+      // Use server-side endpoint so service role can read all users
+      const resp = await fetch("/api/adminUsers");
+      if (!resp.ok) throw new Error("Failed to fetch users");
+      return resp.json();
+    },
     enabled: isAdminEmail(currentUser?.email),
   });
 
@@ -413,6 +418,13 @@ export default function AdminPanel() {
       {/* Header */}
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
         <div>
+          <button
+            onClick={() => navigate(createPageUrl("Dashboard"))}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-white text-xs font-bold mb-2 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Dashboard
+          </button>
           <div className="flex items-center gap-2 mb-1">
             <Shield className="w-5 h-5 text-lime-400" />
             <span className="text-xs font-black text-lime-400 uppercase tracking-widest">Admin</span>
