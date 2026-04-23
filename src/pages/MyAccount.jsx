@@ -288,7 +288,7 @@ function MyAccountContent() {
 
           <TabsContent value="profile">
             <ProfileContent />
-            <DeleteAccountSection />
+            <div id="delete-account-section"><DeleteAccountSection /></div>
           </TabsContent>
           <TabsContent value="preferences">
             <PreferencesContent />
@@ -298,8 +298,33 @@ function MyAccountContent() {
           </TabsContent>
         </Tabs>
 
+        {/* Legal & Info Links */}
+        <div className="mt-6 mb-4">
+          <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">Legal & Info</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "Privacy Policy", page: "PrivacyPolicy", icon: "🔒" },
+              { label: "Contact Us",     page: "ContactUs",     icon: "✉️" },
+              { label: "Terms of Use",   page: "PrivacyPolicy", icon: "📄" },
+              { label: "Delete Account", page: null,            icon: "🗑️", action: "delete" },
+            ].map(item => (
+              <button
+                key={item.label}
+                onClick={() => item.action === "delete"
+                  ? document.getElementById("delete-account-section")?.scrollIntoView({ behavior: "smooth" })
+                  : navigate(createPageUrl(item.page))
+                }
+                className="flex items-center gap-2.5 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-left hover:border-gray-600 transition-colors"
+              >
+                <span className="text-base">{item.icon}</span>
+                <span className="text-xs font-bold text-gray-300">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Responsible Gambling Footer */}
-        <div className="mt-8 mb-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-4 text-center">
+        <div className="mt-4 mb-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-4 text-center">
           <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Wager Responsibly</p>
           <p className="text-gray-500 text-xs leading-relaxed mb-2">
             Sports Wager Helper provides AI-assisted sports analysis for informational purposes only. It is not a gambling app. Always wager responsibly and within your means.
