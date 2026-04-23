@@ -602,6 +602,25 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* ── Apple-required footer links ─────────────────────────────── */}
+        <div className="mt-8 pb-10 px-4">
+          <div className="border-t border-gray-800 pt-6">
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-gray-500 mb-3">
+              <button onClick={() => navigate(createPageUrl("PrivacyPolicy"))} className="hover:text-white transition-colors">Privacy Policy</button>
+              <button onClick={() => navigate(createPageUrl("ContactUs"))} className="hover:text-white transition-colors">Contact Us</button>
+              <button onClick={() => navigate(createPageUrl("MyAccount"))} className="hover:text-white transition-colors">Delete Account</button>
+              <button onClick={() => navigate(createPageUrl("Pricing"))} className="hover:text-white transition-colors">Manage Subscription</button>
+            </div>
+            <p className="text-center text-[10px] text-gray-600 leading-relaxed">
+              ⚠️ Sports Wager Helper provides AI-powered sports analysis and information only — not financial, legal, or betting advice. Always wager responsibly. Must be 18+ to use.
+            </p>
+            <p className="text-center text-[10px] text-gray-700 mt-1">
+              If you or someone you know has a gambling problem, call 1-800-522-4700.
+            </p>
+          </div>
+        </div>
+
       </main>
     </div>
   );
