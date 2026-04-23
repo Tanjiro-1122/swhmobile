@@ -1,3 +1,4 @@
+import React from 'react';
 import './App.css'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -25,7 +26,14 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  // Cap at 3 seconds max to prevent black screen on auth errors
+  const [loadTimeout, setLoadTimeout] = React.useState(false);
+  React.useEffect(() => {
+    const t = setTimeout(() => setLoadTimeout(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if ((isLoadingPublicSettings || isLoadingAuth) && !loadTimeout) {
     return (
       <div className="fixed inset-0 bg-slate-900 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -38,13 +46,11 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return (
-        <div className="fixed inset-0 bg-slate-900 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-        </div>
-      );
+      // Don't spin forever — just render the app and let Splash handle auth
+      // fall through to render routes below
+    } else if (authError.type === 'unknown') {
+      // Network/load error — still render routes so Splash shows
+      // fall through
     }
   }
 
