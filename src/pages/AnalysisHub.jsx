@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Target, Brain, Loader2, ArrowLeft, Swords, BarChart3, Settings2, Download } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import RequireAuth from "@/components/auth/RequireAuth";
@@ -39,16 +39,19 @@ function AnalysisHubContent() {
     }
   }, [isWeb]);
 
+  const navigate = useNavigate();
+
   return (
     <div className="overflow-x-hidden">
       <div className="max-w-6xl mx-auto w-full">
         <div className="w-full flex justify-start mb-2">
-          <Link to={createPageUrl('Dashboard')}>
-            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
+          <button
+            onClick={() => navigate(createPageUrl('Dashboard'))}
+            className="flex items-center gap-2 text-white/80 hover:text-white text-sm font-semibold py-2 px-3 -ml-2 rounded-xl hover:bg-white/10 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
         </div>
 
         <div className="mb-6 bg-black/40 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/10">
