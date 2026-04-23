@@ -100,6 +100,8 @@ export default function Splash() {
   useEffect(() => {
     const check = async () => {
       try {
+        // Only auto-redirect if we have a stored swh_user (explicit login)
+        // Do NOT rely on base44.auth alone — it stays true after logout
         const storedUser = localStorage.getItem("swh_user");
         if (storedUser) {
           const u = JSON.parse(storedUser);
@@ -108,11 +110,7 @@ export default function Splash() {
             return;
           }
         }
-        const isAuth = await base44.auth.isAuthenticated().catch(() => false);
-        if (isAuth) {
-          navigate(createPageUrl("Dashboard"), { replace: true });
-          return;
-        }
+        // If no swh_user in storage, always show sign-in screen regardless of base44 auth state
       } catch {}
 
       // Check if age was already verified this session
