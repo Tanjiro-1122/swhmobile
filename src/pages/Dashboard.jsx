@@ -479,14 +479,23 @@ export default function Dashboard() {
     return () => { window.removeEventListener("storage", sync); window.removeEventListener("focus", sync); };
   }, []);
 
-  const handleLogout = () => {
-    ["swh_user","swh_apple_user_id","swh_user_id","swh_is_premium","swh_plan","swh_email"].forEach(k => localStorage.removeItem(k));
-    if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify({ type: "CLEAR_DATA" }));
+  const handleLogout = async () => {
+    // Clear every swh_ key from localStorage
+    const keys = Object.keys(localStorage).filter(k => k.startsWith("swh_"));
+    keys.forEach(k => localStorage.removeItem(k));
+    // Also clear known explicit keys
+    ["swh_user","swh_apple_user_id","swh_user_id","swh_is_premium","swh_plan",
+     "swh_email","swh_search_credits","swh_full_name","swh_credits"].forEach(k => localStorage.removeItem(k));
+    sessionStorage.clear();
+    // Sign out of base44 auth so Splash doesn't bounce back
+    try { await base44.auth.logout(); } catch {}
+    // Tell native wrapper to clear its state
+    if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify({ type: "SIGN_OUT" }));
     navigate(createPageUrl("Splash"), { replace: true });
   };
 
   const displayName = getDisplayName(currentUser);
-  const isPaid = ["premium_monthly","vip_annual","legacy"].includes(currentUser?.subscription_type);
+  const isPaid = ["pro","premium_monthly","lifetime_vip","vip_annual","legacy","influencer"].includes(currentUser?.subscription_type);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">
