@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import RequireAuth from '@/components/auth/RequireAuth';
+import { useFreeLookupTracker } from '@/components/auth/FreeLookupTracker';
 import ReactMarkdown from 'react-markdown';
 
 const SAL_IMG = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
@@ -107,6 +108,7 @@ function ThinkingBubble() {
 
 function AskSALPage() {
   const navigate = useNavigate();
+  const { recordLookup, canLookup, lookupsRemaining, userTier } = useFreeLookupTracker();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -149,10 +151,13 @@ function AskSALPage() {
         body: JSON.stringify({
           message: `[Today: ${today}${oddsCtx}]\n\n${text}`,
           history: messages.slice(-10),
+          skip_odds: !!oddsCtx,
         }),
       });
       const data = await resp.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply || "Hmm, my deductions are unclear. Try again!" }]);
+      // Deduct a lookup for free/guest users
+      recordLookup();
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: "The archives went dark — please try again in a moment." }]);
     }

@@ -3,14 +3,14 @@
 
 const BASE44_API_KEY = process.env.SWH_BASE44_API_KEY;
 const BASE44_APP_ID = "68f93544702b554e3e1f7297";
-const BASE44_BASE = `https://api.base44.com/api/apps/${BASE44_APP_ID}/entities`;
+const BASE44_BASE = `https://app.base44.com/api/apps/${BASE44_APP_ID}/entities`;
 
 async function base44Request(entity, method, body) {
   const resp = await fetch(`${BASE44_BASE}/${entity}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      "api-key": BASE44_API_KEY,
+      "api_key": BASE44_API_KEY,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -21,7 +21,7 @@ async function findUserByAppleId(appleUserId) {
   const resp = await fetch(
     `${BASE44_BASE}/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`,
     {
-      headers: { "api-key": BASE44_API_KEY },
+      headers: { "api_key": BASE44_API_KEY },
     }
   );
   const data = await resp.json();
@@ -32,7 +32,7 @@ async function deleteEntityRecords(entity, field, value) {
   try {
     const resp = await fetch(
       `${BASE44_BASE}/${entity}?${field}=${encodeURIComponent(value)}&limit=100`,
-      { headers: { "api-key": BASE44_API_KEY } }
+      { headers: { "api_key": BASE44_API_KEY } }
     );
     const records = await resp.json();
     if (!Array.isArray(records)) return 0;
@@ -41,7 +41,7 @@ async function deleteEntityRecords(entity, field, value) {
     for (const record of records) {
       const delResp = await fetch(`${BASE44_BASE}/${entity}/${record.id}`, {
         method: "DELETE",
-        headers: { "api-key": BASE44_API_KEY },
+        headers: { "api_key": BASE44_API_KEY },
       });
       if (delResp.ok) deleted++;
     }
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     // 3. Delete the user record itself
     const delResp = await fetch(`${BASE44_BASE}/User/${userId}`, {
       method: "DELETE",
-      headers: { "api-key": BASE44_API_KEY },
+      headers: { "api_key": BASE44_API_KEY },
     });
 
     if (!delResp.ok) {

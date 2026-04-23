@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     // Find user by apple ID
     const data = await b44Fetch(`/entities/User?limit=500`);
     const records = toRecords(data);
-    const user = records[0] || null;
+    const user = records.find(u => u.apple_user_id === appleUserId) || null;
 
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found. Sign in first.' });

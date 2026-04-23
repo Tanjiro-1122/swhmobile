@@ -57,7 +57,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { message, history = [] } = req.body || {};
+  const { message, history = [], skip_odds = false } = req.body || {};
   if (!message?.trim()) return res.status(400).json({ error: "Message is required" });
   if (!OPENAI_KEY)       return res.status(500).json({ error: "OpenAI API key not configured" });
 
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
   });
 
   // Only hit Odds API if the message is actually about sports/betting
-  const wantsOdds = needsOdds(message);
+  const wantsOdds = !skip_odds && needsOdds(message);
   const liveOdds  = wantsOdds ? await getLiveOdds() : null;
 
   const oddsBlock = liveOdds

@@ -37,21 +37,21 @@ function toRecords(data) {
 }
 
 async function findUser(appUserId, email) {
-  // Try apple_user_id first
-  if (appUserId) {
-    try {
-      const allD = await b44Fetch(`/entities/User?limit=500`); const allUsers = toRecords(allD);
-      const u = toRecords(d)[0];
+  try {
+    const allD = await b44Fetch(`/entities/User?limit=500`);
+    const allUsers = toRecords(allD);
+    // Try apple_user_id first
+    if (appUserId) {
+      const u = allUsers.find(u => u.apple_user_id === appUserId);
       if (u) return u;
-    } catch {}
-  }
-  // Try by email
-  if (email) {
-    try {
-      // email lookup via allUsers below
-      const u = toRecords(d)[0];
+    }
+    // Fallback: match by email
+    if (email) {
+      const u = allUsers.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
       if (u) return u;
-    } catch {}
+    }
+  } catch (e) {
+    console.error('[RC Webhook] findUser error:', e.message);
   }
   return null;
 }
