@@ -10,6 +10,7 @@ import {
   Swords, BarChart3, MessageSquare
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { useFreeLookupTracker, FreeLookupModal } from "@/components/auth/FreeLookupTracker";
 
 const SAL_IMG = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
@@ -270,6 +271,9 @@ function SalQuickChat({ navigate }) {
   const [msg, setMsg] = useState("");
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const { canLookup, recordLookup, lookupsRemaining, isAuthenticated, userTier } = useFreeLookupTracker();
+
   const PROMPTS = [
     "Best bet tonight?",
     "NBA underdog pick?",
@@ -280,6 +284,13 @@ function SalQuickChat({ navigate }) {
   const ask = async (q) => {
     const question = q || msg.trim();
     if (!question) return;
+
+    // ── GATE: check lookup allowance before hitting the API ──
+    if (!canLookup()) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setLoading(true);
     setReply("");
     try {
@@ -291,6 +302,8 @@ function SalQuickChat({ navigate }) {
       });
       const data = await resp.json();
       setReply(data.reply || "S.A.L. is thinking...");
+      // ── RECORD: deduct only after a successful response ──
+      recordLookup();
     } catch {
       setReply("The archives are temporarily unavailable. Try again in a moment.");
     }
@@ -298,7 +311,14 @@ function SalQuickChat({ navigate }) {
     setMsg("");
   };
 
+  // Free-user lookup badge for the widget header
+  const isPaidTier = ['legacy','vip_annual','premium_monthly','influencer',
+    'unlimited_monthly','unlimited_yearly','half_year','basic_monthly'].includes(userTier);
+
   return (
+    <>
+    <FreeLookupModal show={showLimitModal} onClose={() => setShowLimitModal(false)}
+      lookupsRemaining={lookupsRemaining} isAuthenticated={isAuthenticated} />
     <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-800">
@@ -370,6 +390,7 @@ function SalQuickChat({ navigate }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -423,15 +444,20 @@ function FeatureGrid({ navigate, isPaid }) {
 
 // ─── Stats bar ────────────────────────────────────────────────────────────────
 function StatsBar({ credits, isPaid }) {
+  // credits = lookupsRemaining from hook (0-5 for free, 999 for paid)
+  const creditDisplay = isPaid ? "∞" : (credits >= 5 ? "5" : String(credits));
+  const creditLabel   = isPaid ? "Unlimited" : `Free Look${credits !== 1 ? "ups" : "up"}`;
+  const creditColor   = isPaid ? "text-lime-400" : credits > 2 ? "text-lime-400" : credits > 0 ? "text-yellow-400" : "text-red-400";
+
   return (
     <div className="grid grid-cols-3 gap-3">
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
-        <p className="text-2xl font-black text-lime-400">{isPaid ? "∞" : credits}</p>
-        <p className="text-xs text-gray-500 mt-1">Credits Left</p>
+        <p className={`text-2xl font-black ${creditColor}`}>{creditDisplay}</p>
+        <p className="text-xs text-gray-500 mt-1">{creditLabel}</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
-        <p className="text-2xl font-black text-purple-400">4</p>
-        <p className="text-xs text-gray-500 mt-1">Major Sports</p>
+        <p className="text-2xl font-black text-purple-400">10+</p>
+        <p className="text-xs text-gray-500 mt-1">Sports Covered</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
         <p className="text-2xl font-black text-blue-400">AI</p>
