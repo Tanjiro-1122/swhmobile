@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, Crown, BarChart2, Users, Star, Flame, Shield,
+  Zap, Crown, BarChart2, Users, User, Star, Flame, Shield,
   ChevronRight, Lock, LogOut, TrendingUp, DollarSign,
   Calculator, BookOpen, Target, Brain, Newspaper,
   Activity, RefreshCw, Clock, AlertCircle, Trophy,
