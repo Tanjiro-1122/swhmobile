@@ -387,6 +387,7 @@ const FEATURE_TILES = [
   { label: "Saved Results",   icon: Star,         page: "SavedResults",   color: "yellow",  tag: null,      desc: "All your past analyses." },
   { label: "Live Scores",     icon: Flame,        page: "SportsNewsTicker",color:"red",     tag: "LIVE",    desc: "Breaking news & live scores." },
   { label: "Upgrade",         icon: Crown,        page: "Pricing",        color: "purple",  tag: "PRO",     desc: "Unlimited credits & features." },
+  { label: "My Account",      icon: User,         page: "MyAccount",      color: "slate",   tag: null,      desc: "Settings, privacy & delete." },
 ];
 
 function FeatureGrid({ navigate, isPaid }) {
