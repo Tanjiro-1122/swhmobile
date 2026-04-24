@@ -59,7 +59,7 @@ export default function LinkAccount() {
 
   // Step 2: Verify code + merge
   const handleVerifyCode = async () => {
-    if (!code.trim() || code.trim().length !== 6) { setError("Please enter the 6-digit code from your email."); return; }
+    if (!code.trim() || code.trim().length < 5 || code.trim().length > 6) { setError("Please enter the code from your email."); return; }
 
     setLoading(true);
     setError("");
@@ -67,7 +67,7 @@ export default function LinkAccount() {
       const resp = await fetch(B44_EMAIL_LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: code.trim() }),
+        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: code.trim(), login_code: code.trim() }),
       });
       const data = await resp.json();
       if (data.success) {
