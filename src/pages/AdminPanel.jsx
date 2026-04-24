@@ -264,8 +264,11 @@ export default function AdminPanel() {
   const { data: allUsers = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["adminUsers"],
     queryFn: async () => {
-      // Use server-side endpoint so service role can read all users
-      const resp = await fetch("/api/adminUsers");
+      const resp = await fetch("https://base44.app/api/apps/68f93544702b554e3e1f7297/functions/getAdminUsers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminEmail: currentUser?.email }),
+      });
       if (!resp.ok) throw new Error("Failed to fetch users");
       return resp.json();
     },
