@@ -69,10 +69,10 @@ export default function EmailSignIn() {
     setError("");
     try {
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch("/api/linkAccount", {
+      const resp = await fetch("https://base44.app/api/apps/68f93544702b554e3e1f7297/functions/emailLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), code: trimmedCode, appleUserId }),
+        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: trimmedCode }),
       });
       const data = await resp.json();
       if (data.success && data.user) {
