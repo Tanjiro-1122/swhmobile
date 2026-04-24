@@ -279,8 +279,8 @@ export default function AdminPanel() {
   });
 
   // ── Platform split stats ─────────────────────────────────────────────────────
-  const mobileUsers = allUsers.filter(u => u.apple_user_id && u.apple_user_id.startsWith("apple_"));
-  const webOnlyUsers = allUsers.filter(u => !u.apple_user_id || !u.apple_user_id.startsWith("apple_"));
+  const mobileUsers = allUsers.filter(u => u._source === "mobile" || (u.apple_user_id && u.apple_user_id.startsWith("apple_")));
+  const webOnlyUsers = allUsers.filter(u => u._source === "web_auth" || u._source === "web_entity" || (!u.apple_user_id || !u.apple_user_id.startsWith("apple_")));
   const linkedUsers = allUsers.filter(u => u.apple_user_id && u.linked_web_account_id);
   const totalCredits = allUsers.reduce((a, u) => a + (u.credits || u.search_credits || 0), 0);
   const avgCredits = allUsers.length ? (totalCredits / allUsers.length).toFixed(1) : 0;

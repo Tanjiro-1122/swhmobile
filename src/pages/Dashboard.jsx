@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePlatform } from "@/components/hooks/usePlatform";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -396,38 +397,45 @@ function SalQuickChat({ navigate }) {
 
 // ─── Feature grid ─────────────────────────────────────────────────────────────
 const FEATURE_TILES = [
-  { label: "Player Stats",    icon: Users,       page: "PlayerStats",    color: "cyan",    tag: null,      desc: "Search any player. AI analysis." },
-  { label: "Team Stats",      icon: Shield,       page: "TeamStats",      color: "blue",    tag: null,      desc: "Full breakdown + wager rating." },
-  { label: "Analysis Hub",    icon: BarChart3,    page: "AnalysisHub",    color: "yellow",  tag: "HOT",     desc: "AI predictions & matchup reads." },
-  { label: "Parlay Builder",  icon: Zap,          page: "AIParlayBuilder",color: "lime",    tag: null,      desc: "AI-built parlays, max EV." },
-  { label: "ROI Tracker",     icon: TrendingUp,   page: "ROITracker",     color: "green",   tag: null,      desc: "Track every bet. See your edge." },
-  { label: "Bankroll",        icon: DollarSign,   page: "BankrollManager",color: "emerald", tag: null,      desc: "Manage your stakes & limits." },
-  { label: "Bet Calculator",  icon: Calculator,   page: "BettingCalculator",color:"slate",  tag: null,      desc: "Parlay payout & odds math." },
-  { label: "Community",       icon: MessageSquare,page: "CommunityHub",   color: "pink",    tag: null,      desc: "Picks, tips & social bets." },
-  { label: "Daily Briefs",    icon: BookOpen,     page: "DailyBriefs",    color: "indigo",  tag: "NEW",     desc: "Morning betting briefing." },
-  { label: "Saved Results",   icon: Star,         page: "SavedResults",   color: "yellow",  tag: null,      desc: "All your past analyses." },
-  { label: "Live Scores",     icon: Flame,        page: "SportsNewsTicker",color:"red",     tag: "LIVE",    desc: "Breaking news & live scores." },
-  { label: "Upgrade",         icon: Crown,        page: "Pricing",        color: "purple",  tag: "PRO",     desc: "Unlimited credits & features." },
-  { label: "My Account",      icon: User,         page: "MyAccount",      color: "slate",   tag: null,      desc: "Settings, privacy & delete." },
+  { label: "Player Stats",    icon: Users,       page: "PlayerStats",    color: "cyan",    tag: null,      desc: "Search any player. AI analysis.",  webExclusive: false },
+  { label: "Team Stats",      icon: Shield,       page: "TeamStats",      color: "blue",    tag: null,      desc: "Full breakdown + wager rating.",   webExclusive: false },
+  { label: "Ask S.A.L.",      icon: Brain,        page: "AskSAL",         color: "purple",  tag: "AI",      desc: "Your AI sports detective.",        webExclusive: false },
+  { label: "Live Odds",       icon: Activity,     page: "LiveOdds",       color: "red",     tag: "LIVE",    desc: "Real-time odds across sports.",    webExclusive: false },
+  { label: "News & Scores",   icon: Flame,        page: "SportsNewsTicker",color:"orange",  tag: null,      desc: "Breaking news & live scores.",    webExclusive: false },
+  { label: "Parlay Builder",  icon: Zap,          page: "AIParlayBuilder",color: "lime",    tag: null,      desc: "AI-built parlays, max EV.",        webExclusive: true  },
+  { label: "ROI Tracker",     icon: TrendingUp,   page: "ROITracker",     color: "green",   tag: null,      desc: "Track every bet. See your edge.", webExclusive: true  },
+  { label: "Bankroll",        icon: DollarSign,   page: "BankrollManager",color: "emerald", tag: null,      desc: "Manage your stakes & limits.",    webExclusive: true  },
+  { label: "Bet Calculator",  icon: Calculator,   page: "BettingCalculator",color:"slate",  tag: null,      desc: "Parlay payout & odds math.",      webExclusive: true  },
+  { label: "Analysis Hub",    icon: BarChart3,    page: "AnalysisHub",    color: "yellow",  tag: "HOT",     desc: "AI predictions & matchup reads.", webExclusive: true  },
+  { label: "Daily Briefs",    icon: BookOpen,     page: "DailyBriefs",    color: "indigo",  tag: null,      desc: "Morning betting briefing.",       webExclusive: true  },
+  { label: "Community",       icon: MessageSquare,page: "CommunityHub",   color: "pink",    tag: null,      desc: "Picks, tips & social bets.",      webExclusive: true  },
+  { label: "Saved Results",   icon: Star,         page: "SavedResults",   color: "yellow",  tag: null,      desc: "All your past analyses.",         webExclusive: true  },
+  { label: "Upgrade",         icon: Crown,        page: "Pricing",        color: "purple",  tag: "PRO",     desc: "Unlimited credits & features.",   webExclusive: false },
+  { label: "My Account",      icon: User,         page: "MyAccount",      color: "slate",   tag: null,      desc: "Settings, privacy & delete.",     webExclusive: false },
 ];
 
-function FeatureGrid({ navigate, isPaid }) {
+function FeatureGrid({ navigate, isPaid, isIOSNative }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
       {FEATURE_TILES.map(tile => {
         const c = COLOR_MAP[tile.color] || COLOR_MAP.slate;
         const Icon = tile.icon;
+        const locked = tile.webExclusive && isIOSNative;
         return (
           <motion.button key={tile.page}
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            onClick={() => navigate(createPageUrl(tile.page))}
-            className={`relative text-left bg-gray-900 border rounded-2xl p-4 hover:${c.border} transition-all group ${c.border}`}>
-            {tile.tag && (
+            whileHover={locked ? {} : { scale: 1.02 }} whileTap={locked ? {} : { scale: 0.97 }}
+            onClick={() => { if (!locked) navigate(createPageUrl(tile.page)); }}
+            className={`relative text-left rounded-2xl p-4 transition-all group border ${locked ? "bg-gray-900/40 border-gray-800 opacity-50 cursor-default" : `bg-gray-900 hover:${c.border} ${c.border}`}`}>
+            {locked && (
+              <span className="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gray-700 text-gray-400">WEB</span>
+            )}
+            {!locked && tile.tag && (
               <span className={`absolute top-3 right-3 text-[9px] font-black px-1.5 py-0.5 rounded-full ${
                 tile.tag === "LIVE" ? "bg-red-500 text-white animate-pulse" :
                 tile.tag === "HOT" ? "bg-orange-500 text-white" :
                 tile.tag === "NEW" ? "bg-blue-500 text-white" :
-                tile.tag === "PRO" ? "bg-purple-500 text-white" : "bg-gray-700 text-gray-300"
+                tile.tag === "PRO" ? "bg-purple-500 text-white" :
+                tile.tag === "AI"  ? "bg-purple-600 text-white" : "bg-gray-700 text-gray-300"
               }`}>{tile.tag}</span>
             )}
             <div className={`w-9 h-9 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
@@ -470,6 +478,8 @@ function StatsBar({ credits, isPaid }) {
 // ─── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isIOSNative, isAndroidNative } = usePlatform();
+  const isMobileNative = isIOSNative || isAndroidNative;
   const [greeting, setGreeting] = useState("Welcome");
   const [currentUser, setCurrentUser] = useState(null);
   const [credits, setCredits] = useState(5);
@@ -621,7 +631,7 @@ export default function Dashboard() {
               <h2 className="text-lg font-black text-white">All Tools</h2>
               <span className="text-xs text-gray-500">{FEATURE_TILES.length} features</span>
             </div>
-            <FeatureGrid navigate={navigate} isPaid={isPaid} />
+            <FeatureGrid navigate={navigate} isPaid={isPaid} isIOSNative={isMobileNative} />
           </div>
 
           {/* Footer nudge */}

@@ -123,6 +123,18 @@ function BankrollManagerContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+      {/* Back to Dashboard */}
+      <div className="px-4 pt-4 pb-2">
+        <button
+          onClick={() => navigate(createPageUrl("Dashboard"))}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Dashboard
+        </button>
+      </div>
       <button
         onClick={() => navigate("/dashboard")}
         style={{
