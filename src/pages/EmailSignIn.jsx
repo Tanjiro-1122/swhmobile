@@ -77,6 +77,21 @@ export default function EmailSignIn() {
       const data = await resp.json();
       if (data.success && data.user) {
         const u = data.user;
+        // If we have an Apple ID in localStorage, merge it into the web account
+        if (appleUserId) {
+          try {
+            await fetch("/api/handleAppleSignIn", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                appleUserId,
+                email: email.trim().toLowerCase(),
+                fullName: u.full_name || null,
+                linkToExisting: true,
+              }),
+            });
+          } catch(e) {}
+        }
         // Store linked account in localStorage — same keys the rest of the app reads
         localStorage.setItem("swh_user", JSON.stringify(u));
         localStorage.setItem("swh_user_id", u.apple_user_id || u.id || "");
