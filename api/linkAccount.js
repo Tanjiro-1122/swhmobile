@@ -1,19 +1,24 @@
 // api/linkAccount.js
-// Flow: user types web email → gets code → enters code → we find web account by email,
-// verify the code, then stamp apple_user_id onto that web record and return its plan/credits.
+// Verifies the OTP stored in the User entity, stamps apple_user_id, returns full account.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
-const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_FUNCTION_URL = `https://app.base44.com/api/apps/${B44_APP_ID}/functions/emailLogin`;
-const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
+const B44_BASE   = `https://app.base44.com/api/apps/${B44_APP_ID}`;
+const B44_KEY    = process.env.SWH_BASE44_API_KEY || "";
 
-function b44Headers() { return { "Content-Type": "application/json", "api_key": B44_KEY }; }
+function b44Headers() {
+  return { "Content-Type": "application/json", "api_key": B44_KEY };
+}
+
 async function b44Fetch(path, opts = {}) {
-  const res = await fetch(`${B44_BASE}${path}`, { ...opts, headers: { ...b44Headers(), ...(opts.headers||{}) } });
+  const res = await fetch(`${B44_BASE}${path}`, {
+    ...opts,
+    headers: { ...b44Headers(), ...(opts.headers || {}) },
+  });
   const text = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Base44 ${res.status}: ${text.slice(0,300)}`);
+  if (!res.ok) throw new Error(`Base44 ${res.status}: ${text.slice(0, 300)}`);
   try { return JSON.parse(text); } catch { return {}; }
 }
+
 function toRecords(d) { return Array.isArray(d) ? d : (d?.records ?? d?.items ?? []); }
 
 export default async function handler(req, res) {
@@ -29,59 +34,67 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: "webEmail and code are required." });
     }
     const email = webEmail.trim().toLowerCase();
+    const submittedCode = String(code).trim();
 
-    // 1. Verify the code (Base44 emailLogin manages it)
-    const verifyRes = await fetch(B44_FUNCTION_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "verify_code", email, code: String(code).trim() }),
-    });
-    const verifyData = await verifyRes.json().catch(() => ({}));
-    if (!verifyData.success) {
-      return res.status(400).json({ success: false, error: "Incorrect or expired code. Please try again." });
-    }
-
-    // 2. Find the web account by email — this is THE account
+    // 1. Find the user by email
     const webData = await b44Fetch(`/entities/User?limit=500`);
     const allUsers = toRecords(webData);
-    const webUser = allUsers.find(u => (u.email||"").toLowerCase() === email) || null;
-    // webUser already set above
-    if (!webUser) return res.status(404).json({ success: false, error: "Account not found." });
+    const webUser  = allUsers.find(u => (u.email || "").toLowerCase() === email) || null;
 
-    // 3. Stamp apple_user_id onto the web account so mobile lookups work going forward
-    const updates = { link_verification_mobile_id: null };
+    if (!webUser) {
+      return res.status(404).json({ success: false, error: "Account not found." });
+    }
+
+    // 2. Validate OTP
+    const storedCode   = webUser.otp_code || "";
+    const storedExpiry = webUser.otp_expiry ? new Date(webUser.otp_expiry) : null;
+
+    if (!storedCode) {
+      return res.status(400).json({ success: false, error: "No code was sent. Please request a new one." });
+    }
+    if (storedCode !== submittedCode) {
+      return res.status(400).json({ success: false, error: "Incorrect code. Please try again." });
+    }
+    if (storedExpiry && Date.now() > storedExpiry.getTime()) {
+      return res.status(400).json({ success: false, error: "Code expired. Please request a new one." });
+    }
+
+    // 3. Stamp apple_user_id and clear OTP
+    const updates = { otp_code: null, otp_expiry: null, link_verification_mobile_id: null };
     if (appleUserId && !webUser.apple_user_id) {
       updates.apple_user_id = appleUserId;
     }
-    await b44Fetch(`/entities/User/${webUser.id}`, { method: "PUT", body: JSON.stringify(updates) });
+    await b44Fetch(`/entities/User/${webUser.id}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    });
 
-    // 4. Return the full plan/credits from the web account
-    const plan = webUser.subscription_type || "free";
-    const status = webUser.subscription_status || "inactive";
-    const credits = Number(webUser.search_credits ?? webUser.credits ?? 0);
+    // 4. Return the full account
+    const credits = Number(webUser.search_credits ?? webUser.credits ?? 5);
+    const plan    = webUser.subscription_type || "free";
 
     return res.status(200).json({
       success: true,
-      message: `Accounts linked! Your ${plan} plan and ${credits} credits are now active.`,
+      message: `Signed in! Your ${plan} plan and ${credits} credits are now active.`,
       user: {
-        id: webUser.id,
-        email: webUser.email,
-        full_name: webUser.full_name || "",
-        apple_user_id: appleUserId || webUser.apple_user_id || "",
-        subscription_type: plan,
-        subscription_status: status,
-        subscription_expiry_date: webUser.subscription_expiry_date || null,
+        id:                        webUser.id,
+        email:                     webUser.email,
+        full_name:                 webUser.full_name || "",
+        apple_user_id:             appleUserId || webUser.apple_user_id || "",
+        subscription_type:         plan,
+        subscription_status:       webUser.subscription_status || "inactive",
+        subscription_expiry_date:  webUser.subscription_expiry_date || null,
         credits,
-        search_credits: credits,
+        search_credits:            credits,
         monthly_free_lookups_used: webUser.monthly_free_lookups_used ?? 0,
-        role: webUser.role || "user",
-        vip_member: webUser.vip_member || false,
-        is_legacy_member: webUser.is_legacy_member || false,
+        role:                      webUser.role || "user",
+        vip_member:                webUser.vip_member || false,
+        is_legacy_member:          webUser.is_legacy_member || false,
       },
     });
 
   } catch (err) {
-    console.error("[linkAccount] error:", err.message);
-    return res.status(500).json({ success: false, error: "Server error. Please try again." });
+    console.error("[linkAccount] ERROR:", err.message);
+    return res.status(500).json({ success: false, error: "Server error: " + err.message });
   }
 }
