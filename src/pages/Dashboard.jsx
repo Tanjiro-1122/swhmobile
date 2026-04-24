@@ -415,9 +415,16 @@ const FEATURE_TILES = [
 ];
 
 function FeatureGrid({ navigate, isPaid, isIOSNative }) {
+  const sorted = [...FEATURE_TILES].sort((a, b) => {
+    if (isIOSNative) {
+      if (a.webExclusive && !b.webExclusive) return 1;
+      if (!a.webExclusive && b.webExclusive) return -1;
+    }
+    return 0;
+  });
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-      {FEATURE_TILES.map(tile => {
+      {sorted.map(tile => {
         const c = COLOR_MAP[tile.color] || COLOR_MAP.slate;
         const Icon = tile.icon;
         const locked = tile.webExclusive && isIOSNative;
@@ -427,7 +434,7 @@ function FeatureGrid({ navigate, isPaid, isIOSNative }) {
             onClick={() => { if (!locked) navigate(createPageUrl(tile.page)); }}
             className={`relative text-left rounded-2xl p-4 transition-all group border ${locked ? "bg-gray-900/40 border-gray-800 opacity-50 cursor-default" : `bg-gray-900 hover:${c.border} ${c.border}`}`}>
             {locked && (
-              <span className="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gray-700 text-gray-400">WEB</span>
+              <span className="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gray-700 text-gray-400">Web Only</span>
             )}
             {!locked && tile.tag && (
               <span className={`absolute top-3 right-3 text-[9px] font-black px-1.5 py-0.5 rounded-full ${
