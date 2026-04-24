@@ -149,6 +149,22 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── Link existing web account to Apple ID (no identityToken needed) ──
+    const { linkToExisting, appleUserId: linkAppleId, email: linkEmail } = req.body || {};
+    if (linkToExisting && linkAppleId && linkEmail) {
+      try {
+        const webUser = await findUserByEmail(linkEmail);
+        if (webUser) {
+          await updateUser(webUser.id, { apple_user_id: linkAppleId });
+          return res.status(200).json({ success: true, action: 'linked' });
+        } else {
+          return res.status(404).json({ success: false, error: 'No web account found with that email' });
+        }
+      } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+      }
+    }
+
     if (!identityToken) {
       return res.status(400).json({ success: false, error: 'identityToken is required' });
     }
