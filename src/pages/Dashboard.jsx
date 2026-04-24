@@ -100,7 +100,7 @@ const COLOR_MAP = {
 };
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
-function Sidebar({ activePage, navigate, user, onLogout, credits, isPaid }) {
+function Sidebar({ activePage, navigate, user, onLogout, credits, isPaid, isMobileNative }) {
   const displayName = getDisplayName(user);
   return (
     <aside className="flex flex-col w-full h-full bg-gray-900 border-r border-gray-800">
@@ -140,7 +140,7 @@ function Sidebar({ activePage, navigate, user, onLogout, credits, isPaid }) {
           <div key={section.label}>
             <p className="text-[10px] font-black text-gray-600 tracking-widest px-2 mb-1">{section.label}</p>
             <div className="space-y-0.5">
-              {section.items.map(item => {
+              {section.items.filter(item => !(isMobileNative && item.id === "live")).map(item => {
                 const c = COLOR_MAP[item.color];
                 const active = activePage === item.page;
                 const Icon = item.icon;
@@ -400,7 +400,7 @@ const FEATURE_TILES = [
   { label: "Player Stats",    icon: Users,       page: "PlayerStats",    color: "cyan",    tag: null,      desc: "Search any player. AI analysis.",  webExclusive: false },
   { label: "Team Stats",      icon: Shield,       page: "TeamStats",      color: "blue",    tag: null,      desc: "Full breakdown + wager rating.",   webExclusive: false },
   { label: "Ask S.A.L.",      icon: Brain,        page: "AskSAL",         color: "purple",  tag: "AI",      desc: "Your AI sports detective.",        webExclusive: false },
-  { label: "Live Odds",       icon: Activity,     page: "LiveOdds",       color: "red",     tag: "LIVE",    desc: "Real-time odds across sports.",    webExclusive: false },
+  { label: "Live Odds",       icon: Activity,     page: "LiveOdds",       color: "red",     tag: "LIVE",    desc: "Real-time odds across sports.",    webExclusive: true  },
   { label: "News & Scores",   icon: Flame,        page: "SportsNewsTicker",color:"orange",  tag: null,      desc: "Breaking news & live scores.",    webExclusive: false },
   { label: "Parlay Builder",  icon: Zap,          page: "AIParlayBuilder",color: "lime",    tag: null,      desc: "AI-built parlays, max EV.",        webExclusive: true  },
   { label: "ROI Tracker",     icon: TrendingUp,   page: "ROITracker",     color: "green",   tag: null,      desc: "Track every bet. See your edge.", webExclusive: true  },
@@ -545,7 +545,7 @@ export default function Dashboard() {
       {/* Sidebar (desktop only) */}
       <div className="hidden lg:flex flex-col w-64 min-h-screen bg-gray-900 border-r border-gray-800 fixed left-0 top-0 bottom-0 z-30">
         <Sidebar activePage="Dashboard" navigate={navigate} user={currentUser}
-          onLogout={() => setShowLogoutConfirm(true)} credits={credits} isPaid={isPaid} />
+          onLogout={() => setShowLogoutConfirm(true)} credits={credits} isPaid={isPaid} isMobileNative={isMobileNative} />
       </div>
 
       {/* Mobile nav overlay */}
@@ -559,7 +559,7 @@ export default function Dashboard() {
               className="fixed left-0 top-0 bottom-0 w-64 z-50 lg:hidden bg-gray-900 border-r border-gray-800 overflow-y-auto">
               <Sidebar activePage="Dashboard" navigate={(url) => { navigate(url); setMobileNavOpen(false); }}
                 user={currentUser} onLogout={() => { setMobileNavOpen(false); setShowLogoutConfirm(true); }}
-                credits={credits} isPaid={isPaid} />
+                credits={credits} isPaid={isPaid} isMobileNative={isMobileNative} />
             </motion.div>
           </>
         )}
