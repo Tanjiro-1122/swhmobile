@@ -4,12 +4,9 @@ import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, KeyRound, ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Calls Base44 emailLogin function directly — no Vercel hop
+// Uses Vercel API endpoints for email-based account linking
 
 const STEPS = { EMAIL: "email", CODE: "code" };
-
-const B44_APP_ID = "68f93544702b554e3e1f7297";
-const B44_EMAIL_LOGIN = `https://app.base44.com/api/apps/${B44_APP_ID}/functions/emailLogin`;
 
 export default function EmailSignIn() {
   const navigate = useNavigate();
@@ -41,17 +38,17 @@ export default function EmailSignIn() {
     try {
       // Get apple_user_id from localStorage so we can link accounts on verify
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send_code", email: trimmed }),
+        body: JSON.stringify({ webEmail: trimmed, appleUserId }),
       });
       const data = await resp.json();
       if (data.success) {
         setStep(STEPS.CODE);
         startResendTimer();
       } else {
-        setError(data.error || data.message || "No account found with that email. Make sure you use the email from sportswagerhelper.com.");
+        setError(data.error || "No account found with that email. Make sure you use the email from sportswagerhelper.com.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -63,8 +60,8 @@ export default function EmailSignIn() {
   // ── Step 2: verify code ──────────────────────────────────────────────
   const handleVerifyCode = async () => {
     const trimmedCode = code.trim();
-    if (trimmedCode.length < 5 || trimmedCode.length > 6 || !/^\d+$/.test(trimmedCode)) {
-      setError("Please enter the code from your email.");
+    if (trimmedCode.length !== 6 || !/^\d{6}$/.test(trimmedCode)) {
+      setError("Please enter the 6-digit code from your email.");
       return;
     }
 
@@ -72,52 +69,42 @@ export default function EmailSignIn() {
     setError("");
     try {
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch("/api/linkAccount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: String(trimmedCode).replace(/\s/g, "") }),
+        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), code: trimmedCode, appleUserId }),
       });
       const data = await resp.json();
-      if (data.success) {
-        const u = data.user || data.profile || data;
-        const userEmail = email.trim().toLowerCase();
-        const current = JSON.parse(localStorage.getItem("swh_user") || "{}");
-        const updated = {
-          ...current,
-          email: u.email || userEmail,
-          full_name: u.full_name || current.full_name || "",
-          subscription_type: u.subscription_type || "free",
-          search_credits: u.search_credits ?? u.credits ?? 5,
-          credits: u.credits ?? u.search_credits ?? 5,
-          web_account_linked: true,
-        };
-        localStorage.setItem("swh_user", JSON.stringify(updated));
-        localStorage.setItem("swh_user_id", u.id || current.id || "");
-        localStorage.setItem("swh_apple_user_id", u.apple_user_id || current.apple_user_id || "");
-        localStorage.setItem("swh_search_credits", String(updated.search_credits));
-        localStorage.setItem("swh_is_premium", String(updated.subscription_type !== "free"));
-        localStorage.setItem("swh_plan", updated.subscription_type || "free");
-        localStorage.setItem("swh_email", updated.email);
-        if (updated.full_name) localStorage.setItem("swh_full_name", updated.full_name);
+      if (data.success && data.user) {
+        const u = data.user;
+        // Store linked account in localStorage — same keys the rest of the app reads
+        localStorage.setItem("swh_user", JSON.stringify(u));
+        localStorage.setItem("swh_user_id", u.apple_user_id || u.id || "");
+        localStorage.setItem("swh_apple_user_id", u.apple_user_id || u.id || "");
+        localStorage.setItem("swh_search_credits", String(u.credits ?? u.search_credits ?? 5));
+        localStorage.setItem("swh_is_premium", String(u.subscription_type !== "free"));
+        localStorage.setItem("swh_plan", u.subscription_type || "free");
+        if (u.full_name) localStorage.setItem("swh_full_name", u.full_name);
+        if (u.email) localStorage.setItem("swh_email", u.email);
         // Notify native wrapper if in iOS app
         try {
           if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
+            window.ReactNativeWebView.postMessage(JSON.stringify(JSON.stringify({
               type: "SIGN_IN_COMPLETE",
               data: {
-                userId: u.id || current.id,
-                isPremium: updated.subscription_type !== "free",
-                plan: updated.subscription_type,
-                email: updated.email,
-                fullName: updated.full_name,
+                userId: u.apple_user_id || u.id,
+                isPremium: u.subscription_type !== "free",
+                plan: u.subscription_type,
+                email: u.email,
+                fullName: u.full_name,
               }
-            }));
+            })));
           }
         } catch(e) {}
         window.dispatchEvent(new Event("storage"));
         navigate(createPageUrl("Dashboard"), { replace: true });
       } else {
-        setError(data.error || data.message || "Invalid or expired code. Please try again.");
+        setError(data.error || "Invalid or expired code. Please try again.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -133,16 +120,16 @@ export default function EmailSignIn() {
     setLoading(true);
     try {
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), appleUserId }),
       });
       const data = await resp.json();
       if (data.success) {
         startResendTimer();
       } else {
-        setError(data.error || data.message || "Failed to resend. Please try again.");
+        setError(data.error || "Failed to resend. Please try again.");
       }
     } catch {
       setError("Network error. Please try again.");
@@ -246,7 +233,7 @@ export default function EmailSignIn() {
               <div className="relative">
                 <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
-                  type="text"
+                  type="number"
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={6}
