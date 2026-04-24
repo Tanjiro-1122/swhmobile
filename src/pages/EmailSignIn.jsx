@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, KeyRound, ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
-const BASE44_EMAIL_LOGIN = "https://app.base44.com/api/v1/functions/emailLogin";
+// Uses Vercel API endpoints for email-based account linking
 
 const STEPS = { EMAIL: "email", CODE: "code" };
 
@@ -36,17 +36,19 @@ export default function EmailSignIn() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch(BASE44_EMAIL_LOGIN, {
+      // Get apple_user_id from localStorage so we can link accounts on verify
+      const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
+      const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send_code", email: trimmed }),
+        body: JSON.stringify({ webEmail: trimmed, appleUserId }),
       });
       const data = await resp.json();
       if (data.success) {
         setStep(STEPS.CODE);
         startResendTimer();
       } else {
-        setError(data.error || data.message || "No account found with that email.");
+        setError(data.error || "No account found with that email. Make sure you use the email from sportswagerhelper.com.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -66,25 +68,43 @@ export default function EmailSignIn() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch(BASE44_EMAIL_LOGIN, {
+      const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
+      const resp = await fetch("/api/linkAccount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: trimmedCode }),
+        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), code: trimmedCode, appleUserId }),
       });
       const data = await resp.json();
       if (data.success && data.user) {
         const u = data.user;
-        // Store user in localStorage — same keys the rest of the app reads
+        // Store linked account in localStorage — same keys the rest of the app reads
         localStorage.setItem("swh_user", JSON.stringify(u));
+        localStorage.setItem("swh_user_id", u.apple_user_id || u.id || "");
         localStorage.setItem("swh_apple_user_id", u.apple_user_id || u.id || "");
-        localStorage.setItem("swh_search_credits", String(u.credits ?? u.search_credits ?? 0));
+        localStorage.setItem("swh_search_credits", String(u.credits ?? u.search_credits ?? 5));
+        localStorage.setItem("swh_is_premium", String(u.subscription_type !== "free"));
+        localStorage.setItem("swh_plan", u.subscription_type || "free");
         if (u.full_name) localStorage.setItem("swh_full_name", u.full_name);
         if (u.email) localStorage.setItem("swh_email", u.email);
-        // Dispatch storage event so Dashboard re-reads immediately
+        // Notify native wrapper if in iOS app
+        try {
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify(JSON.stringify({
+              type: "SIGN_IN_COMPLETE",
+              data: {
+                userId: u.apple_user_id || u.id,
+                isPremium: u.subscription_type !== "free",
+                plan: u.subscription_type,
+                email: u.email,
+                fullName: u.full_name,
+              }
+            })));
+          }
+        } catch(e) {}
         window.dispatchEvent(new Event("storage"));
         navigate(createPageUrl("Dashboard"), { replace: true });
       } else {
-        setError(data.error || data.message || "Invalid or expired code. Please try again.");
+        setError(data.error || "Invalid or expired code. Please try again.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -99,10 +119,11 @@ export default function EmailSignIn() {
     setError("");
     setLoading(true);
     try {
-      const resp = await fetch(BASE44_EMAIL_LOGIN, {
+      const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
+      const resp = await fetch("/api/sendVerificationCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), appleUserId }),
       });
       const data = await resp.json();
       if (data.success) {
