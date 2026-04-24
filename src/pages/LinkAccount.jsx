@@ -6,6 +6,9 @@ import { ArrowLeft, Link2, CheckCircle2, Loader2, Mail, AlertCircle, Crown, KeyR
 
 const STEPS = { EMAIL: 'email', CODE: 'code', SUCCESS: 'success' };
 
+const B44_APP_ID = "68f93544702b554e3e1f7297";
+const B44_EMAIL_LOGIN = `https://app.base44.com/api/apps/${B44_APP_ID}/functions/emailLogin`;
+
 export default function LinkAccount() {
   const navigate = useNavigate();
   const [step, setStep] = useState(STEPS.EMAIL);
@@ -28,14 +31,13 @@ export default function LinkAccount() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch("/api/sendVerificationCode", {
+      const resp = await fetch(B44_EMAIL_LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase() }),
+        body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
       });
       const data = await resp.json();
       if (data.success) {
-        setWebUserId(data.webUserId);
         setStep(STEPS.CODE);
         // 60-second resend cooldown
         setResendCooldown(60);
@@ -62,24 +64,43 @@ export default function LinkAccount() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch("/api/linkAccount", {
+      const resp = await fetch(B44_EMAIL_LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase(), code: code.trim() }),
+        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: code.trim() }),
       });
       const data = await resp.json();
       if (data.success) {
-        // Update localStorage
-        const current = JSON.parse(localStorage.getItem("swh_user") || "{}");
-        const updated = { ...current, ...data.user };
-        localStorage.setItem("swh_user", JSON.stringify(updated));
-        localStorage.setItem("swh_search_credits", String(data.user.search_credits ?? 5));
-        if (data.user.email) localStorage.setItem("swh_email", data.user.email);
+        // Fetch full account details from Vercel lookup
+        const userEmail = email.trim().toLowerCase();
+        try {
+          const lookupResp = await fetch("/api/lookupAccount", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail }),
+          });
+          const lookupData = await lookupResp.json();
+          if (lookupData.success && lookupData.preview) {
+            const current = JSON.parse(localStorage.getItem("swh_user") || "{}");
+            const updated = {
+              ...current,
+              email: userEmail,
+              full_name: lookupData.preview.full_name || current.full_name || "",
+              subscription_type: lookupData.preview.subscription_type || "free",
+              search_credits: lookupData.preview.credits ?? 5,
+              credits: lookupData.preview.credits ?? 5,
+              web_account_linked: true,
+            };
+            localStorage.setItem("swh_user", JSON.stringify(updated));
+            localStorage.setItem("swh_search_credits", String(lookupData.preview.credits ?? 5));
+            localStorage.setItem("swh_email", userEmail);
+            setSuccess({ success: true, user: lookupData.preview });
+          }
+        } catch {}
         window.dispatchEvent(new Event("storage"));
-        setSuccess(data);
         setStep(STEPS.SUCCESS);
       } else {
-        setError(data.error || "Verification failed. Please try again.");
+        setError(data.error || data.message || "Verification failed. Please try again.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -95,14 +116,13 @@ export default function LinkAccount() {
     setError("");
     setLoading(true);
     try {
-      const resp = await fetch("/api/sendVerificationCode", {
+      const resp = await fetch(B44_EMAIL_LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appleUserId, webEmail: email.trim().toLowerCase() }),
+        body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
       });
       const data = await resp.json();
       if (data.success) {
-        setWebUserId(data.webUserId);
         setResendCooldown(60);
         const timer = setInterval(() => {
           setResendCooldown(prev => {
