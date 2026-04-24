@@ -1,13 +1,15 @@
 // api/sendVerificationCode.js
-// Finds the web account by email (SWH entity OR Base44 auth), creates entity record if needed,
-// then sends a 6-digit OTP via Base44 emailLogin.
+// Finds the web account by email in SWH User entity, then sends OTP via Base44 emailLogin.
+// Also handles web auth users who exist in Base44 but not in the entity yet.
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_FUNCTION_URL = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
+const B44_FUNCTION_URL = `https://app.base44.com/api/apps/${B44_APP_ID}/functions/emailLogin`;
 const B44_KEY = process.env.SWH_BASE44_API_KEY || "";
 
-function b44Headers() { return { "Content-Type": "application/json", "api-key": B44_KEY }; }
+function b44Headers() {
+  return { "Content-Type": "application/json", "api_key": B44_KEY };
+}
 
 async function b44Fetch(path, opts = {}) {
   const res = await fetch(`${B44_BASE}${path}`, {
@@ -38,22 +40,18 @@ export default async function handler(req, res) {
     const allUsers = toRecords(webData);
     let webUser = allUsers.find(u => (u.email || "").toLowerCase() === email) || null;
 
-    // 2. If not in entity, check Base44 auth users (web sign-ups via Base44 login)
+    // 2. If not found in entity, try Base44 auth users list (catches web-only sign-ups)
     if (!webUser) {
       try {
-        const authResp = await fetch(`${B44_BASE.replace('/api/apps/', '/api/apps/')}/users?limit=500`, {
+        const authResp = await fetch(`${B44_BASE}/users?limit=500`, {
           headers: b44Headers(),
         });
-        // Try the users endpoint
-        const authResp2 = await fetch(`https://app.base44.com/api/apps/${B44_APP_ID}/users?limit=500`, {
-          headers: b44Headers(),
-        });
-        if (authResp2.ok) {
-          const authData = await authResp2.json().catch(() => ({}));
+        if (authResp.ok) {
+          const authData = await authResp.json().catch(() => ({}));
           const authUsers = toRecords(authData);
           const authUser = authUsers.find(u => (u.email || "").toLowerCase() === email) || null;
           if (authUser) {
-            // Auto-create a SWH entity record for this web auth user
+            // Auto-create a SWH entity record for this auth-only user
             const created = await b44Fetch(`/entities/User`, {
               method: "POST",
               body: JSON.stringify({
@@ -65,22 +63,22 @@ export default async function handler(req, res) {
               }),
             });
             webUser = created;
-            console.log("[sendVerificationCode] Auto-created entity record for auth user:", email);
+            console.log("[sendVerificationCode] Auto-created entity record for:", email);
           }
         }
       } catch (authErr) {
-        console.warn("[sendVerificationCode] Auth user lookup failed:", authErr.message);
+        console.warn("[sendVerificationCode] Auth fallback failed:", authErr.message);
       }
     }
 
     if (!webUser) {
       return res.status(404).json({
         success: false,
-        error: "No account found with that email. Make sure you use the email you signed up with on sportswagerhelper.com.",
+        error: "No account found with that email. Make sure you use the exact email from sportswagerhelper.com.",
       });
     }
 
-    // 3. Optionally store appleUserId for verify step
+    // 3. Stamp appleUserId for the verify step
     if (appleUserId && webUser.id) {
       await b44Fetch(`/entities/User/${webUser.id}`, {
         method: "PUT",
@@ -110,7 +108,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("[sendVerificationCode]", err.message);
-    return res.status(500).json({ success: false, error: "Server error. Please try again." });
+    console.error("[sendVerificationCode] ERROR:", err.message);
+    return res.status(500).json({ success: false, error: "Server error: " + err.message });
   }
 }
