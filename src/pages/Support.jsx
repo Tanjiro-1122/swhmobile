@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function Support() {
   const navigate = useNavigate();
@@ -6,7 +7,7 @@ export default function Support() {
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a", color: "#f1f5f9", fontFamily: "sans-serif" }}>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",

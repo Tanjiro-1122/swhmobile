@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -136,7 +137,7 @@ function BankrollManagerContent() {
         </button>
       </div>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",

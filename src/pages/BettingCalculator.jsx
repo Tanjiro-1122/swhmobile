@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -119,7 +120,7 @@ export default function BettingCalculator() {
         </button>
       </div>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",

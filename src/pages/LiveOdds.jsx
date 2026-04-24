@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, RefreshCw, DollarSign, Home, Plane, AlertCircle, BarChart3, Bookmark, BookmarkCheck, Sparkles, LineChart, Target, TrendingDown, Eye } from "lucide-react";

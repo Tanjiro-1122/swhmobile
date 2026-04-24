@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -99,7 +100,7 @@ function AlertsContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",

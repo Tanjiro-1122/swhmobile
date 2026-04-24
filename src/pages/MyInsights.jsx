@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +85,7 @@ function MyInsightsContent() {
         </button>
       </div>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",
@@ -469,7 +470,7 @@ function MyInsightsContent() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-purple-200 hover:shadow-xl transition-shadow cursor-pointer" onClick={() => window.location.href = '/Dashboard'}>
+              <Card className="border-2 border-purple-200 hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl("Dashboard"))}>
                 <CardContent className="p-6 text-center">
                   <Trophy className="w-12 h-12 mx-auto mb-4 text-purple-600" />
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Start Analyzing</h3>

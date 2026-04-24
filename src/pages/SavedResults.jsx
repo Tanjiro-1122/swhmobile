@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -339,7 +340,7 @@ function SavedResultsContent() {
         </button>
       </div>
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",
@@ -663,7 +664,7 @@ function SavedResultsContent() {
                       Clear Filters
                     </Button>
                   ) : (
-                    <Button onClick={() => window.location.href = '/Dashboard'}>
+                    <Button onClick={() => navigate(createPageUrl("Dashboard"))}>
                       Go to Dashboard
                     </Button>
                   )}
