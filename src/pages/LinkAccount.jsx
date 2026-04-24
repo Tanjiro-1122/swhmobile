@@ -7,7 +7,7 @@ import { ArrowLeft, Link2, CheckCircle2, Loader2, Mail, AlertCircle, Crown, KeyR
 const STEPS = { EMAIL: 'email', CODE: 'code', SUCCESS: 'success' };
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
-const B44_EMAIL_LOGIN = `https://app.base44.com/api/apps/${B44_APP_ID}/functions/emailLogin`;
+const B44_EMAIL_LOGIN = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
 
 export default function LinkAccount() {
   const navigate = useNavigate();
