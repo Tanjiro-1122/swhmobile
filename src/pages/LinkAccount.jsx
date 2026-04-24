@@ -71,33 +71,23 @@ export default function LinkAccount() {
       });
       const data = await resp.json();
       if (data.success) {
-        // Fetch full account details from Vercel lookup
-        const userEmail = email.trim().toLowerCase();
-        try {
-          const lookupResp = await fetch("/api/lookupAccount", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: userEmail }),
-          });
-          const lookupData = await lookupResp.json();
-          if (lookupData.success && lookupData.preview) {
-            const current = JSON.parse(localStorage.getItem("swh_user") || "{}");
-            const updated = {
-              ...current,
-              email: userEmail,
-              full_name: lookupData.preview.full_name || current.full_name || "",
-              subscription_type: lookupData.preview.subscription_type || "free",
-              search_credits: lookupData.preview.credits ?? 5,
-              credits: lookupData.preview.credits ?? 5,
-              web_account_linked: true,
-            };
-            localStorage.setItem("swh_user", JSON.stringify(updated));
-            localStorage.setItem("swh_search_credits", String(lookupData.preview.credits ?? 5));
-            localStorage.setItem("swh_email", userEmail);
-            setSuccess({ success: true, user: lookupData.preview });
-          }
-        } catch {}
+        // emailLogin verify returns the full user profile — save it directly
+        const profile = data.user || data.profile || data;
+        const current = JSON.parse(localStorage.getItem("swh_user") || "{}");
+        const updated = {
+          ...current,
+          email: email.trim().toLowerCase(),
+          full_name: profile.full_name || current.full_name || "",
+          subscription_type: profile.subscription_type || "free",
+          search_credits: profile.search_credits ?? profile.credits ?? 5,
+          credits: profile.credits ?? profile.search_credits ?? 5,
+          web_account_linked: true,
+        };
+        localStorage.setItem("swh_user", JSON.stringify(updated));
+        localStorage.setItem("swh_search_credits", String(updated.search_credits));
+        localStorage.setItem("swh_email", updated.email);
         window.dispatchEvent(new Event("storage"));
+        setSuccess({ success: true, user: updated });
         setStep(STEPS.SUCCESS);
       } else {
         setError(data.error || data.message || "Verification failed. Please try again.");
