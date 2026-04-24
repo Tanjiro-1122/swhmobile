@@ -98,6 +98,15 @@ export function useFreeLookupTracker() {
             }
 
             setCurrentUser(user);
+            // Admin users always get unlimited
+            const email = user.email || localStorage.getItem('swh_email') || '';
+            const isAdmin = email.toLowerCase().includes('huertasfam');
+            if (isAdmin) {
+              setUserTier('legacy');
+              setLookupsRemaining(999);
+              setIsLoading(false);
+              return;
+            }
             const tier = user.subscription_type || 'free';
             setUserTier(tier);
 

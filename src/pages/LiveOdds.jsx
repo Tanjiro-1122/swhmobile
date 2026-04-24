@@ -312,7 +312,7 @@ function LiveOddsContent() {
     return (
       <div className="bg-white rounded-xl border-2 border-gray-200 p-4">
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(createPageUrl("Dashboard"))}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           background: "none", border: "none", cursor: "pointer",

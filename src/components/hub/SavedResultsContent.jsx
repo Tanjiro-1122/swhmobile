@@ -21,55 +21,47 @@ export default function SavedResultsContent() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => base44.auth.me().catch(() => null),
   });
 
-  const hasUnlimitedRetention = currentUser?.subscription_type === 'vip_annual' || currentUser?.subscription_type === 'legacy';
+  // Get mobile user from localStorage — merge both so web + mobile saves show up
+  const localUser = (() => { try { const s = localStorage.getItem('swh_user'); return s ? JSON.parse(s) : null; } catch { return null; } })();
+  const mergedUser = { ...(currentUser || {}), ...(localUser || {}) };
+  const appleUserId = localStorage.getItem('swh_apple_user_id') || mergedUser?.apple_user_id || '';
+  const webEmail = currentUser?.email || mergedUser?.email || '';
+
+  const hasUnlimitedRetention = mergedUser?.subscription_type === 'vip_annual' || mergedUser?.subscription_type === 'legacy' || (mergedUser?.email || '').includes('huertasfam');
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  // Fetch by email OR apple_user_id and dedupe
+  async function fetchMerged(entity, sortField = '-created_date') {
+    const results = [];
+    const seen = new Set();
+    const add = (items) => items.forEach(i => { if (!seen.has(i.id)) { seen.add(i.id); results.push(i); } });
+    try { if (webEmail) add(await entity.filter({ created_by: webEmail }, sortField)); } catch {}
+    try { if (appleUserId) add(await entity.filter({ apple_user_id: appleUserId }, sortField)); } catch {}
+    return results.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  }
+
   const { data: allMatches = [], isLoading: matchesLoading } = useQuery({
-    queryKey: ['savedMatches', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      try {
-        return await base44.entities.Match.filter({ created_by: currentUser.email }, '-created_date');
-      } catch (err) {
-        console.error('Error fetching matches:', err);
-        return [];
-      }
-    },
-    enabled: !!currentUser?.email,
+    queryKey: ['savedMatches', webEmail, appleUserId],
+    queryFn: () => fetchMerged(base44.entities.Match),
+    enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
 
   const { data: allPlayerStats = [], isLoading: playersLoading } = useQuery({
-    queryKey: ['savedPlayerStats', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      try {
-        return await base44.entities.PlayerStats.filter({ created_by: currentUser.email }, '-created_date');
-      } catch (err) {
-        console.error('Error fetching player stats:', err);
-        return [];
-      }
-    },
-    enabled: !!currentUser?.email,
+    queryKey: ['savedPlayerStats', webEmail, appleUserId],
+    queryFn: () => fetchMerged(base44.entities.PlayerStats),
+    enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
 
   const { data: allTeamStats = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ['savedTeamStats', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return [];
-      try {
-        return await base44.entities.TeamStats.filter({ created_by: currentUser.email }, '-created_date');
-      } catch (err) {
-        console.error('Error fetching team stats:', err);
-        return [];
-      }
-    },
-    enabled: !!currentUser?.email,
+    queryKey: ['savedTeamStats', webEmail, appleUserId],
+    queryFn: () => fetchMerged(base44.entities.TeamStats),
+    enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
 

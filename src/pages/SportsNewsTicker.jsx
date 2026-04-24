@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Newspaper, ExternalLink, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,17 +86,16 @@ const quickLinks = [
 ];
 
 export default function SportsNewsTicker() {
+  const navigate = useNavigate();
   return (
     <div className="pb-24">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <div className="w-full flex justify-start mb-2">
-          <Link to={createPageUrl('Dashboard')}>
-            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
+          <Button variant="ghost" onClick={() => navigate(createPageUrl('Dashboard'))} className="text-white/80 hover:text-white hover:bg-white/10 -ml-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
-          </Link>
         </div>
 
         {/* Header */}
