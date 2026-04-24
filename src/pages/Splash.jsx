@@ -287,7 +287,14 @@ export default function Splash() {
             </button>
 
             <button
-              onClick={() => navigate(createPageUrl("EmailSignIn"))}
+              onClick={() => {
+                const hasAppleId = !!localStorage.getItem("swh_apple_user_id");
+                if (!hasAppleId) {
+                  alert("⚠️ Sign in with Apple first\n\nTo link your web account, you need to tap \"Sign in with Apple\" above first. Once Apple sign-in is complete, tap this button again to connect your email.");
+                  return;
+                }
+                navigate(createPageUrl("EmailSignIn"));
+              }}
               className="text-sm text-gray-500 text-center py-1 active:opacity-70 transition-opacity"
             >
               <span className="text-lime-500 font-semibold">I have a web account</span> — sign in with email
