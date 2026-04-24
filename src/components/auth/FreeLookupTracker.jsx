@@ -303,14 +303,21 @@ export function useFreeLookupTracker() {
   return { lookupsRemaining, searchCredits, isAuthenticated, recordLookup, canLookup, userTier, isLoading, isMobileApp };
 }
 
+const CREDIT_PACKS = [
+  { id: "small",  credits: 25,  price: 4.99,  productId: "com.sportswagerhelper.credits.25",  label: "Starter",    emoji: "⚡" },
+  { id: "medium", credits: 60,  price: 9.99,  productId: "com.sportswagerhelper.credits.60",  label: "Popular",    emoji: "🔥", highlight: true },
+  { id: "large",  credits: 100, price: 14.99, productId: "com.sportswagerhelper.credits.100", label: "Best Value", emoji: "👑" },
+];
+
 export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(null); // pack id being processed
   const [isAuthenticated, setIsAuthenticated] = useState(isAuthProp ?? false);
   const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
+  const [creditsGranted, setCreditsGranted] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   const { isIOSNative } = usePlatform();
-  
+
   useEffect(() => {
-    // Check auth if not passed as prop
     if (isAuthProp === undefined) {
       base44.auth.isAuthenticated().then(setIsAuthenticated).catch(() => setIsAuthenticated(false));
     } else {
@@ -321,61 +328,41 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
   if (!show) return null;
 
   const handleClose = () => {
-    if (typeof onClose === 'function') {
-      onClose();
-    }
+    if (typeof onClose === 'function') onClose();
   };
 
-  const handleSubscribe = async (plan) => {
-    setIsProcessing(true);
-
+  const addCreditsLocally = (amt) => {
     try {
-      // Check if we're in the iOS/Android app with IAP support
-      if (typeof window.WTN !== 'undefined' && window.WTN.inAppPurchase) {
-        let productId;
-        
-        if (plan === 'premium') {
-          productId = 'com.sportswagerhelper.premium.monthly';
-        } else if (plan === 'vip') {
-          productId = 'com.sportswagerhelper.vip.annual';
-        }
-
-        window.WTN.inAppPurchase({
-          productId: productId,
-          callback: async function(data) {
-            if (data.isSuccess && data.receiptData) {
-              try {
-                const response = await base44.functions.invoke('handleAppleIAP', {
-                  receipt: data.receiptData,
-                  productId: productId
-                });
-
-                if (response.data.success) {
-                  alert('🎉 Subscription successful! Your account has been upgraded.');
-                  // Clear free lookup restrictions
-                  localStorage.removeItem('freeLookups');
-                  window.location.reload();
-                } else {
-                  alert('Receipt verification failed. Please contact support.');
-                }
-              } catch (error) {
-                console.error('IAP verification error:', error);
-                alert('Failed to verify purchase. Please contact support.');
-              }
-            } else {
-              alert('Purchase was not completed.');
-            }
-            setIsProcessing(false);
-          }
-        });
-      } else {
-        // Web user - redirect to pricing page for Stripe
-        window.location.href = '/Pricing';
+      const existing = parseInt(localStorage.getItem("swh_search_credits") || "0", 10);
+      const newTotal = existing + amt;
+      localStorage.setItem("swh_search_credits", String(newTotal));
+      const stored = localStorage.getItem('swh_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        localStorage.setItem('swh_user', JSON.stringify({ ...u, search_credits: newTotal }));
       }
-    } catch (error) {
-      console.error('Subscription error:', error);
-      alert('Failed to start checkout. Please try again.');
-      setIsProcessing(false);
+    } catch {}
+  };
+
+  const handleBuyPack = async (pack) => {
+    if (isProcessing) return;
+    setIsProcessing(pack.id);
+    try {
+      const { triggerRevenueCatPurchase, persistCreditsToDB } = await import('@/components/utils/iapBridge');
+      const result = await triggerRevenueCatPurchase(pack.productId);
+      if (result.success) {
+        addCreditsLocally(pack.credits);
+        setCreditsGranted(pack.credits);
+        setShowSuccess(true);
+        const appleUserId = localStorage.getItem('swh_apple_user_id') || '';
+        if (appleUserId) persistCreditsToDB(appleUserId, pack.credits, pack.productId).catch(() => {});
+      } else if (result.error !== 'user_cancelled') {
+        alert(`Purchase failed: ${result.error || 'Unknown error'}. Please try again.`);
+      }
+    } catch (e) {
+      alert('Purchase failed. Please try again.');
+    } finally {
+      setIsProcessing(null);
     }
   };
 
@@ -384,55 +371,78 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
     try {
       const result = await triggerAppleSignIn();
       if (!result.success) {
-        if (result.error !== 'user_cancelled') {
-          alert('Apple Sign In failed. Please try again.');
-        }
+        if (result.error !== 'user_cancelled') alert('Apple Sign In failed. Please try again.');
         return;
       }
-
-      const resp = await base44.functions.invoke('handleAppleSignIn', {
-        action: 'nativeSignIn',
-        identityToken: result.identityToken,
-        authorizationCode: result.authorizationCode,
-        user: result.user,
-        email: result.email,
-        fullName: result.fullName,
+      const resp = await fetch('/api/handleAppleSignIn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'nativeSignIn',
+          identityToken: result.identityToken,
+          authorizationCode: result.authorizationCode,
+          user: result.user,
+          email: result.email,
+          fullName: result.fullName,
+        }),
       });
-
-      if (resp.data?.success && resp.data?.sessionToken) {
-        await base44.auth.setToken(resp.data.sessionToken);
-        // Notify native wrapper so RevenueCat gets linked to Base44 entity ID
-        if (window.ReactNativeWebView && resp.data?.user?.id) {
+      const data = await resp.json();
+      if (data?.success) {
+        localStorage.setItem('swh_user', JSON.stringify(data.user));
+        localStorage.setItem('swh_apple_user_id', data.user.apple_user_id || '');
+        localStorage.setItem('swh_search_credits', String(data.user.search_credits ?? 5));
+        if (data.sessionToken) { try { await base44.auth.setToken(data.sessionToken); } catch {} }
+        if (window.ReactNativeWebView && data.user?.id) {
           try {
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'SAVE_SESSION',
-              data: {
-                userId: resp.data.user.id,
-                email: resp.data.user.email || '',
-                isPremium: resp.data.user.subscription_status === 'active',
-                plan: resp.data.user.subscription_type || 'free',
-              }
+              data: { userId: data.user.id, email: data.user.email || '', isPremium: data.user.subscription_status === 'active', plan: data.user.subscription_type || 'free' }
             }));
-          } catch (e) {}
+          } catch {}
         }
         window.location.reload();
       } else {
-        alert(resp.data?.error || 'Sign in failed. Please try again.');
+        alert(data?.error || 'Sign in failed. Please try again.');
       }
-    } catch (err) {
-      console.error('Apple Sign In error:', err);
+    } catch {
       alert('Apple Sign In failed. Please try again.');
     } finally {
       setIsAppleSignInLoading(false);
     }
   };
 
+  if (showSuccess) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
+            className="bg-gray-900 border border-cyan-500/40 rounded-3xl p-8 text-center w-full max-w-sm"
+          >
+            <div className="text-5xl mb-4">⚡️</div>
+            <h2 className="text-2xl font-black text-white mb-2">Credits Added!</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              <span className="text-cyan-400 font-black text-xl">{creditsGranted}</span> search credits added to your account.
+            </p>
+            <button
+              onClick={() => { setShowSuccess(false); handleClose(); window.location.reload(); }}
+              className="w-full py-3 rounded-2xl bg-cyan-500 text-gray-950 font-black text-sm"
+            >
+              Start Searching →
+            </button>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={handleClose}
       >
@@ -441,142 +451,79 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="modal-ipad px-4 w-full max-w-lg"
+          className="w-full max-w-sm"
         >
-          <Card className="w-full border-2 border-red-500 shadow-2xl shadow-red-500/20 dark:bg-slate-900 dark:border-red-600">
-            <CardHeader className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white p-6 sm:p-8">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <Lock className="w-7 h-7 sm:w-8 sm:h-8" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl sm:text-3xl font-black mb-1">🔒 Limit Reached</CardTitle>
-                  <p className="text-sm sm:text-base text-red-100">Subscribe to continue</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 sm:p-8">
-              <div className="text-center mb-6">
-                <div className="relative inline-block mb-3">
-                  <div className="text-6xl sm:text-7xl font-black text-gray-200">0/5</div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Lock className="w-12 h-12 sm:w-14 sm:h-14 text-red-500 animate-pulse" />
-                  </div>
-                </div>
-                <p className="text-lg sm:text-xl text-gray-900 font-bold mb-1">
-                  You've used all 5 free lookups!
-                </p>
-                <p className="text-sm sm:text-base text-gray-600">
-                  {isAuthenticated 
-                    ? "Your 5 free searches reset next month! Subscribe for unlimited." 
-                    : "Sign in to get 5 free searches/month, or subscribe for unlimited."}
-                </p>
-              </div>
-
-              {/* Pricing Options */}
-              <div className="space-y-3 mb-6">
-                <button
-                  onClick={() => handleSubscribe('premium')}
-                  disabled={isProcessing}
-                  className="w-full p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300 hover:border-purple-500 transition-all text-left flex items-center justify-between group disabled:opacity-70"
-                >
-                  <div>
-                    <div className="text-2xl font-black text-purple-600">$19.99<span className="text-sm font-semibold text-gray-500">/month</span></div>
-                    <div className="text-sm font-semibold text-gray-900">Premium Monthly</div>
-                    <div className="text-xs text-gray-500">Cancel anytime</div>
-                  </div>
-                  {isProcessing ? (
-                    <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => handleSubscribe('vip')}
-                  disabled={isProcessing}
-                  className="w-full p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-400 hover:border-yellow-500 transition-all text-left flex items-center justify-between group relative disabled:opacity-70"
-                >
-                  <div className="absolute -top-2 left-4 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    SAVE 37%
-                  </div>
-                  <div>
-                    <div className="text-2xl font-black text-yellow-600">$149.99<span className="text-sm font-semibold text-gray-500">/year</span></div>
-                    <div className="text-sm font-semibold text-gray-900">VIP Annual</div>
-                    <div className="text-xs text-gray-500">Best value • Unlimited storage</div>
-                  </div>
-                  {isProcessing ? (
-                    <Loader2 className="w-6 h-6 text-yellow-600 animate-spin" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Crown className="w-5 h-5 text-white" />
-                    </div>
-                  )}
-                </button>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-2 mb-6 bg-gray-50 rounded-lg p-4">
-                <div className="font-bold text-gray-900 text-sm mb-2">What you get:</div>
-                <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm text-gray-700">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>Unlimited searches</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>Save & track results</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>AI predictions</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>Live odds</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sign in option for unauthenticated users */}
-              {!isAuthenticated && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-center text-sm text-gray-700 mb-3">
-                    <strong>Sign in required</strong> to use free searches (5/month)
-                  </p>
-                  {isIOSNative && (
-                    <Button
-                      onClick={handleAppleSignIn}
-                      disabled={isAppleSignInLoading}
-                      className="w-full mb-3 bg-black hover:bg-gray-900 text-white font-bold"
-                    >
-                      {isAppleSignInLoading ? 'Signing in...' : 'Sign in with Apple'}
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => window.location.href = '/Splash'}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold"
-                  >
-                    Sign In to Get 5 Free Searches
-                  </Button>
-                  <p className="text-center text-xs text-gray-500 mt-3">
-                    🔒 No purchase required. Sign-in is only used to track your free search count — we don't track what you search for.
-                  </p>
-                </div>
-              )}
-
-              <p className="text-center text-xs text-gray-500 mt-4">
-                ✅ 14-day money-back guarantee • Secure payment
+          <div className="bg-gray-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-lime-500 to-emerald-600 p-6 text-center relative">
+              <button onClick={handleClose} className="absolute top-4 right-4 text-white/70 hover:text-white">
+                <span className="text-xl font-bold">✕</span>
+              </button>
+              <div className="text-4xl mb-2">⚡</div>
+              <h2 className="text-2xl font-black text-white">Out of Free Searches</h2>
+              <p className="text-white/80 text-sm mt-1">
+                {isAuthenticated ? "Buy a credit pack — they never expire." : "Sign in to get 5 free/month or buy credits."}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+
+            <div className="p-5 space-y-3">
+              {/* Credit Packs */}
+              {CREDIT_PACKS.map((pack) => (
+                <button
+                  key={pack.id}
+                  onClick={() => handleBuyPack(pack)}
+                  disabled={!!isProcessing}
+                  className={`w-full p-4 rounded-2xl border-2 text-left flex items-center justify-between transition-all disabled:opacity-60 ${
+                    pack.highlight
+                      ? 'border-lime-500 bg-lime-500/10'
+                      : 'border-white/10 bg-white/5'
+                  }`}
+                >
+                  <div>
+                    {pack.highlight && (
+                      <span className="text-[10px] font-black bg-lime-500 text-gray-950 px-2 py-0.5 rounded-full uppercase tracking-wide mr-2">Most Popular</span>
+                    )}
+                    <div className="text-white font-black text-lg mt-1">
+                      {pack.emoji} {pack.credits} Credits <span className="text-gray-400 font-semibold text-sm">· ${pack.price}</span>
+                    </div>
+                    <div className="text-gray-400 text-xs">${(pack.price / pack.credits).toFixed(2)} per search · Never expire</div>
+                  </div>
+                  {isProcessing === pack.id ? (
+                    <Loader2 className="w-6 h-6 text-lime-400 animate-spin flex-shrink-0" />
+                  ) : (
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${pack.highlight ? 'bg-lime-500' : 'bg-white/10'}`}>
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+
+              <div className="border-t border-white/10 pt-3 space-y-2">
+                {!isAuthenticated && isIOSNative && (
+                  <button
+                    onClick={handleAppleSignIn}
+                    disabled={isAppleSignInLoading}
+                    className="w-full py-3 rounded-2xl bg-black border border-white/20 text-white font-bold text-sm flex items-center justify-center gap-2"
+                  >
+                    {isAppleSignInLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-lg"></span>}
+                    Sign in with Apple
+                  </button>
+                )}
+                <button
+                  onClick={handleClose}
+                  className="w-full py-2.5 rounded-2xl text-gray-500 text-sm font-medium hover:text-gray-300 transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 }
+
 
 export function FreeLookupBanner({ lookupsRemaining, userTier }) {
 
