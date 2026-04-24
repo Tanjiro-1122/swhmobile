@@ -67,7 +67,7 @@ export default function LinkAccount() {
       const resp = await fetch(B44_EMAIL_LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: code.trim(), login_code: code.trim() }),
+        body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: String(code).replace(/\s/g, ""), login_code: String(code).replace(/\s/g, "") }),
       });
       const data = await resp.json();
       if (data.success) {
