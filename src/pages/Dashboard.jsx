@@ -538,7 +538,7 @@ export default function Dashboard() {
   };
 
   const displayName = getDisplayName(currentUser);
-  const isPaid = ["pro","premium_monthly","lifetime_vip","vip_annual","legacy","influencer"].includes(currentUser?.subscription_type);
+  const isPaid = ["pro","premium_monthly","lifetime_vip","vip_annual","legacy","influencer","unlimited_monthly","unlimited_yearly","half_year","basic_monthly"].includes(currentUser?.subscription_type);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">

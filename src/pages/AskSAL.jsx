@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import RequireAuth from '@/components/auth/RequireAuth';
-import { useFreeLookupTracker } from '@/components/auth/FreeLookupTracker';
+import { useFreeLookupTracker, FreeLookupModal } from '@/components/auth/FreeLookupTracker';
 import ReactMarkdown from 'react-markdown';
 
 const SAL_IMG = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/e6d91dd0c_AfriendlyrobotowlmascotwithpurpleandlimegreenaccentswearingstylishglassesholdinganopenglowingbookwithalightbulbaboveitsheadSportswhistlearoundneckModernvectorstyledarkbackgrou.jpg";
@@ -113,6 +113,7 @@ function AskSALPage() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -135,6 +136,7 @@ function AskSALPage() {
   }, [messages]);
 
   const send = async (content) => {
+    if (!canLookup()) { setShowModal(true); return; }
     const text = content || input.trim();
     if (!text || sending) return;
     setInput('');
@@ -311,6 +313,7 @@ function AskSALPage() {
           </button>
         </div>
       </div>
+      <FreeLookupModal show={showModal} onClose={() => setShowModal(false)} />
     </div>
   );
 }

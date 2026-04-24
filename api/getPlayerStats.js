@@ -5,7 +5,7 @@
 const BALLDONTLIE_KEY = process.env.BALLDONTLIE_API_KEY || "";
 const SPORTSDB_KEY    = process.env.THESPORTSDB_API_KEY || "123";
 const OPENAI_KEY      = process.env.OPENAI_API_KEY || "";
-const BASE44_KEY      = process.env.SWH_BASE44_API_KEY || "";
+const BASE44_KEY      = process.env.SWH_BASE44_API_KEY || process.env.BASE44_API_KEY || process.env.BASE44_SERVICE_TOKEN || "";
 const BASE44_APP_ID   = "68f93544702b554e3e1f7297";
 const BASE44_URL      = `https://app.base44.com/api/apps/${BASE44_APP_ID}/entities/PlayerStats`;
 

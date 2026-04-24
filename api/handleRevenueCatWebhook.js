@@ -4,7 +4,7 @@
 
 const B44_APP_ID = "68f93544702b554e3e1f7297";
 const B44_BASE  = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_KEY   = process.env.SWH_BASE44_API_KEY || "";
+const B44_KEY   = process.env.SWH_BASE44_API_KEY || process.env.BASE44_API_KEY || process.env.BASE44_SERVICE_TOKEN || "";
 
 // Map RevenueCat product IDs → credit amounts
 const PRODUCT_CREDITS = {

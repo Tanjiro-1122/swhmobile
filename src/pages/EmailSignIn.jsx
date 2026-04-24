@@ -104,7 +104,7 @@ export default function EmailSignIn() {
         // Notify native wrapper if in iOS app
         try {
           if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify(JSON.stringify({
+            window.ReactNativeWebView.postMessage(JSON.stringify({
               type: "SIGN_IN_COMPLETE",
               data: {
                 userId: u.apple_user_id || u.id,
@@ -113,7 +113,7 @@ export default function EmailSignIn() {
                 email: u.email,
                 fullName: u.full_name,
               }
-            })));
+            }));
           }
         } catch(e) {}
         window.dispatchEvent(new Event("storage"));

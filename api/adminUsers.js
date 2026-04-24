@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   try {
-    const SWH_BASE44_API_KEY = process.env.SWH_BASE44_API_KEY;
+    const SWH_BASE44_API_KEY = process.env.SWH_BASE44_API_KEY || process.env.BASE44_API_KEY || process.env.BASE44_SERVICE_TOKEN || "";
     const APP_ID = "68f93544702b554e3e1f7297";
 
     // Fetch custom SWH User entity records (mobile + any web users who went through handleAppleSignIn)

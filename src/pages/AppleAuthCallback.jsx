@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -47,7 +48,7 @@ export default function AppleAuthCallback() {
           }
 
           if (resp.data?.reason === 'link_required') {
-            navigate('/MyAccount', { state: { hint: resp.data.message } });
+            navigate(createPageUrl('MyAccount'), { state: { hint: resp.data.message } });
             return;
           }
 
