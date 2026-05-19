@@ -279,7 +279,7 @@ export default function AdminPanel() {
 
   const { data: purchases = [], isLoading: purchasesLoading } = useQuery({
     queryKey: ["adminPurchases"],
-    queryFn: () => base44.entities.PurchaseAudit.list("-created_date", 100),
+    queryFn: async () => { const { data } = await _supa.from("swh_purchase_audits").select("*").order("created_at", { ascending: false }).limit(100); return data || []; },
     enabled: isAdminEmail(currentUser?.email),
   });
 
@@ -300,7 +300,7 @@ export default function AdminPanel() {
         exp.setDate(exp.getDate() + 7);
         updates.subscription_expiry_date = exp.toISOString().split("T")[0];
       }
-      await base44.entities.User.update(userId, updates);
+      await _supa.from("swh_user_profiles").update(updates).eq("id", userId);
       await refetchUsers();
       showToast(`Tier updated to ${tierLabel(tier)}`);
     } catch (e) {
@@ -312,7 +312,7 @@ export default function AdminPanel() {
   const grantCredits = async (userId, amount, current) => {
     setUpdatingUser(userId);
     try {
-      await base44.entities.User.update(userId, { credits: (current || 0) + amount });
+      await _supa.from("swh_user_profiles").update({ credits: (current || 0) + amount }).eq("id", userId);
       await refetchUsers();
       showToast(`+${amount} credits granted`);
     } catch {
@@ -325,7 +325,7 @@ export default function AdminPanel() {
     if (!confirm(`Suspend ${email}? This will set them to free and flag the account.`)) return;
     setUpdatingUser(userId);
     try {
-      await base44.entities.User.update(userId, { subscription_type: "free", is_suspended: true });
+      await _supa.from("swh_user_profiles").update({ subscription_type: "free", is_suspended: true }).eq("id", userId);
       await refetchUsers();
       showToast(`${email} suspended`);
     } catch {
