@@ -38,7 +38,7 @@ export default function EmailSignIn() {
     try {
       // Get apple_user_id from localStorage so we can link accounts on verify
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch("https://base44.app/api/apps/68f93544702b554e3e1f7297/functions/emailLogin", {
+      const resp = await fetch("/api/emailLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "send_code", email: trimmed }),
@@ -69,7 +69,7 @@ export default function EmailSignIn() {
     setError("");
     try {
       const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch("https://base44.app/api/apps/68f93544702b554e3e1f7297/functions/emailLogin", {
+      const resp = await fetch("/api/emailLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: trimmedCode }),
