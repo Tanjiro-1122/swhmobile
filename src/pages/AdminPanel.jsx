@@ -255,8 +255,12 @@ export default function AdminPanel() {
       // Fallback: base44 session (web path)
       try {
         const { data: { user: _u } } = await _supa.auth.getUser();
-          const isAuth = !!_u;
-        if (isAuth) const { data: { user } } = await _supa.auth.getUser(); if (!user) return null; const { data: profile } = await _supa.from('swh_user_profiles').select('*').eq('id', user.id).single(); return profile || { email: user.email };
+        const { data: { user: _u } } = await _supa.auth.getUser();
+        const isAuth = !!_u;
+        if (isAuth) {
+          const { data: profile } = await _supa.from('swh_user_profiles').select('*').eq('id', _u.id).single();
+          return profile || { email: _u.email };
+        }
       } catch {}
       return null;
     },
@@ -266,13 +270,9 @@ export default function AdminPanel() {
   const { data: allUsers = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["adminUsers"],
     queryFn: async () => {
-      const resp = await fetch("https://base44.app/api/apps/68f93544702b554e3e1f7297/functions/getAdminUsers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminEmail: currentUser?.email }),
-      });
-      if (!resp.ok) throw new Error("Failed to fetch users");
-      return resp.json();
+      const { data, error } = await _supa.from('swh_user_profiles').select('*').order('created_at', { ascending: false }).limit(1000);
+      if (error) throw error;
+      return data || [];
     },
     enabled: isAdminEmail(currentUser?.email),
   });
