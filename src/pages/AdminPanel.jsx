@@ -254,7 +254,8 @@ export default function AdminPanel() {
       } catch {}
       // Fallback: base44 session (web path)
       try {
-        const { data: { user: _u } } = await _supa.auth.getUser(); const isAuth = !!_u;
+        const { data: { user: _u } } = await _supa.auth.getUser();
+          const isAuth = !!_u;
         if (isAuth) const { data: { user } } = await _supa.auth.getUser(); if (!user) return null; const { data: profile } = await _supa.from('swh_user_profiles').select('*').eq('id', user.id).single(); return profile || { email: user.email };
       } catch {}
       return null;
