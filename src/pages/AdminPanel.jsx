@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
+import { createClient } from "@supabase/supabase-js";
+const _supa = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -253,8 +254,8 @@ export default function AdminPanel() {
       } catch {}
       // Fallback: base44 session (web path)
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) return await base44.auth.me();
+        const { data: { user: _u } } = await _supa.auth.getUser(); const isAuth = !!_u;
+        if (isAuth) const { data: { user } } = await _supa.auth.getUser(); if (!user) return null; const { data: profile } = await _supa.from('swh_user_profiles').select('*').eq('id', user.id).single(); return profile || { email: user.email };
       } catch {}
       return null;
     },
