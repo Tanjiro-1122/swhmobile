@@ -1,4 +1,4 @@
-// src/api/db.js — Supabase entity helpers (replaces base44.entities.*)
+// Supabase entity layer
 // Drop-in replacement: same .list(), .filter(), .create(), .update(), .delete() API shape
 import { supabase } from './supabaseClient';
 
@@ -49,7 +49,7 @@ function makeTable(tableName) {
   };
 }
 
-// Entity map — matches every Base44 entity used in swhmobile
+// Supabase entity layer
 export const TrackedBet        = makeTable('swh_tracked_bets');
 export const PredictionOutcome = makeTable('swh_prediction_outcomes');
 export const SavedOdds         = makeTable('swh_saved_odds');
