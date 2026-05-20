@@ -186,7 +186,7 @@ export default function Splash() {
         }
 
         if (data.sessionToken) {
-          try { await base44.auth.setToken(data.sessionToken); } catch {}
+          try { if (data.user) localStorage.setItem('swh_user', JSON.stringify(data.user)); } catch {}
         }
 
         navigate(createPageUrl("Dashboard"), { replace: true });
