@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PurchaseAudit, UserIcon as UserRecord } from '@/api/entities';
+import { PurchaseAudit, User as UserRecord } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
