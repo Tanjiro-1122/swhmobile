@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Match, PlayerStats, PredictionOutcome, TeamStats, TrackedBet } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,31 +75,31 @@ export default function DataExportOptions({ userEmail }) {
 
   const { data: bets = [] } = useQuery({
     queryKey: ['exportBets', userEmail],
-    queryFn: () => base44.entities.TrackedBet.filter({ created_by: userEmail }, '-bet_date'),
+    queryFn: () => TrackedBet.filter({ created_by: userEmail }, '-bet_date'),
     enabled: !!userEmail,
   });
 
   const { data: matches = [] } = useQuery({
     queryKey: ['exportMatches', userEmail],
-    queryFn: () => base44.entities.Match.filter({ created_by: userEmail }, '-created_date'),
+    queryFn: () => Match.filter({ created_by: userEmail }, '-created_date'),
     enabled: !!userEmail,
   });
 
   const { data: players = [] } = useQuery({
     queryKey: ['exportPlayers', userEmail],
-    queryFn: () => base44.entities.PlayerStats.filter({ created_by: userEmail }, '-created_date'),
+    queryFn: () => PlayerStats.filter({ created_by: userEmail }, '-created_date'),
     enabled: !!userEmail,
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['exportTeams', userEmail],
-    queryFn: () => base44.entities.TeamStats.filter({ created_by: userEmail }, '-created_date'),
+    queryFn: () => TeamStats.filter({ created_by: userEmail }, '-created_date'),
     enabled: !!userEmail,
   });
 
   const { data: predictions = [] } = useQuery({
     queryKey: ['exportPredictions', userEmail],
-    queryFn: () => base44.entities.PredictionOutcome.filter({ created_by: userEmail }, '-created_date'),
+    queryFn: () => PredictionOutcome.filter({ created_by: userEmail }, '-created_date'),
     enabled: !!userEmail,
   });
 
