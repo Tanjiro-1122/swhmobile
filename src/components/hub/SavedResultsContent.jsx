@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Match, PlayerStats, TeamStats } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,21 +47,21 @@ export default function SavedResultsContent() {
 
   const { data: allMatches = [], isLoading: matchesLoading } = useQuery({
     queryKey: ['savedMatches', webEmail, appleUserId],
-    queryFn: () => fetchMerged(base44.entities.Match),
+    queryFn: () => fetchMerged(Match),
     enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
 
   const { data: allPlayerStats = [], isLoading: playersLoading } = useQuery({
     queryKey: ['savedPlayerStats', webEmail, appleUserId],
-    queryFn: () => fetchMerged(base44.entities.PlayerStats),
+    queryFn: () => fetchMerged(PlayerStats),
     enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
 
   const { data: allTeamStats = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['savedTeamStats', webEmail, appleUserId],
-    queryFn: () => fetchMerged(base44.entities.TeamStats),
+    queryFn: () => fetchMerged(TeamStats),
     enabled: !!(webEmail || appleUserId),
     refetchOnWindowFocus: true,
   });
@@ -70,17 +71,17 @@ export default function SavedResultsContent() {
   const filteredTeamStats = hasUnlimitedRetention ? allTeamStats : allTeamStats.filter(t => new Date(t.created_date) >= thirtyDaysAgo);
 
   const deleteMatchMutation = useMutation({
-    mutationFn: (id) => base44.entities.Match.delete(id),
+    mutationFn: (id) => Match.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedMatches'] }),
   });
 
   const deletePlayerMutation = useMutation({
-    mutationFn: (id) => base44.entities.PlayerStats.delete(id),
+    mutationFn: (id) => PlayerStats.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedPlayerStats'] }),
   });
 
   const deleteTeamMutation = useMutation({
-    mutationFn: (id) => base44.entities.TeamStats.delete(id),
+    mutationFn: (id) => TeamStats.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedTeamStats'] }),
   });
 
