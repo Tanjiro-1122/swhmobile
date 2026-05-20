@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Alert, BankrollEntry, CommunityPost, Match, Parlay, PlayerStats, PredictionOutcome, TeamStats, UserBet } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -412,28 +413,28 @@ export default function Profile() {
                         
                         // Delete user data from all entities
                         const [matches, playerStats, teamStats, userBets, parlays, alerts, bankrollEntries, posts, predictions] = await Promise.all([
-                          base44.entities.Match.filter({ created_by: currentUser.email }),
-                          base44.entities.PlayerStats.filter({ created_by: currentUser.email }),
-                          base44.entities.TeamStats.filter({ created_by: currentUser.email }),
-                          base44.entities.UserBet.filter({ created_by: currentUser.email }),
-                          base44.entities.Parlay.filter({ created_by: currentUser.email }),
-                          base44.entities.Alert.filter({ created_by: currentUser.email }),
-                          base44.entities.BankrollEntry.filter({ created_by: currentUser.email }),
-                          base44.entities.CommunityPost.filter({ created_by: currentUser.email }),
-                          base44.entities.PredictionOutcome.filter({ created_by: currentUser.email })
+                          Match.filter({ created_by: currentUser.email }),
+                          PlayerStats.filter({ created_by: currentUser.email }),
+                          TeamStats.filter({ created_by: currentUser.email }),
+                          UserBet.filter({ created_by: currentUser.email }),
+                          Parlay.filter({ created_by: currentUser.email }),
+                          Alert.filter({ created_by: currentUser.email }),
+                          BankrollEntry.filter({ created_by: currentUser.email }),
+                          CommunityPost.filter({ created_by: currentUser.email }),
+                          PredictionOutcome.filter({ created_by: currentUser.email })
                         ]);
 
                         // Delete all user data
                         await Promise.all([
-                          ...matches.map(m => base44.entities.Match.delete(m.id)),
-                          ...playerStats.map(p => base44.entities.PlayerStats.delete(p.id)),
-                          ...teamStats.map(t => base44.entities.TeamStats.delete(t.id)),
-                          ...userBets.map(b => base44.entities.UserBet.delete(b.id)),
-                          ...parlays.map(p => base44.entities.Parlay.delete(p.id)),
-                          ...alerts.map(a => base44.entities.Alert.delete(a.id)),
-                          ...bankrollEntries.map(b => base44.entities.BankrollEntry.delete(b.id)),
-                          ...posts.map(p => base44.entities.CommunityPost.delete(p.id)),
-                          ...predictions.map(p => base44.entities.PredictionOutcome.delete(p.id))
+                          ...matches.map(m => Match.delete(m.id)),
+                          ...playerStats.map(p => PlayerStats.delete(p.id)),
+                          ...teamStats.map(t => TeamStats.delete(t.id)),
+                          ...userBets.map(b => UserBet.delete(b.id)),
+                          ...parlays.map(p => Parlay.delete(p.id)),
+                          ...alerts.map(a => Alert.delete(a.id)),
+                          ...bankrollEntries.map(b => BankrollEntry.delete(b.id)),
+                          ...posts.map(p => CommunityPost.delete(p.id)),
+                          ...predictions.map(p => PredictionOutcome.delete(p.id))
                         ]);
 
                         alert('✅ Your account and all data have been permanently deleted. You will now be logged out.');
