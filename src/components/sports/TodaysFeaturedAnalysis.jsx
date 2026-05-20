@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { InvokeLLM } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ export default function TodaysFeaturedAnalysis({ onLookupUsed, canLookup, onLimi
     setError(null);
     
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await InvokeLLM({
         prompt: `You are a professional sports analyst. Provide TODAY'S TOP 3 FEATURED ANALYSIS for betting consideration.
 
 TODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
