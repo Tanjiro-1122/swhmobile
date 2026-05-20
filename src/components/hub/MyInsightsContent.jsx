@@ -19,7 +19,7 @@ export default function MyInsightsContent() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => JSON.parse(localStorage.getItem('swh_user') || 'null'),
   });
 
   const hasPreferences = currentUser?.favorite_sports?.length > 0 || 
