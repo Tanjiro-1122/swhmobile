@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { BettingBrief } from '@/api/entities';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Zap, Trophy, AlertTriangle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -56,7 +57,7 @@ export default function TodaysPredictions() {
     const { data: brief, isLoading, error } = useQuery({
         queryKey: ['todaysBrief'],
         queryFn: async () => {
-            const briefs = await base44.entities.BettingBrief.list('-brief_date', 1);
+            const briefs = await BettingBrief.list('-brief_date', 1);
             return briefs[0] || null;
         },
         staleTime: 1000 * 60 * 30, // 30 minutes
