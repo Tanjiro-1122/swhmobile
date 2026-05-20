@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { TrackedBet } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +63,7 @@ export default function BetTrackerContent() {
     queryKey: ['trackedBets', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.TrackedBet.filter(
+      return await TrackedBet.filter(
         { created_by: currentUser.email },
         '-bet_date'
       );
@@ -72,7 +73,7 @@ export default function BetTrackerContent() {
   });
 
   const createBetMutation = useMutation({
-    mutationFn: (betData) => base44.entities.TrackedBet.create(betData),
+    mutationFn: (betData) => TrackedBet.create(betData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trackedBets'] });
       setShowAddDialog(false);
@@ -81,7 +82,7 @@ export default function BetTrackerContent() {
   });
 
   const updateBetMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TrackedBet.update(id, data),
+    mutationFn: ({ id, data }) => TrackedBet.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trackedBets'] });
       setEditingBet(null);
@@ -89,7 +90,7 @@ export default function BetTrackerContent() {
   });
 
   const deleteBetMutation = useMutation({
-    mutationFn: (id) => base44.entities.TrackedBet.delete(id),
+    mutationFn: (id) => TrackedBet.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['trackedBets'] }),
   });
 
