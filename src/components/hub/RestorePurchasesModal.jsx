@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { base44 } from "@/api/base44Client";
 import { Loader2, CheckCircle2, AlertCircle, Apple, Smartphone } from "lucide-react";
 
 export default function RestorePurchasesModal({ open, onOpenChange }) {
@@ -47,9 +46,9 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
             callback: async (data) => {
               if (data.isSuccess && data.receipt) {
                 try {
-                  const response = await base44.functions.invoke('restoreAppleReceipt', {
+                  const response = await fetch('/api/restoreAppleReceipt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
                     receiptBase64: data.receipt
-                  });
+                  }) }).then(r => r.json());
 
                   if (response.data?.success) {
                     setResult({
@@ -125,10 +124,10 @@ export default function RestorePurchasesModal({ open, onOpenChange }) {
                     return;
                   }
 
-                  const response = await base44.functions.invoke('restoreGooglePlayPurchase', {
+                  const response = await fetch('/api/restoreGooglePlayPurchase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
                     purchaseToken: subscriptionPurchase.purchaseToken,
                     productId: subscriptionPurchase.productId
-                  });
+                  }) }).then(r => r.json());
 
                   if (response.data?.success) {
                     setResult({
