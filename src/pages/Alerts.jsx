@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Alert } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -36,7 +37,7 @@ function AlertsContent() {
     queryKey: ['alerts', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Alert.filter(
+      return await Alert.filter(
         { created_by: currentUser.email },
         '-created_date'
       );
@@ -46,7 +47,7 @@ function AlertsContent() {
   });
 
   const createAlertMutation = useMutation({
-    mutationFn: (alertData) => base44.entities.Alert.create(alertData),
+    mutationFn: (alertData) => Alert.create(alertData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       setDialogOpen(false);
@@ -59,14 +60,14 @@ function AlertsContent() {
   });
 
   const toggleAlertMutation = useMutation({
-    mutationFn: ({ id, isActive }) => base44.entities.Alert.update(id, { is_active: isActive }),
+    mutationFn: ({ id, isActive }) => Alert.update(id, { is_active: isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
     },
   });
 
   const deleteAlertMutation = useMutation({
-    mutationFn: (id) => base44.entities.Alert.delete(id),
+    mutationFn: (id) => Alert.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
     },
