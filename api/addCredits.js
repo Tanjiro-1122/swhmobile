@@ -1,30 +1,10 @@
-// api/addCredits.js
-// Called after a successful credit pack purchase to persist credits to the database.
-// Works for both signed-in users (by appleUserId) and as a pending save.
+// api/addCredits.js — Supabase version (Base44 removed)
+import { createClient } from "@supabase/supabase-js";
 
-const B44_APP_ID = "68f93544702b554e3e1f7297";
-const B44_BASE = `https://app.base44.com/api/apps/${B44_APP_ID}`;
-const B44_KEY = process.env.SWH_BASE44_API_KEY || process.env.BASE44_API_KEY || process.env.BASE44_SERVICE_TOKEN || "";
-
-function b44Headers() {
-  return { "Content-Type": "application/json", "api_key": B44_KEY };
-}
-
-async function b44Fetch(path, opts = {}) {
-  const res = await fetch(`${B44_BASE}${path}`, {
-    ...opts,
-    headers: { ...b44Headers(), ...(opts.headers || {}) },
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Base44 ${res.status}: ${text.slice(0, 300)}`);
-  }
-  return res.json();
-}
-
-function toRecords(data) {
-  return Array.isArray(data) ? data : (data?.records ?? data?.items ?? []);
-}
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.RUNE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,43 +19,48 @@ export default async function handler(req, res) {
     if (!appleUserId || !creditsToAdd) {
       return res.status(400).json({ success: false, error: 'appleUserId and creditsToAdd are required' });
     }
-
     if (creditsToAdd <= 0 || creditsToAdd > 500) {
       return res.status(400).json({ success: false, error: 'Invalid credits amount' });
     }
 
-    // Find user by apple ID
-    const data = await b44Fetch(`/entities/User?limit=500`);
-    const records = toRecords(data);
-    const user = records.find(u => u.apple_user_id === appleUserId) || null;
+    // Find user by apple_user_id
+    const { data: user, error: findErr } = await supabase
+      .from('swh_users')
+      .select('*')
+      .eq('apple_user_id', appleUserId)
+      .single();
 
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found. Sign in first.' });
+    if (findErr || !user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    // Add credits on top of existing
-    const currentCredits = user.search_credits ?? user.credits ?? 0;
-    const newCredits = currentCredits + Number(creditsToAdd);
+    const newCredits = (user.credits || 0) + creditsToAdd;
 
-    await b44Fetch(`/entities/User/${user.id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        search_credits: newCredits,
-        credits: newCredits,
-      }),
+    const { data: updated, error: updateErr } = await supabase
+      .from('swh_users')
+      .update({ credits: newCredits, updated_at: new Date().toISOString() })
+      .eq('apple_user_id', appleUserId)
+      .select()
+      .single();
+
+    if (updateErr) throw new Error(updateErr.message);
+
+    // Log to purchase audit
+    await supabase.from('swh_purchase_audit').insert({
+      apple_user_id: appleUserId,
+      product_id: productId || 'unknown',
+      credits_granted: creditsToAdd,
+      status: 'completed',
+      platform: 'ios',
+      currency: 'USD',
     });
-
-    console.log(`[addCredits] User ${user.id}: ${currentCredits} + ${creditsToAdd} = ${newCredits} (product: ${productId})`);
 
     return res.status(200).json({
       success: true,
-      creditsAdded: Number(creditsToAdd),
-      totalCredits: newCredits,
-      userId: user.id,
+      user: { id: updated.id, credits: updated.credits, apple_user_id: updated.apple_user_id }
     });
-
   } catch (err) {
-    console.error('[addCredits] error:', err.message);
+    console.error('addCredits error:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 }

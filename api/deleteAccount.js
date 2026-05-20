@@ -1,107 +1,88 @@
-// api/deleteAccount.js
-// Permanently deletes a user account and all associated data from Base44
+// api/deleteAccount.js — Supabase version (Base44 removed)
+import { createClient } from "@supabase/supabase-js";
 
-const BASE44_API_KEY = process.env.SWH_BASE44_API_KEY;
-const BASE44_APP_ID = "68f93544702b554e3e1f7297";
-const BASE44_BASE = `https://app.base44.com/api/apps/${BASE44_APP_ID}/entities`;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.RUNE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-async function base44Request(entity, method, body) {
-  const resp = await fetch(`${BASE44_BASE}/${entity}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "api_key": BASE44_API_KEY,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return resp.json();
-}
-
-async function findUserByAppleId(appleUserId) {
-  const resp = await fetch(
-    `${BASE44_BASE}/User?apple_user_id=${encodeURIComponent(appleUserId)}&limit=1`,
-    {
-      headers: { "api_key": BASE44_API_KEY },
-    }
-  );
-  const data = await resp.json();
-  return Array.isArray(data) ? data[0] : null;
-}
-
-async function deleteEntityRecords(entity, field, value) {
-  try {
-    const resp = await fetch(
-      `${BASE44_BASE}/${entity}?${field}=${encodeURIComponent(value)}&limit=100`,
-      { headers: { "api_key": BASE44_API_KEY } }
-    );
-    const records = await resp.json();
-    if (!Array.isArray(records)) return 0;
-
-    let deleted = 0;
-    for (const record of records) {
-      const delResp = await fetch(`${BASE44_BASE}/${entity}/${record.id}`, {
-        method: "DELETE",
-        headers: { "api_key": BASE44_API_KEY },
-      });
-      if (delResp.ok) deleted++;
-    }
-    return deleted;
-  } catch {
-    return 0;
-  }
-}
+const USER_TABLES = [
+  'swh_tracked_bets',
+  'swh_prediction_outcomes',
+  'swh_saved_odds',
+  'swh_alerts',
+  'swh_bankroll_entries',
+  'swh_community_posts',
+  'swh_matches',
+  'swh_parlays',
+  'swh_user_bets',
+  'swh_error_log',
+  'swh_purchase_audit',
+];
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { appleUserId } = req.body || {};
-
   if (!appleUserId) {
-    return res.status(400).json({ error: "Missing appleUserId" });
+    return res.status(400).json({ success: false, error: "appleUserId required" });
   }
 
   try {
-    // 1. Find the user record
-    const user = await findUserByAppleId(appleUserId);
+    // Find user
+    const { data: user, error: findErr } = await supabase
+      .from('swh_users')
+      .select('id, email')
+      .eq('apple_user_id', appleUserId)
+      .single();
 
-    if (!user) {
-      // Already deleted or never existed — treat as success
-      return res.status(200).json({ success: true, message: "Account not found (already deleted)" });
+    if (findErr || !user) {
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    const userId = user.id;
+    const deletedCounts = {};
 
-    // 2. Delete all user data (queries, saved results, etc.)
-    await Promise.all([
-      deleteEntityRecords("Query", "created_by", userId),
-      deleteEntityRecords("SavedResult", "created_by", userId),
-      deleteEntityRecords("IpRateLimit", "created_by", userId),
-    ]);
+    // Delete all user data from related tables
+    for (const table of USER_TABLES) {
+      const { count, error } = await supabase
+        .from(table)
+        .delete({ count: 'exact' })
+        .eq('apple_user_id', appleUserId);
+      deletedCounts[table] = error ? 0 : (count || 0);
+    }
 
-    // 3. Delete the user record itself
-    const delResp = await fetch(`${BASE44_BASE}/User/${userId}`, {
-      method: "DELETE",
-      headers: { "api_key": BASE44_API_KEY },
-    });
+    // Delete from swh_users (cascades via FK where set)
+    const { error: delUserErr } = await supabase
+      .from('swh_users')
+      .delete()
+      .eq('apple_user_id', appleUserId);
 
-    if (!delResp.ok) {
-      const errText = await delResp.text();
-      console.error("[deleteAccount] User delete failed:", errText);
-      return res.status(500).json({ error: "Failed to delete user record" });
+    if (delUserErr) throw new Error(delUserErr.message);
+
+    // Also delete from Supabase Auth if email exists
+    if (user.email) {
+      try {
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        const authUser = authUsers?.users?.find(u => u.email === user.email);
+        if (authUser) {
+          await supabase.auth.admin.deleteUser(authUser.id);
+        }
+      } catch (authErr) {
+        console.warn('Auth delete warning:', authErr.message);
+      }
     }
 
     return res.status(200).json({
       success: true,
-      message: "Account and all associated data deleted successfully",
+      message: "Account and all data deleted",
+      deleted: deletedCounts,
     });
-
   } catch (err) {
-    console.error("[deleteAccount] Error:", err);
-    return res.status(500).json({ error: "Server error. Please try again." });
+    console.error('deleteAccount error:', err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 }
