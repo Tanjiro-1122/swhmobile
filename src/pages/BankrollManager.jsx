@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { BankrollEntry } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -37,7 +38,7 @@ function BankrollManagerContent() {
     queryKey: ['bankrollEntries', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.BankrollEntry.filter(
+      return await BankrollEntry.filter(
         { created_by: currentUser.email },
         '-date'
       );
@@ -47,7 +48,7 @@ function BankrollManagerContent() {
   });
 
   const createEntryMutation = useMutation({
-    mutationFn: (entryData) => base44.entities.BankrollEntry.create(entryData),
+    mutationFn: (entryData) => BankrollEntry.create(entryData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankrollEntries'] });
       setDialogOpen(false);

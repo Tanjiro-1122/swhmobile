@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { BettingBrief } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles, TrendingUp, AlertTriangle, CloudRain, Activity, Target, RefreshCw } from "lucide-react";
@@ -28,7 +29,7 @@ function FeedsContent() {
   const { data: brief, isLoading } = useQuery({
     queryKey: ['dailyBrief', today],
     queryFn: async () => {
-      const briefs = await base44.entities.BettingBrief.filter(
+      const briefs = await BettingBrief.filter(
         { brief_date: today },
         '-created_date',
         1

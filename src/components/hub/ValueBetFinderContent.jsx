@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SavedOdds } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,12 +30,12 @@ export default function ValueBetFinderContent() {
 
   const { data: savedOdds = [] } = useQuery({
     queryKey: ['savedOdds', currentUser?.email],
-    queryFn: () => base44.entities.SavedOdds.filter({ created_by: currentUser?.email }),
+    queryFn: () => SavedOdds.filter({ created_by: currentUser?.email }),
     enabled: !!currentUser?.email,
   });
 
   const saveBetMutation = useMutation({
-    mutationFn: (bet) => base44.entities.SavedOdds.create({
+    mutationFn: (bet) => SavedOdds.create({
       match_description: bet.match,
       sport: bet.sport,
       bet_type: bet.bet_type,

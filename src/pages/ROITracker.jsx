@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { UserBet } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -40,7 +41,7 @@ function ROITrackerContent() {
     queryKey: ['userBets', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.UserBet.filter(
+      return await UserBet.filter(
         { created_by: currentUser.email },
         '-bet_date'
       );
@@ -50,7 +51,7 @@ function ROITrackerContent() {
   });
 
   const createBetMutation = useMutation({
-    mutationFn: (betData) => base44.entities.UserBet.create(betData),
+    mutationFn: (betData) => UserBet.create(betData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userBets'] });
       setDialogOpen(false);
@@ -67,7 +68,7 @@ function ROITrackerContent() {
   });
 
   const updateBetMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.UserBet.update(id, data),
+    mutationFn: ({ id, data }) => UserBet.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userBets'] });
     },

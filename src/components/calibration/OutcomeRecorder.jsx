@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PredictionOutcome } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ export default function OutcomeRecorder({ match }) {
 
   const recordOutcomeMutation = useMutation({
     mutationFn: async (outcomeData) => {
-      return await base44.entities.PredictionOutcome.create(outcomeData);
+      return await PredictionOutcome.create(outcomeData);
     },
     onSuccess: () => {
       setSuccess(true);

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { BettingBrief, PredictionOutcome, TrackedBet } from '@/api/entities';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Target, Flame, TrendingUp, Calendar, Zap } from 'lucide-react';
@@ -9,9 +10,9 @@ export default function QuickStatsBar() {
         queryFn: async () => {
             // Fetch all data in parallel with safe defaults
             const results = await Promise.allSettled([
-                base44.entities.PredictionOutcome.list('-outcome_recorded_date', 50),
-                base44.entities.BettingBrief.list('-brief_date', 1),
-                base44.entities.TrackedBet.list('-bet_date', 20)
+                PredictionOutcome.list('-outcome_recorded_date', 50),
+                BettingBrief.list('-brief_date', 1),
+                TrackedBet.list('-bet_date', 20)
             ]);
             
             const outcomes = results[0].status === 'fulfilled' ? results[0].value : [];

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ErrorLog } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,13 +52,13 @@ export default function AdminErrorLogs() {
       if (filterType !== 'all') query.error_type = filterType;
       if (filterSeverity !== 'all') query.severity = filterSeverity;
       
-      return await base44.entities.ErrorLog.filter(query, '-created_date', 100);
+      return await ErrorLog.filter(query, '-created_date', 100);
     },
   });
 
   const markResolvedMutation = useMutation({
     mutationFn: async ({ errorId, notes }) => {
-      return await base44.entities.ErrorLog.update(errorId, {
+      return await ErrorLog.update(errorId, {
         resolved: true,
         resolution_notes: notes
       });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Alert } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Plus, Trash2, CheckCircle } from "lucide-react";
@@ -31,13 +32,13 @@ export default function AlertsContent() {
     queryKey: ['alerts', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Alert.filter({ created_by: currentUser.email }, '-created_date');
+      return await Alert.filter({ created_by: currentUser.email }, '-created_date');
     },
     enabled: !!currentUser?.email,
   });
 
   const createAlertMutation = useMutation({
-    mutationFn: (alertData) => base44.entities.Alert.create(alertData),
+    mutationFn: (alertData) => Alert.create(alertData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       setDialogOpen(false);
@@ -46,12 +47,12 @@ export default function AlertsContent() {
   });
 
   const toggleAlertMutation = useMutation({
-    mutationFn: ({ id, isActive }) => base44.entities.Alert.update(id, { is_active: isActive }),
+    mutationFn: ({ id, isActive }) => Alert.update(id, { is_active: isActive }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
   });
 
   const deleteAlertMutation = useMutation({
-    mutationFn: (id) => base44.entities.Alert.delete(id),
+    mutationFn: (id) => Alert.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
   });
 

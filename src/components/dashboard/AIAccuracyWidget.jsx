@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { PredictionOutcome } from '@/api/entities';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Target, Flame, Award, ChevronRight } from 'lucide-react';
@@ -11,7 +12,7 @@ export default function AIAccuracyWidget() {
         queryKey: ['aiAccuracyStats'],
         queryFn: async () => {
             // Get recent prediction outcomes - simpler query, more reliable
-            const outcomes = await base44.entities.PredictionOutcome.list('-outcome_recorded_date', 50);
+            const outcomes = await PredictionOutcome.list('-outcome_recorded_date', 50);
             
             if (!outcomes || outcomes.length === 0) {
                 return { 

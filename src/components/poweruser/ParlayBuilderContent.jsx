@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Parlay } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Calculator } from "lucide-react";
@@ -28,7 +29,7 @@ export default function ParlayBuilderContent() {
     queryKey: ['parlays', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Parlay.filter(
+      return await Parlay.filter(
         { created_by: currentUser.email },
         '-created_date'
       );
@@ -38,7 +39,7 @@ export default function ParlayBuilderContent() {
   });
 
   const createParlayMutation = useMutation({
-    mutationFn: (parlayData) => base44.entities.Parlay.create(parlayData),
+    mutationFn: (parlayData) => Parlay.create(parlayData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parlays'] });
       setDialogOpen(false);
@@ -51,7 +52,7 @@ export default function ParlayBuilderContent() {
   });
 
   const deleteParlayMutation = useMutation({
-    mutationFn: (id) => base44.entities.Parlay.delete(id),
+    mutationFn: (id) => Parlay.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parlays'] });
     },

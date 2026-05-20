@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PredictionOutcome } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ export default function HistoricalDataContent() {
 
   const { data: outcomes, isLoading } = useQuery({
     queryKey: ['predictionOutcomes'],
-    queryFn: () => base44.entities.PredictionOutcome.list('-match_date', 200),
+    queryFn: () => PredictionOutcome.list('-match_date', 200),
     initialData: [],
   });
 
