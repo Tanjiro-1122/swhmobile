@@ -121,9 +121,9 @@ export default function Pricing() {
       try {
         const stored = localStorage.getItem("swh_user");
         if (stored) return JSON.parse(stored);
-        const isAuth = await base44.auth.isAuthenticated();
+        const isAuth = !!localStorage.getItem('swh_user');
         if (!isAuth) return null;
-        return await base44.auth.me();
+        return JSON.parse(localStorage.getItem('swh_user') || 'null');
       } catch {
         return null;
       }
