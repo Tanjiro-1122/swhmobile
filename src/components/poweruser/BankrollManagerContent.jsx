@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BankrollEntry } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Calendar } from "lucide-react";
@@ -32,7 +33,7 @@ export default function BankrollManagerContent() {
     queryKey: ['bankrollEntries', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.BankrollEntry.filter(
+      return await BankrollEntry.filter(
         { created_by: currentUser.email },
         '-date'
       );
@@ -42,7 +43,7 @@ export default function BankrollManagerContent() {
   });
 
   const createEntryMutation = useMutation({
-    mutationFn: (entryData) => base44.entities.BankrollEntry.create(entryData),
+    mutationFn: (entryData) => BankrollEntry.create(entryData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankrollEntries'] });
       setDialogOpen(false);
