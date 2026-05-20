@@ -15,9 +15,9 @@ const TopBar = () => {
     const { data: user } = useQuery({
         queryKey: ['currentUser'],
         queryFn: async () => {
-            const isAuth = await base44.auth.isAuthenticated();
+            const isAuth = !!localStorage.getItem('swh_user');
             if (!isAuth) return null;
-            return base44.auth.me();
+            return JSON.parse(localStorage.getItem('swh_user') || 'null');
         },
         staleTime: 5 * 60 * 1000,
     });

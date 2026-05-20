@@ -58,7 +58,7 @@ export default function PostPurchaseSignIn() {
 
         // Set Base44 session token
         if (data.sessionToken) {
-          try { await base44.auth.setToken(data.sessionToken); } catch (e) {
+          try { if (data.user) localStorage.setItem('swh_user', JSON.stringify(data.user)); } catch (e) {
             console.warn('setToken failed:', e.message);
           }
         }

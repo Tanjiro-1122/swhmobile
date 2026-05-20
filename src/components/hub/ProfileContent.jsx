@@ -1,4 +1,3 @@
-import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,7 @@ function getMergedUser(base44User) {
 export default function ProfileContent() {
   const { data: base44User, isLoading } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me().catch(() => null),
+    queryFn: () => JSON.parse(localStorage.getItem('swh_user') || 'null').catch(() => null),
     refetchOnWindowFocus: true,
   });
 

@@ -47,7 +47,7 @@ export function useFreeLookupTracker() {
 
     const checkAuth = async () => {
       try {
-        const authenticated = await base44.auth.isAuthenticated();
+        const authenticated = !!localStorage.getItem('swh_user');
 
         // Mobile fallback: if Base44 SDK session is gone but swh_user is in localStorage, use that
         let localUser = null;
@@ -61,7 +61,7 @@ export function useFreeLookupTracker() {
 
         if (isAuth) {
           try {
-            let user = authenticated ? await base44.auth.me() : localUser;
+            let user = authenticated ? JSON.parse(localStorage.getItem('swh_user') || 'null') : localUser;
 
             // ✅ FRESH INSTALL / DELETE-AND-REINSTALL RECOVERY
             // If we have an apple_user_id but swh_user credits look like the default (≤5)
@@ -328,7 +328,7 @@ export function FreeLookupModal({ show, onClose, isAuthenticated: isAuthProp }) 
 
   useEffect(() => {
     if (isAuthProp === undefined) {
-      base44.auth.isAuthenticated().then(setIsAuthenticated).catch(() => setIsAuthenticated(false));
+      !!localStorage.getItem('swh_user').then(setIsAuthenticated).catch(() => setIsAuthenticated(false));
     } else {
       setIsAuthenticated(isAuthProp);
     }

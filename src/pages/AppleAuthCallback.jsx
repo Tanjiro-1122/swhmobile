@@ -33,11 +33,11 @@ export default function AppleAuthCallback() {
         // If we have a code in the URL, exchange it (fallback)
         if (code) {
           setStatus('exchanging');
-          const resp = await base44.functions.invoke('handleAppleSignIn', {
+          const resp = await fetch('/api/handleAppleSignIn', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
             action: 'exchangeCode',
             authorizationCode: code,
             nonce: sessionStorage.getItem('apple_nonce') || null
-          });
+          }) }).then(r => r.json());
 
           if (resp.data?.success && resp.data?.sessionToken) {
             setStatus('signing-in');

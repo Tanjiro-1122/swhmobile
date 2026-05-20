@@ -19,7 +19,7 @@ export default function PreferencesContent() {
 
   const { data: currentUser, isLoading } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => JSON.parse(localStorage.getItem('swh_user') || 'null'),
   });
 
   useEffect(() => {
