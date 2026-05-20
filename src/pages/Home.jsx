@@ -260,7 +260,7 @@ export default function Home() {
     
     const { data: user, isLoading: isAuthLoading } = useQuery({
         queryKey: ['currentUser'],
-        queryFn: () => base44.auth.isAuthenticated().then(isAuth => isAuth ? base44.auth.me() : null),
+        queryFn: () => !!localStorage.getItem('swh_user').then(isAuth => isAuth ? JSON.parse(localStorage.getItem('swh_user') || 'null') : null),
         staleTime: 5 * 60 * 1000,
     });
 
