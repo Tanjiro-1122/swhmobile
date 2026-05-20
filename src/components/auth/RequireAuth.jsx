@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Sparkles, Shield, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePlatform } from '@/components/hooks/usePlatform';
 import { triggerAppleSignIn } from '@/components/utils/iapBridge';
-
 import RestorePurchasesModal from "../hub/RestorePurchasesModal";
+
 export default function RequireAuth({ children, pageName = "this feature" }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return base44.auth.getToken?.() ? true : null;
-    } catch {
-      return null;
-    }
-  });
-  const [isLoading, setIsLoading] = useState(isAuthenticated === null);
+  const { isAuthenticated, isLoading, refreshUser } = useAuth();
   const [isMobileApp, setIsMobileApp] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const { isIOSNative, isNativeApp } = usePlatform();
@@ -25,33 +18,6 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
   useEffect(() => {
     setIsMobileApp(isNativeApp);
   }, [isNativeApp]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const checkAuth = async () => {
-      try {
-        const authenticated = await base44.auth.isAuthenticated();
-        if (isMounted) {
-          setIsAuthenticated(authenticated);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        if (isMounted) {
-          setIsAuthenticated(false);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-    checkAuth();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleLogin = () => {}; // disabled — Apple Sign In used instead
 
   const handleViewPricing = () => {
     window.location.href = '/Pricing';
@@ -68,52 +34,27 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
         return;
       }
 
-      // ✅ Use Vercel API route — NOT base44.functions (which is empty/broken)
       const resp = await fetch('/api/handleAppleSignIn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'nativeSignIn',
           identityToken: result.identityToken,
-          authorizationCode: result.authorizationCode,
           user: result.user,
-          email: result.email,
           fullName: result.fullName,
         }),
       });
       const data = await resp.json();
-
-      if (data?.success) {
-        // Save user to localStorage (same pattern as Splash.jsx)
-        localStorage.setItem('swh_user', JSON.stringify(data.user));
-        localStorage.setItem('swh_apple_user_id', data.user.apple_user_id || '');
-        localStorage.setItem('swh_search_credits', String(data.user.search_credits ?? 5));
-
-        if (data.sessionToken) {
-          try { await base44.auth.setToken(data.sessionToken); } catch {}
-        }
-
-        // Notify native wrapper
-        if (window.ReactNativeWebView) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'SAVE_SESSION',
-            data: {
-              userId: data.user.apple_user_id,
-              email: data.user.email || '',
-              isPremium: data.user.subscription_status === 'active',
-              plan: data.user.subscription_type || 'free',
-            },
-          }));
-        }
-
-        const hasPendingIAP = !!localStorage.getItem('pending_iap_product');
-        window.location.href = hasPendingIAP ? '/MyAccount?activate_iap=true' : window.location.pathname;
+      if (data.success) {
+        // Store swh_user in localStorage for mobile fallback
+        if (data.user) localStorage.setItem('swh_user', JSON.stringify(data.user));
+        await refreshUser();
       } else {
-        alert(data?.error || 'Sign in failed. Please try again.');
+        alert(data.error || 'Sign in failed. Please try again.');
       }
     } catch (err) {
       console.error('Apple Sign In error:', err);
-      alert('Apple Sign In failed. Please try again.');
+      alert('Sign in failed. Please try again.');
     } finally {
       setIsAppleSignInLoading(false);
     }
@@ -121,120 +62,56 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 relative">
-            <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-pulse" />
-            <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
-          </div>
-          <p className="text-white font-semibold text-lg">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
       </div>
     );
   }
 
-  // If it's a mobile app, do not require authentication at this stage.
-  // The individual components or pages will handle free lookups and paywalls.
-  if (isMobileApp) {
-    return children;
-  }
+  if (isAuthenticated) return <>{children}</>;
 
-  // For web app, require authentication as usual
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center p-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="max-w-md w-full"
-        >
-          <Card className="border-2 border-purple-300 shadow-2xl">
-            <CardHeader className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white p-8">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Lock className="w-10 h-10" />
-                </div>
-              </div>
-              <CardTitle className="text-center text-3xl font-black">
-                🔒 Sign In Required
-              </CardTitle>
-              <p className="text-center text-purple-100 mt-2">
-                Create a free account to access {pageName}
-              </p>
-            </CardHeader>
-            
-            <CardContent className="p-8">
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-                  <Sparkles className="w-6 h-6 text-purple-600 flex-shrink-0" />
-                  <div>
-                    <div className="font-bold text-gray-900">5 Free Lookups</div>
-                    <div className="text-sm text-gray-600">Try before you buy</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-                  <Shield className="w-6 h-6 text-purple-600 flex-shrink-0" />
-                  <div>
-                    <div className="font-bold text-gray-900">Save Your Results</div>
-                    <div className="text-sm text-gray-600">Access your analysis anytime</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-300">
-                  <Crown className="w-6 h-6 text-orange-600 flex-shrink-0" />
-                  <div>
-                    <div className="font-bold text-gray-900">Upgrade to Premium</div>
-                    <div className="text-sm text-gray-600">Free lookups exhausted</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {isIOSNative && (
-                  <Button
-                    onClick={handleAppleSignIn}
-                    disabled={isAppleSignInLoading}
-                    className="w-full bg-black hover:bg-gray-900 text-white text-lg py-6 font-bold rounded-full flex items-center justify-center gap-2"
-                  >
-                    {isAppleSignInLoading ? (
-                      <span className="animate-spin">⏳</span>
-                    ) : (
-                      <>
-                        <span className="text-xl"></span>
-                        Sign in with Apple
-                      </>
-                    )}
-                  </Button>
+  return (
+    <div className="flex items-center justify-center min-h-[400px] p-4">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-green-400" />
+            </div>
+            <CardTitle className="text-white text-xl">Sign In Required</CardTitle>
+            <p className="text-slate-400 text-sm">You need to be signed in to access {pageName}</p>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-4">
+            {isMobileApp ? (
+              <Button
+                className="w-full bg-white text-black hover:bg-gray-100 font-semibold"
+                onClick={handleAppleSignIn}
+                disabled={isAppleSignInLoading}
+              >
+                {isAppleSignInLoading ? (
+                  <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />Signing in...</>
+                ) : (
+                  <><span className="mr-2 text-lg"></span>Sign in with Apple</>
                 )}
-
-                <Button
-                  onClick={handleViewPricing}
-                  variant="outline"
-                  className="w-full border-2 border-purple-300 text-purple-700 hover:bg-purple-50 text-base py-5 font-semibold"
-                >
-                  View Pricing Plans
-                </Button>
-
-                <Button
-                  onClick={() => setShowRestoreModal(true)}
-                  variant="link"
-                  className="w-full text-sm text-blue-600 hover:text-blue-700 underline"
-                >
-                  Legacy subscriber? Restore purchases
-                </Button>
-              </div>
-
-              <p className="text-center text-sm text-gray-500 mt-6">
-                🔒 Secure authentication • No credit card required for free tier
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </Button>
+            ) : (
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold" onClick={() => window.location.href = '/login'}>
+                Sign In
+              </Button>
+            )}
+            <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700" onClick={handleViewPricing}>
+              <Sparkles className="w-4 h-4 mr-2" /> View Plans
+            </Button>
+            <button
+              className="w-full text-xs text-slate-500 hover:text-slate-400 underline py-1"
+              onClick={() => setShowRestoreModal(true)}
+            >
+              Already subscribed? Restore purchases
+            </button>
+          </CardContent>
+        </Card>
         <RestorePurchasesModal open={showRestoreModal} onOpenChange={setShowRestoreModal} />
-      </div>
-    );
-  }
-
-  return children;
+      </motion.div>
+    </div>
+  );
 }
