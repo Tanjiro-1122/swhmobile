@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CommunityPost } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,11 +33,11 @@ export default function CommunityContent() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['communityPosts'],
-    queryFn: () => base44.entities.CommunityPost.list('-created_date', 50),
+    queryFn: () => CommunityPost.list('-created_date', 50),
   });
 
   const createPostMutation = useMutation({
-    mutationFn: (postData) => base44.entities.CommunityPost.create(postData),
+    mutationFn: (postData) => CommunityPost.create(postData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityPosts'] });
       setDialogOpen(false);
@@ -45,7 +46,7 @@ export default function CommunityContent() {
   });
 
   const upvoteMutation = useMutation({
-    mutationFn: (post) => base44.entities.CommunityPost.update(post.id, { upvotes: (post.upvotes || 0) + 1 }),
+    mutationFn: (post) => CommunityPost.update(post.id, { upvotes: (post.upvotes || 0) + 1 }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['communityPosts'] }),
   });
 
