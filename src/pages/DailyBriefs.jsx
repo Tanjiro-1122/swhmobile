@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { BettingBrief } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,7 @@ const PickCard = ({ pick }) => {
 export default function DailyBriefsPage() {
   const { data: briefs, isLoading, error } = useQuery({
     queryKey: ["bettingBriefs"],
-    queryFn: () => base44.entities.BettingBrief.list("-brief_date", 10),
+    queryFn: () => BettingBrief.list("-brief_date", 10),
   });
 
   const brief = briefs?.[0]; // Show the most recent brief
