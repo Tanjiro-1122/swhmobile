@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PurchaseAudit, User as UserRecord } from '@/api/entities';
+import { PurchaseAudit, UserIcon as UserRecord } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import {
   XCircle, 
   Clock, 
   DollarSign,
-  User,
+  UserIcon,
   Shield,
   AlertTriangle
 } from "lucide-react";
@@ -101,7 +101,7 @@ export default function AdminPurchaseAudit() {
     
     const user = users?.find(u => u.email === selectedAudit.user_email);
     if (!user) {
-      alert('User not found');
+      alert('UserIcon not found');
       return;
     }
 
@@ -203,7 +203,7 @@ export default function AdminPurchaseAudit() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <User className="w-4 h-4 text-gray-500" />
+                            <UserIcon className="w-4 h-4 text-gray-500" />
                             <span className="font-semibold">{audit.user_email || 'Unknown'}</span>
                             {getStatusBadge(audit.status)}
                             <Badge variant="outline">{audit.platform}</Badge>
