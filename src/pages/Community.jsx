@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CommunityPost } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import RequireAuth from "../components/auth/RequireAuth";
 import { base44 } from "@/api/base44Client";
@@ -59,12 +60,12 @@ function CommunityContent() {
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['communityPosts'],
-    queryFn: () => base44.entities.CommunityPost.list('-created_date', 50),
+    queryFn: () => CommunityPost.list('-created_date', 50),
     initialData: [],
   });
 
   const createPostMutation = useMutation({
-    mutationFn: (postData) => base44.entities.CommunityPost.create(postData),
+    mutationFn: (postData) => CommunityPost.create(postData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityPosts'] });
       setDialogOpen(false);
@@ -83,7 +84,7 @@ function CommunityContent() {
 
   const upvotePostMutation = useMutation({
     mutationFn: ({ id, currentUpvotes }) =>
-      base44.entities.CommunityPost.update(id, { upvotes: currentUpvotes + 1 }),
+      CommunityPost.update(id, { upvotes: currentUpvotes + 1 }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityPosts'] });
     },
