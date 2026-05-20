@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { SavedOdds } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ function LiveOddsContent() {
     queryKey: ['savedOdds'],
     queryFn: async () => {
       try {
-        return await base44.entities.SavedOdds.filter({ is_active: true }, '-created_date');
+        return await SavedOdds.filter({ is_active: true }, '-created_date');
       } catch {
         return [];
       }
@@ -54,7 +55,7 @@ function LiveOddsContent() {
   // Save odds mutation
   const saveOddsMutation = useMutation({
     mutationFn: async (oddsData) => {
-      return await base44.entities.SavedOdds.create(oddsData);
+      return await SavedOdds.create(oddsData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savedOdds'] });
