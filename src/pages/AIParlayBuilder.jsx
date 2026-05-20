@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Parlay } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +29,7 @@ function AIParlayBuilderContent() {
   }, []);
 
   const saveParlayMutation = useMutation({
-    mutationFn: (parlayData) => base44.entities.Parlay.create(parlayData),
+    mutationFn: (parlayData) => Parlay.create(parlayData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parlays'] });
       toast.success("Parlay saved successfully!");
