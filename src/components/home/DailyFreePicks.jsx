@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { BettingBrief } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,7 @@ export default function DailyFreePicks() {
   const { data: briefs, isLoading } = useQuery({
     queryKey: ['latestBrief'],
     queryFn: async () => {
-      const results = await base44.entities.BettingBrief.list('-brief_date', 1);
+      const results = await BettingBrief.list('-brief_date', 1);
       return results;
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
