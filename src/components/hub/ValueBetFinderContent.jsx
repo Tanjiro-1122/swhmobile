@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { InvokeLLM } from '@/api/integrations';
 import { SavedOdds } from '@/api/entities';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ export default function ValueBetFinderContent() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => JSON.parse(localStorage.getItem('swh_user') || 'null'),
   });
 
   const { data: savedOdds = [] } = useQuery({
@@ -64,7 +65,7 @@ export default function ValueBetFinderContent() {
     try {
       const sportLabel = sportOptions.find(s => s.value === selectedSport)?.label || selectedSport;
       
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `You are a sports betting analyst AI. Find 5 potential VALUE BETS for ${sportLabel} games happening in the next 3 days.
 
 A value bet is when the true probability of an outcome is higher than what the odds suggest.

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { InvokeLLM } from '@/api/integrations';
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ export default function LiveOddsTracker({ gameId, homeTeam, awayTeam }) {
 
   const fetchOdds = useCallback(async () => {
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await InvokeLLM({
         prompt: `Fetch CURRENT LIVE odds for: ${homeTeam} vs ${awayTeam}
         
 SOURCES (check ALL):

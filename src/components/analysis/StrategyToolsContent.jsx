@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { InvokeLLM } from '@/api/integrations';
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ function StrategyBuilder() {
   const generate = async () => {
     setIsGenerating(true);
     setResult(null);
-    const res = await base44.integrations.Core.InvokeLLM({
+    const res = await InvokeLLM({
       prompt: `You are a professional sports betting strategy advisor. Create a PERSONALIZED betting strategy based on:
 
 Risk Profile: ${riskProfile}
@@ -299,7 +300,7 @@ function ValueBetFinder() {
   const findValue = async () => {
     setIsSearching(true);
     setResults(null);
-    const res = await base44.integrations.Core.InvokeLLM({
+    const res = await InvokeLLM({
       prompt: `You are a sharp sports bettor looking for VALUE BETS in ${sport.toUpperCase()} today (${new Date().toLocaleDateString()}).
 
 Search for today's games and upcoming games. For each game, identify bets where the implied probability from odds is LOWER than your estimated true probability.

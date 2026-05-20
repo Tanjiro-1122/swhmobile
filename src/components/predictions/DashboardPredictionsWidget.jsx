@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { InvokeLLM } from '@/api/integrations';
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ export default function DashboardPredictionsWidget() {
         year: 'numeric' 
       });
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await InvokeLLM({
         prompt: `Date: ${today}
 Generate ONE high-confidence game prediction for a major sporting event today.
 Include: teams, predicted winner, confidence %, one key reason, and if it's an upset.
