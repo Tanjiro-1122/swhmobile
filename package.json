@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:base44-client-compat": "node scripts/base44-client-compat-smoke-test.mjs",
+    "test:base44-runtime-drift": "node scripts/base44-runtime-drift-smoke-test.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.26",
