@@ -8,86 +8,6 @@ import { LogIn, Zap, Loader2, Mail, ShieldCheck, Phone } from "lucide-react";
 
 const SWH_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68f93544702b554e3e1f7297/4616ada62_image.png";
 
-// ─── Age Gate Screen ─────────────────────────────────────────────────────────
-function AgeGate({ onConfirm }) {
-  const [checked, setChecked] = useState(false);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-6 py-12"
-    >
-      <div className="w-full max-w-sm flex flex-col items-center gap-6">
-        {/* Icon */}
-        <div className="w-20 h-20 rounded-3xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-center">
-          <ShieldCheck className="w-10 h-10 text-lime-400" />
-        </div>
-
-        <div className="text-center">
-          <h1 className="text-2xl font-black tracking-tight mb-2">Age Verification</h1>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Sports Wager Helper provides AI-assisted sports analysis. You must be{" "}
-            <span className="text-white font-bold">18 years or older</span> to access this app.
-          </p>
-        </div>
-
-        {/* Checkbox */}
-        <button
-          onClick={() => setChecked(!checked)}
-          className="w-full flex items-start gap-3 bg-gray-900 border border-gray-700 rounded-2xl p-4 active:scale-95 transition-transform text-left"
-        >
-          <div className={`w-5 h-5 rounded-md border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-            checked ? "bg-lime-500 border-lime-500" : "border-gray-600"
-          }`}>
-            {checked && <span className="text-black font-black text-xs">✓</span>}
-          </div>
-          <p className="text-sm text-gray-300 leading-snug">
-            I confirm that I am 18 years of age or older and understand this app provides sports analysis and information only — not financial or betting advice.
-          </p>
-        </button>
-
-        {/* Responsible gambling */}
-        <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 text-center">
-          <p className="text-yellow-400 font-bold text-xs mb-1">⚠️ Responsible Sports Wagering</p>
-          <p className="text-gray-400 text-xs leading-relaxed">
-            Sports wagering should be for entertainment only. This app provides information — always wager responsibly and within your means.
-          </p>
-          <a
-            href="tel:18005224700"
-            className="flex items-center justify-center gap-1.5 mt-2 text-yellow-400 font-bold text-xs active:opacity-70"
-          >
-            <Phone className="w-3 h-3" />
-            Problem Gambling Helpline: 1-800-522-4700
-          </a>
-        </div>
-
-        {/* Legal links */}
-        <p className="text-center text-gray-600 text-xs">
-          By continuing you agree to our{" "}
-          <a href="/TermsOfService" className="text-lime-400 underline">Terms of Service</a>
-          {" "}and{" "}
-          <a href="/PrivacyPolicy" className="text-lime-400 underline">Privacy Policy</a>.
-        </p>
-
-        {/* Confirm button */}
-        <button
-          onClick={() => { if (checked) onConfirm(); }}
-          disabled={!checked}
-          className={`w-full py-4 rounded-2xl font-black text-base transition-all active:scale-95 ${
-            checked
-              ? "bg-lime-500 text-gray-950 shadow-lg shadow-lime-500/20"
-              : "bg-gray-800 text-gray-600 cursor-not-allowed"
-          }`}
-        >
-          I'm 18+ — Enter App
-        </button>
-      </div>
-    </motion.div>
-  );
-}
-
 // ─── Main Splash ─────────────────────────────────────────────────────────────
 export default function Splash() {
   const navigate = useNavigate();
@@ -95,7 +15,6 @@ export default function Splash() {
   const [checking, setChecking] = useState(true);
   const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
   const [error, setError] = useState("");
-  const [ageVerified, setAgeVerified] = useState(false);
 
   useEffect(() => {
     const check = async () => {
@@ -113,9 +32,6 @@ export default function Splash() {
         // If no swh_user in storage, always show sign-in screen regardless of base44 auth state
       } catch {}
 
-      // Check if age was already verified this session
-      const alreadyVerified = sessionStorage.getItem("swh_age_verified") === "true";
-      if (alreadyVerified) setAgeVerified(true);
 
       setChecking(false);
       setTimeout(() => setReady(true), 100);
@@ -123,10 +39,6 @@ export default function Splash() {
     check();
   }, []);
 
-  const handleAgeConfirm = () => {
-    sessionStorage.setItem("swh_age_verified", "true");
-    setAgeVerified(true);
-  };
 
   const handleSignIn = async () => {
     setIsAppleSignInLoading(true);
@@ -215,13 +127,8 @@ export default function Splash() {
 
   return (
     <AnimatePresence mode="wait">
-      {/* Step 1: Age Gate */}
-      {ready && !ageVerified && (
-        <AgeGate key="age-gate" onConfirm={handleAgeConfirm} />
-      )}
-
-      {/* Step 2: Sign In */}
-      {ready && ageVerified && (
+      {/* Sign In */}
+      {ready && (
         <motion.div
           key="sign-in"
           initial={{ opacity: 0, x: 40 }}
