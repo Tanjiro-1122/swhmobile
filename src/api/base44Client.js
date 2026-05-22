@@ -1,11 +1,8 @@
-// src/api/base44Client.js — DEPRECATED STUB
-// Base44 SDK has been fully removed. This file exists only to prevent import errors
-// during the transition period. Remove it after confirming no imports remain.
-// All functionality has been migrated to:
-//   - Auth:       src/lib/AuthContext.jsx + supabase.auth
-//   - Entities:   src/api/db.js
-//   - LLM:        src/api/integrations.js (direct OpenAI)
-//   - Backend:    /api/* Vercel routes
+// src/api/base44Client.js — Supabase compatibility client
+// Keeps legacy `base44.entities.*` / `base44.functions.invoke(...)` imports working
+// while routing app data through the Supabase-backed entity layer.
+
+import * as entities from './db';
 
 export const base44 = {
   auth: {
@@ -16,7 +13,7 @@ export const base44 = {
     logout: () => { localStorage.removeItem('swh_user'); window.location.href = '/'; },
     signOut: () => { localStorage.removeItem('swh_user'); window.location.href = '/'; },
   },
-  entities: {},
+  entities,
   functions: {
     invoke: async (name, args) => {
       const res = await fetch(`/api/${name}`, {

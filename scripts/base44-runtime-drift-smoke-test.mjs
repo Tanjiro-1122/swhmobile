@@ -1,0 +1,25 @@
+import fs from "node:fs";
+import path from "node:path";
+const allowedDirs = new Set([".git", "node_modules", ".next", "dist", "build", "base44"]);
+const allowed = new Set(["scripts/base44-runtime-drift-smoke-test.mjs", "scripts/base44-client-compat-smoke-test.mjs"]);
+const banned = [/base44\.app\/api/i, /https:\/\/api\.base44/i, /from\s+["']@base44\//i, /BASE44_API_KEY/, /BASE44_SERVICE_TOKEN/];
+function walk(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return allowedDirs.has(entry.name) ? [] : walk(full);
+    return [full];
+  });
+}
+const offenders = [];
+for (const file of walk(".")) {
+  const rel = file.replace(/^\.\//, "");
+  if (allowed.has(rel)) continue;
+  if (!/\.(js|jsx|ts|tsx|mjs|json|yml|yaml)$/.test(rel)) continue;
+  const text = fs.readFileSync(file, "utf8");
+  for (const pattern of banned) if (pattern.test(text)) offenders.push(`${rel} :: ${pattern}`);
+}
+if (offenders.length) {
+  console.error("❌ Direct Base44 runtime endpoints/imports found:\n" + offenders.join("\n"));
+  process.exit(1);
+}
+console.log("✅ No direct Base44 runtime endpoints/imports detected outside archived Base44 exports.");

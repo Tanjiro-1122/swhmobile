@@ -6,8 +6,8 @@ import { ArrowLeft, Link2, CheckCircle2, Loader2, Mail, AlertCircle, Crown, KeyR
 
 const STEPS = { EMAIL: 'email', CODE: 'code', SUCCESS: 'success' };
 
-// Migrated to Supabase — using local API endpoint
-const B44_EMAIL_LOGIN = `https://base44.app/api/apps/${B44_APP_ID}/functions/emailLogin`;
+// Supabase/Vercel local account-link endpoint.
+const EMAIL_LOGIN_ENDPOINT = "/api/emailLogin";
 
 export default function LinkAccount() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function LinkAccount() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch(EMAIL_LOGIN_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
@@ -64,7 +64,7 @@ export default function LinkAccount() {
     setLoading(true);
     setError("");
     try {
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch(EMAIL_LOGIN_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "verify_code", email: email.trim().toLowerCase(), code: String(code).replace(/\s/g, ""), login_code: String(code).replace(/\s/g, "") }),
@@ -106,7 +106,7 @@ export default function LinkAccount() {
     setError("");
     setLoading(true);
     try {
-      const resp = await fetch(B44_EMAIL_LOGIN, {
+      const resp = await fetch(EMAIL_LOGIN_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
