@@ -95,7 +95,7 @@ export default function RequireAuth({ children, pageName = "this feature" }) {
                 )}
               </Button>
             ) : (
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold" onClick={() => window.location.href = '/login'}>
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold" onClick={() => window.location.href = '/EmailSignIn'}>
                 Sign In
               </Button>
             )}
