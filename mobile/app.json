@@ -21,12 +21,7 @@
             "infoPlist": {
                 "NSAppTransportSecurity": {
                     "NSAllowsArbitraryLoads": false,
-                    "NSExceptionDomains": {
-                        "sportswagerhelper.base44.app": {
-                            "NSExceptionAllowsInsecureHTTPLoads": false,
-                            "NSIncludesSubdomains": true
-                        }
-                    }
+                    "NSExceptionDomains": {}
                 },
                 "ITSAppUsesNonExemptEncryption": false
             },
