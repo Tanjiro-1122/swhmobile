@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 const allowedDirs = new Set([".git", "node_modules", ".next", "dist", "build", "base44"]);
 const allowed = new Set(["scripts/base44-runtime-drift-smoke-test.mjs", "scripts/base44-client-compat-smoke-test.mjs"]);
-const banned = [/base44\.app\/api/i, /https:\/\/api\.base44/i, /from\s+["']@base44\//i, /BASE44_API_KEY/, /BASE44_SERVICE_TOKEN/];
+const banned = [/base44\.app\/api/i, /https:\/\/api\.base44/i, /from\s+["']@base44\//i, /BASE44_API_KEY/, /BASE44_SERVICE_TOKEN/, /VITE_BASE44_/];
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
