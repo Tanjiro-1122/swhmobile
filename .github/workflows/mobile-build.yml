@@ -1,0 +1,80 @@
+name: Mobile Build & Submit (EAS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to build"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      profile:
+        description: "EAS build profile"
+        required: false
+        default: "production"
+        type: choice
+        options:
+          - production
+          - preview
+
+jobs:
+  build-mobile:
+    name: EAS Mobile Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build with EAS
+        run: |
+          eas build \
+            --platform "${{ github.event.inputs.platform || 'all' }}" \
+            --profile "${{ github.event.inputs.profile || 'production' }}" \
+            --non-interactive \
+            --no-wait
+
+      - name: Submit iOS to App Store
+        if: >
+          (github.event.inputs.profile == 'production' || github.event.inputs.profile == '') &&
+          (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event.inputs.platform == '')
+        run: |
+          eas submit \
+            --platform ios \
+            --latest \
+            --non-interactive
+        env:
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
+
+      - name: Submit Android to Play Store
+        if: >
+          (github.event.inputs.profile == 'production' || github.event.inputs.profile == '') &&
+          (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' || github.event.inputs.platform == '')
+        run: |
+          eas submit \
+            --platform android \
+            --latest \
+            --non-interactive
