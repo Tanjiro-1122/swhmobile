@@ -1,5 +1,6 @@
-// api/handleRevenueCatWebhook.js — Supabase version (Base44 removed)
-// RevenueCat webhook URL: https://sports-wager-helper.vercel.app/api/handleRevenueCatWebhook
+// api/handleRevenueCatWebhook.js — Supabase version
+// Webhook 1 (SWH Sales): https://sports-wager-helper.vercel.app/api/handleRevenueCatWebhook
+// Webhook 2 (Rune II dashboard): https://runeii.vercel.app/api/webhooks/revenuecat
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -59,18 +60,22 @@ export default async function handler(req, res) {
 
     const user = await findUser(appUserId, email);
 
-    // Log all webhook events to purchase_audit
-    await supabase.from('swh_purchase_audit').insert({
-      apple_user_id: appUserId || null,
-      user_email: email || null,
-      product_id: productId,
-      transaction_id: transactionId || null,
-      status: eventType,
-      platform: 'ios',
-      currency: event.currency || 'USD',
-      amount: event.price || null,
-      raw_receipt: JSON.stringify(event).slice(0, 2000),
-    }).catch(e => console.warn('audit insert warning:', e.message));
+    // Log all webhook events to purchase_audit — fix: use try/catch not .catch()
+    try {
+      await supabase.from('swh_purchase_audit').insert({
+        apple_user_id: appUserId || null,
+        user_email: email || null,
+        product_id: productId,
+        transaction_id: transactionId || null,
+        status: eventType,
+        platform: 'ios',
+        currency: event.currency || 'USD',
+        amount: event.price || null,
+        raw_receipt: JSON.stringify(event).slice(0, 2000),
+      });
+    } catch (auditErr) {
+      console.warn('[RC Webhook] audit insert warning:', auditErr.message);
+    }
 
     if (!user) {
       console.warn(`[RC Webhook] User not found: ${appUserId} / ${email}`);
@@ -85,11 +90,14 @@ export default async function handler(req, res) {
         .from('swh_users')
         .update({ credits: newCredits, updated_at: new Date().toISOString() })
         .eq('id', user.id);
-      console.log(`[RC Webhook] +${creditsToAdd} credits → ${user.apple_user_id} (total: ${newCredits})`);
+      console.log(`[RC Webhook] +${creditsToAdd} credits to ${appUserId} (total: ${newCredits})`);
     }
 
     // Handle subscription events
-    if (SUBSCRIPTION_IDS.includes(productId) || SUBSCRIPTION_IDS.some(s => productId.includes(s.split('.').pop()))) {
+    const isSubscription = SUBSCRIPTION_IDS.includes(productId) ||
+      SUBSCRIPTION_IDS.some(s => productId.includes(s.split('.').pop()));
+
+    if (isSubscription) {
       const isAnnual = productId.includes('annual');
       const updates = {};
 
@@ -104,7 +112,7 @@ export default async function handler(req, res) {
       if (Object.keys(updates).length) {
         updates.updated_at = new Date().toISOString();
         await supabase.from('swh_users').update(updates).eq('id', user.id);
-        console.log(`[RC Webhook] subscription update:`, updates, '→', user.apple_user_id);
+        console.log('[RC Webhook] subscription update:', updates, 'for', appUserId);
       }
     }
 
