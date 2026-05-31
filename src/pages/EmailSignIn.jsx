@@ -176,11 +176,9 @@ export default function EmailSignIn() {
             className="flex flex-col gap-6 flex-1"
           >
             <div>
-              <h1 className="text-3xl font-black tracking-tight mb-1">Already have an account?</h1>
+              <h1 className="text-3xl font-black tracking-tight mb-1">Sign in or Sign Up</h1>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Enter the email you used on{" "}
-                <span className="text-lime-400 font-medium">sportswagerhelper.com</span>.
-                We'll send a 6-digit code to sign you in.
+                Enter your email and we'll send a 6-digit code. New users get an account automatically.
               </p>
             </div>
 
