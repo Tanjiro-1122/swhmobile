@@ -148,7 +148,7 @@ export default function Splash() {
             </div>
             <div className="text-center">
               <h1 className="text-3xl font-black tracking-tight">Sports Wager Helper</h1>
-              <p className="text-gray-400 text-sm mt-1">AI-powered sports intelligence</p>
+              <p className="text-gray-400 text-sm mt-1">Sign up free or sign in — takes 10 seconds</p>
             </div>
 
             {/* Feature pills */}
@@ -182,8 +182,12 @@ export default function Splash() {
               ) : (
                 <span className="text-xl"></span>
               )}
-              {isAppleSignInLoading ? "Signing in..." : "Sign in with Apple"}
+              {isAppleSignInLoading ? "Signing in..." : "Continue with Apple"}
             </button>
+
+            <p className="text-center text-gray-500 text-xs -mt-1">
+              New here? Apple will create your account automatically.
+            </p>
 
             <button
               onClick={handleGuest}
