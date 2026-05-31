@@ -24,9 +24,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { action, identityToken, user: appleUser, fullName } = req.body || {};
+    const { action, identityToken, authorizationCode, user: appleUser, fullName, email: bodyEmail } = req.body || {};
 
-    if (action !== 'nativeSignIn') {
+    // Accept both explicit action:'nativeSignIn' and direct calls (no action field)
+    if (action && action !== 'nativeSignIn') {
       return res.status(400).json({ success: false, error: 'Unknown action' });
     }
 
@@ -37,7 +38,7 @@ export default async function handler(req, res) {
     // Decode Apple JWT to get sub (apple_user_id) and email
     const claims = decodeAppleJwt(identityToken);
     const appleUserId = claims.sub;
-    const email = claims.email || appleUser?.email || null;
+    const email = claims.email || appleUser?.email || bodyEmail || null;
     const displayName = fullName
       ? [fullName.givenName, fullName.familyName].filter(Boolean).join(' ')
       : null;
@@ -108,8 +109,11 @@ export default async function handler(req, res) {
         apple_user_id: swhUser.apple_user_id,
         email: swhUser.email,
         display_name: swhUser.display_name,
+        full_name: swhUser.display_name,           // alias for Splash compatibility
         credits: swhUser.credits,
+        search_credits: swhUser.credits ?? 5,      // alias for Splash compatibility
         subscription_type: swhUser.subscription_type,
+        subscription_status: swhUser.is_pro ? 'active' : 'free', // alias for Splash
         is_pro: swhUser.is_pro,
       }
     });
