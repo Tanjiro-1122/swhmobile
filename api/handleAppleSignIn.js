@@ -2,7 +2,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.RUNE_SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function decodeAppleJwt(token) {
   try {
@@ -22,9 +22,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // Validate env vars first
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      console.error('[handleAppleSignIn] Missing env vars — SUPABASE_URL:', !!SUPABASE_URL, 'KEY:', !!SUPABASE_KEY);
+      console.error('[handleAppleSignIn] Missing env vars');
       return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
 
@@ -32,30 +31,36 @@ export default async function handler(req, res) {
 
     const { action, identityToken, authorizationCode, user: appleUser, fullName, email: bodyEmail } = req.body || {};
 
-    // Accept both explicit action:'nativeSignIn' and direct calls (no action field)
+    // Accept both action:'nativeSignIn' and no action field
     if (action && action !== 'nativeSignIn') {
       return res.status(400).json({ success: false, error: 'Unknown action' });
     }
 
     if (!identityToken) {
-      console.error('[handleAppleSignIn] No identityToken in request body');
       return res.status(400).json({ success: false, error: 'identityToken required' });
     }
 
-    // Decode Apple JWT to get sub (apple_user_id) and email
+    // Decode Apple JWT
     const claims = decodeAppleJwt(identityToken);
     const appleUserId = claims.sub;
     const email = claims.email || appleUser?.email || bodyEmail || null;
-    const displayName = fullName
-      ? (typeof fullName === 'string' ? fullName : [fullName.givenName, fullName.familyName].filter(Boolean).join(' '))
-      : null;
 
-    if (!appleUserId) {
-      console.error('[handleAppleSignIn] Could not extract sub from Apple JWT. Claims:', JSON.stringify(claims).slice(0, 200));
-      return res.status(400).json({ success: false, error: 'Invalid Apple identity token — could not extract user ID' });
+    // Build display name from fullName (can be string or {givenName, familyName} object)
+    let displayName = null;
+    if (fullName) {
+      if (typeof fullName === 'string') {
+        displayName = fullName.trim() || null;
+      } else if (fullName.givenName || fullName.familyName) {
+        displayName = [fullName.givenName, fullName.familyName].filter(Boolean).join(' ') || null;
+      }
     }
 
-    // Upsert into swh_users
+    if (!appleUserId) {
+      console.error('[handleAppleSignIn] No sub in Apple JWT. Claims:', JSON.stringify(claims).slice(0, 200));
+      return res.status(400).json({ success: false, error: 'Invalid Apple identity token' });
+    }
+
+    // Look up existing user
     const { data: existingUsers, error: lookupErr } = await supabase
       .from('swh_users')
       .select('*')
@@ -63,19 +68,18 @@ export default async function handler(req, res) {
       .limit(1);
 
     if (lookupErr) {
-      console.error('[handleAppleSignIn] Supabase lookup error:', lookupErr.message);
-      throw new Error(`DB lookup failed: ${lookupErr.message}`);
+      console.error('[handleAppleSignIn] Lookup error:', lookupErr.message);
+      throw new Error('DB lookup failed: ' + lookupErr.message);
     }
 
     let swhUser = existingUsers?.[0];
 
     if (!swhUser) {
-      // New user — create record
+      // New user — only insert columns that exist in swh_users schema
       const newUser = {
         apple_user_id: appleUserId,
         email: email || null,
         display_name: displayName || null,
-        full_name: displayName || null,
         credits: 0,
         subscription_type: 'free',
         is_pro: false,
@@ -87,25 +91,23 @@ export default async function handler(req, res) {
         .single();
 
       if (createErr) {
-        console.error('[handleAppleSignIn] Supabase insert error:', createErr.message);
-        throw new Error(`Failed to create user: ${createErr.message}`);
+        console.error('[handleAppleSignIn] Insert error:', createErr.message, '| Data:', JSON.stringify(newUser));
+        throw new Error('Failed to create user: ' + createErr.message);
       }
       swhUser = created;
       console.log('[handleAppleSignIn] New user created:', swhUser.id);
     } else {
-      // Existing user — update display_name if we got one
+      // Update display_name if we have one and it's not set
       if (displayName && !swhUser.display_name) {
         await supabase
           .from('swh_users')
-          .update({ display_name: displayName, full_name: displayName, updated_at: new Date().toISOString() })
+          .update({ display_name: displayName, updated_at: new Date().toISOString() })
           .eq('id', swhUser.id);
         swhUser.display_name = displayName;
-        swhUser.full_name = displayName;
       }
       console.log('[handleAppleSignIn] Existing user signed in:', swhUser.id);
     }
 
-    // Return user — include all field aliases Splash/Dashboard expect
     return res.status(200).json({
       success: true,
       user: {
@@ -113,17 +115,17 @@ export default async function handler(req, res) {
         apple_user_id: swhUser.apple_user_id,
         email: swhUser.email,
         display_name: swhUser.display_name,
-        full_name: swhUser.full_name || swhUser.display_name,
+        full_name: swhUser.display_name,          // alias Splash expects
         credits: swhUser.credits ?? 0,
-        search_credits: swhUser.credits ?? 5,
+        search_credits: swhUser.credits ?? 5,     // alias Splash expects
         subscription_type: swhUser.subscription_type || 'free',
-        subscription_status: swhUser.is_pro ? 'active' : 'free',
+        subscription_status: swhUser.is_pro ? 'active' : 'free', // alias Splash expects
         is_pro: swhUser.is_pro ?? false,
       }
     });
 
   } catch (err) {
-    console.error('[handleAppleSignIn] Unhandled error:', err.message, err.stack?.slice(0, 300));
+    console.error('[handleAppleSignIn] Error:', err.message);
     return res.status(500).json({ success: false, error: err.message || 'Internal server error' });
   }
 }
