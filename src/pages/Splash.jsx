@@ -201,7 +201,7 @@ export default function Splash() {
               onClick={() => navigate(createPageUrl("EmailSignIn"))}
               className="text-sm text-gray-500 text-center py-1 active:opacity-70 transition-opacity"
             >
-              <span className="text-lime-500 font-semibold">I have a web account</span> — sign in with email
+              <span className="text-lime-500 font-semibold">Sign in / Sign up with email</span>
             </button>
 
             {/* Legal footer */}
