@@ -16,7 +16,7 @@ import * as Crypto from 'expo-crypto';
 import PurchaseModal from './PurchaseModal';
 import { restorePurchases, checkEntitlement, loginUser } from './RevenueCatService';
 
-const APP_URL = 'https://sports-wager-helper.vercel.app';
+const APP_URL = 'https://sportswagerhelper.com';
 
 // Guard against duplicate Apple Sign In requests
 let appleSignInInProgress = false;
