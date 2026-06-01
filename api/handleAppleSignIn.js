@@ -60,7 +60,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid Apple identity token' });
     }
 
-    // Look up existing user
+    // Look up existing user — try apple_user_id first, then fall back to email
     const { data: existingUsers, error: lookupErr } = await supabase
       .from('swh_users')
       .select('*')
@@ -73,6 +73,25 @@ export default async function handler(req, res) {
     }
 
     let swhUser = existingUsers?.[0];
+
+    // Fallback: if no row by apple_user_id, match by email
+    // Handles web-registered users signing in with Apple for the first time
+    if (!swhUser && email) {
+      const { data: emailUsers } = await supabase
+        .from('swh_users')
+        .select('*')
+        .eq('email', email)
+        .limit(1);
+      if (emailUsers?.[0]) {
+        swhUser = emailUsers[0];
+        await supabase
+          .from('swh_users')
+          .update({ apple_user_id: appleUserId, updated_at: new Date().toISOString() })
+          .eq('id', swhUser.id);
+        swhUser.apple_user_id = appleUserId;
+        console.log('[handleAppleSignIn] Linked Apple ID to existing email account:', swhUser.email);
+      }
+    }
 
     if (!swhUser) {
       // New user — only insert columns that exist in swh_users schema
