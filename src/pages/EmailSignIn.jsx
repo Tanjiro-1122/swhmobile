@@ -4,8 +4,6 @@ import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, KeyRound, ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Uses Vercel API endpoints for email-based account linking
-
 const STEPS = { EMAIL: "email", CODE: "code" };
 
 export default function EmailSignIn() {
@@ -27,7 +25,6 @@ export default function EmailSignIn() {
     }, 1000);
   };
 
-  // ── Step 1: send code ────────────────────────────────────────────────
   const handleSendCode = async () => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) { setError("Please enter your email."); return; }
@@ -36,8 +33,6 @@ export default function EmailSignIn() {
     setLoading(true);
     setError("");
     try {
-      // Get apple_user_id from localStorage so we can link accounts on verify
-      const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
       const resp = await fetch("/api/emailLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,7 +43,8 @@ export default function EmailSignIn() {
         setStep(STEPS.CODE);
         startResendTimer();
       } else {
-        setError(data.error || "No account found with that email. Make sure you use the email from sportswagerhelper.com.");
+        // Show the actual server error, not a misleading fallback
+        setError(data.error || "Couldn't send code. Please try again.");
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -57,7 +53,6 @@ export default function EmailSignIn() {
     }
   };
 
-  // ── Step 2: verify code ──────────────────────────────────────────────
   const handleVerifyCode = async () => {
     const trimmedCode = code.trim();
     if (trimmedCode.length !== 6 || !/^\d{6}$/.test(trimmedCode)) {
@@ -92,7 +87,6 @@ export default function EmailSignIn() {
             });
           } catch(e) {}
         }
-        // Store linked account in localStorage — same keys the rest of the app reads
         localStorage.setItem("swh_user", JSON.stringify(u));
         localStorage.setItem("swh_user_id", u.apple_user_id || u.id || "");
         localStorage.setItem("swh_apple_user_id", u.apple_user_id || u.id || "");
@@ -101,7 +95,6 @@ export default function EmailSignIn() {
         localStorage.setItem("swh_plan", u.subscription_type || "free");
         if (u.full_name) localStorage.setItem("swh_full_name", u.full_name);
         if (u.email) localStorage.setItem("swh_email", u.email);
-        // Notify native wrapper if in iOS app
         try {
           if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -134,11 +127,10 @@ export default function EmailSignIn() {
     setError("");
     setLoading(true);
     try {
-      const appleUserId = localStorage.getItem("swh_user_id") || localStorage.getItem("swh_apple_user_id") || null;
-      const resp = await fetch("/api/sendVerificationCode", {
+      const resp = await fetch("/api/emailLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webEmail: email.trim().toLowerCase(), appleUserId }),
+        body: JSON.stringify({ action: "send_code", email: email.trim().toLowerCase() }),
       });
       const data = await resp.json();
       if (data.success) {
@@ -155,8 +147,6 @@ export default function EmailSignIn() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col px-6 pt-10 pb-12">
-
-      {/* Back button */}
       <button
         onClick={() => step === STEPS.CODE ? setStep(STEPS.EMAIL) : navigate(-1)}
         className="self-start p-2 mb-6 rounded-xl bg-gray-800 active:scale-95 transition-transform"
@@ -165,8 +155,6 @@ export default function EmailSignIn() {
       </button>
 
       <AnimatePresence mode="wait">
-
-        {/* ── SCREEN 1: Email ── */}
         {step === STEPS.EMAIL && (
           <motion.div
             key="email"
@@ -220,7 +208,6 @@ export default function EmailSignIn() {
           </motion.div>
         )}
 
-        {/* ── SCREEN 2: Code ── */}
         {step === STEPS.CODE && (
           <motion.div
             key="code"
@@ -289,7 +276,6 @@ export default function EmailSignIn() {
             </button>
           </motion.div>
         )}
-
       </AnimatePresence>
     </div>
   );
