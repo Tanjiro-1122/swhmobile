@@ -37,12 +37,12 @@ async function sendCodeEmail(email, code) {
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:28px;color:#0f172a">
           <h1 style="font-size:24px;margin:0 0 12px">Your Sports Wager Helper code</h1>
-          <p style="font-size:15px;line-height:1.5;margin:0 0 18px">Enter this 6-digit code on Sports Wager Helper to finish signing in. Do not click any old Supabase confirmation links.</p>
+          <p style="font-size:15px;line-height:1.5;margin:0 0 18px">Enter this 6-digit code to sign in. It works for both new and existing accounts.</p>
           <div style="font-size:34px;font-weight:800;letter-spacing:8px;background:#f1f5f9;border-radius:14px;padding:18px 22px;text-align:center">${code}</div>
           <p style="font-size:13px;color:#64748b;line-height:1.5;margin-top:18px">This code expires in ${CODE_TTL_MINUTES} minutes. If you did not request it, you can ignore this email.</p>
         </div>
       `,
-      text: `Your Sports Wager Helper sign-in code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes. Do not click old Supabase confirmation links.`,
+      text: `Your Sports Wager Helper sign-in code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.`,
     }),
   });
 
@@ -52,7 +52,7 @@ async function sendCodeEmail(email, code) {
     err.status = response.status;
     err.raw = raw;
     if (response.status === 403 && raw.includes("testing emails")) {
-      err.publicMessage = "That email is not enabled for sign-in yet. Try the admin email or contact support.";
+      err.publicMessage = "We couldn't send a code to that email. If you're testing, use a verified address.";
     } else {
       err.publicMessage = "We couldn't send a code to that email. Please check it and try again.";
     }
@@ -130,11 +130,11 @@ export default async function handler(req, res) {
     if (action === "send_code") {
       const codeValue = makeCode();
       const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60 * 1000).toISOString();
+
+      // Always create/ensure user exists — works for new AND existing users
       const authUser = await ensureAuthUser(email);
       await ensureSwhUser({ email, authUser, apple_user_id });
 
-      // Store only a hash of the temporary code in the existing app-owned log table.
-      // This avoids Supabase Auth emails entirely, so users never receive Rune-linked confirmation links.
       const { error: otpError } = await supabase.from("swh_error_log").insert({
         user_email: email,
         page: "email_login",
@@ -166,24 +166,36 @@ export default async function handler(req, res) {
         .order("created_at", { ascending: false })
         .limit(1);
       if (codeFetchError) throw codeFetchError;
+
       const storedCode = codeRows?.[0];
       const storedContext = storedCode?.context || {};
       if (!storedCode) return res.status(400).json({ success: false, error: "Invalid or expired code." });
-      if (new Date(storedContext.expires_at).getTime() < Date.now()) return res.status(400).json({ success: false, error: "Invalid or expired code." });
-      if (storedContext.code_hash !== hashCode(email, code.trim())) return res.status(400).json({ success: false, error: "Invalid or expired code." });
+      if (new Date(storedContext.expires_at).getTime() < Date.now()) return res.status(400).json({ success: false, error: "Code expired. Please request a new one." });
+      if (storedContext.code_hash !== hashCode(email, code.trim())) return res.status(400).json({ success: false, error: "Incorrect code. Please try again." });
 
       const authUser = await ensureAuthUser(email);
       const profile = await ensureSwhUser({ email, authUser, apple_user_id });
+
       await supabase
         .from("swh_error_log")
         .update({ resolved: true })
         .eq("id", storedCode.id);
 
+      // Return full profile so the frontend has everything it needs
       return res.status(200).json({
         success: true,
-        user: { id: profile.id, email: profile.email },
-        profile,
-        access_token: `swh_${profile.id}`,
+        user: {
+          id: profile.id,
+          email: profile.email,
+          display_name: profile.display_name,
+          full_name: profile.display_name,
+          apple_user_id: profile.apple_user_id || null,
+          credits: profile.credits ?? 5,
+          search_credits: profile.credits ?? 5,
+          subscription_type: profile.subscription_type || "free",
+          subscription_status: profile.is_pro ? "active" : "free",
+          is_pro: profile.is_pro ?? false,
+        },
       });
     }
 
