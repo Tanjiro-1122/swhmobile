@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+// Native bridge utilities — no Base44 dependency
 
 /**
  * This file acts as a bridge between the web/React application and native mobile functionalities,
@@ -135,27 +135,32 @@ export const submitReceiptToServer = async (receiptData) => {
 
   // Guard: ensure the user session is still valid before hitting the backend.
   // Sessions can expire while the native IAP sheet is open.
-  const isAuthenticated = await base44.auth.isAuthenticated();
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem('swh_user') || '{}'); } catch { return {}; } })();
+  const isAuthenticated = !!(storedUser?.id || storedUser?.apple_user_id || storedUser?.email);
   if (!isAuthenticated) {
     console.warn('submitReceiptToServer: user not authenticated — saving receipt and redirecting to login');
     savePendingReceipt(receiptData);
-    // MyAccount will pick up the pending receipt via ?activate_iap=true after login.
     window.location.href = '/PostPurchaseSignIn';
     return;
   }
 
   try {
     let response;
+    const appleUserId = storedUser?.apple_user_id || localStorage.getItem('swh_apple_user_id') || null;
     if (receiptData.platform === 'ios') {
-      response = await base44.functions.invoke('handleAppleIAP', {
-        receipt: receiptData.receipt,
-        productId: receiptData.productId,
+      const res = await fetch('/api/verifyPurchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: receiptData.receipt, productId: receiptData.productId, appleUserId }),
       });
+      response = { data: await res.json() };
     } else if (receiptData.platform === 'android') {
-      response = await base44.functions.invoke('handleGooglePlayIAP', {
-        purchaseToken: receiptData.purchaseToken,
-        productId: receiptData.productId,
+      const res = await fetch('/api/verifyPurchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purchaseToken: receiptData.purchaseToken, productId: receiptData.productId, platform: 'android' }),
       });
+      response = { data: await res.json() };
     } else {
       throw new Error('Unsupported platform for receipt validation');
     }
@@ -182,12 +187,12 @@ export const submitReceiptToServer = async (receiptData) => {
       return;
     }
 
-    base44.functions.invoke('logError', {
-        error_type: 'iap',
-        function_name: 'submitReceiptToServer',
-        error_message: error.message,
-        context: { productId: receiptData.productId, platform: receiptData.platform }
-    });
+    // Log error to our own endpoint
+    fetch('/api/logError', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error_type: 'iap', function_name: 'submitReceiptToServer', error_message: error.message, context: { productId: receiptData.productId, platform: receiptData.platform } }),
+    }).catch(() => {});
     alert('There was a problem verifying your purchase. Please contact support if the issue persists.');
   }
 };
