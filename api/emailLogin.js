@@ -1,5 +1,6 @@
+// api/emailLogin.js — Supabase OTP auth (replaces broken Resend flow)
+// Uses Supabase Auth built-in OTP email delivery (no external API key needed)
 import { createClient } from "@supabase/supabase-js";
-import crypto from "node:crypto";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -7,61 +8,14 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
-const CODE_TTL_MINUTES = 10;
+// Public-facing Supabase URL for OTP send (uses anon key)
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 const normalizeEmail = (email = "") => email.trim().toLowerCase();
-const makeCode = () => String(crypto.randomInt(100000, 1000000));
-const hashCode = (email, code) => crypto
-  .createHash("sha256")
-  .update(`${email}:${code}:${process.env.SUPABASE_SERVICE_ROLE_KEY || "swh"}`)
-  .digest("hex");
-
-async function sendCodeEmail(email, code) {
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!resendKey) {
-    const err = new Error("Email delivery is not configured yet. Please contact support.");
-    err.publicMessage = "Email delivery is not configured yet. Please contact support.";
-    throw err;
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: process.env.SWH_EMAIL_FROM || "Sports Wager Helper <onboarding@resend.dev>",
-      to: [email],
-      subject: "Your Sports Wager Helper sign-in code",
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:28px;color:#0f172a">
-          <h1 style="font-size:24px;margin:0 0 12px">Your Sports Wager Helper code</h1>
-          <p style="font-size:15px;line-height:1.5;margin:0 0 18px">Enter this 6-digit code to sign in. It works for both new and existing accounts.</p>
-          <div style="font-size:34px;font-weight:800;letter-spacing:8px;background:#f1f5f9;border-radius:14px;padding:18px 22px;text-align:center">${code}</div>
-          <p style="font-size:13px;color:#64748b;line-height:1.5;margin-top:18px">This code expires in ${CODE_TTL_MINUTES} minutes. If you did not request it, you can ignore this email.</p>
-        </div>
-      `,
-      text: `Your Sports Wager Helper sign-in code is ${code}. It expires in ${CODE_TTL_MINUTES} minutes.`,
-    }),
-  });
-
-  if (!response.ok) {
-    const raw = await response.text().catch(() => "");
-    const err = new Error(`Email send failed (${response.status}): ${raw.slice(0, 300)}`);
-    err.status = response.status;
-    err.raw = raw;
-    if (response.status === 403 && raw.includes("testing emails")) {
-      err.publicMessage = "We couldn't send a code to that email. If you're testing, use a verified address.";
-    } else {
-      err.publicMessage = "We couldn't send a code to that email. Please check it and try again.";
-    }
-    throw err;
-  }
-}
 
 async function findAuthUserByEmail(email) {
-  const { data, error } = await supabase.auth.admin.listUsers();
+  const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (error) throw error;
   return data?.users?.find((u) => u.email?.toLowerCase() === email) || null;
 }
@@ -122,88 +76,91 @@ async function ensureSwhUser({ email, authUser, apple_user_id }) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { action, email: rawEmail, code, apple_user_id } = req.body || {};
+  const { action, email: rawEmail, code, token: tokenParam, apple_user_id } = req.body || {};
   const email = normalizeEmail(rawEmail);
   if (!email) return res.status(400).json({ success: false, error: "Email required" });
 
   try {
+    // ── SEND CODE ──────────────────────────────────────────────────────────────
     if (action === "send_code") {
-      const codeValue = makeCode();
-      const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60 * 1000).toISOString();
-
-      // Always create/ensure user exists — works for new AND existing users
+      // Ensure user exists in swh_users before sending OTP
       const authUser = await ensureAuthUser(email);
       await ensureSwhUser({ email, authUser, apple_user_id });
 
-      const { error: otpError } = await supabase.from("swh_error_log").insert({
-        user_email: email,
-        page: "email_login",
-        error_message: "SWH email login code issued",
-        context: {
-          code_hash: hashCode(email, codeValue),
-          expires_at: expiresAt,
+      // Send OTP via Supabase Auth (built-in email delivery — no Resend needed)
+      const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
         },
-        severity: "auth_code",
-        resolved: false,
-        created_at: new Date().toISOString(),
+        body: JSON.stringify({ email, create_user: false }),
       });
-      if (otpError) throw otpError;
 
-      await sendCodeEmail(email, codeValue);
-      return res.status(200).json({ success: true, delivery: "code" });
+      if (!otpRes.ok) {
+        const otpData = await otpRes.json().catch(() => ({}));
+        const msg = otpData?.msg || otpData?.error_description || otpData?.message || "";
+
+        // Rate limit is fine — means a code was recently sent
+        if (otpRes.status === 429 || (msg && msg.toLowerCase().includes("rate limit"))) {
+          return res.status(200).json({ success: true, delivery: "otp", note: "recent_code_still_valid" });
+        }
+
+        console.error("[emailLogin] OTP send error:", otpRes.status, msg);
+        return res.status(500).json({
+          success: false,
+          error: "We couldn\'t send a code to that email. Please check it and try again.",
+        });
+      }
+
+      return res.status(200).json({ success: true, delivery: "otp" });
     }
 
+    // ── VERIFY CODE ────────────────────────────────────────────────────────────
     if (action === "verify_code") {
-      if (!code) return res.status(400).json({ success: false, error: "Code required" });
+      const codeValue = (code || tokenParam || "").trim();
+      if (!codeValue) return res.status(400).json({ success: false, error: "Code required" });
 
-      const { data: codeRows, error: codeFetchError } = await supabase
-        .from("swh_error_log")
-        .select("id, context, created_at")
-        .eq("user_email", email)
-        .eq("page", "email_login")
-        .eq("severity", "auth_code")
-        .eq("resolved", false)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      if (codeFetchError) throw codeFetchError;
+      // Verify OTP with Supabase Auth
+      const verifyRes = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, token: codeValue, type: "email" }),
+      });
 
-      const storedCode = codeRows?.[0];
-      const storedContext = storedCode?.context || {};
-      if (!storedCode) return res.status(400).json({ success: false, error: "Invalid or expired code." });
-      if (new Date(storedContext.expires_at).getTime() < Date.now()) return res.status(400).json({ success: false, error: "Code expired. Please request a new one." });
-      if (storedContext.code_hash !== hashCode(email, code.trim())) return res.status(400).json({ success: false, error: "Incorrect code. Please try again." });
+      const verifyData = await verifyRes.json().catch(() => ({}));
 
-      const authUser = await ensureAuthUser(email);
+      if (!verifyRes.ok || verifyData?.error || verifyData?.error_code) {
+        const errMsg = verifyData?.error_description || verifyData?.message || verifyData?.msg || "Incorrect or expired code.";
+        console.error("[emailLogin] OTP verify error:", verifyData);
+        return res.status(400).json({ success: false, error: errMsg });
+      }
+
+      // OTP verified — get or create swh_users profile
+      const authUser = await findAuthUserByEmail(email);
       const profile = await ensureSwhUser({ email, authUser, apple_user_id });
 
-      await supabase
-        .from("swh_error_log")
-        .update({ resolved: true })
-        .eq("id", storedCode.id);
-
-      // Return full profile so the frontend has everything it needs
       return res.status(200).json({
         success: true,
         user: {
           id: profile.id,
           email: profile.email,
-          display_name: profile.display_name,
-          full_name: profile.display_name,
+          full_name: profile.display_name || profile.full_name || email.split("@")[0],
           apple_user_id: profile.apple_user_id || null,
-          credits: profile.credits ?? 5,
-          search_credits: profile.credits ?? 5,
           subscription_type: profile.subscription_type || "free",
-          subscription_status: profile.is_pro ? "active" : "free",
-          is_pro: profile.is_pro ?? false,
+          search_credits: profile.credits ?? 5,
+          is_pro: profile.is_pro || false,
+          subscription_status: profile.is_pro ? "active" : "inactive",
         },
       });
     }
 
     return res.status(400).json({ success: false, error: "Unknown action" });
   } catch (err) {
-    console.error("emailLogin error:", err?.message || err);
-    const publicError = err?.publicMessage || "We couldn't complete email sign-in. Please try again.";
-    const status = err?.status === 403 ? 400 : 500;
-    return res.status(status).json({ success: false, error: publicError });
+    console.error("[emailLogin] Error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Server error" });
   }
 }
