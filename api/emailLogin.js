@@ -15,9 +15,11 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 const normalizeEmail = (email = "") => email.trim().toLowerCase();
 
 async function findAuthUserByEmail(email) {
-  const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  // Use direct lookup instead of fetching up to 1000 users and scanning locally
+  const { data, error } = await supabase.auth.admin.getUserByEmail(email);
+  if (error && error.message?.includes('User not found')) return null;
   if (error) throw error;
-  return data?.users?.find((u) => u.email?.toLowerCase() === email) || null;
+  return data?.user ?? null;
 }
 
 async function ensureAuthUser(email) {
