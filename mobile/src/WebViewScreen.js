@@ -71,7 +71,7 @@ export default function WebViewScreen() {
           if (window.localStorage) {
             deviceId = window.localStorage.getItem(storageKey);
           }
-        } catch (_error) {}
+        } catch (_error) { console.warn('[SWH] localStorage read failed:', _error); }
 
         if (!deviceId) {
           var randomPart = '';
@@ -89,7 +89,7 @@ export default function WebViewScreen() {
             if (window.localStorage) {
               window.localStorage.setItem(storageKey, deviceId);
             }
-          } catch (_error) {}
+          } catch (_error) { console.warn('[SWH] localStorage write failed:', _error); }
         }
 
         window.__SWH_DEVICE_ID__ = deviceId;
@@ -135,7 +135,7 @@ export default function WebViewScreen() {
     const js = `
       (function() {
         if (typeof window.__nativeBus === 'function') {
-          try { window.__nativeBus(${JSON.stringify(payload)}); } catch (_e) {}
+          try { window.__nativeBus(${JSON.stringify(payload)}); } catch (_e) { console.error('[SWH] __nativeBus dispatch failed:', _e && _e.message); }
         }
         var event = new CustomEvent('NativePurchaseResult', { detail: ${JSON.stringify(payload)} });
         document.dispatchEvent(event);
