@@ -26,7 +26,7 @@ export default function Support() {
         <div style={{ background: "#1e293b", borderRadius: 12, padding: 24, marginBottom: 16 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>📧 Email Us</h2>
           <p style={{ color: "#94a3b8", fontSize: 14 }}>
-            Reach out at <a href="mailto:support@sportswagerhelper.com" style={{ color: "#38bdf8" }}>support@sportswagerhelper.com</a>
+            Reach out at <a href="mailto:javier.huertas@runekeeper.me" style={{ color: "#38bdf8" }}>javier.huertas@runekeeper.me</a>
           </p>
         </div>
 
