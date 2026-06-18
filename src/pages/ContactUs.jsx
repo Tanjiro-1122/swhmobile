@@ -39,10 +39,10 @@ export default function ContactUs() {
                   <span className="text-sm font-semibold text-gray-600">Email Support</span>
                 </div>
                 <a 
-                  href="mailto:support@sportswagerhelper.com"
+                  href="mailto:javier.huertas@runekeeper.me"
                   className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
                 >
-                  support@sportswagerhelper.com
+                  javier.huertas@runekeeper.me
                 </a>
               </div>
               <p className="text-sm text-gray-600 mt-4">
