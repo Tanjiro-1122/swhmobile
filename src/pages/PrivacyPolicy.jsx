@@ -196,7 +196,7 @@ export default function PrivacyPolicy() {
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-4">
                   <h3 className="text-lg font-bold text-blue-900 mb-2">How to Exercise Your Rights</h3>
                   <p className="text-sm text-blue-800 mb-2">
-                    <strong>Email:</strong> privacy@sportswagerhelper.com<br />
+                    <strong>Email:</strong> javier.huertas@runekeeper.me<br />
                     <strong>Subject:</strong> "Privacy Rights Request - [Your Request Type]"<br />
                     <strong>Response Time:</strong> We will respond within 30 days
                   </p>
@@ -262,7 +262,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <p>
                   We do not knowingly collect data from minors. If you believe a minor has provided us with personal information, 
-                  please contact us immediately at privacy@sportswagerhelper.com and we will delete it.
+                  please contact us immediately at javier.huertas@runekeeper.me and we will delete it.
                 </p>
               </section>
 
@@ -298,8 +298,8 @@ export default function PrivacyPolicy() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">11. Contact Us</h2>
                 <p className="mb-2">If you have questions about this privacy policy or your data, contact us:</p>
                 <ul className="list-none space-y-2 mt-4">
-                  <li><strong>Privacy Inquiries:</strong> privacy@sportswagerhelper.com</li>
-                  <li><strong>General Support:</strong> support@sportswagerhelper.com</li>
+                  <li><strong>Privacy Inquiries:</strong> javier.huertas@runekeeper.me</li>
+                  <li><strong>General Support:</strong> javier.huertas@runekeeper.me</li>
                   <li><strong>In-App:</strong> Use the feedback button</li>
                 </ul>
               </section>
@@ -329,7 +329,7 @@ export default function PrivacyPolicy() {
                 <p className="text-green-800">
                   We are committed to transparency and protecting your privacy. This policy outlines exactly what data we collect, 
                   how we use it, and your rights to control it. If you have any concerns or questions, please don't hesitate to 
-                  contact us at privacy@sportswagerhelper.com.
+                  contact us at javier.huertas@runekeeper.me.
                 </p>
               </section>
             </div>
