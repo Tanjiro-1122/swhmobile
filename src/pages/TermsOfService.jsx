@@ -174,7 +174,7 @@ export default function TermsOfService() {
                     </>
                   ) : (
                     <>
-                      <li><strong>Web Purchases (Stripe):</strong> support@sportswagerhelper.com with your account email and reason</li>
+                      <li><strong>Web Purchases (Stripe):</strong> javier.huertas@runekeeper.me with your account email and reason</li>
                       <li><strong>Mobile Purchases:</strong> Request through App Store (Apple) or Google Play Store (Google) directly</li>
                     </>
                   )}
@@ -276,7 +276,7 @@ export default function TermsOfService() {
                     <li>Always verify information with official sources before making decisions</li>
                   </ul>
                   <p className="text-blue-800 mt-4">
-                    <strong>Support Resources:</strong> If you need assistance, contact our support team at support@sportswagerhelper.com
+                    <strong>Support Resources:</strong> If you need assistance, contact our support team at javier.huertas@runekeeper.me
                   </p>
                 </div>
               </section>
@@ -330,7 +330,7 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">14. Contact Us</h2>
                 <p>Questions about these Terms? Contact us:</p>
                 <ul className="list-none space-y-2 mt-4">
-                  <li><strong>Email:</strong> support@sportswagerhelper.com</li>
+                  <li><strong>Email:</strong> javier.huertas@runekeeper.me</li>
                   <li><strong>In-App:</strong> Use the feedback button</li>
                   <li><strong>Mail:</strong> [Your Company Address]</li>
                 </ul>
