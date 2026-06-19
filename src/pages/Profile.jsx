@@ -79,7 +79,7 @@ export default function Profile() {
       console.error('Portal error:', error);
       setUpdateMessage({ 
         type: 'error', 
-        text: 'Unable to access subscription portal. Please contact support@sportswagerhelper.com' 
+        text: 'Unable to access subscription portal. Please contact javier.huertas@runekeeper.me' 
       });
       setIsLoadingPortal(false);
     }
@@ -446,7 +446,7 @@ export default function Profile() {
                         console.error('Account deletion error:', error);
                         setUpdateMessage({ 
                           type: 'error', 
-                          text: 'Failed to delete account. Please contact support@sportswagerhelper.com for assistance.' 
+                          text: 'Failed to delete account. Please contact javier.huertas@runekeeper.me for assistance.' 
                         });
                       }
                     } else {
@@ -461,7 +461,7 @@ export default function Profile() {
               </Button>
 
               <p className="text-xs text-gray-600 text-center">
-                Need help? Contact us at support@sportswagerhelper.com before deleting your account.
+                Need help? Contact us at javier.huertas@runekeeper.me before deleting your account.
               </p>
             </CardContent>
           </Card>
