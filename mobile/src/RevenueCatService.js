@@ -66,6 +66,30 @@ export const getProducts = async () => {
  * @returns {object} purchaserInfo on success
  */
 export const purchaseProduct = async (productId) => {
+  // ── Diagnostics: log exactly what the web layer asked us to purchase ──
+  console.log('[RevenueCat] Purchase requested — productId from web:', productId);
+
+  // ── Diagnostics only ─ read-only, does not affect the purchase call
+  // below or which productId gets sent to StoreKit/Play. If this throws
+  // for any reason, we log and fall through to the real purchase attempt.
+  try {
+    const offerings = await Purchases.getOfferings();
+    const currentOffering = offerings.current;
+    const packageIds = currentOffering?.availablePackages?.map((p) => p.identifier) ?? [];
+    const productIds = currentOffering?.availablePackages?.map((p) => p.product.identifier) ?? [];
+    console.log('[RevenueCat] Offerings — current offering id:', currentOffering?.identifier ?? 'none');
+    console.log('[RevenueCat] Offerings — available package ids:', packageIds);
+    console.log('[RevenueCat] Offerings — available product ids:', productIds);
+    if (!productIds.includes(productId)) {
+      console.warn("[RevenueCat] Requested productId is NOT in the current offering's products:", productId);
+    }
+  } catch (offeringsErr) {
+    console.warn(
+      '[RevenueCat] getOfferings() diagnostic call failed — code:', offeringsErr?.code,
+      '| message:', offeringsErr?.message ?? offeringsErr,
+    );
+  }
+
   try {
     const products = await Purchases.getProducts([productId]);
     if (!products || products.length === 0) {
@@ -80,8 +104,28 @@ export const purchaseProduct = async (productId) => {
       console.log('[RevenueCat] Purchase cancelled by user');
       return { success: false, cancelled: true };
     }
-    console.error('[RevenueCat] Purchase error:', error);
-    throw error;
+
+    // ── Diagnostics: surface the REAL RevenueCat/StoreKit/Play error ─────
+    // (error.userInfo.underlyingErrorMessage is where the actual App Store
+    // Connect / Play error text usually lands — e.g. "product not found",
+    // "cannot connect to store", agreement/tax issues. Falls back to
+    // error.message if nothing more specific exists.)
+    const errorCode = error?.code ?? error?.userInfo?.code ?? 'unknown_code';
+    const underlyingMessage = error?.userInfo?.underlyingErrorMessage ?? error?.underlyingErrorMessage ?? null;
+    const realErrorMessage = error?.message ?? 'Unknown purchase error';
+    console.error(
+      '[RevenueCat] Purchase error — code:', errorCode,
+      '| message:', realErrorMessage,
+      '| underlying:', underlyingMessage,
+      '| productId:', productId,
+    );
+
+    const enrichedError = new Error(
+      underlyingMessage ? `${realErrorMessage} (${underlyingMessage})` : realErrorMessage
+    );
+    enrichedError.code = errorCode;
+    enrichedError.userCancelled = false;
+    throw enrichedError;
   }
 };
 
