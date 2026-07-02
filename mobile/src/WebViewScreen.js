@@ -230,7 +230,18 @@ export default function WebViewScreen() {
         }
 
         case 'PURCHASE': {
-          setSelectedProductId(productId ?? null);
+          console.log('[WebViewScreen] PURCHASE received from web app, productId:', productId);
+          if (!productId) {
+            console.warn('[WebViewScreen] PURCHASE message missing productId — cannot open purchase modal.');
+            postMessageToWeb({
+              type: 'PURCHASE_RESULT',
+              success: false,
+              error: 'missing_product_id',
+              message: 'No product ID was provided by the web app.',
+            });
+            break;
+          }
+          setSelectedProductId(productId);
           setPurchaseModalVisible(true);
           break;
         }
