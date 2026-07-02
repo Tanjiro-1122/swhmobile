@@ -10,7 +10,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { getProducts, purchaseProduct, restorePurchases } from './RevenueCatService';
+import { getProducts, purchaseProduct, restorePurchases, getRevenueCatDiagnostics } from './RevenueCatService';
 
 /**
  * PurchaseModal — displays available credit packs and handles purchases.
@@ -43,9 +43,37 @@ export default function PurchaseModal({
     setError(null);
     try {
       const result = await getProducts();
+      if (!result || result.length === 0) {
+        // No products came back — pull a full diagnostic snapshot so we can
+        // see exactly what RevenueCat/StoreKit reported (offerings loaded?
+        // package count? product IDs?) without guessing.
+        const diagnostics = await getRevenueCatDiagnostics();
+        console.warn('[PurchaseModal] loadProducts returned 0 products — diagnostics:', diagnostics);
+        if (__DEV__) {
+          setError(
+            `No products loaded. offeringsLoaded=${diagnostics.offeringsLoaded}, ` +
+            `offering=${diagnostics.offeringIdentifier ?? 'none'}, ` +
+            `packages=${diagnostics.availablePackages.length}, ` +
+            `storeProducts=${diagnostics.storeProducts.join(', ') || 'none'}`
+          );
+        } else {
+          setError('No products available at this time. Please try again later.');
+        }
+      }
       setPackages(result);
     } catch (err) {
-      setError('Failed to load products. Please check your connection and try again.');
+      const diagnostics = await getRevenueCatDiagnostics().catch(() => null);
+      console.error('[PurchaseModal] loadProducts failed:', err?.message, diagnostics);
+      // __DEV__ is React Native's standard dev-build flag. TestFlight builds
+      // are production JS bundles (no dedicated flag without adding a new
+      // native module like expo-application), so they get the same safe
+      // generic message as the App Store build — still an improvement over
+      // silently swallowing the real error, since it's now logged above.
+      setError(
+        __DEV__ && diagnostics
+          ? `Failed to load products: ${err?.message ?? 'unknown error'} (offering=${diagnostics.offeringIdentifier ?? 'none'}, packages=${diagnostics.availablePackages.length})`
+          : 'Failed to load products. Please check your connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -68,6 +96,7 @@ export default function PurchaseModal({
 
     setPurchasing(true);
     try {
+      console.log('[PurchaseModal] Attempting purchase:', productId);
       const result = await purchaseProduct(productId);
       if (result.success) {
         Alert.alert('Success! 🎉', 'Your credits have been added to your account.');
@@ -77,7 +106,17 @@ export default function PurchaseModal({
         // User cancelled — do nothing
       }
     } catch (err) {
-      Alert.alert('Purchase Failed', err.message || 'Something went wrong. Please try again.');
+      // purchaseProduct() attaches rcCode/rcMessage/rcUnderlyingStoreKitError —
+      // log the exact diagnostic and show the real error instead of only
+      // the generic "please try again."
+      console.error('[PurchaseModal] Purchase failed:', {
+        productId,
+        code: err.rcCode,
+        message: err.rcMessage ?? err.message,
+        underlyingStoreKitError: err.rcUnderlyingStoreKitError,
+      });
+      const detail = err.rcCode ?? err.rcMessage ?? err.message ?? 'Please try again.';
+      Alert.alert('Purchase Failed', `Purchase failed: ${detail}`);
     } finally {
       setPurchasing(false);
     }
