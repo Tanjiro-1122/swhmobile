@@ -14,7 +14,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 
 import PurchaseModal from './PurchaseModal';
-import { restorePurchases, checkEntitlement, loginUser } from './RevenueCatService';
+import { purchaseProduct, restorePurchases, checkEntitlement, loginUser } from './RevenueCatService';
 
 const APP_URL = 'https://sportswagerhelper.com';
 
@@ -230,8 +230,31 @@ export default function WebViewScreen() {
         }
 
         case 'PURCHASE': {
-          setSelectedProductId(productId ?? null);
-          setPurchaseModalVisible(true);
+          if (productId) {
+            // Known product requested by the web layer — purchase it directly.
+            // No picker screen. Always resolves PURCHASE_RESULT immediately
+            // (success, user-cancelled, or a real error) instead of leaving
+            // the web side's postNativeMessage promise to time out after 120s.
+            try {
+              const result = await purchaseProduct(productId);
+              if (result.cancelled) {
+                postMessageToWeb({ type: 'PURCHASE_RESULT', success: false, productId, error: 'user_cancelled' });
+              } else {
+                postMessageToWeb({ type: 'PURCHASE_RESULT', success: true, productId, customerInfo: result.customerInfo });
+              }
+            } catch (err) {
+              postMessageToWeb({
+                type: 'PURCHASE_RESULT',
+                success: false,
+                productId,
+                error: err?.message || 'Purchase failed. Please try again.',
+              });
+            }
+          } else {
+            // No productId supplied — fall back to the manual picker modal.
+            setSelectedProductId(null);
+            setPurchaseModalVisible(true);
+          }
           break;
         }
 
