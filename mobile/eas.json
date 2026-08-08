@@ -24,6 +24,9 @@
       }
     },
     "production": {
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
       "ios": {
         "distribution": "store",
         "autoIncrement": true,
