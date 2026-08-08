@@ -33,6 +33,29 @@ export default function WebViewScreen() {
   const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
 
+  // Holds the in-flight Purchases.logIn() so a purchase or restore arriving
+  // right behind SAVE_SESSION waits for the account link to land first.
+  const loginPromiseRef = useRef(null);
+
+  /**
+   * Waits for any pending account link. Never throws and never blocks forever:
+   * a RevenueCat outage must not make the buy button unresponsive, so this
+   * gives up after a few seconds and lets the purchase proceed. Worst case is
+   * the pre-existing behaviour -- an anonymous purchase the webhook logs but
+   * cannot attribute -- rather than a purchase the user cannot make at all.
+   */
+  const settleLogin = useCallback(async () => {
+    if (!loginPromiseRef.current) return;
+    try {
+      await Promise.race([
+        loginPromiseRef.current,
+        new Promise((resolve) => setTimeout(resolve, 5000)),
+      ]);
+    } catch {
+      // loginUser already logs; a failed link must not block the purchase.
+    }
+  }, []);
+
   const bridgeMetadata = useMemo(() => {
     const config = Constants.expoConfig ?? {};
     const version = config.version ?? Constants.nativeAppVersion ?? null;
@@ -230,6 +253,9 @@ export default function WebViewScreen() {
         }
 
         case 'PURCHASE': {
+          // Wait for any in-flight account link before touching StoreKit, so the
+          // receipt is attributed to the real user rather than an anonymous id.
+          await settleLogin();
           if (productId) {
             // Known product requested by the web layer — purchase it directly.
             // No picker screen. Always resolves PURCHASE_RESULT immediately
@@ -260,6 +286,7 @@ export default function WebViewScreen() {
 
         case 'RESTORE':
         case 'RESTORE_PURCHASES': {
+          await settleLogin();
           try {
             const result = await restorePurchases();
             postMessageToWeb({ type: 'RESTORE_RESULT', success: true, customerInfo: result.customerInfo });
@@ -276,15 +303,26 @@ export default function WebViewScreen() {
         }
 
         case 'SAVE_SESSION': {
-          // Called after Apple Sign-In succeeds — log in to RevenueCat with Base44 user ID
-          try {
-            const { userId } = data;
-            if (userId) {
-              await loginUser(userId);
-              console.log('[WebViewScreen] RevenueCat logged in with userId:', userId);
-            }
-          } catch (err) {
-            console.warn('[WebViewScreen] SAVE_SESSION loginUser error:', err.message);
+          // Sent by the web layer immediately before a purchase or restore, and
+          // after Apple Sign-In, to link RevenueCat's appUserId to the account.
+          //
+          // The promise is kept so PURCHASE/RESTORE can wait on it. onMessage
+          // does not serialise handlers: the web side fires SAVE_SESSION and
+          // PURCHASE back to back, so without this the purchase could reach
+          // StoreKit while logIn() -- a network round-trip to RevenueCat -- was
+          // still in flight, and the receipt would be attributed to the
+          // anonymous id.
+          const { userId } = data;
+          if (userId) {
+            loginPromiseRef.current = loginUser(userId)
+              .then((info) => {
+                console.log('[WebViewScreen] RevenueCat logged in with userId:', userId);
+                return info;
+              })
+              .catch((err) => {
+                console.warn('[WebViewScreen] SAVE_SESSION loginUser error:', err?.message);
+              });
+            await loginPromiseRef.current;
           }
           break;
         }
@@ -293,7 +331,7 @@ export default function WebViewScreen() {
           console.log('[WebViewScreen] Unknown message type:', type);
       }
     },
-    [postMessageToWeb, handleNativeAppleSignIn],
+    [postMessageToWeb, handleNativeAppleSignIn, settleLogin],
   );
 
   const handlePurchaseComplete = useCallback(
