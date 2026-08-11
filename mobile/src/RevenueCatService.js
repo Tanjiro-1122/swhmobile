@@ -49,7 +49,10 @@ export const getProducts = async () => {
     }
 
     // Fallback: fetch products directly by ID
-    const products = await Purchases.getProducts(PRODUCT_IDS);
+    const products = await Purchases.getProducts(
+      PRODUCT_IDS,
+      Purchases.PRODUCT_CATEGORY.NON_SUBSCRIPTION,
+    );
     return products.map((product) => ({
       product,
       identifier: product.productIdentifier,
@@ -91,7 +94,10 @@ export const purchaseProduct = async (productId) => {
   }
 
   try {
-    const products = await Purchases.getProducts([productId]);
+    const products = await Purchases.getProducts(
+      [productId],
+      Purchases.PRODUCT_CATEGORY.NON_SUBSCRIPTION,
+    );
     if (!products || products.length === 0) {
       throw new Error(`Product not found: ${productId}`);
     }

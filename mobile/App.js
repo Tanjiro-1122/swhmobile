@@ -1,12 +1,17 @@
-import React, { useEffect, useRef } from 'react';
-import { Platform, BackHandler, StatusBar } from 'react-native';
+import 'react-native-gesture-handler';
+
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react-native';
 
+import { AuthProvider, useAuth } from './src/auth/AuthContext';
+import AuthScreen from './src/screens/AuthScreen';
+import LoadingScreen from './src/screens/LoadingScreen';
 import WebViewScreen from './src/WebViewScreen';
+import MainTabs from './src/navigation/MainTabs';
 import { initializePurchases } from './src/RevenueCatService';
 
 // Initialize Sentry
@@ -17,6 +22,20 @@ Sentry.init({
 });
 
 const Stack = createStackNavigator();
+
+function AppNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <LoadingScreen />;
+  if (!isAuthenticated) return <AuthScreen />;
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="NativeTabs" component={MainTabs} />
+      <Stack.Screen name="WebView" component={WebViewScreen} />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
   useEffect(() => {
@@ -29,11 +48,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ExpoStatusBar style="light" />
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="WebView" component={WebViewScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

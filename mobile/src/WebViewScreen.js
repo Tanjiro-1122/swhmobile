@@ -5,6 +5,7 @@ import {
   BackHandler,
   Platform,
   ActivityIndicator,
+  Pressable,
   Text,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -21,14 +22,13 @@ const APP_URL = 'https://sportswagerhelper.com';
 // Guard against duplicate Apple Sign In requests
 let appleSignInInProgress = false;
 
-export default function WebViewScreen() {
+export default function WebViewScreen({ navigation }) {
   const webViewRef = useRef(null);
   const insets = useSafeAreaInsets();
 
   const [loadProgress, setLoadProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [canGoBack, setCanGoBack] = useState(false);
 
   const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -139,18 +139,20 @@ export default function WebViewScreen() {
     `;
   }, [bridgeMetadata]);
 
-  // Android hardware back button
+  const closeFallback = useCallback(() => {
+    navigation?.navigate?.('NativeTabs', { screen: 'Home' });
+  }, [navigation]);
+
+  // Android hardware back button exits the native fallback instead of trapping
+  // users inside website history.
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (canGoBack && webViewRef.current) {
-        webViewRef.current.goBack();
-        return true;
-      }
-      return false;
+      closeFallback();
+      return true;
     });
     return () => subscription.remove();
-  }, [canGoBack]);
+  }, [closeFallback]);
 
   /** Send a JSON payload back to the WebView via __nativeBus */
   const postMessageToWeb = useCallback((payload) => {
@@ -352,6 +354,21 @@ export default function WebViewScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.nativeHeader}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close Advanced Research"
+          onPress={closeFallback}
+          style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
+        >
+          <Text style={styles.closeButtonText}>Close</Text>
+        </Pressable>
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerTitle}>Advanced Research</Text>
+          <Text style={styles.headerSubtitle}>SportsWagerHelper.com</Text>
+        </View>
+      </View>
+
       {isLoading && loadProgress > 0 && loadProgress < 1 && (
         <View style={styles.progressBarContainer}>
           <View style={[styles.progressBar, { width: `${loadProgress * 100}%` }]} />
@@ -382,7 +399,6 @@ export default function WebViewScreen() {
         onLoadProgress={handleLoadProgress}
         onLoadEnd={handleLoadEnd}
         onError={handleError}
-        onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
         javaScriptEnabled
         domStorageEnabled
         allowsBackForwardNavigationGestures={Platform.OS === 'ios'}
@@ -410,6 +426,48 @@ export default function WebViewScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1e3a5f' },
   webview: { flex: 1 },
+  nativeHeader: {
+    alignItems: 'center',
+    backgroundColor: '#07111f',
+    borderBottomColor: 'rgba(148, 163, 184, 0.22)',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    minHeight: 58,
+    paddingHorizontal: 14,
+    zIndex: 20,
+  },
+  closeButton: {
+    alignItems: 'center',
+    backgroundColor: '#132235',
+    borderColor: 'rgba(148, 163, 184, 0.35)',
+    borderRadius: 14,
+    borderWidth: 1,
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  closeButtonPressed: {
+    opacity: 0.82,
+  },
+  closeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  headerCopy: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  headerSubtitle: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginTop: 2,
+  },
   progressBarContainer: {
     height: 3,
     backgroundColor: '#e2e8f0',

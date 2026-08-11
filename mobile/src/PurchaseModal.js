@@ -10,7 +10,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { getProducts, purchaseProduct, restorePurchases } from './RevenueCatService';
+import { getProducts, purchaseProduct } from './RevenueCatService';
 
 /**
  * PurchaseModal — displays available credit packs and handles purchases.
@@ -70,7 +70,7 @@ export default function PurchaseModal({
     try {
       const result = await purchaseProduct(productId);
       if (result.success) {
-        Alert.alert('Success! 🎉', 'Your credits have been added to your account.');
+        Alert.alert('Purchase complete', 'Your credits will appear after the secure receipt is processed.');
         onPurchaseComplete?.({ success: true, productId, customerInfo: result.customerInfo });
         onClose();
       } else if (result.cancelled) {
@@ -83,20 +83,6 @@ export default function PurchaseModal({
     }
   };
 
-  const handleRestore = async () => {
-    setPurchasing(true);
-    try {
-      const result = await restorePurchases();
-      Alert.alert('Restored', 'Your previous purchases have been restored.');
-      onPurchaseComplete?.({ success: true, restored: true, customerInfo: result.customerInfo });
-      onClose();
-    } catch (err) {
-      Alert.alert('Restore Failed', err.message || 'No purchases found to restore.');
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
   const getProductLabel = (pkg) => {
     const productId =
       pkg.product?.productIdentifier ?? pkg.product?.identifier ?? pkg.identifier ?? '';
@@ -104,7 +90,7 @@ export default function PurchaseModal({
   };
 
   const renderPackage = ({ item: pkg }) => {
-    const { label } = getProductLabel(pkg);
+    const { label, credits } = getProductLabel(pkg);
     const price =
       pkg.product?.localizedPriceString ??
       pkg.product?.priceString ??
@@ -123,7 +109,7 @@ export default function PurchaseModal({
       >
         <View style={styles.packageInfo}>
           <Text style={styles.packageLabel}>{label}</Text>
-          <Text style={styles.packageSubLabel}>{productId}</Text>
+          <Text style={styles.packageSubLabel}>{credits} credits for native S.A.L. lookups</Text>
         </View>
         <Text style={styles.packagePrice}>{price}</Text>
       </TouchableOpacity>
@@ -181,15 +167,6 @@ export default function PurchaseModal({
               <Text style={styles.purchasingText}>Processing…</Text>
             </View>
           )}
-
-          <TouchableOpacity
-            style={styles.restoreButton}
-            onPress={handleRestore}
-            disabled={purchasing}
-            accessibilityRole="button"
-          >
-            <Text style={styles.restoreButtonText}>Restore Purchases</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.closeButton}
@@ -316,17 +293,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 12,
     fontWeight: '600',
-  },
-  restoreButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
-  restoreButtonText: {
-    color: '#1e3a5f',
-    fontSize: 14,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   closeButton: {
     backgroundColor: '#1e3a5f',
