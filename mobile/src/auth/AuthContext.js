@@ -44,6 +44,13 @@ function decodeJwtPayload(token) {
   }
 }
 
+function getAppleSubjectFromAuthUser(authUser) {
+  return String(
+    authUser?.identities?.find?.((identity) => identity.provider === 'apple')?.identity_data?.sub ||
+    '',
+  ).trim();
+}
+
 function mergeUserAndProfile(authUser, profile) {
   const email = normalizeEmail(authUser?.email || profile?.email);
   return {
@@ -91,8 +98,7 @@ export function AuthProvider({ children }) {
   const resolveProfile = useCallback(async (authUser, accessToken, options = {}) => {
     const email = normalizeEmail(authUser?.email);
     const appleUserId = String(
-      authUser?.user_metadata?.sub ||
-      authUser?.user_metadata?.provider_id ||
+      getAppleSubjectFromAuthUser(authUser) ||
       options.appleSubject ||
       options.appleUserId ||
       '',
@@ -279,7 +285,6 @@ export function AuthProvider({ children }) {
     const displayName = fullName || null;
     const authUser = appleSession.user || await getAuthUser(appleSession.access_token);
     const resolved = await resolveProfile(authUser, appleSession.access_token, {
-      requireExistingProfile: true,
       appleUserId: credential.user || null,
       appleSubject: claims?.sub || null,
       displayName,
