@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  BackHandler,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -41,6 +42,21 @@ export default function AuthScreen() {
     setCode('');
     setError('');
   };
+
+  React.useEffect(() => {
+    if (Platform.OS !== 'android' || mode === 'welcome') return undefined;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (step === 'code') {
+        setStep('email');
+        setCode('');
+      } else {
+        setMode('welcome');
+      }
+      setError('');
+      return true;
+    });
+    return () => subscription.remove();
+  }, [mode, step]);
 
   const sendCode = async () => {
     setError('');
@@ -334,4 +350,3 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
 });
-

@@ -175,6 +175,15 @@ export default function WebViewScreen({ navigation }) {
 
   /** Handle Apple Sign In natively */
   const handleNativeAppleSignIn = useCallback(async () => {
+    if (Platform.OS !== 'ios') {
+      postMessageToWeb({
+        type: 'APPLE_SIGN_IN_RESULT',
+        success: false,
+        error: 'Apple Sign-In is only available on iPhone and iPad. Use email sign-in on Android.',
+      });
+      return;
+    }
+
     if (appleSignInInProgress) {
       console.log('[SWH] Apple sign-in already in progress, ignoring duplicate');
       return;
