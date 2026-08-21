@@ -12,6 +12,7 @@ export const colors = {
   purple: '#8b5cf6',
   green: '#84cc16',
   orange: '#f59e0b',
+  red: '#ef4444',
 };
 
 export const spacing = {
@@ -27,4 +28,3 @@ export const radius = {
   lg: 20,
   pill: 999,
 };
-

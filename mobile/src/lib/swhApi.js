@@ -193,6 +193,10 @@ export async function spendSearchCredit(token) {
   return callSwhApi('/api/spendSearchCredit', { token });
 }
 
+export async function deleteAccountRequest(token) {
+  return callSwhApi('/api/deleteAccount', { token });
+}
+
 export async function askSal({ token, message, history }) {
   const liveContext = needsLiveOddsContext(message)
     ? await getLiveOddsContext(token)

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import {
   Card,
@@ -12,8 +12,9 @@ import PurchaseModal from '../PurchaseModal';
 import { colors, spacing } from '../theme/nativeTheme';
 
 export default function AccountScreen() {
-  const { account, refreshAccount, signOut } = useAuth();
+  const { account, deleteAccount, refreshAccount, signOut } = useAuth();
   const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const access = getAccessModel(account);
   const plan = formatPlanName(account);
 
@@ -21,6 +22,34 @@ export default function AccountScreen() {
     refreshAccount();
     setTimeout(refreshAccount, 3500);
     setTimeout(refreshAccount, 9000);
+  };
+
+  const performDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+    } catch (error) {
+      Alert.alert(
+        'Could Not Delete Account',
+        error?.message || 'Please try again in a moment.',
+      );
+      setIsDeleting(false);
+    }
+  };
+
+  const confirmDeleteAccount = () => {
+    Alert.alert(
+      'Permanently Delete Account?',
+      'This action cannot be undone. Your Sports Wager Helper account and associated account data will be permanently deleted.\n\nIf you sign in again later, a new Free account will be created. Your deleted account and data will not be restored.\n\nBe sure you want to permanently delete your account before continuing.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Permanently Delete Account',
+          style: 'destructive',
+          onPress: performDeleteAccount,
+        },
+      ],
+    );
   };
 
   return (
@@ -67,6 +96,20 @@ export default function AccountScreen() {
           Sign Out
         </PrimaryButton>
       </View>
+
+      <Card accent="red" style={styles.dangerCard}>
+        <Text style={styles.dangerTitle}>Delete Account</Text>
+        <Text style={styles.dangerBody}>
+          Permanently delete your SWH profile and saved account data from this app.
+        </Text>
+        <PrimaryButton
+          variant="secondary"
+          disabled={isDeleting}
+          onPress={confirmDeleteAccount}
+        >
+          {isDeleting ? 'Deleting Account...' : 'Delete Account'}
+        </PrimaryButton>
+      </Card>
       </NativeScreen>
       <PurchaseModal
         visible={purchaseOpen}
@@ -155,5 +198,21 @@ const styles = StyleSheet.create({
   },
   secondaryActions: {
     marginTop: spacing.sm,
+  },
+  dangerCard: {
+    borderColor: colors.red,
+    marginTop: spacing.lg,
+  },
+  dangerTitle: {
+    color: colors.red,
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: spacing.sm,
+  },
+  dangerBody: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.md,
   },
 });

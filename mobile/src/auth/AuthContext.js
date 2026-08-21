@@ -10,7 +10,8 @@ import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 
-import { loginUser } from '../RevenueCatService';
+import { loginUser, logoutUser } from '../RevenueCatService';
+import { deleteAccountRequest } from '../lib/swhApi';
 import {
   clearStoredSession,
   getAuthUser,
@@ -297,6 +298,19 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     await signOutAuth(session?.access_token);
+    await logoutUser();
+    setSession(null);
+    setAccount(null);
+  }, [session?.access_token]);
+
+  const deleteAccount = useCallback(async () => {
+    if (!session?.access_token) {
+      throw new Error('Sign in again before deleting your account.');
+    }
+
+    await deleteAccountRequest(session.access_token);
+    await clearStoredSession();
+    await logoutUser();
     setSession(null);
     setAccount(null);
   }, [session?.access_token]);
@@ -304,6 +318,7 @@ export function AuthProvider({ children }) {
   const value = useMemo(() => ({
     account,
     authError,
+    deleteAccount,
     isAuthenticated: Boolean(session?.user && account),
     isLoading,
     refreshAccount,
@@ -315,6 +330,7 @@ export function AuthProvider({ children }) {
   }), [
     account,
     authError,
+    deleteAccount,
     isLoading,
     refreshAccount,
     sendEmailCode,

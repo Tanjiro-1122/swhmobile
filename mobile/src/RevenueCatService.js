@@ -183,3 +183,14 @@ export const loginUser = async (userId) => {
     console.error('[RevenueCat] logIn error:', error);
   }
 };
+
+export const logoutUser = async () => {
+  try {
+    const customerInfo = await Purchases.logOut();
+    console.log('[RevenueCat] Logged out current user');
+    return customerInfo;
+  } catch (error) {
+    console.warn('[RevenueCat] logOut error:', error?.message || error);
+    return null;
+  }
+};

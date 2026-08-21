@@ -2,6 +2,13 @@ node_modules/
 .expo/
 dist/
 web-build/
+dist-android-*/
+dist-ios-*/
+BUNDLE-METADATA/
+BundleConfig.pb
+base/
+bundletool.jar
+tools/
 *.orig.*
 *.jks
 *.p8
@@ -18,3 +25,10 @@ android/
 ios/
 # end of @generated section
 google-service-account.json
+
+credentials.json
+credentials/
+
+upload_certificate.pem
+dist-ios-account-delete/
+dist-android-account-delete/
